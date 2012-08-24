@@ -22,4 +22,4 @@ class CRM_Extendedreport_Form_Report_Price_Contributionbased extends CRM_Report_
         'priceField_from_lineItem'
     );
   }
-  }
+}
