@@ -2,7 +2,7 @@
 
 require_once 'CRM/Report/Form.php';
 
-class CRM_Extendedreport_Form__Form_Report_Price_Contributionbased extends CRM_Report_Form_Extended {
+class CRM_Extendedreport_Form_Report_Price_Contributionbased extends CRM_Report_Form_Extended {
   protected $_baseTable = 'civicrm_contribution';
   function __construct() {
     $this->_columns = $this->getContactColumns()
