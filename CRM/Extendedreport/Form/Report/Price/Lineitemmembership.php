@@ -38,7 +38,7 @@ require_once 'CRM/Report/Form.php';
 require_once 'CRM/Contribute/PseudoConstant.php';
 require_once 'CRM/Report/Form/Extended.php';
 
-class CRM_Report_Form_Price_Lineitemmembership extends CRM_Report_Form_Extended {
+class CRM_Extendedreport_Report_Form_Price_Lineitemmembership extends CRM_Report_Form_Extended {
     protected $_addressField = false;
 
     protected $_emailField   = false;
