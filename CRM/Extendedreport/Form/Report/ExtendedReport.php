@@ -13,6 +13,8 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   protected $_exposeContactID = FALSE;
   protected $_customGroupExtends = array();
   protected $_baseTable = 'civicrm_contact';
+  protected $_editableFields = TRUE;
+  protected $_groupByArray = array();
   function __construct() {
 
     parent::__construct();
@@ -50,25 +52,42 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   function fromClauses() {
     return array();
   }
-
+/*
+ * We're overriding the parent class so we can populate a 'group_by' array for other functions use
+ * e.g. editable fields are turned off when groupby is used
+ */
   function groupBy() {
-    parent::groupBy();
-    //@todo - need to re-visit this - bad behaviour from pa
-    if ($this->_groupBy == 'GROUP BY') {
-      $this->_groupBY = NULL;
-    }
-    // if a stat field has been selected the do a group by
-    if (!empty($this->_statFields) && empty($this->_groupBy)) {
-      $this->_groupBy[] = $this->_aliases[$this->_baseTable] . ".id";
-    }
-    //@todo - this should be in the parent function or at parent level - perhaps build query should do this?
-    if (!empty($this->_groupBy) && is_array($this->_groupBy)) {
-      $this->_groupBy = 'GROUP BY ' . implode(',', $this->_groupBy);
+    $this->storeGroupByArray();
+    if (!empty($this->_groupByArray)) {
+      $this->_groupBy = "GROUP BY " . implode(', ', $this->_groupByArray);
     }
   }
 
   function orderBy() {
     parent::orderBy();
+  }
+/*
+ * Store group bys into array - so we can check elsewhere (e.g editable fields) what is grouped
+ */
+  function storeGroupByArray(){
+    if (CRM_Utils_Array::value('group_bys', $this->_params) &&
+        is_array($this->_params['group_bys']) &&
+        !empty($this->_params['group_bys'])
+    ) {
+      foreach ($this->_columns as $tableName => $table) {
+        if (array_key_exists('group_bys', $table)) {
+          foreach ($table['group_bys'] as $fieldName => $field) {
+            if (CRM_Utils_Array::value($fieldName, $this->_params['group_bys'])) {
+              $this->_groupByArray[] = $field['dbAlias'];
+            }
+          }
+        }
+      }
+    }
+    // if a stat field has been selected the do a group by - this is not in parent
+    if (!empty($this->_statFields) && empty($this->_groupByArray)) {
+      $this->_groupByArray[] = $this->_aliases[$this->_baseTable] . ".id";
+    }
   }
 
   function statistics(&$rows) {
@@ -99,14 +118,25 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       return;
     }
     $selectedFields = array_keys($firstRow);
-
     $alterfunctions = $altermap = array();
     foreach ($this->_columns as $tablename => $table) {
       if (array_key_exists('fields', $table)) {
         foreach ($table['fields'] as $field => $specs) {
-          if (in_array($tablename . '_' . $field, $selectedFields) && array_key_exists('alter_display', $specs)) {
-            $alterfunctions[$tablename . '_' . $field] = $specs['alter_display'];
-            $altermap[$tablename . '_' . $field] = $field;
+          if (in_array($tablename . '_' . $field, $selectedFields)){
+            if( array_key_exists('alter_display', $specs)) {
+              $alterfunctions[$tablename . '_' . $field] = $specs['alter_display'];
+              $altermap[$tablename . '_' . $field] = $field;
+            }
+            if( $this->_editableFields && array_key_exists('crm_editable', $specs)) {
+              //id key array is what the array would look like if the ONLY group by field is our id field
+              // in which case it should be editable - in any other group by scenario it shouldn't be
+              $idKeyArray = array($this->_aliases[$specs['crm_editable']['id_table']] . "." . $specs['crm_editable']['id_field']);
+              if(empty($this->_groupByArray) || $this->_groupByArray == $idKeyArray){
+                $alterfunctions[$tablename . '_' . $field] = 'alterCrmEditable';
+                $altermap[$tablename . '_' . $field] = $field;
+                $alterspecs[$tablename . '_' . $field] = $specs['crm_editable'];
+              }
+            }
           }
         }
       }
@@ -119,10 +149,202 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     foreach ($rows as $index => & $row) {
       foreach ($row as $selectedfield => $value) {
         if (array_key_exists($selectedfield, $alterfunctions)) {
-          $rows[$index][$selectedfield] = $this->$alterfunctions[$selectedfield]($value, $row, $selectedfield, $altermap[$selectedfield]);
+          $rows[$index][$selectedfield] = $this->$alterfunctions[$selectedfield]($value, $row, $selectedfield, $altermap[$selectedfield], $alterspecs[$selectedfield]);
         }
       }
     }
+  }
+  /*
+   * Was hoping to avoid over-riding this - but it doesn't pass enough data to formatCustomValues by default
+   */
+  function alterCustomDataDisplay(&$rows) {
+    // custom code to alter rows having custom values
+    if (empty($this->_customGroupExtends)) {
+      return;
+    }
+
+    $customFieldIds = array();
+    foreach ($this->_params['fields'] as $fieldAlias => $value) {
+      if ($fieldId = CRM_Core_BAO_CustomField::getKeyID($fieldAlias)) {
+        $customFieldIds[$fieldAlias] = $fieldId;
+      }
+    }
+    if (empty($customFieldIds)) {
+      return;
+    }
+
+    $customFields = $fieldValueMap = array();
+    $customFieldCols = array('column_name', 'data_type', 'html_type', 'option_group_id', 'id');
+
+    // skip for type date and ContactReference since date format is already handled
+    $query = "
+SELECT cg.table_name, cf." . implode(", cf.", $customFieldCols) . ", ov.value, ov.label
+FROM  civicrm_custom_field cf
+INNER JOIN civicrm_custom_group cg ON cg.id = cf.custom_group_id
+LEFT JOIN civicrm_option_value ov ON cf.option_group_id = ov.option_group_id
+WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
+      cg.is_active = 1 AND
+      cf.is_active = 1 AND
+      cf.is_searchable = 1 AND
+      cf.data_type   NOT IN ('ContactReference', 'Date') AND
+      cf.id IN (" . implode(",", $customFieldIds) . ")";
+
+    $dao = CRM_Core_DAO::executeQuery($query);
+    while ($dao->fetch()) {
+      foreach ($customFieldCols as $key) {
+        $customFields[$dao->table_name . '_custom_' . $dao->id][$key] = $dao->$key;
+      }
+      if ($dao->option_group_id) {
+        $fieldValueMap[$dao->option_group_id][$dao->value] = $dao->label;
+      }
+    }
+    $dao->free();
+
+    $entryFound = FALSE;
+    foreach ($rows as $rowNum => $row) {
+      foreach ($row as $tableCol => $val) {
+        if (array_key_exists($tableCol, $customFields)) {
+          $rows[$rowNum][$tableCol] = $this->formatCustomValues($val, $customFields[$tableCol], $fieldValueMap, $row);
+          $entryFound = TRUE;
+        }
+      }
+
+      // skip looking further in rows, if first row itself doesn't
+      // have the column we need
+      if (!$entryFound) {
+        break;
+      }
+    }
+  }
+  /*
+   * We are overriding this function to apply crm-editable where appropriate
+   * It would be more efficient if we knew the entity being extended (which the parent function
+   * does know) but we want to avoid extending any functions we don't have to
+   */
+  function formatCustomValues($value, $customField, $fieldValueMap, $row) {
+    if(!empty($this->_customGroupExtends) && count($this->_customGroupExtends) ==1){
+      //lets only extend apply editability where only one entity extended
+      // we can easily extend to contact combos
+      list($entity) =  $this->_customGroupExtends ;
+      $entity_table = strtolower('civicrm_' . $entity);
+      $idKeyArray = array($this->_aliases[$entity_table] . '.id');
+      if(empty($this->_groupByArray) || $this->_groupByArray == $idKeyArray){
+        $entity_field = $entity_table . '_id';
+        $entityID = $row[$entity_field];
+      }
+    }
+    if (CRM_Utils_System::isNull($value)) {
+      return;
+    }
+
+    $htmlType = $customField['html_type'];
+
+    switch ($customField['data_type']) {
+      case 'Boolean':
+        if ($value == '1') {
+          $retValue = ts('Yes');
+        }
+        else {
+          $retValue = ts('No');
+        }
+        break;
+
+      case 'Link':
+        $retValue = CRM_Utils_System::formatWikiURL($value);
+        break;
+
+      case 'File':
+        $retValue = $value;
+        break;
+
+      case 'Memo':
+        $retValue = $value;
+        break;
+
+      case 'Float':
+        if ($htmlType == 'Text') {
+          $retValue = (float)$value;
+          break;
+        }
+      case 'Money':
+        if ($htmlType == 'Text') {
+          $retValue = CRM_Utils_Money::format($value, NULL, '%a');
+          break;
+        }
+      case 'String':
+      case 'Int':
+        if (in_array($htmlType, array(
+        'Text', 'TextArea'))) {
+        $retValue = $value;
+        if(!empty($entity_field)){
+          $retValue = "<div id={$entity}-{$entityID} class='crm-entity'>
+          <span class='crm-editable crmf-{$customField} crm-editable-enabled' data-action='create'>" . $value . "</span></div>";
+        }
+        break;
+        }
+      case 'StateProvince':
+      case 'Country':
+
+        switch ($htmlType) {
+          case 'Multi-Select Country':
+            $value = explode(CRM_Core_DAO::VALUE_SEPARATOR, $value);
+            $customData = array();
+            foreach ($value as $val) {
+              if ($val) {
+                $customData[] = CRM_Core_PseudoConstant::country($val, FALSE);
+              }
+            }
+            $retValue = implode(', ', $customData);
+            break;
+
+          case 'Select Country':
+            $retValue = CRM_Core_PseudoConstant::country($value, FALSE);
+            break;
+
+          case 'Select State/Province':
+            $retValue = CRM_Core_PseudoConstant::stateProvince($value, FALSE);
+            break;
+
+          case 'Multi-Select State/Province':
+            $value = explode(CRM_Core_DAO::VALUE_SEPARATOR, $value);
+            $customData = array();
+            foreach ($value as $val) {
+              if ($val) {
+                $customData[] = CRM_Core_PseudoConstant::stateProvince($val, FALSE);
+              }
+            }
+            $retValue = implode(', ', $customData);
+            break;
+
+          case 'Select':
+          case 'Radio':
+          case 'Autocomplete-Select':
+            $retValue = $fieldValueMap[$customField['option_group_id']][$value];
+            break;
+
+          case 'CheckBox':
+          case 'AdvMulti-Select':
+          case 'Multi-Select':
+            $value = explode(CRM_Core_DAO::VALUE_SEPARATOR, $value);
+            $customData = array();
+            foreach ($value as $val) {
+              if ($val) {
+                $customData[] = $fieldValueMap[$customField['option_group_id']][$val];
+              }
+            }
+            $retValue = implode(', ', $customData);
+            break;
+
+          default:
+            $retValue = $value;
+        }
+        break;
+
+      default:
+        $retValue = $value;
+    }
+
+    return $retValue;
   }
 
   function assignSubTotalLines(&$rows){
@@ -430,9 +652,13 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
           ),
           'title' => array('title' => ts('Event Title'),
             'required' => TRUE,
+            'crm_editable' => array(
+                'id_table' => 'civicrm_event',
+                'id_field' => 'id',
+                'entity' => 'event',
+             ),
           ),
           'event_type_id' => array('title' => ts('Event Type'),
-            'required' => TRUE,
             'alter_display' => 'alterEventType',
           ),
           'fee_label' => array('title' => ts('Fee Label')),
@@ -441,7 +667,31 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
           'event_end_date' => array('title' => ts('Event End Date')),
           'max_participants' => array('title' => ts('Capacity'),
             'type' => CRM_Utils_Type::T_INT,
+            'crm_editable' => array(
+              'id_table' => 'civicrm_event',
+              'id_field' => 'id',
+              'entity' => 'event'
+            ),
           ),
+          'is_active' => array(
+             'title' => ts('Is Active'),
+             'type' => CRM_Utils_Type::T_INT,
+             'crm_editable' => array(
+               'id_table' => 'civicrm_event',
+               'id_field' => 'id',
+               'entity' => 'event',
+               'options' => array(0 => 'No', 1 => 'Yes'),
+              ),
+            ),
+           'is_public' => array(
+                'title' => ts('Is Publicly Visible'),
+                'type' => CRM_Utils_Type::T_INT,
+                'crm_editable' => array(
+                    'id_table' => 'civicrm_event',
+                    'id_field' => 'id',
+                    'entity' => 'event'
+                ),
+            ),
         ),
         'grouping' => 'event-fields',
         'filters' => array(
@@ -1177,6 +1427,25 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
   }
 
   /*
+   * Retrieve text for contribution type from pseudoconstant
+  */
+  function alterCrmEditable($value, &$row, $selectedfield, $criteriaFieldName, $specs) {
+    $id_field = $specs['id_table'] . '_' . $specs['id_field'];
+    if(empty($id_field)){
+      return;
+    }
+    $entityID = $row[$id_field];
+    $entity = $specs['entity'];
+    $extra = '';
+    if(!empty($specs['options'])){
+      $extra = "data-type='select' data=" . json_encode($specs['options']) ;
+      $value = $specs['options'][$value];
+    }//nodeName == "INPUT" && this.type=="checkbox"
+    return "<div id={$entity}-{$entityID} class='crm-entity'>
+    <span class='crm-editable crmf-{$criteriaFieldName} editable_select crm-editable-enabled' data-action='create' $extra>" . $value . "</span></div>";
+  }
+
+  /*
 * Retrieve text for contribution type from pseudoconstant
 */
   function alterNickName($value, &$row) {
@@ -1185,8 +1454,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
     }
     $contactID = $row['civicrm_contact_id'];
     return "<div id=contact-{$contactID} class='crm-entity'>
-<span class='crm-editable crmf-nick_name crm-editable-enabled' data-action='create'>
-" . $value . "</span></div>";
+<span class='crm-editable crmf-nick_name crm-editable-enabled' data-action='create'>" . $value . "</span></div>";
   }
 
   /*
