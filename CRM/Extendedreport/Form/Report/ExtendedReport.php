@@ -680,7 +680,7 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
                'id_table' => 'civicrm_event',
                'id_field' => 'id',
                'entity' => 'event',
-               'options' => array(0 => 'No', 1 => 'Yes'),
+               'options' => array('0' => 'No', '1' => 'Yes'),
               ),
             ),
            'is_public' => array(
@@ -1438,7 +1438,8 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
     $entity = $specs['entity'];
     $extra = '';
     if(!empty($specs['options'])){
-      $extra = "data-type='select' data=" . json_encode($specs['options']) ;
+      $specs['options']['selected'] = $value;
+      $extra = "data-type='select' data-options='" . json_encode($specs['options'])  . "'";
       $value = $specs['options'][$value];
     }//nodeName == "INPUT" && this.type=="checkbox"
     return "<div id={$entity}-{$entityID} class='crm-entity'>
