@@ -499,13 +499,13 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
         array('participant_id' => array('title' => 'Participant ID'),
           'participant_record' => array(
             'name' => 'id',
-            'title' => 'Participant Id',
+            'title' => 'Participant ID',
           ),
           'event_id' => array('title' => ts('Event ID'),
             'type' => CRM_Utils_Type::T_STRING,
             'alter_display' => 'alterEventID',
           ),
-          'status_id' => array('title' => ts('Status'),
+          'status_id' => array('title' => ts('Event Participant Status'),
             'alter_display' => 'alterParticipantStatus',
           ),
           'role_id' => array('title' => ts('Role'),
@@ -706,6 +706,11 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
             'title' => ts('Event Title'),
             'operatorType' => CRM_Report_Form::OP_STRING,
           ),
+          'event_start_date' => array(
+            'title' => ts('Event start date'),
+            'default_weight' => '1',
+            'default_order' => 'ASC',
+          )
         ),
         'order_bys' => array(
           'event_type_id' => array(
@@ -731,6 +736,7 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
         'fields' =>
         array(
           'contribution_id' => array(
+            'title' => ts('Contribution ID'),
             'name' => 'id',
           ),
           'contribution_type_id' => array('title' => ts('Contribution Type'),
@@ -814,6 +820,9 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
           ),
           'first_name' => array(
             'title' => ts('First Name'),
+          ),
+          'middle_name' => array(
+            'title' => ts('Middle Name'),
           ),
           'last_name' => array(
             'title' => ts('Last Name'),
