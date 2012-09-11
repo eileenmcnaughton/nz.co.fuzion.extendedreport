@@ -13,8 +13,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   protected $_exposeContactID = FALSE;
   protected $_customGroupExtends = array();
   protected $_baseTable = 'civicrm_contact';
-  protected $_editableFields = TRUE;
-  protected $_groupByArray = array();
   function __construct() {
 
     parent::__construct();
@@ -39,6 +37,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       $availableClauses = $this->getAvailableJoins();
       foreach ($this->fromClauses() as $fromClause) {
         $fn = $availableClauses[$fromClause]['callback'];
+        //print ($fn);
         $this->$fn();
       }
       if (strstr($this->_from, 'civicrm_contact')) {
@@ -52,42 +51,25 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   function fromClauses() {
     return array();
   }
-/*
- * We're overriding the parent class so we can populate a 'group_by' array for other functions use
- * e.g. editable fields are turned off when groupby is used
- */
+
   function groupBy() {
-    $this->storeGroupByArray();
-    if (!empty($this->_groupByArray)) {
-      $this->_groupBy = "GROUP BY " . implode(', ', $this->_groupByArray);
+    parent::groupBy();
+    //@todo - need to re-visit this - bad behaviour from pa
+    if ($this->_groupBy == 'GROUP BY') {
+      $this->_groupBY = NULL;
+    }
+    // if a stat field has been selected the do a group by
+    if (!empty($this->_statFields) && empty($this->_groupBy)) {
+      $this->_groupBy[] = $this->_aliases[$this->_baseTable] . ".id";
+    }
+    //@todo - this should be in the parent function or at parent level - perhaps build query should do this?
+    if (!empty($this->_groupBy) && is_array($this->_groupBy)) {
+      $this->_groupBy = 'GROUP BY ' . implode(',', $this->_groupBy);
     }
   }
 
   function orderBy() {
     parent::orderBy();
-  }
-/*
- * Store group bys into array - so we can check elsewhere (e.g editable fields) what is grouped
- */
-  function storeGroupByArray(){
-    if (CRM_Utils_Array::value('group_bys', $this->_params) &&
-        is_array($this->_params['group_bys']) &&
-        !empty($this->_params['group_bys'])
-    ) {
-      foreach ($this->_columns as $tableName => $table) {
-        if (array_key_exists('group_bys', $table)) {
-          foreach ($table['group_bys'] as $fieldName => $field) {
-            if (CRM_Utils_Array::value($fieldName, $this->_params['group_bys'])) {
-              $this->_groupByArray[] = $field['dbAlias'];
-            }
-          }
-        }
-      }
-    }
-    // if a stat field has been selected the do a group by - this is not in parent
-    if (!empty($this->_statFields) && empty($this->_groupByArray)) {
-      $this->_groupByArray[] = $this->_aliases[$this->_baseTable] . ".id";
-    }
   }
 
   function statistics(&$rows) {
@@ -118,25 +100,14 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       return;
     }
     $selectedFields = array_keys($firstRow);
+
     $alterfunctions = $altermap = array();
     foreach ($this->_columns as $tablename => $table) {
       if (array_key_exists('fields', $table)) {
         foreach ($table['fields'] as $field => $specs) {
-          if (in_array($tablename . '_' . $field, $selectedFields)){
-            if( array_key_exists('alter_display', $specs)) {
-              $alterfunctions[$tablename . '_' . $field] = $specs['alter_display'];
-              $altermap[$tablename . '_' . $field] = $field;
-            }
-            if( $this->_editableFields && array_key_exists('crm_editable', $specs)) {
-              //id key array is what the array would look like if the ONLY group by field is our id field
-              // in which case it should be editable - in any other group by scenario it shouldn't be
-              $idKeyArray = array($this->_aliases[$specs['crm_editable']['id_table']] . "." . $specs['crm_editable']['id_field']);
-              if(empty($this->_groupByArray) || $this->_groupByArray == $idKeyArray){
-                $alterfunctions[$tablename . '_' . $field] = 'alterCrmEditable';
-                $altermap[$tablename . '_' . $field] = $field;
-                $alterspecs[$tablename . '_' . $field] = $specs['crm_editable'];
-              }
-            }
+          if (in_array($tablename . '_' . $field, $selectedFields) && array_key_exists('alter_display', $specs)) {
+            $alterfunctions[$tablename . '_' . $field] = $specs['alter_display'];
+            $altermap[$tablename . '_' . $field] = $field;
           }
         }
       }
@@ -149,202 +120,10 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     foreach ($rows as $index => & $row) {
       foreach ($row as $selectedfield => $value) {
         if (array_key_exists($selectedfield, $alterfunctions)) {
-          $rows[$index][$selectedfield] = $this->$alterfunctions[$selectedfield]($value, $row, $selectedfield, $altermap[$selectedfield], $alterspecs[$selectedfield]);
+          $rows[$index][$selectedfield] = $this->$alterfunctions[$selectedfield]($value, $row, $selectedfield, $altermap[$selectedfield]);
         }
       }
     }
-  }
-  /*
-   * Was hoping to avoid over-riding this - but it doesn't pass enough data to formatCustomValues by default
-   */
-  function alterCustomDataDisplay(&$rows) {
-    // custom code to alter rows having custom values
-    if (empty($this->_customGroupExtends)) {
-      return;
-    }
-
-    $customFieldIds = array();
-    foreach ($this->_params['fields'] as $fieldAlias => $value) {
-      if ($fieldId = CRM_Core_BAO_CustomField::getKeyID($fieldAlias)) {
-        $customFieldIds[$fieldAlias] = $fieldId;
-      }
-    }
-    if (empty($customFieldIds)) {
-      return;
-    }
-
-    $customFields = $fieldValueMap = array();
-    $customFieldCols = array('column_name', 'data_type', 'html_type', 'option_group_id', 'id');
-
-    // skip for type date and ContactReference since date format is already handled
-    $query = "
-SELECT cg.table_name, cf." . implode(", cf.", $customFieldCols) . ", ov.value, ov.label
-FROM  civicrm_custom_field cf
-INNER JOIN civicrm_custom_group cg ON cg.id = cf.custom_group_id
-LEFT JOIN civicrm_option_value ov ON cf.option_group_id = ov.option_group_id
-WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
-      cg.is_active = 1 AND
-      cf.is_active = 1 AND
-      cf.is_searchable = 1 AND
-      cf.data_type   NOT IN ('ContactReference', 'Date') AND
-      cf.id IN (" . implode(",", $customFieldIds) . ")";
-
-    $dao = CRM_Core_DAO::executeQuery($query);
-    while ($dao->fetch()) {
-      foreach ($customFieldCols as $key) {
-        $customFields[$dao->table_name . '_custom_' . $dao->id][$key] = $dao->$key;
-      }
-      if ($dao->option_group_id) {
-        $fieldValueMap[$dao->option_group_id][$dao->value] = $dao->label;
-      }
-    }
-    $dao->free();
-
-    $entryFound = FALSE;
-    foreach ($rows as $rowNum => $row) {
-      foreach ($row as $tableCol => $val) {
-        if (array_key_exists($tableCol, $customFields)) {
-          $rows[$rowNum][$tableCol] = $this->formatCustomValues($val, $customFields[$tableCol], $fieldValueMap, $row);
-          $entryFound = TRUE;
-        }
-      }
-
-      // skip looking further in rows, if first row itself doesn't
-      // have the column we need
-      if (!$entryFound) {
-        break;
-      }
-    }
-  }
-  /*
-   * We are overriding this function to apply crm-editable where appropriate
-   * It would be more efficient if we knew the entity being extended (which the parent function
-   * does know) but we want to avoid extending any functions we don't have to
-   */
-  function formatCustomValues($value, $customField, $fieldValueMap, $row) {
-    if(!empty($this->_customGroupExtends) && count($this->_customGroupExtends) ==1){
-      //lets only extend apply editability where only one entity extended
-      // we can easily extend to contact combos
-      list($entity) =  $this->_customGroupExtends ;
-      $entity_table = strtolower('civicrm_' . $entity);
-      $idKeyArray = array($this->_aliases[$entity_table] . '.id');
-      if(empty($this->_groupByArray) || $this->_groupByArray == $idKeyArray){
-        $entity_field = $entity_table . '_id';
-        $entityID = $row[$entity_field];
-      }
-    }
-    if (CRM_Utils_System::isNull($value)) {
-      return;
-    }
-
-    $htmlType = $customField['html_type'];
-
-    switch ($customField['data_type']) {
-      case 'Boolean':
-        if ($value == '1') {
-          $retValue = ts('Yes');
-        }
-        else {
-          $retValue = ts('No');
-        }
-        break;
-
-      case 'Link':
-        $retValue = CRM_Utils_System::formatWikiURL($value);
-        break;
-
-      case 'File':
-        $retValue = $value;
-        break;
-
-      case 'Memo':
-        $retValue = $value;
-        break;
-
-      case 'Float':
-        if ($htmlType == 'Text') {
-          $retValue = (float)$value;
-          break;
-        }
-      case 'Money':
-        if ($htmlType == 'Text') {
-          $retValue = CRM_Utils_Money::format($value, NULL, '%a');
-          break;
-        }
-      case 'String':
-      case 'Int':
-        if (in_array($htmlType, array(
-        'Text', 'TextArea'))) {
-        $retValue = $value;
-        if(!empty($entity_field)){
-          $retValue = "<div id={$entity}-{$entityID} class='crm-entity'>
-          <span class='crm-editable crmf-{$customField} crm-editable-enabled' data-action='create'>" . $value . "</span></div>";
-        }
-        break;
-        }
-      case 'StateProvince':
-      case 'Country':
-
-        switch ($htmlType) {
-          case 'Multi-Select Country':
-            $value = explode(CRM_Core_DAO::VALUE_SEPARATOR, $value);
-            $customData = array();
-            foreach ($value as $val) {
-              if ($val) {
-                $customData[] = CRM_Core_PseudoConstant::country($val, FALSE);
-              }
-            }
-            $retValue = implode(', ', $customData);
-            break;
-
-          case 'Select Country':
-            $retValue = CRM_Core_PseudoConstant::country($value, FALSE);
-            break;
-
-          case 'Select State/Province':
-            $retValue = CRM_Core_PseudoConstant::stateProvince($value, FALSE);
-            break;
-
-          case 'Multi-Select State/Province':
-            $value = explode(CRM_Core_DAO::VALUE_SEPARATOR, $value);
-            $customData = array();
-            foreach ($value as $val) {
-              if ($val) {
-                $customData[] = CRM_Core_PseudoConstant::stateProvince($val, FALSE);
-              }
-            }
-            $retValue = implode(', ', $customData);
-            break;
-
-          case 'Select':
-          case 'Radio':
-          case 'Autocomplete-Select':
-            $retValue = $fieldValueMap[$customField['option_group_id']][$value];
-            break;
-
-          case 'CheckBox':
-          case 'AdvMulti-Select':
-          case 'Multi-Select':
-            $value = explode(CRM_Core_DAO::VALUE_SEPARATOR, $value);
-            $customData = array();
-            foreach ($value as $val) {
-              if ($val) {
-                $customData[] = $fieldValueMap[$customField['option_group_id']][$val];
-              }
-            }
-            $retValue = implode(', ', $customData);
-            break;
-
-          default:
-            $retValue = $value;
-        }
-        break;
-
-      default:
-        $retValue = $value;
-    }
-
-    return $retValue;
   }
 
   function assignSubTotalLines(&$rows){
@@ -495,17 +274,18 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
       'civicrm_participant' =>
       array(
         'dao' => 'CRM_Event_DAO_Participant',
+        'alias' => 'civicrm_participant_columns',
         'fields' =>
         array('participant_id' => array('title' => 'Participant ID'),
           'participant_record' => array(
             'name' => 'id',
-            'title' => 'Participant Id',
+            'title' => 'Participant ID',
           ),
           'event_id' => array('title' => ts('Event ID'),
             'type' => CRM_Utils_Type::T_STRING,
             'alter_display' => 'alterEventID',
           ),
-          'status_id' => array('title' => ts('Status'),
+          'status_id' => array('title' => ts('Event Participant Status'),
             'alter_display' => 'alterParticipantStatus',
           ),
           'role_id' => array('title' => ts('Role'),
@@ -514,6 +294,9 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
           'participant_fee_level' => NULL,
           'participant_fee_amount' => NULL,
           'participant_register_date' => array('title' => ts('Registration Date')),
+          'is_test' => array('title' => ts('Test Participant?')),
+          'is_pay_later' => array('title' => ts('Pay-Later Participant?')),
+
         ),
         'grouping' => 'event-fields',
         'filters' =>
@@ -536,9 +319,10 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
             'options' => CRM_Event_PseudoConstant::participantRole(),
           ),
           'participant_register_date' => array(
-            'title' => ' Registration Date',
+            'title' => 'Registration Date',
             'operatorType' => CRM_Report_Form::OP_DATE,
           ),
+
         ),
         'order_bys' =>
         array(
@@ -584,6 +368,9 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
                 'statistics' =>
                 array('count' => ts('Number of Memberships')),
             ),
+          'is_test' => array('title' => ts('Test Membership?')),
+          'is_pay_later' => array('title' => ts('Pay-Later Membership?')),
+ 
         ),
         'group_bys' => array(
           'membership_type_id' => array(
@@ -652,13 +439,9 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
           ),
           'title' => array('title' => ts('Event Title'),
             'required' => TRUE,
-            'crm_editable' => array(
-                'id_table' => 'civicrm_event',
-                'id_field' => 'id',
-                'entity' => 'event',
-             ),
           ),
           'event_type_id' => array('title' => ts('Event Type'),
+            'required' => TRUE,
             'alter_display' => 'alterEventType',
           ),
           'fee_label' => array('title' => ts('Fee Label')),
@@ -667,31 +450,7 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
           'event_end_date' => array('title' => ts('Event End Date')),
           'max_participants' => array('title' => ts('Capacity'),
             'type' => CRM_Utils_Type::T_INT,
-            'crm_editable' => array(
-              'id_table' => 'civicrm_event',
-              'id_field' => 'id',
-              'entity' => 'event'
-            ),
           ),
-          'is_active' => array(
-             'title' => ts('Is Active'),
-             'type' => CRM_Utils_Type::T_INT,
-             'crm_editable' => array(
-               'id_table' => 'civicrm_event',
-               'id_field' => 'id',
-               'entity' => 'event',
-               'options' => array('0' => 'No', '1' => 'Yes'),
-              ),
-            ),
-           'is_public' => array(
-                'title' => ts('Is Publicly Visible'),
-                'type' => CRM_Utils_Type::T_INT,
-                'crm_editable' => array(
-                    'id_table' => 'civicrm_event',
-                    'id_field' => 'id',
-                    'entity' => 'event'
-                ),
-            ),
         ),
         'grouping' => 'event-fields',
         'filters' => array(
@@ -713,7 +472,13 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
             'default_weight' => '2',
             'default_order' => 'ASC',
           ),
+          //bhugh, 2012/09, to allow ordering by event start date
+          'event_start_date' => array(
+            'title' => ts('Event start date'),
+            'default_weight' => '1',
+            'default_order' => 'ASC',
           ),
+        ),
         'group_bys' => array(
           'event_type_id' => array(
           'title' => ts('Event Type'),
@@ -731,6 +496,8 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
         'fields' =>
         array(
           'contribution_id' => array(
+            //bhugh, added title for contrib iD which was previously blank
+            'title' => ts('Contribution ID'),
             'name' => 'id',
           ),
           'contribution_type_id' => array('title' => ts('Contribution Type'),
@@ -746,11 +513,19 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
           'receipt_date' => NULL,
           'fee_amount' => NULL,
           'net_amount' => NULL,
-          'total_amount' => array('title' => ts('Amount'),
+          'total_amount' => array('title' => ts('Total Amount'),
             'statistics' =>
             array('sum' => ts('Total Amount')),
             'type' => CRM_Utils_Type::T_MONEY,
           ),
+          'contribution_status_id' =>
+            array('title' => ts('Contribution Status'),
+            'alter_display' => 'alterContributionStatus',
+          ),
+          'is_test' => array('title' => ts('Test Contribution?')),
+          'is_pay_later' => array('title' => ts('Pay-Later Contribution?')),
+          
+
         ),
         'filters' =>
         array(
@@ -782,6 +557,17 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
          'contribution_type_id' =>
           array('title' => ts('Contribution Type'),
           ),
+          'receive_date' =>
+          array('title' => ts('Receive date'),
+                'default_weight' => '0',
+                'default_order' => 'DESC', 
+          ),
+          'receipt_date' =>
+          array('title' => ts('Receipt date'),
+                'default_weight' => '0',
+                'default_order' => 'DESC', 
+          ),
+
         ),
         'group_bys' =>
         array(
@@ -815,6 +601,9 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
           'first_name' => array(
             'title' => ts('First Name'),
           ),
+          'middle_name' => array(
+            'title' => ts('Middle Name'),
+          ),
           'last_name' => array(
             'title' => ts('Last Name'),
           ),
@@ -842,9 +631,382 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
           ),
         ),
       ),
+         // bhugh 2012/09/05 - to include email & phone in contact options for report always.
+      'civicrm_email' => array(
+        'dao' => 'CRM_Core_DAO_Email',
+        'name' => 'civicrm_email',
+        'alias' => 'civicrm_email',
+        'fields' =>
+        array(
+          'email' =>
+          array('title' => ts('Contact Email'),
+            'default' => TRUE,
+            'no_repeat' => TRUE,
+          ),
+        ),
+        'grouping' => 'contact-fields',
+      ),
+      'civicrm_phone' =>
+      array(
+        'dao' => 'CRM_Core_DAO_Phone',
+        'name' => 'civicrm_phone',
+        'alias' => 'civicrm_phone',
+        'fields' =>
+        array(
+          'phone' =>
+          array('title' => ts('Contact Phone'),
+            'default' => TRUE,
+            'no_repeat' => TRUE,
+          ),
+        ),
+        'grouping' => 'contact-fields',
+      ),
     );
   }
 
+
+  function getContactFromParticipantColumns() {
+    return array(
+      'civicrm_contact_from_participant' => array(
+        'dao' => 'CRM_Contact_DAO_Contact',
+        'alias' => 'civicrm_contact_from_participant',
+        'name' => 'civicrm_contact',
+        'fields' => array(
+          'display_name_from_participant' => array(
+            'name' => 'display_name',
+            'title' => ts('Contact Name (Event Participant)'),
+          ),
+          'id_from_participant' => array(
+            'name' => 'id',
+            'title' => ts('Contact ID (Event Participant)'),
+            'alter_display' => 'alterContactID',
+          ),
+          'first_name_from_participant' => array(
+            'name' => 'first_name',          
+            'title' => ts('First Name (Event Participant)'),
+          ),
+          'last_name_from_participant' => array(
+            'name' => 'last_name',          
+            'title' => ts('Last Name (Event Participant)'),
+          ),
+          'nick_name_from_participant' => array(
+            'name' => 'nick_name',          
+            'title' => ts('Nick Name (Event Participant)'),
+            'alter_display' => 'alterNickName',
+          ),
+        ),
+      ),    
+    );
+  }
+
+  //bhugh, 2012/09, we want to get the individual contact name for each org contact, for key relationshiops (spouse for individuals OR membership contact for orgs). First we pull in the relationship info.   
+  
+  function getRelationshipColumns() {
+    return array( 'civicrm_relationship' =>
+      array(
+        'dao' => 'CRM_Contact_DAO_Relationship',
+        'name' => 'civicrm_relationship',
+        'alias' => 'civicrm_relationship',
+         
+        'fields' =>
+        array(
+          'relationship_id' =>
+          array(
+            'name' => 'id',
+            'title' => ts('Relationship ID'),
+            'no_repeat' => TRUE,
+            'default' => TRUE,
+          ),
+          'relationship_type_id' =>
+          array('title' => ts('Relationship Type'),
+            'default' => TRUE,
+          ),
+
+          'contact_id_a' =>
+          array('title' => ts('Relationship With (Contact ID A)'),
+            'default' => TRUE,
+          ),
+          'contact_id_b' =>
+          array('title' => ts('Relationship With (Contact ID B)'),
+            'default' => TRUE,
+          ),
+          'start_date' =>
+          array(
+            'title' => 'Relationship Start Date ',
+            'type' => CRM_Report_Form::OP_DATE,
+          ),
+          'end_date' =>
+          array(
+            'title' => 'Relationship End Date ',
+            'type' => CRM_Report_Form::OP_DATE,
+          ),
+         ),
+      )
+     );
+  }
+
+  //bhugh, 2012/09, we want to get the individual contact name for each org contact, for key relationships (spouse for individuals OR membership contact for orgs). Now that we have the relationship info we can pull in the contact info for that related contact.
+  function getRelationshipKeyContactColumns() {
+    return array( 'civicrm_relationshipKeyContact' =>
+      array(
+        'dao' => 'CRM_Contact_DAO_Contact',
+        'name' => 'civicrm_contact',
+        'alias' => 'civicrm_relationshipKeyContact',
+         
+        'fields' =>
+        array(
+          'id_keyrelationship' =>
+          array(
+            'name' => 'id',
+            'title' => ts('Contact ID of Key Relationship'),
+            'no_repeat' => TRUE,
+            'default' => TRUE,
+          ),
+          'display_name_keyrelationship' => array(
+            'name' => 'display_name',
+            'title' => ts('Contact Name of Key Relationship'),
+          ),          
+          'first_name_keyrelationship' =>
+          array(
+            'name' => 'first_name',
+            'title' => ts('First Name of Key Relationship'),
+            'default' => TRUE,
+          ),
+          'middle_name_keyrelationship' =>
+          array(
+            'name' => 'middle_name',
+            'title' => ts('Middle Name of Key Relationship'),
+            'default' => TRUE,
+          ),
+          'last_name_keyrelationship' =>
+          array(
+            'name' => 'last_name', 
+            'title' => ts('Last Name of Key Relationship'),
+            'default' => TRUE,
+          ),
+          'nick_name_keyrelationship' =>
+          array(
+            'name' => 'nick_name',            
+            'title' => ts('Nick Name of Key Relationship'),
+            'default' => TRUE,
+          ),
+
+        ),
+        
+                    'grouping' => 'keyrelationship-contact-fields',
+      ),  
+
+
+          
+      //civicrm_relationshipKeyContact_phone
+      //civicrm_relationshipKeyContact_email
+      // bhugh 2012/09/05 - to include email & phone in contact options for key relationship contact.
+      'civicrm_relationshipKeyContact_email' => array(
+        'dao' => 'CRM_Core_DAO_Email',
+        'name' => 'civicrm_email',
+        'alias' => 'civicrm_email_keyrelationship',
+        'fields' =>
+        array(
+          'email_keyrelationship' =>
+          array('title' => ts('Email of Key Relationship'),
+            'name' => 'email',  
+            'default' => TRUE,
+            'no_repeat' => TRUE,
+          ),
+        ),
+        'grouping' => 'keyrelationship-contact-fields',
+      ),
+      'civicrm_relationshipKeyContact_phone' =>
+      array(
+        'dao' => 'CRM_Core_DAO_Phone',
+        'name' => 'civicrm_phone',
+        'alias' => 'civicrm_phone_keyrelationship',
+        'fields' =>
+        array(
+          'phone_keyrelationship' =>
+          array('title' => ts('Phone of Key Relationship'),
+            'name' => 'phone',            
+            'default' => TRUE,
+            'no_repeat' => TRUE,
+          ),
+        ),
+        'grouping' => 'keyrelationship-contact-fields',
+      ),
+
+     );
+  }
+
+  //bhugh, 2012/09, we want to get the individual contact name for each org contact, for key relationships (spouse for individuals OR membership contact for orgs). Now that we have the relationship info we can pull in the contact info for that related contact.
+  function getRegisteredByParticipantColumns() {
+    return array( 'civicrm_registeredByParticipant' =>
+      array(
+        'dao' => 'CRM_Event_DAO_Participant',
+        'name' => 'civicrm_participant',
+        'alias' => 'civicrm_registeredByParticipant',
+        
+        'fields' =>
+        array(
+          'participant_id_registeredby' =>
+          array(
+            'name' => 'id',
+            'title' => ts('Participant ID of Registered-by Contact'),
+            'no_repeat' => TRUE,
+            'default' => TRUE,
+          ),
+          
+        ),
+        
+                    'grouping' => 'registeredby-contact-fields',
+      ),  
+          
+
+     );
+  }
+
+ 
+  //bhugh, 2012/09, we want to get contact name etc for the event participant
+  //  registered-by contact 
+  function getRegisteredByContactColumns() {
+    return array( 'civicrm_registeredByContact' =>
+      array(
+        'dao' => 'CRM_Contact_DAO_Contact',
+        'name' => 'civicrm_contact',
+        'alias' => 'civicrm_registeredByContact',
+        
+        'fields' =>
+        array(
+          'id_registeredby' =>
+          array(
+            'name' => 'id',
+            'title' => ts('Contact ID of Registered-by Contact'),
+            'no_repeat' => TRUE,
+            'default' => TRUE,
+          ),
+          'display_name_registeredby' => array(
+            'name' => 'display_name',
+            'title' => ts('Contact Name of Registered-by Contact'),
+          ),          
+
+          'first_name_registeredby' =>
+          array(
+            'name' => 'first_name',
+            'title' => ts('First Name of Registered-by Contact'),
+            'default' => TRUE,
+          ),
+          'middle_name_registeredby' =>
+          array(
+            'name' => 'middle_name',
+            'title' => ts('Middle Name of Registered-by Contact'),
+            'default' => TRUE,
+          ),
+          'last_name_registeredby' =>
+          array(
+            'name' => 'last_name', 
+            'title' => ts('Last Name of Registered-by Contact'),
+            'default' => TRUE,
+          ),
+          'nick_name_registeredby' =>
+          array(
+            'name' => 'nick_name',            
+            'title' => ts('Nick Name of Registered-by Contact'),
+            'default' => TRUE,
+          ),
+
+        ),
+        
+                    'grouping' => 'registeredby-contact-fields',
+      ),  
+          
+
+     );
+  }
+
+  //bhugh, 2012/09, we want to get the individual contact name for each org contact, for key relationships (spouse for individuals OR membership contact for orgs). Now that we have the relationship info we can pull in the contact info for that related contact.
+  function getRegisteredForParticipantColumns() {
+    return array( 'civicrm_registeredForParticipant' =>
+      array(
+        'dao' => 'CRM_Event_DAO_Participant',
+        'name' => 'civicrm_participant',
+        'alias' => 'civicrm_registeredForParticipant',
+        
+        'fields' =>
+        array(
+          'participant_id_registeredfor' =>
+          array(
+            'name' => 'id',
+            'title' => ts('Participant ID of Registered-for Contact'),
+            'no_repeat' => TRUE,
+            'default' => TRUE,
+          ),
+          
+        ),
+        
+                    'grouping' => 'registeredfor-contact-fields',
+      ),  
+          
+
+     );
+  }
+
+ 
+  //bhugh, 2012/09, we want to get contact name etc for the event participant
+  //  registered-by contact 
+  function getRegisteredForContactColumns() {
+    return array( 'civicrm_registeredForContact' =>
+      array(
+        'dao' => 'CRM_Contact_DAO_Contact',
+        'name' => 'civicrm_contact',
+        'alias' => 'civicrm_registeredForContact',
+        
+        'fields' =>
+        array(
+          'id_registeredfor' =>
+          array(
+            'name' => 'id',
+            'title' => ts('Contact ID of Registered-for Contact'),
+            'no_repeat' => TRUE,
+            'default' => TRUE,
+          ),
+          'display_name_registeredfor' => array(
+            'name' => 'display_name',
+            'title' => ts('Contact Name of Registered-for Contact'),
+          ),          
+
+          'first_name_registeredfor' =>
+          array(
+            'name' => 'first_name',
+            'title' => ts('First Name of Registered-for Contact'),
+            'default' => TRUE,
+          ),
+          'middle_name_registeredfor' =>
+          array(
+            'name' => 'middle_name',
+            'title' => ts('Middle Name of Registered-for Contact'),
+            'default' => TRUE,
+          ),
+          'last_name_registeredfor' =>
+          array(
+            'name' => 'last_name', 
+            'title' => ts('Last Name of Registered-for Contact'),
+            'default' => TRUE,
+          ),
+          'nick_name_registeredfor' =>
+          array(
+            'name' => 'nick_name',            
+            'title' => ts('Nick Name of Registered-for Contact'),
+            'default' => TRUE,
+          ),
+
+        ),
+        
+                    'grouping' => 'registeredfor-contact-fields',
+      ),  
+          
+
+     );
+  }
+
+  
   function getCaseColumns() {
     return array(
       'civicrm_case' => array(
@@ -857,7 +1019,7 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
           'subject' => array(
             'title' => ts('Case Subject'),
             'default' => true
-          ),
+          ),                                   
           'status_id' => array(
             'title' => ts('Status'),
             'default' => true
@@ -1165,7 +1327,9 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
       'contribution_from_participant' => array(
         'leftTable' => 'civicrm_participant',
         'rightTable' => 'civicrm_contribution',
-        'callback' => 'joinContribution:git FromParticipant',
+        //bhugh, fix? Not sure why this has the :git 
+        //'callback' => 'joinContribution:git FromParticipant',
+        'callback' => 'joinContributionFromParticipant',
       ),
       'contribution_from_membership' => array(
         'leftTable' => 'civicrm_membership',
@@ -1197,6 +1361,14 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
         'rightTable' => 'civicrm_contact',
         'callback' => 'joinContactFromParticipant',
       ),
+
+      'participant_contact_from_participant' => array(
+        'leftTable' => 'civicrm_participant',
+        'rightTable' => 'civicrm_contact',
+        'callback' => 'joinParticipantContactFromParticipant',
+      ),
+      
+      
       'contact_from_membership' => array(
         'leftTable' => 'civicrm_membership',
         'rightTable' => 'civicrm_contact',
@@ -1206,6 +1378,11 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
         'leftTable' => 'civicrm_contribution',
         'rightTable' => 'civicrm_contact',
         'callback' => 'joinContactFromContribution',
+      ),
+      'contact_from_contribution_or_participant' => array(
+        'leftTable' => 'civicrm_contribution',
+        'rightTable' => 'civicrm_contact',
+        'callback' => 'joinContactFromContributionOrParticipant',
       ),
       'event_from_participant' => array(
         'leftTable' => 'civicrm_participant',
@@ -1217,6 +1394,84 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
         'rightTable' => 'civicrm_address',
         'callback' => 'joinAddressFromContact',
       ),
+
+      //bhugh, 2012/09, added so that phone & email can be included in reports
+      'email_from_contact' => array(
+        'leftTable' => 'civicrm_contact',
+        'rightTable' => 'civicrm_email',
+        'callback' => 'joinEmailFromContact',
+      ),
+      'phone_from_contact' => array(
+        'leftTable' => 'civicrm_contact',
+        'rightTable' => 'civicrm_phone',
+        'callback' => 'joinPhoneFromContact',
+      ),
+
+      //bhugh, 2012/09, pull relationship
+      'relationship_from_contact' => array(
+        'leftTable' => 'civicrm_contact',
+        'rightTable' => 'civicrm_relationship',
+        'callback' => 'joinRelationshipFromContact',
+      ),
+
+      //bhugh, 2012/09
+      //to pull back the name & other contact info from the key related contact (spouse or membership contact for org)
+      'keycontact_from_relationship' => array(
+        'leftTable' => 'civicrm_relationship',
+        'rightTable' => 'civicrm_contact',
+        'callback' => 'joinKeyContactFromRelationship',
+      ),
+      
+      //bhugh, 2012/09
+      //to pull back the id of the participant who registered this contact (if there is one)
+      'registeredbyparticipant_from_participant' => array(
+        'leftTable' => 'civicrm_participant',
+        'rightTable' => 'civicrm_participant',
+        'callback' => 'joinRegisteredByParticipantFromParticipant',
+      ),
+
+
+      //bhugh, 2012/09
+      //to pull back the id of the Contact of the participant who registered this contact (if there is one)
+      'registeredbycontact_from_registeredbyparticipant' => array(
+        'leftTable' => 'civicrm_participant',
+        'rightTable' => 'civicrm_contact',
+        'callback' => 'joinRegisteredByContactFromRegisteredByParticipant',
+      ),
+            
+      //bhugh, 2012/09
+      //to pull back the id of the participant who registered for this contact (if there is one)
+      'registeredforparticipant_from_participant' => array(
+        'leftTable' => 'civicrm_participant',
+        'rightTable' => 'civicrm_participant',
+        'callback' => 'joinRegisteredForParticipantFromParticipant',
+      ),
+
+      //bhugh, 2012/09
+      //to pull back the id of the Contact of the participant who registered this contact (if there is one)
+      'registeredforcontact_from_registeredforparticipant' => array(
+        'leftTable' => 'civicrm_participant',
+        'rightTable' => 'civicrm_contact',
+        'callback' => 'joinRegisteredForContactFromRegisteredForParticipant',
+      ),
+
+      //bhugh, 2012/09, added so that phone & email for key relationship contact can be included in reports
+      'email_from_keyrelationship_contact' => array(
+        'leftTable' => 'civicrm_contact',
+        'rightTable' => 'civicrm_email',
+        'callback' => 'joinEmailFromKeyRelationshipContact',
+      ),
+      'phone_from_keyrelationship_contact' => array(
+        'leftTable' => 'civicrm_contact',
+        'rightTable' => 'civicrm_phone',
+        'callback' => 'joinPhoneFromKeyRelationshipContact',
+      ),
+      'address_from_keyrelationship_contact' => array(
+        'leftTable' => 'civicrm_contact',
+        'rightTable' => 'civicrm_address',
+        'callback' => 'joinAddressFromKeyRelationshipContact',
+      ),
+      
     );
   }
 
@@ -1226,9 +1481,55 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
 */
   function joinAddressFromContact( $prefix = '') {
     $this->_from .= " LEFT JOIN civicrm_address {$this->_aliases[$prefix . 'civicrm_address']}
-ON {$this->_aliases[$prefix . 'civicrm_address']}.contact_id = {$this->_aliases[$prefix . 'civicrm_contact']}.id";
+ON {$this->_aliases[$prefix . 'civicrm_address']}.contact_id = {$this->_aliases[$prefix . 'civicrm_contact']}.id ".
+    //bhugh, 2012/09, added this to ensure that the PRIMARY address is always selected
+    "AND {$this->_aliases[$prefix . 'civicrm_address']}.is_primary = 1 
+    ";
   }
 
+  //bhugh, 2012/09, to allow PRIMARY email of contact to be included in the report
+  function joinEmailFromContact() {
+    $this->_from .= " LEFT JOIN civicrm_email {$this->_aliases[ 'civicrm_email']}
+ON {$this->_aliases[ 'civicrm_email']}.contact_id = {$this->_aliases['civicrm_contact']}.id AND
+     {$this->_aliases['civicrm_email']}.is_primary = 1 
+     ";
+  }
+
+  //bhugh, 2012/09, to allow PRIMARY phone of contact to be included in the report
+  function joinPhoneFromContact() {
+    $this->_from .= " LEFT JOIN civicrm_phone {$this->_aliases[ 'civicrm_phone']}
+ON {$this->_aliases[ 'civicrm_phone']}.contact_id = {$this->_aliases['civicrm_contact']}.id AND
+                      {$this->_aliases['civicrm_phone']}.is_primary = 1 
+  ";
+  }
+
+    //bhugh, 2012/09, to allow PRIMARY email of key relationship contact to be included in the report
+  function joinEmailFromKeyRelationshipContact() {
+    $this->_from .= " LEFT JOIN civicrm_email {$this->_aliases[ 'civicrm_relationshipKeyContact_email']}
+ON {$this->_aliases[ 'civicrm_relationshipKeyContact_email']}.contact_id = {$this->_aliases['civicrm_relationshipKeyContact']}.id AND
+     {$this->_aliases['civicrm_relationshipKeyContact_email']}.is_primary = 1 
+     ";
+  }
+
+  //bhugh, 2012/09, to allow PRIMARY phone of key relationship contact to be included in the report
+  function joinPhoneFromKeyRelationshipContact() {
+    $this->_from .= " LEFT JOIN civicrm_phone {$this->_aliases[ 'civicrm_relationshipKeyContact_phone']}
+ON {$this->_aliases[ 'civicrm_relationshipKeyContact_phone']}.contact_id = {$this->_aliases['civicrm_relationshipKeyContact']}.id AND
+                      {$this->_aliases['civicrm_relationshipKeyContact_phone']}.is_primary = 1 
+  ";
+  }
+  
+  
+
+  //bhugh, 2012/09, to allow PRIMARY address of key relationship contact to be included in the report.  we diverge slightly from the naming convention in joinAddressFromContact() or we could just use that
+  function joinAddressFromKeyRelationshipContact() {
+    $this->_from .= " LEFT JOIN civicrm_address {$this->_aliases[ 'key_relationship_contact_civicrm_address']}
+ON {$this->_aliases[ 'key_relationship_contact_civicrm_address']}.contact_id = {$this->_aliases['civicrm_relationshipKeyContact']}.id AND
+                      {$this->_aliases['key_relationship_contact_civicrm_address']}.is_primary = 1 
+  ";
+  }
+
+              
   function joinPriceFieldValueFromLineItem() {
     $this->_from .= " LEFT JOIN civicrm_price_field_value {$this->_aliases['civicrm_price_field_value']}
 ON {$this->_aliases['civicrm_line_item']}.price_field_value_id = {$this->_aliases['civicrm_price_field_value']}.id";
@@ -1242,14 +1543,18 @@ ON {$this->_aliases['civicrm_line_item']}.price_field_id = {$this->_aliases['civ
   }
   /*
 * Define join from line item table to participant table
+* bhugh, 2012/09, added registered_by_id line to pick up payments
+* from ppl who paid on behalf of another person.  SQL update #1, works with #2 (below)
 */
   function joinParticipantFromLineItem() {
     $this->_from .= " LEFT JOIN civicrm_participant {$this->_aliases['civicrm_participant']}
-ON ( {$this->_aliases['civicrm_line_item']}.entity_id = {$this->_aliases['civicrm_participant']}.id
-AND {$this->_aliases['civicrm_line_item']}.entity_table = 'civicrm_participant')
+ON ( ( {$this->_aliases['civicrm_line_item']}.entity_id = {$this->_aliases['civicrm_participant']}.id  ) ".
+
+" AND {$this->_aliases['civicrm_line_item']}.entity_table = 'civicrm_participant')
+
 ";
   }
-
+  
   /*
 * Define join from line item table to Membership table. Seems to be still via contribution
 * as the entity. Have made 'inner' to restrict does that make sense?
@@ -1262,16 +1567,27 @@ LEFT JOIN civicrm_membership_payment pp
 ON {$this->_aliases['civicrm_contribution']}.id = pp.contribution_id
 LEFT JOIN civicrm_membership {$this->_aliases['civicrm_membership']}
 ON pp.membership_id = {$this->_aliases['civicrm_membership']}.id
+
 ";
   }
+  
   /*
-* Define join from Participant to Contribution table
-*/
+   * Define join from Participant to Contribution table
+   * bhugh, 2012/09 , added registered_by_id clauses to get registered_by payments to show up on summary lists
+   */
   function joinContributionFromParticipant() {
     $this->_from .= " LEFT JOIN civicrm_participant_payment pp
-ON {$this->_aliases['civicrm_participant']}.id = pp.participant_id
-LEFT JOIN civicrm_contribution {$this->_aliases['civicrm_contribution']}
-ON pp.contribution_id = {$this->_aliases['civicrm_contribution']}.id
+ON ( {$this->_aliases['civicrm_participant']}.id = pp.participant_id  " .
+
+//bhugh, 2012/09, SQL Update #2. Including this and #1 (above) brings in the
+//paid-for participant into the transactions list as separate record 
+
+" OR {$this->_aliases['civicrm_participant']}.registered_by_id = pp.participant_id ) ".
+
+
+"LEFT JOIN civicrm_contribution {$this->_aliases['civicrm_contribution']}
+ON ( pp.contribution_id = {$this->_aliases['civicrm_contribution']}.id )  
+
 ";
   }
 
@@ -1283,16 +1599,17 @@ ON pp.contribution_id = {$this->_aliases['civicrm_contribution']}.id
 ON {$this->_aliases['civicrm_membership']}.id = pp.membership_id
 LEFT JOIN civicrm_contribution {$this->_aliases['civicrm_contribution']}
 ON pp.contribution_id = {$this->_aliases['civicrm_contribution']}.id
+
 ";
   }
-
+  
   function joinParticipantFromContribution() {
     $this->_from .= " LEFT JOIN civicrm_participant_payment pp
 ON {$this->_aliases['civicrm_contribution']}.id = pp.contribution_id
 LEFT JOIN civicrm_participant {$this->_aliases['civicrm_participant']}
-ON pp.participant_id = {$this->_aliases['civicrm_participant']}.id";
+ON pp.participant_id = {$this->_aliases['civicrm_participant']}.id  ";
   }
-
+  
   function joinMembershipFromContribution() {
     $this->_from .= "
 LEFT JOIN civicrm_membership_payment pp
@@ -1312,6 +1629,8 @@ ON {$this->_aliases['civicrm_membership']}.membership_type_id = {$this->_aliases
 
     // this can be stored as a temp table & indexed for more speed. Not done at this state.
     // another option is to cache it but I haven't tried to put that code in yet (have used it before for one hour caching
+    //bhugh, 2012/09, second union & left join block put in place to catch the event "registered by" payments
+   
     $this->_from .= " LEFT JOIN (SELECT line_item_civireport.id as lid, contribution_civireport_direct.*
 FROM civicrm_line_item line_item_civireport
 LEFT JOIN civicrm_contribution contribution_civireport_direct
@@ -1320,7 +1639,8 @@ ON (line_item_civireport.entity_id = contribution_civireport_direct.id AND line_
 
 WHERE contribution_civireport_direct.id IS NOT NULL
 
-UNION SELECT line_item_civireport.id as lid, contribution_civireport.*
+UNION 
+SELECT line_item_civireport.id as lid, contribution_civireport.*
 FROM civicrm_line_item line_item_civireport
 LEFT JOIN civicrm_participant participant_civireport
 ON (line_item_civireport.entity_id = participant_civireport.id AND line_item_civireport.entity_table = 'civicrm_participant')
@@ -1330,7 +1650,24 @@ ON participant_civireport.id = pp.participant_id
 LEFT JOIN civicrm_contribution contribution_civireport
 ON pp.contribution_id = contribution_civireport.id
 
-UNION SELECT line_item_civireport.id as lid,contribution_civireport.*
+" .
+
+"UNION 
+SELECT line_item_civireport.id as lid, contribution_civireport.*
+FROM civicrm_line_item line_item_civireport
+INNER JOIN civicrm_participant participant_civireport
+ON (    line_item_civireport.entity_id = participant_civireport.id AND     
+    line_item_civireport.entity_table = 'civicrm_participant')
+
+INNER JOIN civicrm_participant_payment pp
+ON participant_civireport.registered_by_id = pp.participant_id
+LEFT JOIN civicrm_contribution contribution_civireport
+ON pp.contribution_id = contribution_civireport.id
+
+" .
+
+"UNION 
+SELECT line_item_civireport.id as lid,contribution_civireport.*
 FROM civicrm_line_item line_item_civireport
 LEFT JOIN civicrm_membership membership_civireport
 ON (line_item_civireport.entity_id =membership_civireport.id AND line_item_civireport.entity_table = 'civicrm_membership')
@@ -1340,14 +1677,16 @@ ON membership_civireport.id = pp.membership_id
 LEFT JOIN civicrm_contribution contribution_civireport
 ON pp.contribution_id = contribution_civireport.id
 ) as {$this->_aliases['civicrm_contribution']}
-ON {$this->_aliases['civicrm_contribution']}.lid = {$this->_aliases['civicrm_line_item']}.id
+ON {$this->_aliases['civicrm_contribution']}.lid = {$this->_aliases['civicrm_line_item']}.id  
 ";
   }
-
+  
   function joinLineItemFromContribution() {
-
+  
     // this can be stored as a temp table & indexed for more speed. Not done at this stage.
     // another option is to cache it but I haven't tried to put that code in yet (have used it before for one hour caching
+
+
     $this->_from .= "
 LEFT JOIN (
 SELECT contribution_civireport_direct.id AS contid, line_item_civireport.*
@@ -1359,11 +1698,14 @@ UNION
 SELECT contribution_civireport_direct.id AS contid, line_item_civireport.*
 FROM civicrm_contribution contribution_civireport_direct
 LEFT JOIN civicrm_participant_payment pp ON contribution_civireport_direct.id = pp.contribution_id
-LEFT JOIN civicrm_participant p ON pp.participant_id = p.id
+LEFT JOIN civicrm_participant p ON ( pp.participant_id = p.id 
+OR pp.participant_id = p.registered_by_id ) 
 LEFT JOIN civicrm_line_item line_item_civireport ON (line_item_civireport.line_total > 0 AND line_item_civireport.entity_id = p.id AND line_item_civireport.entity_table = 'civicrm_participant')
 WHERE line_item_civireport.id IS NOT NULL
 
-UNION
+" .
+
+"UNION
 
 SELECT contribution_civireport_direct.id AS contid, line_item_civireport.*
 FROM civicrm_contribution contribution_civireport_direct
@@ -1371,13 +1713,13 @@ LEFT JOIN civicrm_membership_payment pp ON contribution_civireport_direct.id = p
 LEFT JOIN civicrm_membership p ON pp.membership_id = p.id
 LEFT JOIN civicrm_line_item line_item_civireport ON (line_item_civireport.line_total > 0 AND line_item_civireport.entity_id = p.id AND line_item_civireport.entity_table = 'civicrm_membership')
 WHERE line_item_civireport.id IS NOT NULL
+
 ) as {$this->_aliases['civicrm_line_item']}
 ON {$this->_aliases['civicrm_line_item']}.contid = {$this->_aliases['civicrm_contribution']}.id
 
-
 ";
   }
-
+  
   function joinLineItemFromMembership() {
 
     // this can be stored as a temp table & indexed for more speed. Not done at this stage.
@@ -1403,47 +1745,129 @@ WHERE line_item_civireport.id IS NOT NULL
 ON {$this->_aliases['civicrm_line_item']}.contid = {$this->_aliases['civicrm_contribution']}.id
 ";
   }
-
+  
   function joinContactFromParticipant() {
     $this->_from .= " LEFT JOIN civicrm_contact {$this->_aliases['civicrm_contact']}
 ON {$this->_aliases['civicrm_participant']}.contact_id = {$this->_aliases['civicrm_contact']}.id";
   }
 
+  //bhugh, if we have a registered_by event participant the event participant 
+  //contact can be different from the main/contributions contact.
+  //this gets the contact info from the event participant contact
+  function joinParticipantContactFromParticipant() {
+    $this->_from .= " LEFT JOIN civicrm_contact {$this->_aliases['civicrm_contact_from_participant']}
+ON {$this->_aliases['civicrm_participant']}.contact_id = {$this->_aliases['civicrm_contact_from_participant']}.id";
+  }
+
+                    
   function joinContactFromMembership() {
     $this->_from .= " LEFT JOIN civicrm_contact {$this->_aliases['civicrm_contact']}
 ON {$this->_aliases['civicrm_membership']}.contact_id = {$this->_aliases['civicrm_contact']}.id";
   }
-
-  function joinContactFromContribution() {
+  //this has a fatal flaw in that it will not bring in line items which are paid
+  //for for one event participant by another -- the registered_by_id person
+  //who is not the participant but the one who paid
+  //joinContactFromContributionOrParticipant is designed to fix this problem
+  //by also bringing in the extra payments that are made as part of a donation
+  // in civicrm_contribution but credited to another user in civicrm_participant
+    function joinContactFromContribution() {
     $this->_from .= " LEFT JOIN civicrm_contact {$this->_aliases['civicrm_contact']}
 ON {$this->_aliases['civicrm_contribution']}.contact_id = {$this->_aliases['civicrm_contact']}.id";
   }
 
-  function joinEventFromParticipant() {
-    $this->_from .= " LEFT JOIN civicrm_event {$this->_aliases['civicrm_event']}
-ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participant']}.event_id ) AND
-({$this->_aliases['civicrm_event']}.is_template IS NULL OR
-{$this->_aliases['civicrm_event']}.is_template = 0)";
+  //bhugh, 2012/09, this is a modded function that will pull in all line items from civicrm_contribution AND all the extra event participant payments
+  //made on behalf of another person (registered_by_id).
+  //However, upon experimentation this didn't seem necessary so it is rem-ed out.
+  //The function name is used in the other files though so I have left it
+  
+  function joinContactFromContributionOrParticipant() {
+    $this->_from .= " LEFT JOIN civicrm_contact {$this->_aliases['civicrm_contact']} ON ( {$this->_aliases['civicrm_contribution']}.contact_id = {$this->_aliases['civicrm_contact']}.id )" .
+/*    
+    " OR {$this->_aliases['civicrm_participant']}.contact_id = {$this->_aliases['civicrm_contact']}.id) 
+    ";
+*/
+ ""; 
   }
 
-  /*
-   * Retrieve text for contribution type from pseudoconstant
-  */
-  function alterCrmEditable($value, &$row, $selectedfield, $criteriaFieldName, $specs) {
-    $id_field = $specs['id_table'] . '_' . $specs['id_field'];
-    if(empty($id_field)){
-      return;
-    }
-    $entityID = $row[$id_field];
-    $entity = $specs['entity'];
-    $extra = '';
-    if(!empty($specs['options'])){
-      $specs['options']['selected'] = $value;
-      $extra = "data-type='select' data-options='" . json_encode($specs['options'])  . "'";
-      $value = $specs['options'][$value];
-    }//nodeName == "INPUT" && this.type=="checkbox"
-    return "<div id={$entity}-{$entityID} class='crm-entity'>
-    <span class='crm-editable crmf-{$criteriaFieldName} editable_select crm-editable-enabled' data-action='create' $extra>" . $value . "</span></div>";
+ //Bring in a key relationship for the contact -- either the spouse, for individuals (relationship type = 2), household contac for households (type 6),  or the owner/manager for organizations (relationship type = 14)
+ //Because we don't have a way of designating and enforcing 'primary' on 
+ //these relationships they join is prone to bringing in more than one 
+ //row at a time, which messes a lot of things up.
+ //The fix: MAX(z.id) clause is a way of selecting only one relationship match.  Min or Max is arbitrary, and there should be at most one match, but if there is more than one match we have a lot of problems with doubled (or tripled, quadrupled, totals, doubled quantity selected, and so on, because two matches here create two lines in the SQL results and we are expecting just one line.  Chose Max rather than MIN on the assumption that the most recently entered relationship is most likely to be most important or most currently active.
+ //TODO: Ideally we would be able to select which relationships to include here via the filter section on the report form, rather than having them hardcoded in.
+  function joinRelationshipFromContact() {
+    $this->_from .= " LEFT JOIN civicrm_relationship {$this->_aliases['civicrm_relationship']}
+               on ( {$this->_aliases['civicrm_relationship']}.contact_id_b={$this->_aliases['civicrm_contact']}.id  
+               OR {$this->_aliases['civicrm_relationship']}.contact_id_a={$this->_aliases['civicrm_contact']}.id)
+               
+
+ AND 
+               ({$this->_aliases['civicrm_relationship']}.is_active = 1 AND 
+                ( {$this->_aliases['civicrm_relationship']}.relationship_type_id=2 AND  
+                   {$this->_aliases['civicrm_contact']}.contact_type = 'Individual') OR 
+                ( {$this->_aliases['civicrm_relationship']}.relationship_type_id=18 AND  
+                  {$this->_aliases['civicrm_contact']}.contact_type = 'Organization')
+                ) 
+        AND {$this->_aliases['civicrm_relationship']}.id in 
+        
+        ( SELECT MAX(z.id) from civicrm_relationship AS z 
+         WHERE (z.contact_id_b={$this->_aliases['civicrm_contact']}.id 
+               OR z.contact_id_A={$this->_aliases['civicrm_contact']}.id)  
+                  and ((z.relationship_type_id=14 AND  
+                  {$this->_aliases['civicrm_contact']}.contact_type = 'Organization') OR (z.relationship_type_id=2 AND  
+                  {$this->_aliases['civicrm_contact']}.contact_type = 'Individual') OR (z.relationship_type_id=6 AND  
+                  {$this->_aliases['civicrm_contact']}.contact_type = 'Household')) )  
+       ";
+
+  }
+
+  //bhugh, 2012/09
+  function joinKeyContactFromRelationship() {
+    $this->_from .= " LEFT JOIN civicrm_contact {$this->_aliases['civicrm_relationshipKeyContact']}
+        ON ({$this->_aliases['civicrm_contact']}.id <> {$this->_aliases['civicrm_relationship']}.contact_id_a 
+        AND {$this->_aliases['civicrm_relationshipKeyContact']}.id={$this->_aliases['civicrm_relationship']}.contact_id_a) 
+        OR ({$this->_aliases['civicrm_contact']}.id <> {$this->_aliases['civicrm_relationship']}.contact_id_b 
+        AND {$this->_aliases['civicrm_relationshipKeyContact']}.id={$this->_aliases['civicrm_relationship']}.contact_id_b)
+     ";
+   }  
+     
+  //bhugh, 2012/09       
+  function joinRegisteredByParticipantFromParticipant() {
+    $this->_from .= " LEFT JOIN civicrm_participant {$this->_aliases['civicrm_registeredByParticipant']} ON 
+       {$this->_aliases['civicrm_participant']}.registered_by_id = {$this->_aliases['civicrm_registeredByParticipant']}.id 
+    ";
+  }  
+
+  //bhugh, 2012/09    
+  function joinRegisteredByContactFromRegisteredByParticipant() {  
+    $this->_from .= " LEFT JOIN civicrm_contact {$this->_aliases['civicrm_registeredByContact']} ON 
+       {$this->_aliases['civicrm_registeredByParticipant']}.contact_id = {$this->_aliases['civicrm_registeredByContact']}.id 
+    ";
+
+  }
+
+  //bhugh, 2012/09
+  function joinRegisteredForParticipantFromParticipant() {
+    $this->_from .= " LEFT JOIN civicrm_participant {$this->_aliases['civicrm_registeredForParticipant']} ON 
+       {$this->_aliases['civicrm_participant']}.id = {$this->_aliases['civicrm_registeredForParticipant']}.registered_by_id 
+    ";
+  }  
+  
+  //bhugh, 2012/09
+  function joinRegisteredForContactFromRegisteredForParticipant() {  
+    $this->_from .= " LEFT JOIN civicrm_contact {$this->_aliases['civicrm_registeredForContact']} ON 
+       {$this->_aliases['civicrm_registeredForParticipant']}.contact_id = {$this->_aliases['civicrm_registeredForContact']}.id 
+    ";
+
+  }
+  
+  
+  function joinEventFromParticipant() {
+    $this->_from .= " LEFT JOIN civicrm_event {$this->_aliases['civicrm_event']}
+ON ({$this->_aliases['civicrm_event']}.id = 
+{$this->_aliases['civicrm_participant']}.event_id ) AND
+({$this->_aliases['civicrm_event']}.is_template IS NULL OR
+{$this->_aliases['civicrm_event']}.is_template = 0)";
   }
 
   /*
@@ -1455,10 +1879,11 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
     }
     $contactID = $row['civicrm_contact_id'];
     return "<div id=contact-{$contactID} class='crm-entity'>
-<span class='crm-editable crmf-nick_name crm-editable-enabled' data-action='create'>" . $value . "</span></div>";
+<span class='crm-editable crmf-nick_name crm-editable-enabled' data-action='create'>
+" . $value . "</span></div>";
   }
 
-  /*
+  /*                        
 * Retrieve text for contribution type from pseudoconstant
 */
   function alterContributionType($value, &$row) {
@@ -1516,7 +1941,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
   function alterStateProvinceID($value, &$row, $selectedfield, $criteriaFieldName) {
     $url = CRM_Utils_System::url(CRM_Utils_System::currentPath(), "reset=1&force=1&{$criteriaFieldName}_op=in&{$criteriaFieldName}_value={$value}", $this->_absoluteUrl);
     $row[$selectedfield . '_link'] = $url;
-    $row[$selectedfield . '_hover'] = ts("%1 for this state.", array(
+    $row[$selectedfield . '_hover'] = ts("State/province ID=%1 for this state.", array(
         1 => $value,
       ));
 

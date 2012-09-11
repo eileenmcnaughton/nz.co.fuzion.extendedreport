@@ -36,9 +36,9 @@
 
 require_once 'CRM/Report/Form.php';
 require_once 'CRM/Contribute/PseudoConstant.php';
-require_once 'CRM/Report/Form/Extended.php';
-
-class CRM_Extendedreport_Form_Report_Price_Lineitem extends CRM_Report_Form_Extended {
+require_once 'CRM/Extendedreport/Form/Report/ExtendedReport.php';
+  
+class CRM_Extendedreport_Form_Report_Price_Lineitem extends CRM_Extendedreport_Form_Report_ExtendedReport {
     protected $_addressField = false;
 
     protected $_emailField   = false;
@@ -56,15 +56,36 @@ class CRM_Extendedreport_Form_Report_Price_Lineitem extends CRM_Report_Form_Exte
         // hack because we are currently using this as base for other report
         // plan is to move functions into Form.php instead & won't be required
         $this->_columns = $this->getContactColumns()
+        
+                        //bhugh, to include registered by contact name in report
+                        + $this->getRegisteredByParticipantColumns()
+                        + $this->getRegisteredByContactColumns()
+                        + $this->getContactFromParticipantColumns()
+
+                        //bhugh, to include address columns in report
+                        + $this->getAddressColumns()   
+                        //bhugh, 2012/09, so that relationship fields (spouse, membership contact for orgs) can be included in reoprt
+                        + $this->getRelationshipColumns()            
+                        + $this->getRelationshipKeyContactColumns()         
+                        //to get address data for the key relationship contact (spouse/membership contact)
+                        + $this->getAddressColumns(array (
+                                'prefix' => 'key_relationship_contact_',
+                                'prefix_label' => 'Key Relationship ',
+                                'group_by' => false,
+                                'order_by' => true,
+                                'filters' => true,
+                                'defaults' => array(
+                                  'country_id' => TRUE
+                                )
+                             )   
+                          )
+                                  
                         + $this->getEventColumns()
                         + $this->getParticipantColumns()
                         + $this->getContributionColumns()
                         + $this->getPriceFieldColumns()
                         + $this->getPriceFieldValueColumns()
                         + $this->getLineItemColumns()
-
-
-
                         ;
       }
         parent::__construct( );
@@ -87,8 +108,26 @@ class CRM_Extendedreport_Form_Report_Price_Lineitem extends CRM_Report_Form_Exte
         'priceField_from_lineItem',
         'participant_from_lineItem',
         'contribution_from_lineItem',
-        'contact_from_contribution',
-        'event_from_participant'
+        //'contact_from_participant',
+        'contact_from_contribution_or_participant',
+        'event_from_participant',
+        
+        //bhugh,2012/09, to allow inclusion of address, email, phone, relationship fields
+        'address_from_contact',
+        'email_from_contact',
+        'phone_from_contact',
+        'registeredbyparticipant_from_participant',
+        'registeredbycontact_from_registeredbyparticipant',
+        'participant_contact_from_participant',        
+       
+        //bhugh, 2012/09, allow spouse & key membership contact to be imported as well
+        'relationship_from_contact',
+        'keycontact_from_relationship',
+        'email_from_keyrelationship_contact',
+        'phone_from_keyrelationship_contact',
+        'address_from_keyrelationship_contact',
+        
+        
       );
 
     }

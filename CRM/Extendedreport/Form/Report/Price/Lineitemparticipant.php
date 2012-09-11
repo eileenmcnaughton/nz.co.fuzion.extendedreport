@@ -36,9 +36,9 @@
 
 require_once 'CRM/Report/Form.php';
 require_once 'CRM/Contribute/PseudoConstant.php';
-require_once 'CRM/Report/Form/Extended.php';
+require_once 'CRM/Extendedreport/Form/Report/ExtendedReport.php';
 
-class CRM_Extendedreport_Report_Form_Price_Lineitemparticipant extends CRM_Report_Form_Extended {
+class CRM_Extendedreport_Form_Report_Price_Lineitemparticipant extends CRM_Extendedreport_Form_Report_ExtendedReport {
     protected $_addressField = false;
 
     protected $_emailField   = false;
@@ -53,12 +53,34 @@ class CRM_Extendedreport_Report_Form_Price_Lineitemparticipant extends CRM_Repor
 
     function __construct() {
        $this->_columns = $this->getContactColumns()
+        + $this->getRegisteredByParticipantColumns()
+        + $this->getRegisteredByContactColumns()
         + $this->getEventColumns()
         + $this->getParticipantColumns()
         + $this->getContributionColumns()
         + $this->getPriceFieldColumns()
         + $this->getPriceFieldValueColumns()
-        + $this->getLineItemColumns();
+        + $this->getLineItemColumns()
+
+        //bhugh, to include address columns in report
+        + $this->getAddressColumns()   
+        //bhugh, 2012/09, so that relationship fields (spouse, membership contact for orgs) can be included in reoprt
+        + $this->getRelationshipColumns()            
+        + $this->getRelationshipKeyContactColumns()         
+        //to get address data for the key relationship contact (spouse/membership contact)
+        + $this->getAddressColumns(array (
+                'prefix' => 'key_relationship_contact_',
+                'prefix_label' => 'Key Relationship ',
+                'group_by' => false,
+                'order_by' => true,
+                'filters' => true,
+                'defaults' => array(
+                  'country_id' => TRUE
+                )
+             )   
+          )
+        ;
+
         parent::__construct( );
     }
 
@@ -80,7 +102,20 @@ class CRM_Extendedreport_Report_Form_Price_Lineitemparticipant extends CRM_Repor
         'participant_from_lineItem',
         'contribution_from_participant',
         'contact_from_participant',
-        'event_from_participant'
+        'event_from_participant',
+
+        //bhugh,2012/09, to allow inclusion of address, email, phone, relationship fields
+        'address_from_contact',
+        'email_from_contact',
+        'phone_from_contact',
+        'relationship_from_contact',
+        'keycontact_from_relationship',
+        'registeredbyparticipant_from_participant',
+        'registeredbycontact_from_registeredbyparticipant',
+        'email_from_keyrelationship_contact',
+        'phone_from_keyrelationship_contact',
+        'address_from_keyrelationship_contact',
+
       );
     }
     function groupBy( ) {
