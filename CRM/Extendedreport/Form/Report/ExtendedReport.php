@@ -346,47 +346,68 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
         'fields' => array(
 
           'membership_type_id' => array(
+            'name' => 'membership_type_id',
             'title' => 'Membership Type',
             'alter_display' => 'alterMembershipTypeID',
 
           ),
-          'status_id' => array(
+          'membership_status_id' => array(
+            'name' => 'status_id', 
             'title' => 'Membership Status',
             'alter_display' => 'alterMembershipStatusID',
           ),
-          'join_date' => NULL,
-          'start_date' => array(
-            'title' => ts('Current Cycle Start Date'),
+          'membership_join_date' => array(
+            'name' => 'join_date',
+            'title' => ts('Member since date'),
+            //'type' => CRM_Utils_Type::T_DATE,
+          ),          
+          'membership_start_date' => array(
+            'name' => 'start_date',
+            'title' => ts('Current Membership Cycle Start Date'),
           ),
-          'end_date' => array(
+          'membership_end_date' => array(
+            'name' => 'end_date',
             'title' => ts('Current Membership Cycle End Date'),
           ),
-
-           'id' => array(
-                'title' => 'Membership ID / Count',
+          //bhugh, 2012/09, this was stepping on the contact id AND also not offering the option of including the membership_id (only the count of memberships)
+          'membership_id_count' => array(
+                'title' => 'Number of Memberships',
                 'name' => 'id',
                 'statistics' =>
                 array('count' => ts('Number of Memberships')),
-            ),
-          'is_test' => array('title' => ts('Test Membership?')),
-          'is_pay_later' => array('title' => ts('Pay-Later Membership?')),
+          ),
+          'membership_id' => array(
+                'title' => 'Membership ID',
+                'name' => 'id',
+          ),  
+          'is_test_membership' => array(
+               'title' => ts('Test Membership?'),
+               'name' => 'is_test',
+          ),
+          'is_pay_later_membership' => array(
+               'title' => ts('Pay-Later Membership?'),
+               'name' => 'is_pay_later',               
+          ),
  
         ),
         'group_bys' => array(
           'membership_type_id' => array(
             'title' => ts('Membership Type'),
           ),
-          'status_id' => array(
+          'membership_status_id' => array(
+                'name' => 'status_id',
                 'title' => ts('Membership Status'),
             ),
-           'end_date' => array(
+           'membership_end_date' => array(
+               'name' => 'end_date',
                'title' => 'Current Membership Cycle End Date',
-              'frequency' => TRUE,
+               'frequency' => TRUE,
                'type' => CRM_Utils_Type::T_DATE,
             )
         ),
         'filters' => array(
-          'join_date' => array(
+          'membership_join_date' => array(
+            'name' => 'join_date', 
             'type' => CRM_Utils_Type::T_DATE,
             'operatorType' => CRM_Report_Form::OP_DATE,
           ),
@@ -407,6 +428,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       ),
     );
   }
+
 
   function getMembershipTypeColumns() {
     require_once 'CRM/Member/PseudoConstant.php';
