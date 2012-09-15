@@ -45,7 +45,8 @@ class CRM_Extendedreport_Report_Form_Price_Lineitemmembership extends CRM_Report
 
     protected $_summary      = null;
 
-    protected $_customGroupExtends = array( 'Membership', 'Individual' , 'Contact');
+    protected $_customGroupExtends = array( 'Contribution', 'Membership', 'Contact','Individual', 'Household', 'Organization', 'Participant', 'Event','Activity', 'Address', 'Campaign', 'Case',  'Grant', 'Group', 'ParticipantEventName', 'ParticipantEventType');
+
 
     protected $_baseTable = 'civicrm_line_item';
 
