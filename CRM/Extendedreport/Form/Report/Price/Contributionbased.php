@@ -3,6 +3,7 @@
 require_once 'CRM/Report/Form.php';
 
 class CRM_Extendedreport_Form_Report_Price_Contributionbased extends CRM_Report_Form_Extended {
+  protected $_customGroupExtends = array( 'Contribution', 'Membership', 'Contact', 'Individual', 'Household', 'Organization', 'Participant', 'Event','Activity', 'Address', 'Campaign', 'Case',  'Grant', 'Group', 'ParticipantEventName', 'ParticipantEventType');
   protected $_baseTable = 'civicrm_contribution';
   function __construct() {
     $this->_columns = $this->getContactColumns()
