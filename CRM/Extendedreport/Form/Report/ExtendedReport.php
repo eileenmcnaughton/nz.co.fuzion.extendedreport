@@ -19,7 +19,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    * Use $temporary to choose whether to generate permanent or temporary tables
    * ie. for debugging it's good to set to ''
    */
-  protected $_temporary = '';
+  protected $_temporary = ' TEMPORARY ';
 
   function __construct() {
 
