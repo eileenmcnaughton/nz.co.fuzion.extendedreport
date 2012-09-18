@@ -284,7 +284,7 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
         $retValue = $value;
         if(!empty($entity_field)){
           $retValue = "<div id={$entity}-{$entityID} class='crm-entity'>
-          <span class='crm-editable crmf-{$customField} crm-editable-enabled' data-action='create'>" . $value . "</span></div>";
+          <span class='crm-editable crmf-custom_{$customField['id']} crm-editable-enabled' data-action='create'>" . $value . "</span></div>";
         }
         break;
         }
