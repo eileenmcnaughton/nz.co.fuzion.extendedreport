@@ -19,7 +19,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    * Use $temporary to choose whether to generate permanent or temporary tables
    * ie. for debugging it's good to set to ''
    */
-  protected $_temporary = ' TEMPORARY ';
+  protected $_temporary = '  ';
 
   function __construct() {
 
@@ -1324,7 +1324,7 @@ ON {$this->_aliases['civicrm_membership']}.membership_type_id = {$this->_aliases
   }
 
   function joinContributionFromLineItem() {
-    $temporary = 'TEMPORARY';
+    $temporary = $this->_temporary;
     $tempTable = 'civicrm_temp_report_line_items' . rand(1, 10000);
     $createTablesql = "
       CREATE $temporary TABLE $tempTable (
@@ -1384,8 +1384,8 @@ ON {$this->_aliases['civicrm_membership']}.membership_type_id = {$this->_aliases
     $tempTable = 'civicrm_temp_report_line_item_map' . rand(1, 10000);
     $createTablesql = "
     CREATE  $temporary TABLE $tempTable (
-    `lid` INT(10) UNSIGNED NOT NULL DEFAULT '0' COMMENT 'Line Item',
     `contid` INT(10) UNSIGNED NULL DEFAULT '0' COMMENT 'Contribution ID',
+    `lid` INT(10) UNSIGNED NOT NULL DEFAULT '0' COMMENT 'Line Item',
     INDEX `ContributionId` (`contid`),
     INDEX `LineItemId` (`lid`)
     )
