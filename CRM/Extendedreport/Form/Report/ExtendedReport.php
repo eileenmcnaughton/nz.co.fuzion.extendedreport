@@ -1,9 +1,5 @@
 <?php
 
-require_once 'CRM/Report/Form.php';
-require_once 'CRM/Event/PseudoConstant.php';
-require_once 'CRM/Member/PseudoConstant.php';
-
 class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   protected $_addressField = FALSE;
 
@@ -15,6 +11,10 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   protected $_baseTable = 'civicrm_contact';
   protected $_editableFields = TRUE;
   protected $_groupByArray = array();
+  /*
+   * Change time filters to time date filters by setting this to 1
+   */
+  protected $_timeDateFilters = 0;
   /*
    * Use $temporary to choose whether to generate permanent or temporary tables
    * ie. for debugging it's good to set to ''
@@ -106,7 +106,18 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     }
     parent::postProcess();
   }
-
+  /*
+   * We are overriding this so that we can add time if required
+   */
+  function addDateRange( $name, $from = '_from', $to = '_to', $label = 'From:', $dateFormat = 'searchDate', $required = FALSE) {
+    if($this->_timeDateFilters){
+      $this->addDateTime( $name . '_from', $label   , $required, array( 'formatType' => $dateFormat ) );
+      $this->addDateTime( $name . '_to'  , ts('To:'), $required, array( 'formatType' => $dateFormat ) );
+    }
+    else{
+      parent::addDateRange($name, $from, $to, $label, $dateFormat, $required);
+    }
+  }
   function alterDisplay(&$rows) {
     parent::alterDisplay($rows);
 
@@ -132,6 +143,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
             if( array_key_exists('alter_display', $specs)) {
               $alterfunctions[$tablename . '_' . $field] = $specs['alter_display'];
               $altermap[$tablename . '_' . $field] = $field;
+              $alterspecs[$tablename . '_' . $field] = null;
             }
             if( $this->_editableFields && array_key_exists('crm_editable', $specs)) {
               //id key array is what the array would look like if the ONLY group by field is our id field
