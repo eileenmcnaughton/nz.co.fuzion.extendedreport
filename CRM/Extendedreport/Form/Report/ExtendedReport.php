@@ -1380,6 +1380,7 @@ ON {$this->_aliases['civicrm_membership']}.membership_type_id = {$this->_aliases
       ON participant_civireport.id = pp.participant_id
       LEFT JOIN civicrm_contribution contribution_civireport
       ON pp.contribution_id = contribution_civireport.id
+      WHERE contribution_civireport.id IS NOT NULL
     ";
 
     $insertMembershipRecordSql = "
@@ -1392,6 +1393,7 @@ ON {$this->_aliases['civicrm_membership']}.membership_type_id = {$this->_aliases
       ON membership_civireport.id = pp.membership_id
       LEFT JOIN civicrm_contribution contribution_civireport
       ON pp.contribution_id = contribution_civireport.id
+      WHERE contribution_civireport.id IS NOT NULL
     ";
     CRM_Core_DAO::executeQuery($createTablesql);
     CRM_Core_DAO::executeQuery($insertContributionRecordsSql);
@@ -1401,7 +1403,7 @@ ON {$this->_aliases['civicrm_membership']}.membership_type_id = {$this->_aliases
       LEFT JOIN $tempTable as line_item_mapping
       ON line_item_mapping.lid = {$this->_aliases['civicrm_line_item']}.id
       LEFT JOIN civicrm_contribution as {$this->_aliases['civicrm_contribution']}
-      ON line_item_mapping.lid = {$this->_aliases['civicrm_contribution']}.id
+      ON line_item_mapping.contid = {$this->_aliases['civicrm_contribution']}.id
     ";
   }
 
