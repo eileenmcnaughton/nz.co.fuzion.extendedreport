@@ -1339,13 +1339,14 @@ ON {$this->_aliases['civicrm_membership']}.membership_type_id = {$this->_aliases
     $temporary = $this->_temporary;
     $tempTable = 'civicrm_temp_report_line_items' . rand(1, 10000);
     $createTablesql = "
-      CREATE $temporary TABLE $tempTable (
-      `lid` INT(10) UNSIGNED NOT NULL DEFAULT '0' COMMENT 'Line Item',
-      `id` INT(10) UNSIGNED NULL DEFAULT '0' COMMENT 'Contribution ID',
-      INDEX `ContributionId` (`id`), `LineItemId` (`lid`),
+    CREATE  $temporary TABLE $tempTable (
+    `lid` INT(10) UNSIGNED NOT NULL DEFAULT '0' COMMENT 'Line Item',
+    `contid` INT(10) UNSIGNED NULL DEFAULT '0' COMMENT 'Contribution ID',
+    INDEX `ContributionId` (`contid`),
+    INDEX `LineItemId` (`lid`)
     )
-  COLLATE='utf8_unicode_ci'
-  ENGINE=InnoDB;";
+    COLLATE='utf8_unicode_ci'
+    ENGINE=InnoDB;";
 
     $insertContributionRecordsSql = "
      INSERT INTO $tempTable
@@ -1387,7 +1388,7 @@ ON {$this->_aliases['civicrm_membership']}.membership_type_id = {$this->_aliases
       LEFT JOIN $tempTable as line_item_mapping
       ON line_item_mapping.lid = {$this->_aliases['civicrm_line_item']}.id
       LEFT JOIN civicrm_contribution as {$this->_aliases['civicrm_contribution']}
-      ON {$this->_aliases['civicrm_contribution']}.lid = {$this->_aliases['civicrm_line_item']}.id
+      ON line_item_mapping.lid = {$this->_aliases['civicrm_contribution']}.id
     ";
   }
 
