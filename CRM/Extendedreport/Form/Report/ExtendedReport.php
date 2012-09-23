@@ -14,7 +14,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   /*
    * Change time filters to time date filters by setting this to 1
    */
- // protected $_timeDateFilters = NULL;
+  protected $_timeDateFilters = FALSE;
   /*
    * Use $temporary to choose whether to generate permanent or temporary tables
    * ie. for debugging it's good to set to ''
