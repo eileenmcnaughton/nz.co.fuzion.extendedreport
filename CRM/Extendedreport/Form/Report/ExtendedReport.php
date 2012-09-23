@@ -30,6 +30,8 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   }
 
   function select() {
+    $this->storeGroupByArray();
+    $this->unsetBaseTableStatsFieldsWhereNoGroupBy();
     parent::select();
   }
   /*
@@ -89,12 +91,26 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
         }
       }
     }
-    // if a stat field has been selected the do a group by - this is not in parent
-    if (!empty($this->_statFields) && empty($this->_groupByArray)) {
+    // if a stat field has been selected then do a group by - this is not in parent
+    if (!empty($this->_statFields) && empty($this->_groupByArray) ) {
       $this->_groupByArray[] = $this->_aliases[$this->_baseTable] . ".id";
     }
   }
-
+  /*
+   * It's not useful to do stats on the base table if no group by is going on
+   * the table is likely to be involved in left joins & give a bad answer for no reason
+   * (still pondering how to deal with turned totaling on & off appropriately)
+   *
+   **/
+  function unsetBaseTableStatsFieldsWhereNoGroupBy(){
+    if(empty($this->_groupByArray)){
+      foreach($this->_columns[$this->_baseTable]['fields'] as $fieldname => $field){
+        if(isset( $field['statistics'])){
+          unset($this->_columns[$this->_baseTable]['fields'][$fieldname]['statistics']);
+        }
+      }
+    }
+  }
   function statistics(&$rows) {
     return parent::statistics($rows);
   }
@@ -768,7 +784,7 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
           'fee_amount' => NULL,
           'net_amount' => NULL,
           'total_amount' => array('title' => ts('Amount'),
-            'statistics' =>
+          'statistics' =>
             array('sum' => ts('Total Amount')),
             'type' => CRM_Utils_Type::T_MONEY,
           ),
