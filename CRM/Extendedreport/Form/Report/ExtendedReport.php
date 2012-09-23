@@ -14,7 +14,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   /*
    * Change time filters to time date filters by setting this to 1
    */
-  protected $_timeDateFilters = 0;
+ // protected $_timeDateFilters = NULL;
   /*
    * Use $temporary to choose whether to generate permanent or temporary tables
    * ie. for debugging it's good to set to ''
@@ -22,7 +22,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   protected $_temporary = '  ';
 
   function __construct() {
-
     parent::__construct();
   }
 
@@ -118,6 +117,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       parent::addDateRange($name, $from, $to, $label, $dateFormat, $required);
     }
   }
+
   function alterDisplay(&$rows) {
     parent::alterDisplay($rows);
 
@@ -665,11 +665,8 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
         'fields' =>
         array(
           'id' => array(
-            'no_display' => TRUE,
-            'required' => TRUE,
           ),
           'title' => array('title' => ts('Event Title'),
-            'required' => TRUE,
             'crm_editable' => array(
                 'id_table' => 'civicrm_event',
                 'id_field' => 'id',
