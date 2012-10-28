@@ -997,6 +997,14 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
             'options' => CRM_Contribute_PseudoConstant::contributionStatus(),
           ),
+          'contribution_is_test' =>  array(
+            'type' => CRM_Report_Form::OP_INT,
+            'operatorType' => CRM_Report_Form::OP_SELECT,
+            'title' => ts("Contribution Mode"),
+            'default' => 0,
+            'name' => 'is_test',
+            'options' => array('0' => 'Live', '1' => 'Test'),
+          ),
           'total_amount' =>
           array('title' => ts('Contribution Amount')),
         ),
