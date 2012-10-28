@@ -1,4 +1,4 @@
-<?php
+ <?php
 
 class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   protected $_addressField = FALSE;
@@ -23,6 +23,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
 
   function __construct() {
     parent::__construct();
+    $this->addSelectableCustomFields();
   }
 
   function preProcess() {
@@ -52,6 +53,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
         $this->_from .= $this->_aclFrom;
       }
     }
+    $this->selectableCustomDataFrom();
   }
   /*
 * Define any from clauses in use (child classes to override)
@@ -132,6 +134,116 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     else{
       parent::addDateRange($name, $from, $to, $label, $dateFormat, $required);
     }
+  }
+  function addSelectableCustomFields($addFields = TRUE) {
+
+    $extends = array();
+    if(!empty($this->_customGroupExtendsJQ)){
+      //lets try to assign custom data select fields
+      foreach ($this->_customGroupExtendsJQ as $table => $spec){
+        $extends = array_merge($extends, $spec['extends']);
+      }
+    }
+    else{
+      return;
+    }
+    $sql = "
+SELECT cg.table_name, cg.title, cg.extends, cf.id as cf_id, cf.label,
+       cf.column_name, cf.data_type, cf.html_type, cf.option_group_id, cf.time_format
+FROM   civicrm_custom_group cg
+INNER  JOIN civicrm_custom_field cf ON cg.id = cf.custom_group_id
+WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
+      cg.is_active = 1 AND
+      cf.is_active = 1 AND
+      cf.is_searchable = 1
+ORDER BY cg.weight, cf.weight";
+    $customDAO = CRM_Core_DAO::executeQuery($sql);
+
+    $curTable = NULL;
+    while ($customDAO->fetch()) {
+      if ($customDAO->table_name != $curTable) {
+        $fieldName = null;
+        $curTable = $customDAO->table_name;
+        $fieldName = 'custom_' . $customDAO->cf_id;
+        $customFieldsTableFields[$customDAO->extends][$fieldName] = $customDAO->label;
+        // dummy dao object
+        $this->_columns[$curTable]['dao'] = 'CRM_Contact_DAO_Contact';
+        $this->_columns[$curTable]['extends'] = $customDAO->extends;
+        $this->_columns[$curTable]['grouping'] = $customDAO->table_name;
+        $this->_columns[$curTable]['group_title'] = $customDAO->title;
+        foreach (array(
+            'fields', 'filters', 'group_bys') as $colKey) {
+            if (!array_key_exists($colKey, $this->_columns[$curTable])) {
+              $this->_columns[$curTable][$colKey] = array();
+            }
+        }
+        $fieldName = 'custom_' . $customDAO->cf_id;
+        $this->_columns[$curTable]['fields'][$fieldName] = array(
+            'name' => $customDAO->column_name,
+            'title' => $customDAO->label,
+            'dataType' => $customDAO->data_type,
+            'htmlType' => $customDAO->html_type,
+        );
+
+      }
+    }
+
+    $customFieldsFlat = array();
+    if(!empty($this->_customGroupExtendsJQ)){
+      //lets try to assign custom data select fields
+      foreach ($this->_customGroupExtendsJQ as $table => $spec){
+        $customFieldsTable[$table] = $spec['title'];
+        foreach ($spec['extends'] as $entendedEntity){
+          foreach ($customFieldsTableFields[$entendedEntity] as $customFieldName => $customFieldLabel){
+            $customFields[$table][$table . ':' . $customFieldName] = $spec['title']. ":: " . $customFieldLabel;
+            $customFieldsFlat[$table . ':' . $customFieldName] = $spec['title']. ":: " . $customFieldLabel;
+          }
+        }
+      }
+    }
+
+    $sel = $this->add('select', 'custom_tables', ts('Custom Columns'), $customFieldsTable, FALSE,
+        array('id' => 'custom_tables', 'multiple' => 'multiple', 'title' => ts('- select -'))
+    );
+
+    $this->add('select', 'custom_fields', ts('Custom Columns'), $customFieldsFlat, FALSE,
+        array('id' => 'custom_fields', 'multiple' => 'multiple', 'title' => ts('- select -'), 'hierarchy' => json_encode($customFields))
+    );
+  }
+
+  function selectableCustomDataFrom() {
+    if (empty($this->_customGroupExtendsJQ) || empty($this->_params['custom_fields'])) {
+      return;
+    }
+    $tables = array();
+    foreach ($this->_params['custom_fields'] as $customField){
+      $fieldArr = explode(":", $customField);
+      $tables[$fieldArr[0]] = 1;
+      $customfields[$fieldArr[1]] = $fieldArr[0];
+    }
+
+    $selectedTables = array();
+    foreach ($this->_columns as $tableName => $table) {
+      if (array_key_exists('fields', $table)) {
+        $selectedFields = array_intersect_key($customfields, $table['fields']);
+        foreach ($selectedFields as $fieldName => $field) {
+          if(!empty($table['fields'][$fieldName])){
+            $customFieldsToTables[$fieldName] = $tableName;
+            $fieldAlias = $customfields[$fieldName] . "_" . $fieldName;
+            $tableAlias = $customfields[$fieldName] . "_" . $tableName;
+            $title = $this->_customGroupExtendsJQ[$customfields[$fieldName]]['title'] . "::" . $table['fields'][$fieldName]['title'];
+            $selectedTables[$tableAlias] = array('name' => $tableName, 'extends_table' => $customfields[$fieldName]);
+            $this->_select .= ", {$tableAlias}.{$table['fields'][$fieldName]['name']} as $fieldAlias ";
+            $this->_columnHeaders[$fieldAlias] = array('title' => $title, 'type' => $table['fields'][$fieldName]['type']);
+          }
+        }
+      }
+    }
+    foreach ($selectedTables as $tableAlias => $prop) {
+          $extendsTable = $prop['extends_table'];
+        $this->_from .= "
+        LEFT JOIN {$prop['name']} $tableAlias ON {$tableAlias}.entity_id = {$this->_aliases[$extendsTable]}.id";
+      }
   }
 
   function alterDisplay(&$rows) {
@@ -914,45 +1026,62 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
     );
   }
 
-  function getContactColumns() {
-    return array(
-      'civicrm_contact' => array(
+  function getContactColumns($options = array()) {
+    $defaultOptions = array(
+      'prefix' => '',
+      'prefix_label' => '',
+      'group_by' => true,
+      'order_by' => true,
+      'filters' => true,
+      'defaults' => array(
+        'country_id' => TRUE
+      ),
+     );
+
+    $options = array_merge($defaultOptions,$options);
+
+    $contactFields = array(
+        $options['prefix'] . 'civicrm_contact' => array(
         'dao' => 'CRM_Contact_DAO_Contact',
+        'name' => 'civicrm_contact',
+        'alias' => $options['prefix'] . 'civicrm_contact',
         'fields' => array(
-          'display_name' => array(
-            'title' => ts('Contact Name'),
+          $options['prefix'] . 'display_name' => array(
+            'name' => 'display_name',
+            'title' => ts($options['prefix_label'] . 'Contact Name'),
           ),
-          'id' => array(
-            'title' => ts('Contact ID'),
+          $options['prefix'] . 'id' => array(
+            'name' => 'id',
+            'title' => ts($options['prefix_label'] . 'Contact ID'),
             'alter_display' => 'alterContactID',
           ),
           'first_name' => array(
-            'title' => ts('First Name'),
+            'title' => ts($options['prefix_label'] . 'First Name'),
           ),
           'middle_name' => array(
-            'title' => ts('Middle Name'),
+            'title' => ts($options['prefix_label'] . 'Middle Name'),
           ),
           'last_name' => array(
-            'title' => ts('Last Name'),
+            'title' => ts($options['prefix_label'] . 'Last Name'),
           ),
           'nick_name' => array(
-            'title' => ts('Nick Name'),
+            'title' => ts($options['prefix_label'] . 'Nick Name'),
             'alter_display' => 'alterNickName',
           ),
         ),
         'filters' => array(
           'id' => array(
-            'title' => ts('Contact ID'),
+            'title' => ts($options['prefix_label'] . 'Contact ID'),
           )
           ,
           'sort_name' => array(
-            'title' => ts('Contact Name'),
+            'title' => ts($options['prefix_label'] . 'Contact Name'),
           ),
         ),
         'grouping' => 'contact-fields',
         'order_bys' => array(
           'sort_name' => array(
-            'title' => ts('Last Name, First Name'),
+            'title' => ts($options['prefix_label'] . 'Last Name, First Name'),
             'default' => '1',
             'default_weight' => '0',
             'default_order' => 'ASC',
@@ -960,6 +1089,7 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
         ),
       ),
     );
+    return $contactFields;
   }
 
   function getCaseColumns() {
@@ -1248,7 +1378,84 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
     }
     return $addressFields;
   }
-
+  function getActivityColumns(){
+    return array('civicrm_activity' =>
+    array(
+        'dao' => 'CRM_Activity_DAO_Activity',
+        'fields' =>
+        array(
+            'id' =>
+            array(
+                'no_display' => TRUE,
+                'required' => TRUE,
+            ),
+            'source_record_id' =>
+            array(
+                'no_display' => TRUE,
+                'required' => TRUE,
+            ),
+            'activity_type_id' =>
+            array('title' => ts('Activity Type'),
+                'default' => TRUE,
+                'type' => CRM_Utils_Type::T_STRING,
+            ),
+            'activity_subject' =>
+            array('title' => ts('Subject'),
+                'default' => TRUE,
+            ),
+            'source_contact_id' =>
+            array(
+                'no_display' => TRUE,
+                'required' => TRUE,
+            ),
+            'activity_date_time' =>
+            array('title' => ts('Activity Date'),
+                'default' => TRUE,
+            ),
+            'status_id' =>
+            array('title' => ts('Activity Status'),
+                'default' => TRUE,
+                'type' => CRM_Utils_Type::T_STRING,
+            ),
+            'duration' =>
+            array('title' => ts('Duration'),
+                'type' => CRM_Utils_Type::T_INT,
+            ),
+        ),
+        'filters' =>
+        array(
+            'activity_date_time' =>
+            array(
+                'default' => 'this.month',
+                'operatorType' => CRM_Report_Form::OP_DATE,
+            ),
+            'activity_subject' =>
+            array('title' => ts('Activity Subject')),
+            'activity_type_id' =>
+            array('title' => ts('Activity Type'),
+                'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+                'options' => $this->activityTypes,
+            ),
+            'status_id' =>
+            array('title' => ts('Activity Status'),
+                'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+                'options' => CRM_Core_PseudoConstant::activityStatus(),
+            ),
+        ),
+        'order_bys' =>
+        array(
+            'source_contact_id' =>
+            array('title' => ts('Source Contact'), 'default_weight' => '0'),
+            'activity_date_time' =>
+            array('title' => ts('Activity Date'), 'default_weight' => '1'),
+            'activity_type_id' =>
+            array('title' => ts('Activity Type'), 'default_weight' => '2'),
+        ),
+        'grouping' => 'activity-fields',
+        'alias' => 'activity',
+      )
+    );
+  }
   /*
 * Get Information about advertised Joins
 */
