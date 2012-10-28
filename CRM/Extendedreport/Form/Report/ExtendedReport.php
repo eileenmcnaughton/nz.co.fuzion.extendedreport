@@ -555,7 +555,7 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
       $this->addElement('select', 'groups', ts('Group'),
           array('' => ts('- select group -')) + CRM_Core_PseudoConstant::staticGroup()
       );
-      if(is_array($this->_add2GroupcontactTables) && !empty($this->_add2GroupcontactTables) && count($this->_add2GroupcontactTables > 1)){
+      if(!empty($this->_add2GroupcontactTables) && is_array($this->_add2GroupcontactTables) && count($this->_add2GroupcontactTables > 1)){
         $this->addElement('select', 'btn_group_contact', ts('Contact to Add'),
             array('' => ts('- choose contact -')) + $this->_add2GroupcontactTables
         );
