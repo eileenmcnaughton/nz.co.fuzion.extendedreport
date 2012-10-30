@@ -1085,6 +1085,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       'group_by' => true,
       'order_by' => true,
       'filters' => true,
+      'custom_fields' => array('Individual', 'Contact', 'Organization'),
       'defaults' => array(
         'country_id' => TRUE
       ),
@@ -1093,7 +1094,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     $options = array_merge($defaultOptions,$options);
 
     $contactFields = array(
-        $options['prefix'] . 'civicrm_contact' => array(
+      $options['prefix'] . 'civicrm_contact' => array(
         'dao' => 'CRM_Contact_DAO_Contact',
         'name' => 'civicrm_contact',
         'alias' => $options['prefix'] . 'civicrm_contact',
@@ -1141,6 +1142,13 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         ),
       ),
     );
+
+    if(!empty($options['custom_fields'])){
+      $this->_customGroupExtended[$options['prefix'] . 'civicrm_contact'] = array(
+        'extends' => $options['custom_fields'],
+        'title' => $options['prefix_label'],
+      );
+    }
     return $contactFields;
   }
 

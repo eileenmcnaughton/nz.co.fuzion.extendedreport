@@ -1,19 +1,11 @@
 <?php
 
 class CRM_Extendedreport_Form_Report_ActivityExtended extends CRM_Extendedreport_Form_Report_ExtendedReport {
-
+//todo move def to getActivityColumns
   protected $_customGroupExtended = array(
       'contact_activity' => array(
           'extends' => array('Activity'),
           'title'  => 'Activity',
-      ),
-      'civicrm_contact' => array(
-          'extends' => array('Individual', 'Contact'),
-          'title'  => 'Source Contact',
-      ),
-      'target_civicrm_contact' => array(
-          'extends' => array('Individual', 'Contact', 'Organization'),
-          'title'  => 'Target Contact',
       ),
   );
   protected $_addressField = FALSE;
