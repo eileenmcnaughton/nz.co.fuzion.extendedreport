@@ -1079,6 +1079,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
   }
 
   function getContactColumns($options = array()) {
+
     $defaultOptions = array(
       'prefix' => '',
       'prefix_label' => '',
@@ -1230,6 +1231,88 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         )
       )
     );
+  }
+  function getEmailColumns($options = array()){
+    $defaultOptions = array(
+        'prefix' => '',
+        'prefix_label' => '',
+        'group_by' => false,
+        'order_by' => true,
+        'filters' => true,
+        'defaults' => array(
+            'country_id' => TRUE
+        ),
+    );
+
+    $options = array_merge($defaultOptions,$options);
+
+    $fields = array(
+      $options['prefix'] . 'civicrm_email' => array(
+        'dao'    => 'CRM_Core_DAO_Email',
+        'fields' => array(
+          $options['prefix'] . 'email' => array(
+            'title' => ts($options['prefix_label'] . 'Email'),
+            'name'  => 'email'
+          ),
+        ),
+      ),
+    );
+    return $fields;
+  }
+
+  function getRelationshipColumns($options = array()){
+    $defaultOptions = array(
+      'prefix' => '',
+      'prefix_label' => '',
+      'group_by' => false,
+      'order_by' => true,
+      'filters' => true,
+      'defaults' => array(
+       ),
+    );
+
+    $options = array_merge($defaultOptions,$options);
+
+    $fields = array(
+        $options['prefix'] . 'civicrm_relationship' =>
+          array( 'dao'       => 'CRM_Contact_DAO_Relationship',
+              'fields'    =>
+              array( 'relationship_start_date' =>
+                  array( 'title'     => ts( 'Relationship Start Date' ),
+                      'name' => 'start_date'
+                  ),
+                  'end_date'   =>
+                  array( 'title'     => ts( 'Relationship End Date' ),
+                  ),
+                  'description'   =>
+                  array( 'title'     => ts( 'Description' ),
+                  ),
+              ),
+              'filters'   =>
+              array('is_active'=>
+                  array( 'title'        => ts( 'Relationship Status' ),
+                      'operatorType' => CRM_Report_Form::OP_SELECT,
+                      'options'      =>
+                      array( ''  => '- Any -',
+                          1   => 'Active',
+                          0   => 'Inactive',
+                      ),
+                      'type'     => CRM_Utils_Type::T_INT ),
+                  'relationship_type_id' =>
+                  array( 'title'        => ts( 'Relationship' ),
+                      'operatorType' => CRM_Report_Form::OP_SELECT,
+                      'options'      =>
+                      array( ''     => '- any relationship type -') +
+                      CRM_Contact_BAO_Relationship::getContactRelationshipType( null, 'null', null, null, true),
+                      'type'        => CRM_Utils_Type::T_INT
+                  ),
+
+              ),
+
+              'grouping'  => 'relation-fields',
+          ),
+    );
+    return $fields;
   }
 
   /*
