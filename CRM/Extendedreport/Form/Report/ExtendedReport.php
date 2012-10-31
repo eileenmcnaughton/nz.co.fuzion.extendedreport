@@ -1172,9 +1172,10 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
             'title' => ts('Case Subject'),
             'default' => true
           ),
-          'status_id' => array(
+          'case_status_id' => array(
             'title' => ts('Status'),
-            'default' => true
+            'default' => true,
+            'name' => 'status_id',
           ),
           'case_type_id' => array(
             'title' => ts('Case Type'),
