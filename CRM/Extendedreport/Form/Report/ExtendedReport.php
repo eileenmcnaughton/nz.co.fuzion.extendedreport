@@ -12,6 +12,10 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   protected $_editableFields = TRUE;
   protected $_groupByArray = array();
   /*
+   * array of extended custom data fields. this is populated by functions like getContactColunmns
+   */
+  protected $_customGroupExtended = array();
+  /*
    * Change time filters to time date filters by setting this to 1
    */
   protected $_timeDateFilters = FALSE;
@@ -24,6 +28,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   function __construct() {
     parent::__construct();
     $this->addSelectableCustomFields();
+    CRM_Core_Resources::singleton()->addScriptFile('nz.co.fuzion.extendedreport', 'js/jquery.multiselect.filter.js');
   }
 
   function preProcess() {
@@ -215,6 +220,7 @@ ORDER BY cg.weight, cf.weight";
  * so, no advantage of not switching to a simpler structure
  */
   function selectableCustomDataFrom() {
+
     if (empty($this->_customGroupExtended) || empty($this->_params['custom_fields'])) {
       return;
     }

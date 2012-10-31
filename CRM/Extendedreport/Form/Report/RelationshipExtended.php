@@ -110,6 +110,7 @@ class CRM_Extendedreport_Form_Report_RelationshipExtended extends CRM_Extendedre
               {$this->_aliases['civicrm_email_b']}.contact_id AND
                 {$this->_aliases['civicrm_email_b']}.is_primary = 1 )";
                 }
+      $this->selectableCustomDataFrom();
     }
 
     function statistics( &$rows ) {
@@ -159,7 +160,7 @@ class CRM_Extendedreport_Form_Report_RelationshipExtended extends CRM_Extendedre
                       $this->_params['relationship_type_id_value'] = intval( $relType[0] );
                       }
 
-                      $this->buildACLClause( array( $this->_aliases['contact_a_civicrm_contact'] ,$this->_aliases['civicrm_contact'] ) );
+              $this->buildACLClause( array( $this->_aliases['contact_a_civicrm_contact'] ,$this->_aliases['contact_b_civicrm_contact'] ) );
               $sql = $this->buildQuery( );
 
         $this->buildRows ( $sql, $rows );
