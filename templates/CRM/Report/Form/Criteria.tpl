@@ -89,6 +89,7 @@
         </table>
      </div>
     {/if}
+    {if $form.custom_tables}
     <div id='crm-custom_tables'>
       <table><tr><td>
             <label>{ts}Custom Fields Table(s){/ts}</label>
@@ -111,6 +112,7 @@
           </div>
           </td></tr><tr>
     </table>
+    {/if}
     {if $form.aggregate_column_headers}
       <table>
         <tr>

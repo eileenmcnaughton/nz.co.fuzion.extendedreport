@@ -6,14 +6,14 @@
 return array (
   0 =>
   array (
-    'name' => 'CRM_Extendedreport_Form_Report_Form_Event_Editableevents',
+    'name' => 'Editable Evnts',
     'entity' => 'ReportTemplate',
     'params' =>
     array (
       'version' => 3,
-      'label' => 'Form_Event_Editableevents',
+      'label' => 'Editable event Grid',
       'description' => 'Editable Event Report',
-      'class_name' => 'CRM_Extendedreport_Form_Report_Form_Event_Editableevents',
+      'class_name' => 'CRM_Extendedreport_Form_Report_Event_Editableevents',
       'report_url' => 'event/form_event_editableevents',
       'component' => 'CiviEvent',
     ),
