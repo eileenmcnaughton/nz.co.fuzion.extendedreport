@@ -10,7 +10,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   protected $_customGroupExtends = array();
   protected $_baseTable = 'civicrm_contact';
   protected $_editableFields = TRUE;
-  protected $_groupByArray = array();
+
   /*
    * array of extended custom data fields. this is populated by functions like getContactColunmns
    */
@@ -25,6 +25,8 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    */
   protected $_temporary = ' TEMPORARY ';
 
+  protected $_customGroupAggregates;
+
   function __construct() {
     parent::__construct();
     $this->addSelectableCustomFields();
@@ -36,9 +38,50 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   }
 
   function select() {
+    if($this->_customGroupAggregates){
+      $this->aggregateSelect();
+        return;
+    }
     $this->storeGroupByArray();
     $this->unsetBaseTableStatsFieldsWhereNoGroupBy();
     parent::select();
+  }
+  /*
+   * Function to do a simple cross-tab
+   */
+  function aggregateSelect(){
+    $columnHeader = $this->_params['aggregate_column_headers'];
+    $rowHeader = $this->_params['aggregate_row_headers'];
+
+
+    $fieldArr = explode(":", $rowHeader);
+    $rowFields[$fieldArr[1]][] = $fieldArr[0];
+    $fieldArr = explode(":", $columnHeader);
+    $columnFields[$fieldArr[1]][] = $fieldArr[0];
+
+    $selectedTables = array();
+
+    $rowColumns = $this->extractCustomFields( $rowFields, $selectedTables, 'row_header');
+    $rowHeaderFieldName = $rowColumns[$rowHeader]['name'];
+    $this->_columnHeaders[$rowHeaderFieldName] =$rowColumns[$rowHeader][$rowHeaderFieldName];
+
+    $columnColumns = $this->extractCustomFields( $columnFields, $selectedTables, 'column_header');
+
+    foreach ($selectedTables as $selectedTable => $properties){
+      $extendsTable = $properties['extends_table'];
+      $this->_extrafrom .= "
+      LEFT JOIN {$properties['name']} $selectedTable ON {$selectedTable}.entity_id = {$this->_aliases[$extendsTable]}.id";
+    }
+  }
+
+  function addColumnAggregateSelect($fieldName, $tableAlias, $spec){
+    $options = civicrm_api('option_value', 'get', array('version' => 3, 'option_group_id' => $spec['option_group_id']));
+
+    foreach ($options['values'] as $option){
+      $this->_select .= " , SUM( CASE {$tableAlias}.{$fieldName} WHEN '{$option['value']}' THEN 1 ELSE 0 END ) AS {$fieldName}_{$option['value']} ";
+      $this->_columnHeaders["{$fieldName}_{$option['value']}"] = array('title' => $spec['title'] . " - " . $option['label']);
+    }
+    $this->_select .= " , SUM( CASE {$tableAlias}.{$fieldName} WHEN '{$option['value']}' THEN 1 ELSE 0 END ) AS {$fieldName}_{$option['value']} ";
   }
   /*
 * From clause build where baseTable & fromClauses are defined
@@ -57,6 +100,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       if (strstr($this->_from, 'civicrm_contact')) {
         $this->_from .= $this->_aclFrom;
       }
+      $this->_from .= $this->_extrafrom;
     }
     $this->selectableCustomDataFrom();
   }
@@ -123,10 +167,36 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   }
 
   function postProcess() {
-    if (!empty($this->_aclTable) && CRM_Utils_Array::value($this->_aclTable, $this->_aliases)) {
-      $this->buildACLClause($this->_aliases[$this->_aclTable]);
+    try{
+      if (!empty($this->_aclTable) && CRM_Utils_Array::value($this->_aclTable, $this->_aliases)) {
+        $this->buildACLClause($this->_aliases[$this->_aclTable]);
+      }
+      parent::postProcess();
+    } catch(Exception $e) {
+      $err['message'] = $e->getMessage();
+      $err['trace'] = $e->getTrace();
+      if($err['message'] =='DB Error: no such field'){
+        foreach ($err['trace'] as $fn){
+          if($fn['function'] == 'raiseError'){
+            foreach ($fn['args'] as $arg){
+              $err['sql_error'] = $arg;
+            }
+          }
+          if($fn['function'] == 'simpleQuery'){
+            foreach ($fn['args'] as $arg){
+              $err['sql_query'] = $arg;
+            }
+          }
+        }
+      }
+      if(function_exists('dpm')){
+        dpm ($err);
+      }
+      else{
+        CRM_Core_Error::debug($err);
+      }
+
     }
-    parent::postProcess();
   }
   /*
    * We are overriding this so that we can add time if required
@@ -190,6 +260,7 @@ ORDER BY cg.weight, cf.weight";
             'title' => $customDAO->label,
             'dataType' => $customDAO->data_type,
             'htmlType' => $customDAO->html_type,
+            'option_group_id' => $customDAO->option_group_id,
         );
     }
     $customFieldsFlat = array();
@@ -199,8 +270,8 @@ ORDER BY cg.weight, cf.weight";
         $customFieldsTable[$table] = $spec['title'];
         foreach ($spec['extends'] as $entendedEntity){
           foreach ($customFieldsTableFields[$entendedEntity] as $customFieldName => $customFieldLabel){
-            $customFields[$table][$table . ':' . $customFieldName] = $spec['title']. ":: " . $customFieldLabel;
-            $customFieldsFlat[$table . ':' . $customFieldName] = $spec['title']. ":: " . $customFieldLabel;
+            $customFields[$table][$table . ':' . $customFieldName] = $spec['title'] . $customFieldLabel;
+            $customFieldsFlat[$table . ':' . $customFieldName] = $spec['title'] . $customFieldLabel;
           }
         }
       }
@@ -213,11 +284,18 @@ ORDER BY cg.weight, cf.weight";
     $this->add('select', 'custom_fields', ts('Custom Columns'), $customFieldsFlat, FALSE,
         array('id' => 'custom_fields', 'multiple' => 'multiple', 'title' => ts('- select -'), 'hierarchy' => json_encode($customFields))
     );
+    if($this->_customGroupAggregates){
+      $this->add('select', 'aggregate_column_headers', ts('Aggregate Report Column Headers'), $customFieldsFlat, FALSE,
+          array('id' => 'aggregate_column_headers',  'title' => ts('- select -'))
+      );
+      $this->add('select', 'aggregate_row_headers', ts('Aggregate Report Rows'), $customFieldsFlat, FALSE,
+          array('id' => 'aggregate_row_headers',  'title' => ts('- select -'))
+      );
+    }
   }
 /*
  * Add the SELECT AND From clauses for the extensible CustomData
- * A lot of copying from Form class still in here - but then we stopped using the $columns to store in in
- * so, no advantage of not switching to a simpler structure
+ * Still refactoring this from original copy & paste code to something simpler
  */
   function selectableCustomDataFrom() {
 
@@ -233,33 +311,7 @@ ORDER BY cg.weight, cf.weight";
     }
 
     $selectedTables = array();
-    foreach ($this->_customFields as $tableName => $table) {
-      if (array_key_exists('fields', $table)) {
-        $selectedFields = array_intersect_key($customfields, $table['fields']);
-        foreach ($selectedFields  as $fieldName => $selectedfield) {
-          foreach ($selectedfield as $index => $instance){
-          if(!empty($table['fields'][$fieldName])){
-            $customFieldsToTables[$fieldName] = $tableName;
-            $fieldAlias = $customfields[$fieldName][$index] . "_" . $fieldName;
-            $tableAlias = $customfields[$fieldName][$index]  . "_" . $tableName;
-            $title = $this->_customGroupExtended[$customfields[$fieldName][$index]]['title'] . "::" . $table['fields'][$fieldName]['title'];
-            $selectedTables[$tableAlias] = array(
-              'name' => $tableName,
-              'extends_table' => $customfields[$fieldName][$index]);
-            $this->_select .= ", {$tableAlias}.{$table['fields'][$fieldName]['name']} as $fieldAlias ";
-            // we compile the columns here but add them @ the end to preserve order
-            $myColumns[$customfields[$fieldName][$index] . ":" . $fieldName] = array(
-               'name' => $customfields[$fieldName][$index] . "_" . $fieldName,
-               $customfields[$fieldName][$index] . "_" . $fieldName => array(
-                'title' => $title,
-                'type' => $table['fields'][$fieldName]['type'],
-                )
-            );
-          }
-          }
-        }
-      }
-    }
+    $myColumns = $this->extractCustomFields( $customfields, $selectedTables);
 
     foreach ($this->_params['custom_fields'] as $fieldName){
       $name = $myColumns[$fieldName]['name'];
@@ -271,6 +323,52 @@ ORDER BY cg.weight, cf.weight";
         LEFT JOIN {$properties['name']} $selectedTable ON {$selectedTable}.entity_id = {$this->_aliases[$extendsTable]}.id";
       }
 
+  }
+  /*
+   * Function extracts the custom fields array where it is preceded by a table prefix
+   * This allows us to include custom fields from multiple contacts (for example) in one report
+   */
+  function extractCustomFields( &$customfields, &$selectedTables, $context = 'select'){
+
+    foreach ($this->_customFields as $tableName => $table) {
+      if (array_key_exists('fields', $table)) {
+        $selectedFields = array_intersect_key($customfields, $table['fields']);
+        foreach ($selectedFields  as $fieldName => $selectedfield) {
+          foreach ($selectedfield as $index => $instance){
+            if(!empty($table['fields'][$fieldName])){
+              $customFieldsToTables[$fieldName] = $tableName;
+              $fieldAlias = $customfields[$fieldName][$index] . "_" . $fieldName;
+              $tableAlias = $customfields[$fieldName][$index]  . "_" . $tableName;
+              $title = $this->_customGroupExtended[$customfields[$fieldName][$index]]['title']  . $table['fields'][$fieldName]['title'];
+              $selectedTables[$tableAlias] = array(
+                  'name' => $tableName,
+                  'extends_table' => $customfields[$fieldName][$index]);
+              // these should be in separate functions
+              if($context == 'select'){
+                $this->_select .= ", {$tableAlias}.{$table['fields'][$fieldName]['name']} as $fieldAlias ";
+              }
+              if($context == 'row_header'){
+                $this->_select = "SELECT {$tableAlias}.{$table['fields'][$fieldName]['name']} as $fieldAlias ";
+                $this->_groupByArray[] = $fieldAlias;
+                $this->_groupBy = "GROUP BY $fieldAlias";
+              }
+              if($context  == 'column_header'){
+                $this->addColumnAggregateSelect($table['fields'][$fieldName]['name'], $tableAlias, $table['fields'][$fieldName]);
+              }
+              // we compile the columns here but add them @ the end to preserve order
+              $myColumns[$customfields[$fieldName][$index] . ":" . $fieldName] = array(
+                  'name' => $customfields[$fieldName][$index] . "_" . $fieldName,
+                  $customfields[$fieldName][$index] . "_" . $fieldName => array(
+                      'title' => $title,
+                      'type' => $table['fields'][$fieldName]['type'],
+                  )
+              );
+            }
+          }
+        }
+      }
+    }
+    return $myColumns;
   }
 
   function alterDisplay(&$rows) {

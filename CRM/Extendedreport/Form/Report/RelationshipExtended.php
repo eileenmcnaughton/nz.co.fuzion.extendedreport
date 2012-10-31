@@ -11,10 +11,10 @@ class CRM_Extendedreport_Form_Report_RelationshipExtended extends CRM_Extendedre
       $this->_tagFilter = True;
       $this->case_statuses = CRM_Case_PseudoConstant::caseStatus();
       $this->_columns =
-        $this->getContactColumns(array('prefix' => 'contact_a_', 'prefix_label' => 'Contact A '))
-      + $this->getContactColumns(array('prefix' => 'contact_b_', 'prefix_label' => 'Contact B '))
-      + $this->getEmailColumns(array('prefix' => 'contact_a_', 'prefix_label' => 'Contact A '))
-      + $this->getEmailColumns(array('prefix' => 'contact_b_', 'prefix_label' => 'Contact B '))
+        $this->getContactColumns(array('prefix' => 'contact_a_', 'prefix_label' => 'Contact A ::'))
+      + $this->getContactColumns(array('prefix' => 'contact_b_', 'prefix_label' => 'Contact B ::'))
+      + $this->getEmailColumns(array('prefix' => 'contact_a_', 'prefix_label' => 'Contact A ::'))
+      + $this->getEmailColumns(array('prefix' => 'contact_b_', 'prefix_label' => 'Contact B ::'))
       + $this->getRelationshipColumns()
       + array(
         'civicrm_relationship_type' =>
