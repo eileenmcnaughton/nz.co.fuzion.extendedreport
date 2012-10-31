@@ -11,7 +11,7 @@ return array (
     'params' =>
     array (
       'version' => 3,
-      'label' => 'ActivityExtended',
+      'label' => 'Activity Extended',
       'description' => 'Extended Activity Report',
       'class_name' => 'CRM_Extendedreport_Form_Report_ActivityExtended',
       'report_url' => 'activityextended',

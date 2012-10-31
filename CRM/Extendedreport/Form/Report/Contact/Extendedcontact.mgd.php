@@ -6,16 +6,16 @@
 return array (
   0 =>
   array (
-    'name' => 'CRM_Extendedreport_Form_Report_Contact_Extendedcontact',
+    'name' => 'Pivot data contact report',
     'entity' => 'ReportTemplate',
     'params' =>
     array (
       'version' => 3,
-      'label' => 'Contact_Extendedcontact',
+      'label' => 'Pivot data contact report',
       'description' => 'Flexible Contact Report',
       'class_name' => 'CRM_Extendedreport_Form_Report_Contact_Extendedcontact',
       'report_url' => 'contact/contactextended',
-      'component' => 'Contact',
+      'component' => '',
     ),
   ),
 );
