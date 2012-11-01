@@ -117,11 +117,11 @@
       <table>
         <tr>
           <td>
-            <label>{ts}Select (1) Column Header{/ts}</label>
+            <label>{ts}Select Column Header{/ts}</label>
             {$form.aggregate_column_headers.html}
           </td><td>
             <div id='crm-custom_fields'>
-              <label>{ts}Select (1) Row Label{/ts}</label>
+              <label>{ts}Select Row Fields{/ts}</label>
               {$form.aggregate_row_headers.html}
             </div>
           </td></tr>
