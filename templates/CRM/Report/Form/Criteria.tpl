@@ -92,9 +92,7 @@
     {if $form.custom_tables}
     <div id='crm-custom_tables'>
       <table><tr><td>
-            <label>{ts}Custom Fields Table(s){/ts}</label>
-                {$form.custom_tables.html}
-            </td><td>
+
         <div id='crm-custom_fields'>
             <label>{ts}Custom Fields(s){/ts}</label>
                 {$form.custom_fields.html}
