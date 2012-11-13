@@ -238,6 +238,111 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   }
 
   /*
+   * 4.2 backport of this function including 4.3 tweak whereby compileContent is a separate function
+   * Should be able to be removed once 4.3 version is in use
+   */
+  function endPostProcess(&$rows = NULL) {
+    if ($this->_outputMode == 'print' ||
+        $this->_outputMode == 'pdf' ||
+        $this->_sendmail
+    ) {
+
+      $content = $this->compileContent();
+      $url = CRM_Utils_System::url("civicrm/report/instance/{$this->_id}",
+      "reset=1", TRUE
+      );
+
+      if ($this->_sendmail) {
+        $config = CRM_Core_Config::singleton();
+        $attachments = array();
+
+        if ($this->_outputMode == 'csv') {
+          $content = $this->_formValues['report_header'] . '<p>' . ts('Report URL') . ": {$url}</p>" . '<p>' . ts('The report is attached as a CSV file.') . '</p>' . $this->_formValues['report_footer'];
+
+          $csvFullFilename = $config->templateCompileDir . CRM_Utils_File::makeFileName('CiviReport.csv');
+          $csvContent = CRM_Report_Utils_Report::makeCsv($this, $rows);
+          file_put_contents($csvFullFilename, $csvContent);
+          $attachments[] = array(
+              'fullPath' => $csvFullFilename,
+              'mime_type' => 'text/csv',
+              'cleanName' => 'CiviReport.csv',
+          );
+        }
+        if ($this->_outputMode == 'pdf') {
+          // generate PDF content
+          $pdfFullFilename = $config->templateCompileDir . CRM_Utils_File::makeFileName('CiviReport.pdf');
+          file_put_contents($pdfFullFilename,
+          CRM_Utils_PDF_Utils::html2pdf($content, "CiviReport.pdf",
+          TRUE, array('orientation' => 'landscape')
+          )
+          );
+          // generate Email Content
+          $content = $this->_formValues['report_header'] . '<p>' . ts('Report URL') . ": {$url}</p>" . '<p>' . ts('The report is attached as a PDF file.') . '</p>' . $this->_formValues['report_footer'];
+
+          $attachments[] = array(
+              'fullPath' => $pdfFullFilename,
+              'mime_type' => 'application/pdf',
+              'cleanName' => 'CiviReport.pdf',
+          );
+        }
+
+        if (CRM_Report_Utils_Report::mailReport($content, $this->_id,
+            $this->_outputMode, $attachments
+        )) {
+          CRM_Core_Session::setStatus(ts("Report mail has been sent."), ts('Sent'), 'success');
+        }
+        else {
+          CRM_Core_Session::setStatus(ts("Report mail could not be sent."), ts('Mail Error'), 'error');
+        }
+
+        CRM_Utils_System::redirect(CRM_Utils_System::url(CRM_Utils_System::currentPath(),
+        'reset=1'
+            ));
+      }
+      elseif ($this->_outputMode == 'print') {
+        echo $content;
+      }
+      else {
+        if ($chartType = CRM_Utils_Array::value('charts', $this->_params)) {
+          $config = CRM_Core_Config::singleton();
+          //get chart image name
+          $chartImg = $this->_chartId . '.png';
+          //get image url path
+          $uploadUrl = str_replace('/persist/contribute/', '/persist/', $config->imageUploadURL) . 'openFlashChart/';
+          $uploadUrl .= $chartImg;
+          //get image doc path to overwrite
+          $uploadImg = str_replace('/persist/contribute/', '/persist/', $config->imageUploadDir) . 'openFlashChart/' . $chartImg;
+          //Load the image
+          $chart = imagecreatefrompng($uploadUrl);
+          //convert it into formattd png
+          header('Content-type: image/png');
+          //overwrite with same image
+          imagepng($chart, $uploadImg);
+          //delete the object
+          imagedestroy($chart);
+        }
+        CRM_Utils_PDF_Utils::html2pdf($content, "CiviReport.pdf", FALSE, array('orientation' => 'landscape'));
+      }
+      CRM_Utils_System::civiExit();
+    }
+    elseif ($this->_outputMode == 'csv') {
+      CRM_Report_Utils_Report::export2csv($this, $rows);
+    }
+    elseif ($this->_outputMode == 'group') {
+      $group = $this->_params['groups'];
+      $this->add2group($group);
+    }
+    elseif ($this->_instanceButtonName == $this->controller->getButtonName()) {
+      CRM_Report_Form_Instance::postProcess($this);
+    }
+    elseif ($this->_createNewButtonName == $this->controller->getButtonName() ||
+        $this->_outputMode == 'create_report' ) {
+      $this->_createNew = TRUE;
+      CRM_Report_Form_Instance::postProcess($this);
+    }
+  }
+
+  /*
    * get name of template file
    */
   function getTemplateFileName(){
