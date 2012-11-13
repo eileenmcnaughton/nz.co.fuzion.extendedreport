@@ -183,6 +183,9 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     return parent::statistics($rows);
   }
 
+  /*
+   * mostly overriding this for ease of adding in debug
+   */
   function postProcess() {
 
     try{
@@ -190,7 +193,22 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
         $this->buildACLClause($this->_aliases[$this->_aclTable]);
       }
 
-      parent::postProcess();
+    $this->beginPostProcess();
+    $sql = $this->buildQuery();
+
+    // build array of result based on column headers. This method also allows
+    // modifying column headers before using it to build result set i.e $rows.
+    $rows = array();
+    $this->buildRows($sql, $rows);
+
+    // format result set.
+    $this->formatDisplay($rows);
+
+    // assign variables to templates
+    $this->doTemplateAssignment($rows);
+
+    // do print / pdf / instance stuff if needed
+    $this->endPostProcess($rows);
     } catch(Exception $e) {
       $err['message'] = $e->getMessage();
       $err['trace'] = $e->getTrace();
@@ -2255,6 +2273,7 @@ ON {$this->_aliases['civicrm_membership']}.contact_id = {$this->_aliases['civicr
     $this->_from .= " LEFT JOIN civicrm_contact {$this->_aliases['civicrm_contact']}
 ON {$this->_aliases['civicrm_contribution']}.contact_id = {$this->_aliases['civicrm_contact']}.id";
   }
+
 
   function joinEventFromParticipant() {
     $this->_from .= " LEFT JOIN civicrm_event {$this->_aliases['civicrm_event']}
