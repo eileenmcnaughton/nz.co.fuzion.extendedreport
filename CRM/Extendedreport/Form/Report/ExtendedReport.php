@@ -653,6 +653,22 @@ ORDER BY cg.weight, cf.weight";
 
   }
   /*
+   * here we can define select clauses for any particular row. At this stage we are going
+   * to csv tags
+   */
+  function selectClause(&$tableName, $tableKey, &$fieldName, &$field) {
+    if($fieldName == 'phone'){
+      $alias = "{$tableName}_{$fieldName}";
+      $this->_columnHeaders["{$tableName}_{$fieldName}"]['title'] = CRM_Utils_Array::value('title', $field);
+      $this->_columnHeaders["{$tableName}_{$fieldName}"]['type'] = CRM_Utils_Array::value('type', $field);
+      $this->_selectAliases[] = $alias;
+      $this->_columnHeaders['civicrm_tag_tag_name'];
+      return " GROUP_CONCAT(CONCAT({$field['dbAlias']},':', phone_civireport.location_type_id) ) as $alias";
+    }
+
+    return FALSE;
+  }
+  /*
    * Function extracts the custom fields array where it is preceded by a table prefix
    * This allows us to include custom fields from multiple contacts (for example) in one report
    */
@@ -1676,6 +1692,44 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       )
     );
   }
+  /*
+   *
+   */
+  function getPhoneColumns($options = array()){
+    $defaultOptions = array(
+        'prefix' => '',
+        'prefix_label' => '',
+        'group_by' => false,
+        'order_by' => true,
+        'filters' => true,
+        'defaults' => array(
+        ),
+        'subquery' => true,
+    );
+
+    $options = array_merge($defaultOptions,$options);
+
+    $fields = array(
+        $options['prefix'] . 'civicrm_phone' => array(
+            'dao'    => 'CRM_Core_DAO_Phone',
+            'fields' => array(
+                $options['prefix'] . 'phone' => array(
+                    'title' => ts($options['prefix_label'] . 'Phone'),
+                    'name'  => 'phone'
+                ),
+            ),
+        ),
+    );
+    if($options['subquery']){
+      $fields[$options['prefix'] . 'civicrm_phone']['fields'][$options['prefix'] . 'phone']['alter_display'] = 'alterPhoneGroup';
+    }
+    return $fields;
+  }
+
+  /*
+   * Get email columns
+   * @param array $options column options
+   */
   function getEmailColumns($options = array()){
     $defaultOptions = array(
         'prefix' => '',
@@ -1774,6 +1828,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     $defaultOptions = array(
       'prefix' => '',
       'prefix_label' => '',
+      'fields' => true,
       'group_by' => false,
       'order_by' => true,
       'filters' => true,
@@ -1965,13 +2020,67 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     }
     return $addressFields;
   }
-  function getActivityColumns(){
-    return array('civicrm_activity' =>
-    array(
+  function getTagColumns($options = array()){
+    $defaultOptions = array(
+        'prefix' => '',
+        'prefix_label' => '',
+        'fields' => true,
+        'group_by' => false,
+        'order_by' => true,
+        'filters' => true,
+        'defaults' => array(
+            'country_id' => TRUE
+        ),
+    );
+
+    $options = array_merge($defaultOptions,$options);
+
+    $columns = array(
+    $options['prefix'] . 'civicrm_tag' => array(
+        'grouping' => 'contact-fields',
+        'alias' => $options['prefix'] . 'entity_tag',
+        'dao' => 'CRM_Core_DAO_EntityTag',
+        'name' => 'civicrm_tag',
+      )
+    );
+    if($options['fields']){
+      $columns['civicrm_tag']['fields'] = array(
+        'tag_name' => array(
+          'name' => 'name',
+          'title' => 'Tags associated with this person',
+        )
+      );
+    }
+    return $columns;
+  }
+  /*
+   * Function to get Activity Columns
+   * @param array $options column options
+   */
+  function getActivityColumns($options){
+    $defaultOptions = array(
+        'prefix' => '',
+        'prefix_label' => '',
+        'fields' => true,
+        'group_by' => false,
+        'order_by' => true,
+        'filters' => true,
+        'defaults' => array(
+            'country_id' => TRUE
+        ),
+    );
+
+    $options = array_merge($defaultOptions,$options);
+
+    $activityFields = array(
+      'civicrm_activity' => array(
+        'grouping' => 'activity-fields',
+        'alias' => 'activity',
         'dao' => 'CRM_Activity_DAO_Activity',
-        'fields' =>
-        array(
-            'id' =>
+       )
+    );
+    $activityFields['civicrm_activity']['fields'] = array(
+           'id' =>
             array(
                 'no_display' => TRUE,
                 'required' => TRUE,
@@ -1979,7 +2088,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
             'source_record_id' =>
             array(
                 'no_display' => TRUE,
-                'required' => TRUE,
+                'required' => FALSE,
             ),
             'activity_type_id' =>
             array(
@@ -1995,7 +2104,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
             'source_contact_id' =>
             array(
                 'no_display' => TRUE,
-                'required' => TRUE,
+                'required' => FALSE,
             ),
             'activity_date_time' =>
             array('title' => ts('Activity Date'),
@@ -2012,8 +2121,10 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
             array('title' => ts('Duration'),
                 'type' => CRM_Utils_Type::T_INT,
             ),
-        ),
-        'filters' =>
+         )
+    ;
+    if($options['filters']){
+      $activityFields['civicrm_activity']['filters'] =
         array(
             'activity_date_time' =>
             array(
@@ -2039,19 +2150,19 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
                 'default' => 1,
                 'name' => 'is_current_revision',
                 'options' => array('0' => 'No', '1' => 'Yes'),
-            ),
-        ),
-        'order_bys' =>
+            )
+    );
+    }
+    $activityFields['civicrm_activity']['order_bys'] =
         array(
           'activity_date_time' => array(
              'title' => ts('Activity Date')),
             'activity_type_id' =>
             array('title' => ts('Activity Type')),
-        ),
-        'grouping' => 'activity-fields',
-        'alias' => 'activity',
-      )
+
+
     );
+    return $activityFields;
   }
   /*
 * Get Information about advertised Joins
@@ -2138,18 +2249,179 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'rightTable' => 'civicrm_address',
         'callback' => 'joinAddressFromContact',
       ),
+      'email_from_contact' => array(
+        'leftTable' => 'civicrm_contact',
+        'rightTable' => 'civicrm_email',
+        'callback' => 'joinEmailFromContact',
+      ),
+      'phone_from_contact' => array(
+         'leftTable' => 'civicrm_contact',
+         'rightTable' => 'civicrm_phone',
+         'callback' => 'joinPhoneFromContact',
+        ),
+      'latestactivity_from_contact' => array(
+        'leftTable' => 'civicrm_contact',
+        'rightTable' => 'civicrm_email',
+        'callback' => 'joinLatestActivityFromContact',
+        ),
+       'entitytag_from_contact' => array(
+         'leftTable' => 'civicrm_contact',
+         'rightTable' => 'civicrm_tag',
+         'callback' => 'joinEntityTagFromContact',
+       ),
     );
   }
 
   /*
 * Add join from contact table to address. Prefix will be added to both tables
 * as it's assumed you are using it to get address of a secondary contact
+* @param string $prefix prefix to add to table names
+* @param array $extra extra join parameters
+* @return bool true or false to denote whether extra filters can be appended to join
 */
-  function joinAddressFromContact( $prefix = '') {
+  function joinAddressFromContact( $prefix = '', $extra = array()) {
+
     $this->_from .= " LEFT JOIN civicrm_address {$this->_aliases[$prefix . 'civicrm_address']}
-ON {$this->_aliases[$prefix . 'civicrm_address']}.contact_id = {$this->_aliases[$prefix . 'civicrm_contact']}.id";
+    ON {$this->_aliases[$prefix . 'civicrm_address']}.contact_id = {$this->_aliases[$prefix . 'civicrm_contact']}.id
+    ";
+    return true;
   }
 
+  /*
+  * Add join from contact table to email. Prefix will be added to both tables
+  * as it's assumed you are using it to get address of a secondary contact
+*/
+  function joinEmailFromContact( $prefix = '') {
+    $this->_from .= " LEFT JOIN civicrm_email {$this->_aliases[$prefix . 'civicrm_email']}
+ON {$this->_aliases[$prefix . 'civicrm_email']}.contact_id = {$this->_aliases[$prefix . 'civicrm_contact']}.id";
+  }
+
+  /*
+   * Add join from contact table to phone. Prefix will be added to both tables
+  * as it's assumed you are using it to get address of a secondary contact
+  */
+  function joinPhoneFromContact( $prefix = '') {
+    $this->_from .= " LEFT JOIN civicrm_phone {$this->_aliases[$prefix . 'civicrm_phone']}
+    ON {$this->_aliases[$prefix . 'civicrm_phone']}.contact_id = {$this->_aliases[$prefix . 'civicrm_contact']}.id";
+    }
+
+/*
+ *
+ */
+  function joinEntityTagFromContact($prefix = '') {
+    static $tmpTableName = null;
+    if(empty($tmpTableName)){
+      $tmpTableName = 'tmp_exreport_entity_tag' . date('his');
+    }
+    $sql = "CREATE {$this->_temporary} TABLE $tmpTableName
+    (
+    `contact_id` INT(10) NULL,
+    `name` varchar(255) NULL,
+    PRIMARY KEY (`contact_id`)
+    )
+    ENGINE=MEMORY;";
+
+    CRM_Core_DAO::executeQuery($sql);
+    $sql = " INSERT INTO $tmpTableName
+      SELECT entity_id AS contact_id, GROUP_CONCAT(name SEPARATOR ', ') as name
+      FROM civicrm_entity_tag et
+      LEFT JOIN civicrm_tag t ON et.tag_id = t.id
+      GROUP BY et.entity_id
+    ";
+
+    CRM_Core_DAO::executeQuery($sql);
+    $this->_from .= "
+    LEFT JOIN $tmpTableName {$this->_aliases[$prefix . 'civicrm_tag']}
+    ON {$this->_aliases[$prefix . 'civicrm_contact']}.id = {$this->_aliases[$prefix . 'civicrm_tag']}.contact_id
+    ";
+  }
+/*
+ * At this stage we are making this unfilterable but later will add
+ * some options to filter this join. We'll do a full temp table for now
+ * We create 3 temp tables because we can't join twice onto a temp table (for inserting)
+ * & it's hard to see how to otherwise avoid nasty joins or unions
+ *
+ *
+ */
+  function joinLatestActivityFromContact(){
+    static $tmpTableName = null;
+    if(empty($tmpTableName)){
+
+    $tmpTableName = 'tmp_exreport_lastestActivity' . date('his');
+    $targetTable = 'tmp_exreport_target' . date('his');
+    $assigneeTable = 'tmp_exreport_assignee' . date('his');
+    $sql = "CREATE {$this->_temporary} TABLE $tmpTableName
+   (
+    `contact_id` INT(10) NULL,
+    `id` INT(10) NULL,
+    `activity_type_id` VARCHAR(50) NULL,
+    `activity_date_time` DATETIME NULL,
+    PRIMARY KEY (`contact_id`)
+  )
+  ENGINE=HEAP;";
+    CRM_Core_DAO::executeQuery($sql);
+    $sql = "CREATE  TABLE $assigneeTable
+    (
+    `contact_id` INT(10) NULL,
+    `id` INT(10) NULL,
+    `activity_type_id` VARCHAR(50) NULL,
+    `activity_date_time` DATETIME NULL,
+    PRIMARY KEY (`contact_id`)
+    )
+    ENGINE=HEAP;";
+    CRM_Core_DAO::executeQuery($sql);
+    $sql = "CREATE  TABLE $targetTable
+     (
+    `contact_id` INT(10) NULL,
+    `id` INT(10) NULL,
+    `activity_type_id` VARCHAR(50) NULL,
+    `activity_date_time` DATETIME NULL,
+    PRIMARY KEY (`contact_id`)
+    )
+    ENGINE=HEAP;";
+  CRM_Core_DAO::executeQuery($sql);
+  $sql=
+  "REPLACE INTO $tmpTableName
+   SELECT source_contact_id as contact_id, max(id), activity_type_id, activity_date_time
+   FROM civicrm_activity
+   GROUP BY source_contact_id,  activity_date_time DESC
+  ";
+  CRM_Core_DAO::executeQuery($sql);
+
+  $sql = "REPLACE INTO $assigneeTable
+  SELECT assignee_contact_id as contact_id, activity_id as id, a.activity_type_id, a.activity_date_time
+  FROM civicrm_activity_assignment aa
+  LEFT JOIN civicrm_activity a on a.id = aa.activity_id
+  LEFT JOIN $tmpTableName tmp ON tmp.contact_id = aa.assignee_contact_id
+  WHERE (a.activity_date_time < tmp.activity_date_time OR tmp.activity_date_time IS NULL)
+  GROUP BY assignee_contact_id,  a.activity_date_time DESC
+  ";
+  CRM_Core_DAO::executeQuery($sql);
+
+  $sql = "REPLACE INTO $tmpTableName
+  SELECT * FROM $assigneeTable
+  ";
+  CRM_Core_DAO::executeQuery($sql);
+
+  $sql = "REPLACE INTO $targetTable
+  SELECT target_contact_id as contact_id, activity_id as id, a.activity_type_id, a.activity_date_time
+  FROM civicrm_activity_target aa
+  LEFT JOIN civicrm_activity a on a.id = aa.activity_id
+  LEFT JOIN $tmpTableName tmp ON tmp.contact_id = aa.target_contact_id
+  WHERE (a.activity_date_time < tmp.activity_date_time OR tmp.activity_date_time IS NULL)
+  GROUP BY target_contact_id,  a.activity_date_time DESC
+  ";
+
+  CRM_Core_DAO::executeQuery($sql);
+  $sql = "REPLACE INTO $tmpTableName
+  SELECT * FROM $targetTable
+  ";
+  CRM_Core_DAO::executeQuery($sql);
+  }
+  $this->_from .= " LEFT JOIN $tmpTableName {$this->_aliases['civicrm_activity']}
+   ON {$this->_aliases['civicrm_activity']}.contact_id = {$this->_aliases['civicrm_contact']}.id";
+
+  }
   function joinPriceFieldValueFromLineItem() {
     $this->_from .= " LEFT JOIN civicrm_price_field_value {$this->_aliases['civicrm_price_field_value']}
 ON {$this->_aliases['civicrm_line_item']}.price_field_value_id = {$this->_aliases['civicrm_price_field_value']}.id";
@@ -2526,7 +2798,32 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
   }
 
   function alterActivityStatus($value) {
-    $activityStatuses = $activityType   = CRM_Core_PseudoConstant::activityStatus();
+    $activityStatuses  = CRM_Core_PseudoConstant::activityStatus();
     return $activityStatuses[$value];
+  }
+  /*
+   * We are going to convert phones to an array
+   */
+  function alterPhoneGroup($value) {
+
+    $locationTypes = CRM_Core_PseudoConstant::locationType();
+    $phones = explode(',', $value);
+    $return = array();
+    $html = "<table>";
+    foreach ($phones as $phone){
+      if(empty($phone)){
+        continue;
+      }
+      $keys = explode(':', $phone);
+      $return[$locationTypes[$keys[1]]] = $keys[0];
+      $html .= "<tr><td>" . $locationTypes[$keys[1]] . " : " . $keys[0] . "</td></tr>";
+    }
+
+    if(in_array( $this->_outputMode, array( 'print', 'pdf' ))){
+      return $return;
+    }
+
+    $html .= "</table>";
+    return $html;
   }
 }
