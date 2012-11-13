@@ -32,6 +32,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   function __construct() {
     parent::__construct();
     $this->addSelectableCustomFields();
+    $this->addTemplateSelector();
     CRM_Core_Resources::singleton()->addScriptFile('nz.co.fuzion.extendedreport', 'js/jquery.multiselect.filter.js');
   }
 
@@ -217,6 +218,40 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
 
     }
   }
+
+  /*
+   * get name of template file
+   */
+  function getTemplateFileName(){
+    $defaultTpl = parent::getTemplateFileName();
+
+    if(in_array( $this->_outputMode, array( 'print', 'pdf' ))){
+      if($this->_params['templates']){
+        $defaultTpl = 'CRM/Extendedreport/Form/Report/CustomTemplates/' . $this->_params['templates'] .'.tpl';
+      }
+    }
+
+    if(!CRM_Utils_File::isIncludable('templates/' . $defaultTpl)){
+      $defaultTpl = 'CRM/Report/Form.tpl';
+    }
+    if($this->_params['templates'] ==1){
+     //
+    }
+    return $defaultTpl;
+  }
+/*
+  function compileContent(){
+    if(in_array( $this->_outputMode, array( 'print', 'pdf' ))){
+      $templateFile = $this->getTemplateFileName();
+      echo $this->_formValues['report_header'] . CRM_Core_Form::$_template->fetch($templateFile) . $this->_formValues['report_footer'];
+    die;
+    }
+    else{
+      parent::compileContent();
+    }
+  }
+  */
+
   /*
    * We are overriding this so that we can add time if required
    */
@@ -230,7 +265,22 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     }
   }
 
+ /*
+ *
+ */
 
+  function addTemplateSelector(){
+
+   $templatesDir = str_replace('CRM/Extendedreport', 'templates/CRM/Extendedreport', __DIR__);
+   $templatesDir .= '/CustomTemplates';
+   $this->_templates = array(
+     'default' => 'default template',
+     'PhoneBank' => 'Phone Bank template - Phone.tpl'
+   );
+   $this->add('select', 'templates', ts('Select Alternate Template'), $this->_templates, FALSE,
+          array('id' => 'templates', 'title' => ts('- select -'),)
+   );
+  }
   /*
    * This is all just copied from the addCustomFields function -
    * The point of this is to

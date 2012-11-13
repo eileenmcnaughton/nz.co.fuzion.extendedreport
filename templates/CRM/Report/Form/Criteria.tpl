@@ -108,7 +108,17 @@
                 </script>
                 {/literal}
           </div>
-          </td></tr><tr>
+          </td>
+
+            <td>
+          {if $form.templates}
+            <div id='crm-templates'>
+            <label>{ts}Select Print template{/ts}</label>
+            {$form.templates.html}
+            </div>
+          {/if}
+            </td>
+          </tr>
     </table>
     {/if}
     {if $form.aggregate_column_headers}
