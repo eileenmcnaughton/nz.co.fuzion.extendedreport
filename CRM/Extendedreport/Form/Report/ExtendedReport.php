@@ -27,6 +27,8 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
 
   protected $_customGroupAggregates;
 
+  protected $_joinFilters = array();
+
   function __construct() {
     parent::__construct();
     $this->addSelectableCustomFields();
@@ -100,7 +102,16 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       $availableClauses = $this->getAvailableJoins();
       foreach ($this->fromClauses() as $fromClause) {
         $fn = $availableClauses[$fromClause]['callback'];
-        $this->$fn();
+        if(isset($this->_joinFilters[$fromClause])){
+          $extra = $this->_joinFilters[$fromClause];
+        }
+        $append = $this->$fn('', $extra);
+        if($append && !empty($extra)){
+            foreach ($extra as $table => $field){
+              $this->_from .= " AND {$this->_aliases[$table]}.{$field} ";
+            }
+        }
+
       }
       if (strstr($this->_from, 'civicrm_contact')) {
         $this->_from .= $this->_aclFrom;
