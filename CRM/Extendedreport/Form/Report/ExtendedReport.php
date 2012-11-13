@@ -466,18 +466,20 @@ ORDER BY cg.weight, cf.weight";
       foreach ($this->_customGroupExtended as $table => $spec){
         $customFieldsTable[$table] = $spec['title'];
         foreach ($spec['extends'] as $entendedEntity){
-          foreach ($customTableMapping[$entendedEntity] as $customTable){
-            $tableName = $this->_customFields[$customTable]['name'];
-            $tableAlias = $table . "_" . $this->_customFields[$customTable]['name'];
-            $this->_columns[$tableAlias] = $this->_customFields[$tableName];
-            $this->_columns[$tableAlias]['alias'] = $tableAlias;
-            $this->_columns[$table]['dao'] = 'CRM_Contact_DAO_Contact';
-            unset ($this->_columns[$tableAlias]['fields']);
-          }
+          if(array_key_exists($entendedEntity, $customTableMapping)){
+            foreach ($customTableMapping[$entendedEntity] as $customTable){
+              $tableName = $this->_customFields[$customTable]['name'];
+              $tableAlias = $table . "_" . $this->_customFields[$customTable]['name'];
+              $this->_columns[$tableAlias] = $this->_customFields[$tableName];
+              $this->_columns[$tableAlias]['alias'] = $tableAlias;
+              $this->_columns[$table]['dao'] = 'CRM_Contact_DAO_Contact';
+              unset ($this->_columns[$tableAlias]['fields']);
+            }
 
-          foreach ($customFieldsTableFields[$entendedEntity] as $customFieldName => $customFieldLabel){
-            $customFields[$table][$table . ':' . $customFieldName] = $spec['title'] . $customFieldLabel;
-            $customFieldsFlat[$table . ':' . $customFieldName] = $spec['title'] . $customFieldLabel;
+            foreach ($customFieldsTableFields[$entendedEntity] as $customFieldName => $customFieldLabel){
+              $customFields[$table][$table . ':' . $customFieldName] = $spec['title'] . $customFieldLabel;
+              $customFieldsFlat[$table . ':' . $customFieldName] = $spec['title'] . $customFieldLabel;
+            }
           }
         }
       }
@@ -773,11 +775,13 @@ ORDER BY cg.weight, cf.weight";
         $customFieldIds[$fieldAlias] = $fieldId;
       }
     }
-    foreach ($this->_params['custom_fields'] as $fieldAlias => $value) {
-      $fieldName = explode(':', $value);
-      $fieldId = CRM_Core_BAO_CustomField::getKeyID($fieldName[1]);
-      if($fieldId){
-        $customFieldIds[str_replace(':', '_', $value)] = $fieldId;
+    if(!empty($params['custom_fields']) && is_array($params['custom_fields'])){
+      foreach ($this->_params['custom_fields'] as $fieldAlias => $value) {
+        $fieldName = explode(':', $value);
+        $fieldId = CRM_Core_BAO_CustomField::getKeyID($fieldName[1]);
+        if($fieldId){
+          $customFieldIds[str_replace(':', '_', $value)] = $fieldId;
+        }
       }
     }
 
