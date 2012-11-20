@@ -2053,6 +2053,44 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     }
     return $columns;
   }
+
+  /*
+   * Function to get Activity Columns
+  * @param array $options column options
+  */
+  function getLatestActivityColumns($options){
+    $defaultOptions = array(
+      'prefix' => '',
+      'prefix_label' => '',
+      'fields' => true,
+      'group_by' => false,
+      'order_by' => true,
+      'filters' => true,
+      'defaults' => array(
+        'country_id' => TRUE
+      ),
+    );
+    $options = array_merge($defaultOptions,$options);
+    $activityFields = array(
+      'civicrm_activity' => array(
+        'grouping' => 'activity-fields',
+        'alias' => 'activity',
+        'dao' => 'CRM_Activity_DAO_Activity',
+      )
+    );
+    $activityFields['civicrm_activity']['fields'] = array(
+      'activity_type_id' =>
+      array(
+        'title' => ts('Activity Type'),
+        'default' => TRUE,
+        'type' => CRM_Utils_Type::T_STRING,
+      )
+    );
+    return $activityFields;
+  }
+
+
+
   /*
    * Function to get Activity Columns
    * @param array $options column options
