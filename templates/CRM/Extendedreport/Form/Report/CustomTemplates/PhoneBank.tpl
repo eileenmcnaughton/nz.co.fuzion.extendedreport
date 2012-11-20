@@ -105,6 +105,9 @@
   {$row.civicrm_tag_tag_name}  </td></tr>
 
 </table>
+{foreach from=$statistics.filters key=filterkey item=filter}
+Report Criteria:  {$filter.title} {$filter.value}
+{/foreach}
 </div>
 {/foreach}
 </div>
