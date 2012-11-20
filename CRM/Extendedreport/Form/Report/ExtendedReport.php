@@ -2084,7 +2084,12 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'title' => ts('Activity Type'),
         'default' => TRUE,
         'type' => CRM_Utils_Type::T_STRING,
-      )
+        'alter_display' => 'alterActivityType',
+      ),
+      'activity_date_time' =>
+        array('title' => ts('Activity Date'),
+        'default' => TRUE,
+      ),
     );
     return $activityFields;
   }
