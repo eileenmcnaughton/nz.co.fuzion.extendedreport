@@ -10,12 +10,13 @@
     <email>eileen@fuzion.co.nz</email>
   </maintainer>
   <releaseDate>2012-08-24</releaseDate>
-  <version>1.1</version>
+  <version>1.2</version>
   <develStage>stable</develStage>
   <compatibility>
     <ver>3.4</ver>
     <ver>4.1</ver>
     <ver>4.2</ver>
+    <ver>4.3</ver>
   </compatibility>
   <comments>Currently still testing report install framework</comments>
   <civix>
