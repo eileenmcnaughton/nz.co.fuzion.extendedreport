@@ -1,7 +1,7 @@
 <div id='crm-container'>
 {foreach from=$rows item=row key=rowid}{assign var=count value=$count+1}
 <div {if $count is div by 3}style="page-break-after: always" {/if}>
-<div id="report-date">  Printed {$reportDate} Contact ID : {$row.civicrm_contact_id}</div>
+<div id="report-date"><p>  Printed {$reportDate} Contact ID : {$row.civicrm_contact_id}</p></div>
 
 <table  border=1 cellspacing=0 cellpadding=0
  style='width:98%;margin-bottom:12px;'>
