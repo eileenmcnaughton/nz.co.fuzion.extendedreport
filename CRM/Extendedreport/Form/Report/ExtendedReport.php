@@ -2097,7 +2097,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    * Function to get Activity Columns
    * @param array $options column options
    */
-  function getActivityColumns($options){
+  function getActivityColumns($options = array()){
     $defaultOptions = array(
         'prefix' => '',
         'prefix_label' => '',
