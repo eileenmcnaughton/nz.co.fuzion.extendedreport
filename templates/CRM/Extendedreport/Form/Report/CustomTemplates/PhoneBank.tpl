@@ -1,8 +1,6 @@
 <div id='crm-container'>
 {foreach from=$rows item=row key=rowid}{assign var=count value=$count+1}
 <div {if $count is div by 3}style="page-break-after: always" {/if}>
-<div id="report-date"><p>  Printed {$reportDate} Contact ID : {$row.civicrm_contact_id}</p></div>
-
 <table  border=1 cellspacing=0 cellpadding=0
  style='width:98%;margin-bottom:12px;'>
 
@@ -105,6 +103,7 @@
   {$row.civicrm_tag_tag_name}  </td></tr>
 
 </table>
+Printed {$reportDate} Contact ID : {$row.civicrm_contact_id}
 {foreach from=$statistics.filters key=filterkey item=filter}
 Report Criteria:  {$filter.title} {$filter.value}
 {/foreach}
