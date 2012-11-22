@@ -2078,13 +2078,13 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     $activityFields['civicrm_activity']['fields'] = array(
       'activity_type_id' =>
       array(
-        'title' => ts('Activity Type'),
+        'title' => ts('Latest Activity Type'),
         'default' => TRUE,
         'type' => CRM_Utils_Type::T_STRING,
         'alter_display' => 'alterActivityType',
       ),
       'activity_date_time' =>
-        array('title' => ts('Activity Date'),
+        array('title' => ts('Latest Activity Date'),
         'default' => TRUE,
       ),
     );
