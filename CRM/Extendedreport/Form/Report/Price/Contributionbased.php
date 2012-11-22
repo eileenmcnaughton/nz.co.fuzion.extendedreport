@@ -1,6 +1,6 @@
 <?php
 
-require_once 'CRM/Report/Form.php';
+
 
 class CRM_Extendedreport_Form_Report_Price_Contributionbased extends CRM_Extendedreport_Form_Report_ExtendedReport {
   protected $_baseTable = 'civicrm_contribution';
