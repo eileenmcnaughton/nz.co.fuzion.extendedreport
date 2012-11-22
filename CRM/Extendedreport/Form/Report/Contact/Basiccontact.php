@@ -22,7 +22,6 @@ class CRM_Extendedreport_Form_Report_Contact_Basiccontact extends CRM_Extendedre
     + $this->getPhoneColumns();
     + $this->_columns['civicrm_contact']['fields']['id']['required'] = true;
     $this->addTemplateSelector();
-    $this->_tagFilter = true;
     $this->_groupFilter = true;
     parent::__construct();
   }
