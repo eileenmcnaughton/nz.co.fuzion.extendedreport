@@ -362,18 +362,15 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     }
     return $defaultTpl;
   }
-/*
+  /*
+   * Compile the report content
+   *
+   *  4.3 introduced function - overriding on 4.2
+   */
   function compileContent(){
-    if(in_array( $this->_outputMode, array( 'print', 'pdf' ))){
-      $templateFile = $this->getTemplateFileName();
-      echo $this->_formValues['report_header'] . CRM_Core_Form::$_template->fetch($templateFile) . $this->_formValues['report_footer'];
-    die;
-    }
-    else{
-      parent::compileContent();
-    }
+    $templateFile = $this->getTemplateFileName();
+    return $this->_formValues['report_header'] . CRM_Core_Form::$_template->fetch($templateFile) . $this->_formValues['report_footer'];
   }
-  */
 
   /*
    * We are overriding this so that we can add time if required
