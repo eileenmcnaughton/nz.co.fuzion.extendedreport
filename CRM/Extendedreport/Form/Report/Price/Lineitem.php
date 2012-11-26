@@ -34,10 +34,6 @@
  *
  */
 
-require_once 'CRM/Report/Form.php';
-require_once 'CRM/Contribute/PseudoConstant.php';
-require_once 'CRM/Report/Form/Extended.php';
-
 class CRM_Extendedreport_Form_Report_Price_Lineitem extends CRM_Extendedreport_Form_Report_ExtendedReport {
     protected $_addressField = false;
 
