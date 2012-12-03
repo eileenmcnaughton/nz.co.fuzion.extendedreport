@@ -5,12 +5,17 @@
   <name>ExtendedReport</name>
   <description>Extended reports</description>
   <license>AGPL</license>
+  <urls>
+    <url desc="Main Extension Page">http://civicrm.org</url>
+    <url desc="Support">http://forum.civicrm.org</url>
+    <url desc="Licensing">http://civicrm.org/licensing</url>
+  </urls>
   <maintainer>
     <author>Eileen McNaughton</author>
     <email>eileen@fuzion.co.nz</email>
   </maintainer>
-  <releaseDate>2012-08-24</releaseDate>
-  <version>1.1</version>
+  <releaseDate>2012-12-01</releaseDate>
+  <version>1.2</version>
   <develStage>stable</develStage>
   <compatibility>
     <ver>3.4</ver>
@@ -18,7 +23,7 @@
     <ver>4.2</ver>
     <ver>4.3</ver>
   </compatibility>
-  <comments>Currently still testing report install framework</comments>
+  <comments>Extended reports create other report options such as crosstab urls, multiple contact custom fields, price set reports</comments>
   <civix>
     <namespace>CRM/Extendedreport</namespace>
   </civix>
