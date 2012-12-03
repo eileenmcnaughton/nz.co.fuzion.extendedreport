@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <extension key="nz.co.fuzion.extendedreport" type="module">
-  <downloadUrl>https://github.com/eileenmcnaughton/nz.co.fuzion.extendedreport/archive/v1.2.zip</downloadUrl>
+  <downloadUrl>http://github.com/eileenmcnaughton/nz.co.fuzion.extendedreport/archive/v1.2.zip</downloadUrl>
   <file>extendedreport</file>
   <name>ExtendedReport</name>
   <description>Extended reports</description>
