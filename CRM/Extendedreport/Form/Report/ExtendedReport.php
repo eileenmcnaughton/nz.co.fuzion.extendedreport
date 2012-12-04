@@ -1560,6 +1560,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
             'name' => 'id',
             'title' => ts($options['prefix_label'] . 'Contact ID'),
             'alter_display' => 'alterContactID',
+            'type' => CRM_Utils_Type::T_INT,
           ),
           'first_name' => array(
             'title' => ts($options['prefix_label'] . 'First Name'),
@@ -1579,12 +1580,15 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
 
     if(!empty($options['filters'])){
       $contactFields[$options['prefix'] . 'civicrm_contact']['filters'] =  array(
-          'id' => array(
+          $options['prefix'] . 'id' => array(
             'title' => ts($options['prefix_label'] . 'Contact ID'),
+            'type' => CRM_Report_Form::OP_INT,
+            'name' => 'id',
           )
           ,
-          'sort_name' => array(
+          $options['prefix'] . 'sort_name' => array(
             'title' => ts($options['prefix_label'] . 'Contact Name'),
+            'name' => 'sort_name',
           ),
         );
     }
@@ -1614,9 +1618,10 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       'civicrm_case' => array(
         'dao' => 'CRM_Case_DAO_Case',
         'fields' => array(
-          'id' => array(
+          'case_id' => array(
             'title' => ts('Case ID'),
-            'required' => false
+            'required' => false,
+            'name' => 'id',
           ),
           'subject' => array(
             'title' => ts('Case Subject'),
@@ -1682,7 +1687,6 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
             'type' => CRM_Report_Form::OP_INT,
             'operatorType' => CRM_Report_Form::OP_SELECT,
             'options' => $this->deleted_labels,
-            'default' => 0,
             'name' => 'is_deleted'
           )
         )
@@ -1786,7 +1790,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
               'filters'   =>
               array('is_active'=>
                   array( 'title'        => ts( 'Relationship Status' ),
-                      'operatorType' => CRM_Report_Form::OP_SELECT,
+                      'operatorType' => CRM_Report_Form::OP_MULTISELECT,
                       'options'      =>
                       array( ''  => '- Any -',
                           1   => 'Active',
@@ -1794,8 +1798,8 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
                       ),
                       'type'     => CRM_Utils_Type::T_INT ),
                   'relationship_type_id' =>
-                  array( 'title'        => ts( 'Relationship' ),
-                      'operatorType' => CRM_Report_Form::OP_SELECT,
+                  array( 'title'        => ts( 'Relationship Type' ),
+                      'operatorType' => CRM_Report_Form::OP_MULTISELECT,
                       'options'      =>
                       array( ''     => '- any relationship type -') +
                       CRM_Contact_BAO_Relationship::getContactRelationshipType( null, 'null', null, null, true),
