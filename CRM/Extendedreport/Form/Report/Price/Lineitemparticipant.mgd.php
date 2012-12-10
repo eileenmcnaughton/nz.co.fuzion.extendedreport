@@ -4,15 +4,15 @@
 // database as appropriate. For more details, see "hook_civicrm_managed" at:
 // http://wiki.civicrm.org/confluence/display/CRMDOC42/Hook+Reference
 return array (
-  0 => 
+  0 =>
   array (
     'name' => 'CRM_Extendedreport_Form_Report_Price_Lineitemparticipant',
     'entity' => 'ReportTemplate',
-    'params' => 
+    'params' =>
     array (
       'version' => 3,
-      'label' => 'Price_Lineitemparticipant',
-      'description' => 'Price_Lineitemparticipant (nz.co.fuzion.extendedreport)',
+      'label' => 'Participant Line Items',
+      'description' => 'Line Item report for participants',
       'class_name' => 'CRM_Extendedreport_Form_Report_Price_Lineitemparticipant',
       'report_url' => 'nz.co.fuzion.extendedreport/price_lineitemparticipant',
       'component' => 'CiviEvent',
