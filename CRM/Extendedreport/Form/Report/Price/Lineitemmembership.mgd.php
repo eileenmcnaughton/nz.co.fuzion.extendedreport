@@ -6,15 +6,15 @@
 return array (
   0 =>
   array (
-    'name' => 'CRM_Extendedreport_Form_Report_Price_Lineitemmembsship',
+    'name' => 'CRM_Extendedreport_Form_Report_Price_Lineitemmembership',
     'entity' => 'ReportTemplate',
     'params' =>
     array (
       'version' => 3,
-      'label' => 'Price_Lineitemmembership',
-      'description' => 'Price_Lineitemmembsship (nz.co.fuzion.extendedreport)',
-      'class_name' => 'CRM_Extendedreport_Form_Report_Price_Lineitemmembsship',
-      'report_url' => 'nz.co.fuzion.extendedreport/price_lineitemmembsship',
+      'label' => 'Membership Price Set Report',
+      'description' => 'Memberships with Price set information',
+      'class_name' => 'CRM_Extendedreport_Report_Form_Price_Lineitemmembership',
+      'report_url' => 'nz.co.fuzion.extendedreport/pricelineitemmembership',
       'component' => 'CiviMember',
     ),
   ),
