@@ -34,7 +34,7 @@
  *
  */
 
-class CRM_Extendedreport_Report_Form_Price_Lineitemparticipant extends CRM_Extendedreport_Form_Report_ExtendedReport {
+class CRM_Extendedreport_Form_Report_Price_Lineitemparticipant extends CRM_Extendedreport_Form_Report_ExtendedReport {
     protected $_addressField = false;
 
     protected $_emailField   = false;
