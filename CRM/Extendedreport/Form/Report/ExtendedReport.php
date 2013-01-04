@@ -788,7 +788,7 @@ ORDER BY cg.weight, cf.weight";
         $customFieldIds[$fieldAlias] = $fieldId;
       }
     }
-    if(!empty($params['custom_fields']) && is_array($params['custom_fields'])){
+    if(!empty($this->_params['custom_fields']) && is_array($this->_params['custom_fields'])){
       foreach ($this->_params['custom_fields'] as $fieldAlias => $value) {
         $fieldName = explode(':', $value);
         $fieldId = CRM_Core_BAO_CustomField::getKeyID($fieldName[1]);

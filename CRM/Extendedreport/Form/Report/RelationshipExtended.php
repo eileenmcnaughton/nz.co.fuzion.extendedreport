@@ -164,6 +164,7 @@ class CRM_Extendedreport_Form_Report_RelationshipExtended extends CRM_Extendedre
     $this->_params['relationship_type_id_value'] = $relationships;
     $this->buildACLClause( array( $this->_aliases['contact_a_civicrm_contact'] ,$this->_aliases['contact_b_civicrm_contact'] ) );
     $sql = $this->buildQuery( );
+    $rows = array();
     $this->buildRows ( $sql, $rows );
     $this->_params['relationship_type_id_value'] = $originalRelationshipTypes;
     $this->formatDisplay( $rows );
