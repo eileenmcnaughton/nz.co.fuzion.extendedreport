@@ -410,7 +410,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    */
   function addSelectableCustomFields($addFields = TRUE) {
 
-    $extends = array();
+    $extends = $customTableMapping = array();
     if(!empty($this->_customGroupExtended)){
       //lets try to assign custom data select fields
       foreach ($this->_customGroupExtended as $table => $spec){
