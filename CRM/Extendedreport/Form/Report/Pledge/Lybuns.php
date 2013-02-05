@@ -37,7 +37,7 @@
 require_once 'CRM/Report/Form.php';
 require_once 'CRM/Contribute/PseudoConstant.php';
 
-class CRM_Report_Form_Pledge_Lybuns extends CRM_Report_Form {
+class CRM_Extendedreport_Form_Report_Pledge_Lybuns extends CRM_Extendedreport_Form_Report_ExtendedReport {
 
 
     protected $_charts = array( ''         => 'Tabular',
