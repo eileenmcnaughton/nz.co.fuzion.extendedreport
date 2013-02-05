@@ -6,13 +6,13 @@
 return array (
   0 =>
   array (
-    'name' => 'CRM_Extendedreport_Form_Report_ActivityExtended',
+    'name' => 'Extended Activity Report',
     'entity' => 'ReportTemplate',
     'params' =>
     array (
       'version' => 3,
       'label' => 'Activity Extended',
-      'description' => 'Extended Activity Report',
+      'description' => 'Extended Activity Report - includes multi-contact custom fields',
       'class_name' => 'CRM_Extendedreport_Form_Report_ActivityExtended',
       'report_url' => 'activityextended',
       'component' => '',
