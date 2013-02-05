@@ -6,15 +6,15 @@
 return array (
   0 =>
   array (
-    'name' => 'Pledge BTBNS Report',
+    'name' => 'Pledge TBNS Report',
     'entity' => 'ReportTemplate',
     'params' =>
     array (
       'version' => 3,
-      'label' => 'Pledge before this but not Since',
-      'description' => 'Pledge BTBNS',
+      'label' => 'Pledge in this range but not Since',
+      'description' => 'Pledge TBNS',
       'class_name' => 'CRM_Extendedreport_Form_Report_Pledge_Btbns',
-      'report_url' => 'pledgebtbns',
+      'report_url' => 'pledge/tbns',
       'component' => 'CiviPledge',
     ),
   ),

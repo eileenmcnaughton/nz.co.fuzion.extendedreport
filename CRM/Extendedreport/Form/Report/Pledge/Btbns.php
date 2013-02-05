@@ -99,7 +99,6 @@ class CRM_Extendedreport_Form_Report_Pledge_Btbns extends CRM_Extendedreport_For
         'fields' => array(
           'contact_id' => array(
             'title' => ts('contactId'),
-            'no_display' => true,
             'required' => true,
             'no_repeat' => true,
             'type' => CRM_Utils_Type::T_INT,
@@ -107,7 +106,6 @@ class CRM_Extendedreport_Form_Report_Pledge_Btbns extends CRM_Extendedreport_For
 
           'amount' => array(
             'title' => ts('Total Amount'),
-            'no_display' => true,
             'required' => true,
             'no_repeat' => true,
             'type' => CRM_Utils_Type::T_MONEY,
@@ -115,8 +113,7 @@ class CRM_Extendedreport_Form_Report_Pledge_Btbns extends CRM_Extendedreport_For
           ,
 
           'start_date' => array(
-            'title' => ts('Year'),
-            'no_display' => true,
+            'title' => ts('Start Date (within range)'),
             'required' => true,
             'no_repeat' => true,
             'type' => CRM_Utils_Type::T_DATE,
@@ -127,13 +124,16 @@ class CRM_Extendedreport_Form_Report_Pledge_Btbns extends CRM_Extendedreport_For
         'filters' => array(
           'yid' => array(
             'name' => 'start_date',
-            'title' => ts('Dividing Date (please type in like "2012-12-25" & select "is equal to")'),
-          //  'type' => CRM_Utils_Type::T_DATE,
-            'operatorType' => 256,
-            'clause' => "pledge_civireport.contact_id NOT IN
-(SELECT distinct pledge.contact_id FROM civicrm_pledge pledge
- WHERE   pledge.start_date >=  '\$value' AND pledge.is_test = 0) AND pledge_civireport.contact_id IN (SELECT distinct pledge.contact_id FROM civicrm_pledge pledge
- WHERE   pledge.start_date <  ('\$value') AND pledge.is_test = 0) "
+            'title' => ts('Last Pledge Start Date'),
+            'type' => CRM_Utils_Type::T_DATE,
+            'operatorType' => CRM_Report_Form::OP_DATE,
+            'clause' => "pledge_civireport.contact_id IN
+              (SELECT distinct pledge.contact_id FROM civicrm_pledge pledge
+               WHERE pledge.start_date  BETWEEN '\$from' AND '\$to' AND pledge.is_test = 0
+            )
+            AND pledge_civireport.contact_id NOT IN
+            (SELECT distinct pledge.contact_id FROM civicrm_pledge pledge
+             WHERE pledge.start_date >=  ('\$to') AND pledge.is_test = 0) "
           ),
           'status_id' => array(
             'title' => 'Pledge Status',
@@ -168,6 +168,7 @@ class CRM_Extendedreport_Form_Report_Pledge_Btbns extends CRM_Extendedreport_For
   function preProcess() {
     parent::preProcess();
   }
+
   function select() {
     $this->_columnHeaders = $select = array();
     $current_year = $this->_params['yid_value'];
@@ -264,14 +265,12 @@ class CRM_Extendedreport_Form_Report_Pledge_Btbns extends CRM_Extendedreport_For
       $this->limit();
       $getContacts = "SELECT SQL_CALC_FOUND_ROWS {$this->_aliases['civicrm_contact']}.id as cid {$this->_from} {$this->_where}  GROUP BY {$this->_aliases['civicrm_contact']}.id {$this->_limit}";
       $dao = CRM_Core_DAO::executeQuery($getContacts);
-
       while ($dao->fetch()) {
         $contactIds[] = $dao->cid;
       }
       $dao->free();
       $this->setPager();
     }
-
     if (! empty($contactIds) || CRM_Utils_Array::value('charts', $this->_params)) {
       if (CRM_Utils_Array::value('charts', $this->_params)) {
         $sql = "{$this->_select} {$this->_from} {$this->_where} {$this->_groupBy}";
@@ -279,7 +278,6 @@ class CRM_Extendedreport_Form_Report_Pledge_Btbns extends CRM_Extendedreport_For
       else {
         $sql = "{$this->_select} {$this->_from} WHERE {$this->_aliases['civicrm_contact']}.id IN (" . implode(',', $contactIds) . ") AND {$this->_aliases['civicrm_pledge']}.is_test = 0 {$this->_groupBy} ";
       }
-
       $dao = CRM_Core_DAO::executeQuery($sql);
       $current_year = $this->_params['yid_value'];
       $previous_year = $current_year - 1;

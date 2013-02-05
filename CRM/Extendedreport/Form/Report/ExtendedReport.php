@@ -121,6 +121,102 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     }
     $this->selectableCustomDataFrom();
   }
+
+  /*
+   * Override exists purely to handle unusual date fields by passing field metadata to date clause
+   * Nothing else changed
+   */
+  function where() {
+    $whereClauses = $havingClauses = array();
+    foreach ($this->_columns as $tableName => $table) {
+      if (array_key_exists('filters', $table)) {
+        foreach ($table['filters'] as $fieldName => $field) {
+          $clause = NULL;
+          if (CRM_Utils_Array::value('type', $field) & CRM_Utils_Type::T_DATE) {
+            if (CRM_Utils_Array::value('operatorType', $field) == CRM_Report_Form::OP_MONTH) {
+              $op = CRM_Utils_Array::value("{$fieldName}_op", $this->_params);
+              $value = CRM_Utils_Array::value("{$fieldName}_value", $this->_params);
+              if (is_array($value) && !empty($value)) {
+                $clause = "(month({$field['dbAlias']}) $op (" . implode(', ', $value) . '))';
+              }
+            }
+            else {
+              $relative = CRM_Utils_Array::value("{$fieldName}_relative", $this->_params);
+              $from     = CRM_Utils_Array::value("{$fieldName}_from", $this->_params);
+              $to       = CRM_Utils_Array::value("{$fieldName}_to", $this->_params);
+              $fromTime = CRM_Utils_Array::value("{$fieldName}_from_time", $this->_params);
+              $toTime   = CRM_Utils_Array::value("{$fieldName}_to_time", $this->_params);
+              // next line is the changed one
+              $clause   = $this->dateClause($field['dbAlias'], $relative, $from, $to, $field, $fromTime, $toTime);
+            }
+          }
+          else {
+            $op = CRM_Utils_Array::value("{$fieldName}_op", $this->_params);
+            if ($op) {
+              $clause = $this->whereClause($field,
+                $op,
+                CRM_Utils_Array::value("{$fieldName}_value", $this->_params),
+                CRM_Utils_Array::value("{$fieldName}_min", $this->_params),
+                CRM_Utils_Array::value("{$fieldName}_max", $this->_params)
+              );
+            }
+          }
+
+
+          if (!empty($clause)) {
+            if (CRM_Utils_Array::value('having', $field)) {
+              $havingClauses[] = $clause;
+            }
+            else {
+              $whereClauses[] = $clause;
+            }
+          }
+        }
+      }
+    }
+
+    if (empty($whereClauses)) {
+      $this->_where = "WHERE ( 1 ) ";
+      $this->_having = "";
+    }
+    else {
+      $this->_where = "WHERE " . implode(' AND ', $whereClauses);
+    }
+
+    if ($this->_aclWhere) {
+      $this->_where .= " AND {$this->_aclWhere} ";
+    }
+
+    if (!empty($havingClauses)) {
+      // use this clause to construct group by clause.
+      $this->_having = "HAVING " . implode(' AND ', $havingClauses);
+    }
+  }
+    /*
+     * over-ridden to include clause if specified
+     */
+    function dateClause($fieldName,
+      $relative, $from, $to, $field, $fromTime = NULL, $toTime = NULL
+    ) {
+      $type = $field['type'];
+      if(empty($field['clause']))
+      {
+        return parent::dateClause($fieldName,
+          $relative, $from, $to, $type, $fromTime = NULL, $toTime = NULL);
+      }
+      $clauses = array();
+
+      list($from, $to) = self::getFromTo($relative, $from, $to, $fromTime, $toTime);
+      eval("\$clause = \"{$field['clause']}\";");
+      $clauses[] = $clause;
+      if (!empty($clauses)) {
+        return implode(' AND ', $clauses);
+      }
+      return NULL;
+      }
+
+
+
   /*
 * Define any from clauses in use (child classes to override)
 */
