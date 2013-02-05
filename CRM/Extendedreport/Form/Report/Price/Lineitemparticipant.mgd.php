@@ -6,7 +6,7 @@
 return array (
   0 =>
   array (
-    'name' => 'CRM_Extendedreport_Form_Report_Price_Lineitemparticipant',
+    'name' => 'Participant Line Item Report',
     'entity' => 'ReportTemplate',
     'params' =>
     array (

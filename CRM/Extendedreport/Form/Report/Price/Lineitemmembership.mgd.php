@@ -6,7 +6,7 @@
 return array (
   0 =>
   array (
-    'name' => 'CRM_Extendedreport_Form_Report_Price_Lineitemmembership',
+    'name' => 'Membership Price Set Report',
     'entity' => 'ReportTemplate',
     'params' =>
     array (

@@ -6,12 +6,12 @@
 return array (
   0 =>
   array (
-    'name' => 'CRM_Extendedreport_Form_Report_Price_Lineitem',
+    'name' => 'Price Set Line item Report',
     'entity' => 'ReportTemplate',
     'params' =>
     array (
       'version' => 3,
-      'label' => 'Price_Lineitem',
+      'label' => 'Report based on Price Set Line Items',
       'description' => 'Line Item report for price sets',
       'class_name' => 'CRM_Extendedreport_Form_Report_Price_Lineitem',
       'report_url' => 'nz.co.fuzion.extendedreport/price_lineitem',
