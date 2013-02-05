@@ -10,7 +10,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   protected $_customGroupExtends = array();
   protected $_baseTable = 'civicrm_contact';
   protected $_editableFields = TRUE;
-
+  protected $_outputMode = array();
   /*
    * array of extended custom data fields. this is populated by functions like getContactColunmns
    */
@@ -357,7 +357,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     if(!CRM_Utils_File::isIncludable('templates/' . $defaultTpl)){
       $defaultTpl = 'CRM/Report/Form.tpl';
     }
-    if($this->_params['templates'] ==1){
+    if(CRM_Utils_Array::value('templates', $this->_params) ==1){
      //
     }
     return $defaultTpl;
