@@ -14,7 +14,7 @@ return array (
       'label' => 'Contributions with Price Set data',
       'description' => 'Line item Report (based on contributions) (nz.co.fuzion.extendedreport)',
       'class_name' => 'CRM_Extendedreport_Form_Report_Price_Contributionbased',
-      'report_url' => 'nz.co.fuzion.extendedreport/price_contributionbased',
+      'report_url' => 'price/contributionbased',
       'component' => 'CiviContribute',
     ),
   ),

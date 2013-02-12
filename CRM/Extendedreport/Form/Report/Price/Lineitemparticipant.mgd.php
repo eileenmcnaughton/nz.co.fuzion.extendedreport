@@ -14,7 +14,7 @@ return array (
       'label' => 'Participant Line Items',
       'description' => 'Line Item report for participants',
       'class_name' => 'CRM_Extendedreport_Form_Report_Price_Lineitemparticipant',
-      'report_url' => 'nz.co.fuzion.extendedreport/price_lineitemparticipant',
+      'report_url' => 'price/lineitemparticipant',
       'component' => 'CiviEvent',
     ),
   ),
