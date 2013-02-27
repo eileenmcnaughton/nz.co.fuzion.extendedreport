@@ -2831,8 +2831,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
       return;
     }
     $contactID = $row['civicrm_contact_id'];
-    return "<div id=contact-{$contactID} class='crm-entity'>
-<span class='crm-editable crmf-nick_name crm-editable-enabled' data-action='create'>" . $value . "</span></div>";
+    return "<div id=contact-{$contactID} class='crm-entity'><span class='crm-editable crmf-nick_name crm-editable-enabled' data-action='create'>" . $value . "</span></div>";
   }
 
   /*
