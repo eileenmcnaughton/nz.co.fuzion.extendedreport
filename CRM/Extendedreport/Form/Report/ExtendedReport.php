@@ -275,6 +275,285 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       }
     }
   }
+
+  function addFilters() {
+    $options = $filters = array();
+    $count = 1;
+    foreach ($this->_filters as $table => $attributes) {
+      foreach ($attributes as $fieldName => $field) {
+        // get ready with option value pair
+        $operations = $this->getOperationPair(CRM_Utils_Array::value('operatorType', $field),
+          $fieldName
+        );
+
+        $filters[$table][$fieldName] = $field;
+
+        switch (CRM_Utils_Array::value('operatorType', $field)) {
+          case CRM_Report_Form::OP_MONTH:
+            if (!array_key_exists('options', $field) || !is_array($field['options']) || empty($field['options'])) {
+              // If there's no option list for this filter, define one.
+              $field['options'] = array(
+                1 => ts('January'),
+                2 => ts('February'),
+                3 => ts('March'),
+                4 => ts('April'),
+                5 => ts('May'),
+                6 => ts('June'),
+                7 => ts('July'),
+                8 => ts('August'),
+                9 => ts('September'),
+                10 => ts('October'),
+                11 => ts('November'),
+                12 => ts('December'),
+              );
+              // Add this option list to this column _columns. This is
+              // required so that filter statistics show properly.
+              $this->_columns[$table]['filters'][$fieldName]['options'] = $field['options'];
+            }
+          case CRM_Report_FORM::OP_MULTISELECT:
+          case CRM_Report_FORM::OP_MULTISELECT_SEPARATOR:
+            // assume a multi-select field
+            if (!empty($field['options'])) {
+              $element = $this->addElement('select', "{$fieldName}_op", ts('Operator:'), $operations);
+              if (count($operations) <= 1) {
+                $element->freeze();
+              }
+              $select = $this->addElement('select', "{$fieldName}_value", NULL,
+              $field['options'], array(
+                'size' => 4,
+                'style' => 'min-width:250px',
+              )
+              );
+              $select->setMultiple(TRUE);
+            }
+            break;
+
+          case CRM_Report_FORM::OP_SELECT:
+            // assume a select field
+            $this->addElement('select', "{$fieldName}_op", ts('Operator:'), $operations);
+            $this->addElement('select', "{$fieldName}_value", NULL, $field['options']);
+            break;
+
+          case CRM_Report_FORM::OP_DATE:
+            // build datetime fields
+            CRM_Core_Form_Date::buildDateRange($this, $fieldName, $count);
+            $count++;
+            break;
+
+          case CRM_Report_FORM::OP_DATETIME:
+            // build datetime fields
+            CRM_Core_Form_Date::buildDateRange($this, $fieldName, $count, '_from', '_to', 'From:', FALSE, TRUE, 'searchDate', true);
+            $count++;
+            break;
+
+          case CRM_Report_FORM::OP_INT:
+          case CRM_Report_FORM::OP_FLOAT:
+            // and a min value input box
+            $this->add('text', "{$fieldName}_min", ts('Min'));
+            // and a max value input box
+            $this->add('text', "{$fieldName}_max", ts('Max'));
+          default:
+            // default type is string
+            $this->addElement('select', "{$fieldName}_op", ts('Operator:'), $operations,
+            array('onchange' => "return showHideMaxMinVal( '$fieldName', this.value );")
+            );
+            // we need text box for value input
+            $this->add('text', "{$fieldName}_value", NULL);
+            break;
+        }
+      }
+    }
+    $this->assign('filters', $filters);
+  }
+
+  function setDefaultValues($freeze = TRUE) {
+    $freezeGroup = array();
+
+    // FIXME: generalizing form field naming conventions would reduce
+    // lots of lines below.
+    foreach ($this->_columns as $tableName => $table) {
+      if (array_key_exists('fields', $table)) {
+        foreach ($table['fields'] as $fieldName => $field) {
+          if (!array_key_exists('no_display', $field)) {
+            if (isset($field['required'])) {
+              // set default
+              $this->_defaults['fields'][$fieldName] = 1;
+
+              if ($freeze) {
+                // find element object, so that we could use quickform's freeze method
+                // for required elements
+                $obj = $this->getElementFromGroup("fields",
+                  $fieldName
+                );
+                if ($obj) {
+                  $freezeGroup[] = $obj;
+                }
+              }
+            }
+            elseif (isset($field['default'])) {
+              $this->_defaults['fields'][$fieldName] = $field['default'];
+            }
+          }
+        }
+      }
+
+      if (array_key_exists('group_bys', $table)) {
+        foreach ($table['group_bys'] as $fieldName => $field) {
+          if (isset($field['default'])) {
+            if (CRM_Utils_Array::value('frequency', $field)) {
+              $this->_defaults['group_bys_freq'][$fieldName] = 'MONTH';
+            }
+            $this->_defaults['group_bys'][$fieldName] = $field['default'];
+          }
+        }
+      }
+      if (array_key_exists('filters', $table)) {
+        foreach ($table['filters'] as $fieldName => $field) {
+          if (isset($field['default'])) {
+            if (CRM_Utils_Array::value('type', $field) & CRM_Utils_Type::T_DATE) {
+              $this->_defaults["{$fieldName}_relative"] = $field['default'];
+            }
+            else {
+              $this->_defaults["{$fieldName}_value"] = $field['default'];
+            }
+          }
+          //assign default value as "in" for multiselect
+          //operator, To freeze the select element
+          if (CRM_Utils_Array::value('operatorType', $field) == CRM_Report_FORM::OP_MULTISELECT) {
+            $this->_defaults["{$fieldName}_op"] = 'in';
+          }
+          elseif (CRM_Utils_Array::value('operatorType', $field) == CRM_Report_FORM::OP_MULTISELECT_SEPARATOR) {
+            $this->_defaults["{$fieldName}_op"] = 'mhas';
+          }
+          elseif ($op = CRM_Utils_Array::value('default_op', $field)) {
+            $this->_defaults["{$fieldName}_op"] = $op;
+          }
+        }
+      }
+
+      if (array_key_exists('order_bys', $table) &&
+        is_array($table['order_bys'])
+      ) {
+
+        if (!array_key_exists('order_bys', $this->_defaults)) {
+
+          $this->_defaults['order_bys'] = array();
+        }
+        foreach ($table['order_bys'] as $fieldName => $field) {
+          if (CRM_Utils_Array::value('default', $field) ||
+            CRM_Utils_Array::value('default_order', $field) ||
+            CRM_Utils_Array::value('default_is_section', $field) ||
+            CRM_Utils_Array::value('default_weight', $field)
+          ) {
+            $order_by = array(
+              'column' => $fieldName,
+              'order' => CRM_Utils_Array::value('default_order', $field, 'ASC'),
+              'section' => CRM_Utils_Array::value('default_is_section', $field, 0),
+            );
+
+            if (CRM_Utils_Array::value('default_weight', $field)) {
+              $this->_defaults['order_bys'][(int) $field['default_weight']] = $order_by;
+            }
+            else {
+              array_unshift($this->_defaults['order_bys'], $order_by);
+            }
+          }
+        }
+      }
+
+      foreach ($this->_options as $fieldName => $field) {
+        if (isset($field['default'])) {
+          $this->_defaults['options'][$fieldName] = $field['default'];
+        }
+      }
+    }
+
+    if (!empty($this->_submitValues)) {
+      $this->preProcessOrderBy($this->_submitValues);
+    }
+    else {
+      $this->preProcessOrderBy($this->_defaults);
+    }
+
+    // lets finish freezing task here itself
+    if (!empty($freezeGroup)) {
+      foreach ($freezeGroup as $elem) {
+        $elem->freeze();
+      }
+    }
+
+    if ($this->_formValues) {
+      $this->_defaults = array_merge($this->_defaults, $this->_formValues);
+    }
+
+    if ($this->_instanceValues) {
+      $this->_defaults = array_merge($this->_defaults, $this->_instanceValues);
+    }
+
+    CRM_Report_Form_Instance::setDefaultValues($this, $this->_defaults);
+
+    return $this->_defaults;
+  }
+
+  // Note: $fieldName param allows inheriting class to build operationPairs
+  // specific to a field.
+  function getOperationPair($type = "string", $fieldName = NULL) {
+    // FIXME: At some point we should move these key-val pairs
+    // to option_group and option_value table.
+
+    switch ($type) {
+      case CRM_Report_FORM::OP_INT:
+      case CRM_Report_FORM::OP_FLOAT:
+        return array('lte' => ts('Is less than or equal to'),
+        'gte' => ts('Is greater than or equal to'),
+        'bw' => ts('Is between'),
+        'eq' => ts('Is equal to'),
+        'lt' => ts('Is less than'),
+        'gt' => ts('Is greater than'),
+        'neq' => ts('Is not equal to'),
+        'nbw' => ts('Is not between'),
+        'nll' => ts('Is empty (Null)'),
+        'nnll' => ts('Is not empty (Null)'),
+        );
+        break;
+
+      case CRM_Report_FORM::OP_SELECT:
+        return array('eq' => ts('Is equal to'));
+
+      case CRM_Report_FORM::OP_MONTH:
+      case CRM_Report_FORM::OP_MULTISELECT:
+        return array('in' => ts('Is one of'),
+        'notin' => ts('Is not one of'),
+        );
+        break;
+
+      case CRM_Report_FORM::OP_DATE:
+        return array('nll' => ts('Is empty (Null)'),
+        'nnll' => ts('Is not empty (Null)'),
+        );
+        break;
+
+      case CRM_Report_FORM::OP_MULTISELECT_SEPARATOR:
+        // use this operator for the values, concatenated with separator. For e.g if
+        // multiple options for a column is stored as ^A{val1}^A{val2}^A
+        return array('mhas' => ts('Is one of'));
+
+      default:
+        // type is string
+        return array('has' => ts('Contains'),
+        'sw' => ts('Starts with'),
+        'ew' => ts('Ends with'),
+        'nhas' => ts('Does not contain'),
+        'eq' => ts('Is equal to'),
+        'neq' => ts('Is not equal to'),
+        'nll' => ts('Is empty (Null)'),
+        'nnll' => ts('Is not empty (Null)'),
+        );
+    }
+  }
+
+
+
   function statistics(&$rows) {
     return parent::statistics($rows);
   }
