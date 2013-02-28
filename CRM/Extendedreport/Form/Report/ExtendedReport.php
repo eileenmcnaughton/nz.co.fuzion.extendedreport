@@ -11,6 +11,11 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   protected $_baseTable = 'civicrm_contact';
   protected $_editableFields = TRUE;
   protected $_outputMode = array();
+
+  /*
+   * adding support for a single date in here
+   */
+  CONST OP_SINGLEDATE    = 3;
   /*
    * array of extended custom data fields. this is populated by functions like getContactColunmns
    */
@@ -282,9 +287,12 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     foreach ($this->_filters as $table => $attributes) {
       foreach ($attributes as $fieldName => $field) {
         // get ready with option value pair
-        $operations = $this->getOperationPair(CRM_Utils_Array::value('operatorType', $field),
-          $fieldName
+        $operations = CRM_Utils_Array::value('operations', $field);
+        if(empty($operations)){
+          $operations = $this->getOperationPair(CRM_Utils_Array::value('operatorType', $field),
+            $fieldName
         );
+        }
 
         $filters[$table][$fieldName] = $field;
 
@@ -345,7 +353,12 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
             CRM_Core_Form_Date::buildDateRange($this, $fieldName, $count, '_from', '_to', 'From:', FALSE, TRUE, 'searchDate', true);
             $count++;
             break;
-
+          case self::OP_SINGLEDATE:
+            // build single datetime field
+            $this->addElement('select', "{$fieldName}_op", ts('Operator:'), $operations);
+            $this->addDate("{$fieldName}_value", ts(''), FALSE);
+            $count++;
+            break;
           case CRM_Report_FORM::OP_INT:
           case CRM_Report_FORM::OP_FLOAT:
             // and a min value input box
@@ -410,7 +423,8 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       if (array_key_exists('filters', $table)) {
         foreach ($table['filters'] as $fieldName => $field) {
           if (isset($field['default'])) {
-            if (CRM_Utils_Array::value('type', $field) & CRM_Utils_Type::T_DATE) {
+            if (CRM_Utils_Array::value('type', $field) & CRM_Utils_Type::T_DATE
+               && !(CRM_Utils_Array::value('operatorType', $field) == self::OP_SINGLEDATE)) {
               $this->_defaults["{$fieldName}_relative"] = $field['default'];
             }
             else {
@@ -532,7 +546,12 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
         'nnll' => ts('Is not empty (Null)'),
         );
         break;
-
+      case self::OP_SINGLEDATE:
+          return array(
+            'to' => ts('Until Date'),
+            'from' => ts('From Date'),
+          );
+        break;
       case CRM_Report_FORM::OP_MULTISELECT_SEPARATOR:
         // use this operator for the values, concatenated with separator. For e.g if
         // multiple options for a column is stored as ^A{val1}^A{val2}^A
