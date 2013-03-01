@@ -1836,21 +1836,56 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     );
   }
 
-  function getContributionColumns() {
-    return array(
-      'civicrm_contribution' =>
-      array(
-        'dao' => 'CRM_Contribute_DAO_Contribution',
-        'fields' =>
+  function getContributionColumns($options = array()) {
+    $defaultOptions = array(
+      'prefix' => '',
+      'prefix_label' => '',
+      'fields' => true,
+      'group_by' => false,
+      'order_by' => true,
+      'filters' => true,
+      'defaults' => array(
+       ),
+     );
+
+    $options = array_merge($defaultOptions,$options);
+    $hasFinancialType = (method_exists('CRM_Contribute_Pseudoconstant', 'financialType' ));
+    if($hasFinancialType){
+      $typeKey = 'financial_type_id';
+      $typeField = array(
+        'title' => ts('Financial Type'),
+        'default' => TRUE,
+        'alter_display' => 'alterContributionType',
+      );
+      $typeFilter = array('title' => ts('Financial Type'),
+          'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+          'options' => CRM_Contribute_PseudoConstant::financialType(),
+      );
+    }
+    else {
+      $typeKey = 'contribution_type_id';
+      $typeField = array('title' => ts('Contribution Type'),
+        'default' => TRUE,
+        'alter_display' => 'alterContributionType',
+      );
+      $typeFilter = array('title' => ts('Contribution Type'),
+            'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+            'options' => CRM_Contribute_PseudoConstant::contributionType(),
+        );
+    }
+    $fields =  array('civicrm_contribution' =>  array(
+      'dao' => 'CRM_Contribute_DAO_Contribution',
+      'grouping' => 'contribution-fields',
+      )
+    );
+    if($options['fields']){
+      $fields['civicrm_contribution']['fields'] =
         array(
           'contribution_id' => array(
             'title' => ts('Contribution ID'),
             'name' => 'id',
           ),
-          'contribution_type_id' => array('title' => ts('Contribution Type'),
-            'default' => TRUE,
-            'alter_display' => 'alterContributionType',
-          ),
+          $typeKey => $typeField,
           'payment_instrument_id' => array('title' => ts('Payment Instrument'),
             'alter_display' => 'alterPaymentType',
           ),
@@ -1865,16 +1900,13 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
             array('sum' => ts('Total Amount')),
             'type' => CRM_Utils_Type::T_MONEY,
           ),
-        ),
-        'filters' =>
+       );
+    }
+     $fields['civicrm_contribution']['filters'] =
         array(
           'receive_date' =>
           array('operatorType' => CRM_Report_Form::OP_DATE),
-          'contribution_type_id' =>
-          array('title' => ts('Contribution Type'),
-            'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-            'options' => CRM_Contribute_PseudoConstant::contributionType(),
-          ),
+          $typeKey => $typeFilter,
           'payment_instrument_id' =>
           array('title' => ts('Payment Type'),
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
@@ -1895,8 +1927,9 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
           ),
           'total_amount' =>
           array('title' => ts('Contribution Amount')),
-        ),
-        'order_bys' =>
+        );
+     if($options['order_by']){
+      $fields['civicrm_contribution']['order_bys'] =
         array(
           'payment_instrument_id' =>
           array('title' => ts('Payment Instrument'),
@@ -1904,8 +1937,10 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
          'contribution_type_id' =>
           array('title' => ts('Contribution Type'),
           ),
-        ),
-        'group_bys' =>
+        );
+     }
+     if($options['group_by']){
+       $fields['civicrm_contribution']['group_bys'] =
         array(
           'contribution_type_id' =>
           array('title' => ts('Contribution Type')),
@@ -1916,10 +1951,9 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
             'name' => 'id',
           ),
           'source' => array('title' => 'Contribution Source'),
-        ),
-        'grouping' => 'contribution-fields',
-      ),
-    );
+        );
+     }
+     return $fields;
   }
 
   function getContactColumns($options = array()) {
@@ -2635,10 +2669,15 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'rightTable' => 'civicrm_membership',
         'callback' => 'joinMembershipFromLineItem',
       ),
+      'contribution_from_contact' => array(
+        'leftTable' => 'civicrm_contact',
+        'rightTable' => 'civicrm_contribution',
+        'callback' => 'joinContributionFromContact',
+      ),
       'contribution_from_participant' => array(
         'leftTable' => 'civicrm_participant',
         'rightTable' => 'civicrm_contribution',
-        'callback' => 'joinContribution:FromParticipant',
+        'callback' => 'joinContributionFromParticipant',
       ),
       'contribution_from_membership' => array(
         'leftTable' => 'civicrm_membership',
@@ -2898,7 +2937,19 @@ LEFT JOIN civicrm_membership {$this->_aliases['civicrm_membership']}
 ON pp.membership_id = {$this->_aliases['civicrm_membership']}.id
 ";
   }
-  /*
+  /**
+   * Define join from Contact to Contribution table
+   */
+  function joinContributionFromContact() {
+    if(empty($this->_aliases['civicrm_contact'])){
+      $this->_aliases['civicrm_contact'] = 'civireport_contact';
+    }
+    $this->_from .= " LEFT JOIN civicrm_contribution {$this->_aliases['civicrm_contribution']}
+    ON {$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_contribution']}.contact_id
+  ";
+    }
+
+/**
 * Define join from Participant to Contribution table
 */
   function joinContributionFromParticipant() {
