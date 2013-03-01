@@ -197,6 +197,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       $this->_having = "HAVING " . implode(' AND ', $havingClauses);
     }
   }
+
     /*
      * over-ridden to include clause if specified
      */
@@ -218,7 +219,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
         return implode(' AND ', $clauses);
       }
       return NULL;
-      }
+    }
 
 
 
@@ -589,7 +590,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
 
     $this->beginPostProcess();
     $sql = $this->buildQuery();
-
     // build array of result based on column headers. This method also allows
     // modifying column headers before using it to build result set i.e $rows.
     $rows = array();
@@ -2635,7 +2635,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       'contribution_from_participant' => array(
         'leftTable' => 'civicrm_participant',
         'rightTable' => 'civicrm_contribution',
-        'callback' => 'joinContribution:git FromParticipant',
+        'callback' => 'joinContribution:FromParticipant',
       ),
       'contribution_from_membership' => array(
         'leftTable' => 'civicrm_membership',
