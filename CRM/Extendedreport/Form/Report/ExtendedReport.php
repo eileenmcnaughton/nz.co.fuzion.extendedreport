@@ -104,18 +104,29 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       if(!empty($this->_aliases['civicrm_contact'])){
         $this->buildACLClause($this->_aliases['civicrm_contact']);
       }
-      $this->_from = "FROM {$this->_baseTable} {$this->_aliases[$this->_baseTable]}";
+      $this->_from = "FROM {$this->_baseTable} " . (empty($this->_aliases[$this->_baseTable]) ? '': $this->_aliases[$this->_baseTable]);
       $availableClauses = $this->getAvailableJoins();
-      foreach ($this->fromClauses() as $fromClause) {
-        $fn = $availableClauses[$fromClause]['callback'];
-        if(isset($this->_joinFilters[$fromClause])){
-          $extra = $this->_joinFilters[$fromClause];
+      foreach ($this->fromClauses() as $clausekey => $fromClause) {
+        if(is_array( $fromClause)){
+          // we might be adding the same join more than once (should have made it an array from the start)
+          $fn = $availableClauses[$clausekey]['callback'];
+           foreach ($fromClause as $fromTable => $fromSpec){
+            $append = $this->$fn($fromTable, $fromSpec);
+          }
         }
-        $append = $this->$fn('', $extra);
-        if($append && !empty($extra)){
-            foreach ($extra as $table => $field){
-              $this->_from .= " AND {$this->_aliases[$table]}.{$field} ";
-            }
+        else{
+          //@todo - basically have separate handling for the string vs array scenarios
+        $fn = $availableClauses[$fromClause]['callback'];
+        $extra = array();
+          if(isset($this->_joinFilters[$fromClause])){
+            $extra = $this->_joinFilters[$fromClause];
+          }
+          $append = $this->$fn('', $extra);
+          if($append && !empty($extra)){
+              foreach ($extra as $table => $field){
+                $this->_from .= " AND {$this->_aliases[$table]}.{$field} ";
+              }
+          }
         }
 
       }
