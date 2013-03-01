@@ -34,6 +34,15 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
 
   protected $_joinFilters = array();
 
+  /**
+   * generate a temp table of records that meet criteria & then build the query
+   */
+  protected $_preConstrain = FALSE;
+  /**
+   * Set to true once temp table has been generated
+   */
+  protected $_preConstrained = FALSE;
+
   function __construct() {
     parent::__construct();
     $this->addSelectableCustomFields();
@@ -46,6 +55,11 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   }
 
   function select() {
+    if($this->_preConstrain && !$this->_preConstrained){
+      $this->_select = " SELECT DISTINCT {$this->_aliases[$this->_baseTable]}.id";
+      return;
+    }
+
     if($this->_customGroupAggregates){
       if(empty($this->_params)){
         $this->_params = $this->controller->exportValues($this->_name);
@@ -144,6 +158,10 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    */
   function where() {
     $whereClauses = $havingClauses = array();
+    if($this->_preConstrained){
+      $this->_where = ' ';
+      return;
+    }
     foreach ($this->_columns as $tableName => $table) {
       if (array_key_exists('filters', $table)) {
         foreach ($table['filters'] as $fieldName => $field) {
@@ -644,6 +662,59 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
 
     }
   }
+/**
+ * Over-written to allow pre-constraints
+ * @param unknown_type $applyLimit
+ * @return string
+ */
+
+  function buildQuery($applyLimit = TRUE) {
+    $this->select();
+    $this->from();
+    $this->customDataFrom();
+    $this->where();
+    if($this->_preConstrain && !$this->_preConstrained){
+      $this->generateTempTable();
+      $this->_preConstrained = TRUE;
+      $this->select();
+      $this->from();
+      $this->customDataFrom();
+      $this->where();
+    }
+    $this->groupBy();
+    $this->orderBy();
+
+    // order_by columns not selected for display need to be included in SELECT
+    $unselectedSectionColumns = $this->unselectedSectionColumns();
+    foreach ($unselectedSectionColumns as $alias => $section) {
+      $this->_select .= ", {$section['dbAlias']} as {$alias}";
+    }
+
+    if ($applyLimit && !CRM_Utils_Array::value('charts', $this->_params)) {
+      $this->limit();
+    }
+    CRM_Utils_Hook::alterReportVar('sql', $this, $this);
+
+    $sql = "{$this->_select} {$this->_from} {$this->_where} {$this->_groupBy} {$this->_having} {$this->_orderBy} {$this->_limit}";
+    return $sql;
+  }
+
+  function generateTempTable(){
+    $tempTable = 'civicrm_temp_' . $this->_baseTable . rand(1, 10000);
+    $sql = "CREATE {$this->_temporary} TABLE $tempTable
+      (`id` INT(10) UNSIGNED NULL DEFAULT '0',
+        INDEX `id` (`id`)
+      )
+      COLLATE='utf8_unicode_ci'
+      ENGINE=HEAP;";
+    CRM_Core_DAO::executeQuery($sql);
+    $sql = "INSERT INTO $tempTable
+      {$this->_select} {$this->_from} {$this->_where} {$this->_limit} ";
+    CRM_Core_DAO::executeQuery($sql);
+    $this->_aliases[$tempTable] = $this->_aliases[$this->_baseTable];
+    $this->_baseTable = $tempTable;
+  }
+
 
   /*
    * 4.2 backport of this function including 4.3 tweak whereby compileContent is a separate function
