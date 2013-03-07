@@ -331,7 +331,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
         // get ready with option value pair
         $operations = CRM_Utils_Array::value('operations', $field);
         if(empty($operations)){
-          $operations = self::getOperationPair(CRM_Utils_Array::value('operatorType', $field),
+          $operations = $this->getOperators(CRM_Utils_Array::value('operatorType', $field),
             $fieldName
         );
         }
@@ -553,7 +553,8 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
 
   // Note: $fieldName param allows inheriting class to build operationPairs
   // specific to a field.
-  static function getOperationPair($type = "string", $fieldName = NULL) {
+  // we can't override getOperationPair because it is static in 4.3 & not static in 4.2 so rename
+   function getOperators($type = "string", $fieldName = NULL) {
     // FIXME: At some point we should move these key-val pairs
     // to option_group and option_value table.
 
