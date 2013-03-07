@@ -16,6 +16,13 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    * adding support for a single date in here
    */
   CONST OP_SINGLEDATE    = 3;
+
+  /*
+   * adding support for date time here - note that this is for 4.2
+   * 4.3 has it in CRM_Report_Form
+  */
+  CONST OP_DATETIME    = 5;
+
   /*
    * array of extended custom data fields. this is populated by functions like getContactColunmns
    */
@@ -58,9 +65,9 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    * For 4.3 / 4.2 compatibility set financial type fields
    */
   function setFinancialType(){
-    if (method_exists('CRM_Contribute_Pseudoconstant', 'contributionType' )){
+    if (method_exists('CRM_Contribute_PseudoConstant', 'contributionType' )){
       $this->financialTypeField = 'contribution_type_id';
-      $this->financialTypeLabel = 'Contribution Type ID';
+      $this->financialTypeLabel = 'Contribution Type';
       $this->financialTypePseudoConstant = 'contributionType';
     }
   }
@@ -395,7 +402,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
             $count++;
             break;
 
-          case CRM_Report_FORM::OP_DATETIME:
+          case self::OP_DATETIME:
             // build datetime fields
             CRM_Core_Form_Date::buildDateRange($this, $fieldName, $count, '_from', '_to', 'From:', FALSE, TRUE, 'searchDate', true);
             $count++;
@@ -708,8 +715,10 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     if ($applyLimit && !CRM_Utils_Array::value('charts', $this->_params)) {
       $this->limit();
     }
-    CRM_Utils_Hook::alterReportVar('sql', $this, $this);
-
+    //4.2 support - method may not exist
+    if(method_exists('CRM_Utils_Hook', 'alterReportVar')){
+      CRM_Utils_Hook::alterReportVar('sql', $this, $this);
+    }
     $sql = "{$this->_select} {$this->_from} {$this->_where} {$this->_groupBy} {$this->_having} {$this->_orderBy} {$this->_limit}";
     return $sql;
   }
@@ -1216,7 +1225,9 @@ ORDER BY cg.weight, cf.weight";
     if(!empty($this->_rollup ) && !empty($this->_groupBysArray)){
       $this->assignSubTotalLines($rows);
     }
-
+    if(empty($rows)){
+      return;
+    }
     list($firstRow) = $rows;
     // no result to alter
     if (empty($firstRow)) {
@@ -1952,6 +1963,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       'grouping' => 'contribution-fields',
       )
     );
+
     if($options['fields']){
       $fields['civicrm_contribution']['fields'] =
         array(
@@ -1959,7 +1971,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
             'title' => ts('Contribution ID'),
             'name' => 'id',
           ),
-          $this->financialTypeField = array(
+          $this->financialTypeField => array(
             'title' => ts($this->financialTypeLabel),
             'default' => TRUE,
             'alter_display' => 'alterFinancialType',
@@ -1980,14 +1992,16 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
           ),
        );
     }
-     $fields['civicrm_contribution']['filters'] =
+    $fields['civicrm_contribution']['filters'] =
         array(
-          'receive_date' =>
-          array('operatorType' => CRM_Report_Form::OP_DATE),
-             $typeFilter = array('title' => ts($this->financialTypeLabel),
-            'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-            'options' => CRM_Contribute_PseudoConstant::$pseudoMethod(),
-          ),
+          'receive_date' => array(
+              'operatorType' => CRM_Report_Form::OP_DATE
+            ),
+            $this->financialTypeField => array(
+              'title' => ts($this->financialTypeLabel),
+              'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+              'options' => CRM_Contribute_PseudoConstant::$pseudoMethod(),
+            ),
           'payment_instrument_id' =>
           array('title' => ts('Payment Type'),
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
@@ -2015,7 +2029,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
           'payment_instrument_id' =>
           array('title' => ts('Payment Instrument'),
           ),
-          $this->financialTypeField = array(
+          $this->financialTypeField => array(
             'title' => ts($this->financialTypeLabel),
           )
         );
