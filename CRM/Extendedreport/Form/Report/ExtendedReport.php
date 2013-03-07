@@ -43,11 +43,20 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    */
   protected $_preConstrained = FALSE;
 
+  protected $financialTypeField = 'financial_type_id';
+  protected $financialTypeLabel = 'Financial Type';
+  protected $financialTypePseudoConstant = 'financialType';
+
   function __construct() {
     parent::__construct();
     $this->addSelectableCustomFields();
     $this->addTemplateSelector();
-    CRM_Core_Resources::singleton()->addScriptFile('nz.co.fuzion.extendedreport', 'js/jquery.multiselect.filter.js');
+    if (method_exists('CRM_Contribute_Pseudoconstant', 'contributionType' )){
+      $this->financialTypeField = 'contribution_type_id';
+      $this->financialTypeLabel = 'Contribution Type ID';
+      $this->financialTypePseudoConstant = 'contributionType';
+    }
+ //   CRM_Core_Resources::singleton()->addScriptFile('nz.co.fuzion.extendedreport', 'js/jquery.multiselect.filter.js');
   }
 
   function preProcess() {
@@ -322,7 +331,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
         // get ready with option value pair
         $operations = CRM_Utils_Array::value('operations', $field);
         if(empty($operations)){
-          $operations = $this->getOperationPair(CRM_Utils_Array::value('operatorType', $field),
+          $operations = self::getOperationPair(CRM_Utils_Array::value('operatorType', $field),
             $fieldName
         );
         }
@@ -544,7 +553,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
 
   // Note: $fieldName param allows inheriting class to build operationPairs
   // specific to a field.
-  function getOperationPair($type = "string", $fieldName = NULL) {
+  static function getOperationPair($type = "string", $fieldName = NULL) {
     // FIXME: At some point we should move these key-val pairs
     // to option_group and option_value table.
 
@@ -1931,30 +1940,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
      );
 
     $options = array_merge($defaultOptions,$options);
-    $hasFinancialType = (method_exists('CRM_Contribute_Pseudoconstant', 'financialType' ));
-    if($hasFinancialType){
-      $typeKey = 'financial_type_id';
-      $typeField = array(
-        'title' => ts('Financial Type'),
-        'default' => TRUE,
-        'alter_display' => 'alterContributionType',
-      );
-      $typeFilter = array('title' => ts('Financial Type'),
-          'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-          'options' => CRM_Contribute_PseudoConstant::financialType(),
-      );
-    }
-    else {
-      $typeKey = 'contribution_type_id';
-      $typeField = array('title' => ts('Contribution Type'),
-        'default' => TRUE,
-        'alter_display' => 'alterContributionType',
-      );
-      $typeFilter = array('title' => ts('Contribution Type'),
-            'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-            'options' => CRM_Contribute_PseudoConstant::contributionType(),
-        );
-    }
+    $pseudoMethod = $this->financialTypePseudoConstant;
     $fields =  array('civicrm_contribution' =>  array(
       'dao' => 'CRM_Contribute_DAO_Contribution',
       'grouping' => 'contribution-fields',
@@ -1967,7 +1953,11 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
             'title' => ts('Contribution ID'),
             'name' => 'id',
           ),
-          $typeKey => $typeField,
+          $this->financialTypeField = array(
+            'title' => ts($this->financialTypeLabel),
+            'default' => TRUE,
+            'alter_display' => 'alterFinancialType',
+          ),
           'payment_instrument_id' => array('title' => ts('Payment Instrument'),
             'alter_display' => 'alterPaymentType',
           ),
@@ -1988,7 +1978,10 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         array(
           'receive_date' =>
           array('operatorType' => CRM_Report_Form::OP_DATE),
-          $typeKey => $typeFilter,
+             $typeFilter = array('title' => ts($this->financialTypeLabel),
+            'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+            'options' => CRM_Contribute_PseudoConstant::$pseudoMethod(),
+          ),
           'payment_instrument_id' =>
           array('title' => ts('Payment Type'),
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
@@ -2016,16 +2009,16 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
           'payment_instrument_id' =>
           array('title' => ts('Payment Instrument'),
           ),
-         'contribution_type_id' =>
-          array('title' => ts('Contribution Type'),
-          ),
+          $this->financialTypeField = array(
+            'title' => ts($this->financialTypeLabel),
+          )
         );
      }
      if($options['group_by']){
        $fields['civicrm_contribution']['group_bys'] =
         array(
-          'contribution_type_id' =>
-          array('title' => ts('Contribution Type')),
+          $this->financialTypeField =>
+          array('title' => ts($this->financialTypeLabel)),
           'payment_instrument_id' =>
           array('title' => ts('Payment Instrument')),
           'contribution_id' =>
