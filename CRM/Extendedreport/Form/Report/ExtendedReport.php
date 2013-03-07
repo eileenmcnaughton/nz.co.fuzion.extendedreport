@@ -51,14 +51,19 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     parent::__construct();
     $this->addSelectableCustomFields();
     $this->addTemplateSelector();
+ //   CRM_Core_Resources::singleton()->addScriptFile('nz.co.fuzion.extendedreport', 'js/jquery.multiselect.filter.js');
+  }
+
+  /**
+   * For 4.3 / 4.2 compatibility set financial type fields
+   */
+  function setFinancialType(){
     if (method_exists('CRM_Contribute_Pseudoconstant', 'contributionType' )){
       $this->financialTypeField = 'contribution_type_id';
       $this->financialTypeLabel = 'Contribution Type ID';
       $this->financialTypePseudoConstant = 'contributionType';
     }
- //   CRM_Core_Resources::singleton()->addScriptFile('nz.co.fuzion.extendedreport', 'js/jquery.multiselect.filter.js');
   }
-
   function preProcess() {
     parent::preProcess();
   }
@@ -1939,7 +1944,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       'defaults' => array(
        ),
      );
-
+    $this->setFinancialType();
     $options = array_merge($defaultOptions,$options);
     $pseudoMethod = $this->financialTypePseudoConstant;
     $fields =  array('civicrm_contribution' =>  array(
