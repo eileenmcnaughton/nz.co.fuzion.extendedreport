@@ -123,13 +123,21 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   }
 
   function addColumnAggregateSelect($fieldName, $tableAlias, $spec){
-    $options = civicrm_api('option_value', 'get', array('version' => 3, 'option_group_id' => $spec['option_group_id']));
-
-    foreach ($options['values'] as $option){
-      $this->_select .= " , SUM( CASE {$tableAlias}.{$fieldName} WHEN '{$option['value']}' THEN 1 ELSE 0 END ) AS {$fieldName}_{$option['value']} ";
-      $this->_columnHeaders["{$fieldName}_{$option['value']}"] = array('title' => $spec['title'] . " - " . $option['label']);
+    if(empty($spec['option_group_id'])){
+      throw new Exception('currently column headers need to be radio or select');
     }
-    $this->_select .= " , SUM( CASE {$tableAlias}.{$fieldName} WHEN '{$option['value']}' THEN 1 ELSE 0 END ) AS {$fieldName}_{$option['value']} ";
+    $options = civicrm_api('option_value', 'get', array('version' => 3, 'options' => array('limit' => 50,), 'option_group_id' => $spec['option_group_id']));
+    foreach ($options['values'] as $option){
+      $fieldAlias = "{$fieldName}_" . strtolower(str_replace(' ','',$option['value']));
+      if(in_array($spec['htmlType'], array('CheckBox', 'MultiSelect'))){
+        $this->_select .= " , SUM( CASE WHEN {$tableAlias}.{$fieldName} LIKE '%" . CRM_Core_DAO::VALUE_SEPARATOR . $option['value'] . CRM_Core_DAO::VALUE_SEPARATOR . "%' THEN 1 ELSE 0 END ) AS $fieldAlias ";
+      }
+      else {
+        $this->_select .= " , SUM( CASE {$tableAlias}.{$fieldName} WHEN '{$option['value']}' THEN 1 ELSE 0 END ) AS $fieldAlias ";
+      }
+      $this->_columnHeaders[$fieldAlias] = array('title' => $spec['title'] . " - " . $option['label']);
+    }
+    $this->_select .= " , SUM( CASE {$tableAlias}.{$fieldName} WHEN '{$option['value']}' THEN 1 ELSE 0 END ) AS $fieldAlias ";
   }
   /*
 * From clause build where baseTable & fromClauses are defined
