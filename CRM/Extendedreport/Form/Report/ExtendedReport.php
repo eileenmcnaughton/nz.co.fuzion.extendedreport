@@ -54,6 +54,8 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   protected $financialTypeLabel = 'Financial Type';
   protected $financialTypePseudoConstant = 'financialType';
 
+  protected $whereClauses = array();
+
   function __construct() {
     parent::__construct();
     $this->addSelectableCustomFields();
@@ -204,6 +206,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
               $value = CRM_Utils_Array::value("{$fieldName}_value", $this->_params);
               if (is_array($value) && !empty($value)) {
                 $clause = "(month({$field['dbAlias']}) $op (" . implode(', ', $value) . '))';
+                $this->whereClauses[$tableName][] = $clause;
               }
             }
             else {
@@ -214,6 +217,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
               $toTime   = CRM_Utils_Array::value("{$fieldName}_to_time", $this->_params);
               // next line is the changed one
               $clause   = $this->dateClause($field['dbAlias'], $relative, $from, $to, $field, $fromTime, $toTime);
+              $this->whereClauses[$tableName][] = $clause;
             }
           }
           else {
@@ -225,6 +229,9 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
                 CRM_Utils_Array::value("{$fieldName}_min", $this->_params),
                 CRM_Utils_Array::value("{$fieldName}_max", $this->_params)
               );
+              if(!empty($clause)){
+                $this->whereClauses[$tableName][] = $clause;
+              }
             }
           }
 
@@ -692,6 +699,38 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
 
     }
   }
+
+  /**
+   * overriding because to post && !$this->_noFields from 4.3 to 4.2
+   */
+  function beginPostProcess() {
+    $this->_params = $this->controller->exportValues($this->_name);
+
+    if (empty($this->_params) &&
+      $this->_force
+    ) {
+      $this->_params = $this->_formValues;
+    }
+
+    // hack to fix params when submitted from dashboard, CRM-8532
+    // fields array is missing because form building etc is skipped
+    // in dashboard mode for report
+    if (!CRM_Utils_Array::value('fields', $this->_params) && !$this->_noFields) {
+      $this->_params = $this->_formValues;
+    }
+
+    $this->_formValues = $this->_params;
+    if (CRM_Core_Permission::check('administer Reports') &&
+      isset($this->_id) &&
+      ($this->_instanceButtonName == $this->controller->getButtonName() . '_save' ||
+        $this->_chartButtonName == $this->controller->getButtonName()
+      )
+    ) {
+      $this->assign('updateReportButton', TRUE);
+    }
+    $this->processReportMode();
+  }
+
 /**
  * Over-written to allow pre-constraints
  * @param unknown_type $applyLimit
