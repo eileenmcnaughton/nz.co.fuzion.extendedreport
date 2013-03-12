@@ -3295,6 +3295,15 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
   function alterContributionType($value, &$row) {
     return is_string(CRM_Contribute_PseudoConstant::contributionType($value, FALSE)) ? CRM_Contribute_PseudoConstant::contributionType($value, FALSE) : '';
   }
+
+  /*
+   * Retrieve text for contribution type from pseudoconstant
+  */
+  function alterFinancialType($value, &$row) {
+    $fn = $this->financialTypePseudoConstant;
+    return is_string(CRM_Contribute_PseudoConstant::$fn($value, FALSE)) ? CRM_Contribute_PseudoConstant::$fn($value, FALSE) : '';
+  }
+
   /*
 * Retrieve text for contribution status from pseudoconstant
 */
