@@ -1,4 +1,4 @@
- <?php
+<?php
 
 class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   protected $_addressField = FALSE;
