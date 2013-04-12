@@ -120,6 +120,7 @@
             </td>
           </tr>
     </table>
+    </div>
     {/if}
     {if $form.aggregate_column_headers}
       <table>
@@ -135,7 +136,6 @@
           </td></tr>
       </table>
     {/if}
-    </div>
     {if $orderByOptions}
       <div id="order-by-elements" class="civireport-criteria" >
         <h3>Order by Columns</h3>
