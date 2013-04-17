@@ -2026,6 +2026,12 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
           'payment_instrument_id' => array('title' => ts('Payment Instrument'),
             'alter_display' => 'alterPaymentType',
           ),
+          'campaign_id' => array(
+            'title' => ts('Campaign'),
+            'type' => CRM_Utils_Type::T_INT,
+            //@todo write this column
+         //   'alter_display' => 'alterCampaign',
+          ),
           'source' => array('title' => 'Contribution Source'),
           'trxn_id' => NULL,
           'receive_date' => array('default' => TRUE),
@@ -2059,7 +2065,29 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
             'options' => CRM_Contribute_PseudoConstant::contributionStatus(),
           ),
-          'contribution_is_test' =>  array(
+          $this->financialTypeField => array(
+            'title' => ts($this->financialTypeLabel),
+            'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+            'options' => CRM_Contribute_PseudoConstant::$pseudoMethod(),
+            'type' => CRM_Utils_Type::T_INT,
+          ),
+          'payment_instrument_id' => array(
+            'title' => ts('Payment Type'),
+            'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+            'options' => CRM_Contribute_PseudoConstant::paymentInstrument(),
+            'type' => CRM_Utils_Type::T_INT,
+          ),
+          'total_amount' => array(
+            'title' => ts('Contribution Amount'),
+            'type' => CRM_Utils_Type::T_MONEY,
+          ),
+          'campaign_id' => array(
+            'title' => ts('Campaign'),
+            'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+            'type' => CRM_Utils_Type::T_INT,
+            'options' => CRM_Campaign_BAO_Campaign::getCampaigns(),
+          ),
+/*          'contribution_is_test' =>  array(
             'type' => CRM_Report_Form::OP_INT,
             'operatorType' => CRM_Report_Form::OP_SELECT,
             'title' => ts("Contribution Mode"),
@@ -2067,6 +2095,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
             'name' => 'is_test',
             'options' => array('0' => 'Live', '1' => 'Test'),
           ),
+*/
           'total_amount' =>
           array('title' => ts('Contribution Amount')),
         );
