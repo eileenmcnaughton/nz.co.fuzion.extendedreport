@@ -1801,6 +1801,12 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
             'options' => CRM_Event_PseudoConstant::participantRole(),
           ),
+          'participant_fee_level' =>  array(
+            'name' => 'fee_level',
+            'type' => CRM_Utils_Type::T_STRING,
+            'operator' => 'like',
+            'title' => ts('Participant Fee Level'),
+           ),
           'participant_register_date' => array(
             'title' => ' Registration Date',
             'operatorType' => CRM_Report_Form::OP_DATE,
