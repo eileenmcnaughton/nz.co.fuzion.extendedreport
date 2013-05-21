@@ -771,7 +771,7 @@ dpm($sql);
   }
 
   function generateTempTable(){
-    $tempTable = 'civicrm_temp_' . $this->_baseTable . rand(1, 10000);
+    $tempTable = 'civicrm_report_temp_' . $this->_baseTable . rand(1, 10000);
     $sql = "CREATE {$this->_temporary} TABLE $tempTable
       (`id` INT(10) UNSIGNED NULL DEFAULT '0',
         INDEX `id` (`id`)
@@ -2968,7 +2968,7 @@ ON {$this->_aliases[$prefix . 'civicrm_email']}.contact_id = {$this->_aliases[$p
   function joinEntityTagFromContact($prefix = '') {
     static $tmpTableName = null;
     if(empty($tmpTableName)){
-      $tmpTableName = 'tmp_exreport_entity_tag' . date('his');
+      $tmpTableName = 'civicrm_report_temp_entity_tag' . date('his');
     }
     $sql = "CREATE {$this->_temporary} TABLE $tmpTableName
     (
@@ -3004,9 +3004,9 @@ ON {$this->_aliases[$prefix . 'civicrm_email']}.contact_id = {$this->_aliases[$p
     static $tmpTableName = null;
     if(empty($tmpTableName)){
 
-    $tmpTableName = 'tmp_exreport_lastestActivity' . date('his');
-    $targetTable = 'tmp_exreport_target' . date('his');
-    $assigneeTable = 'tmp_exreport_assignee' . date('his');
+    $tmpTableName = 'civicrm_report_temp_lastestActivity' . date('his');
+    $targetTable = 'civicrm_report_temp_target' . date('his');
+    $assigneeTable = 'civicrm_report_temp_assignee' . date('his');
     $sql = "CREATE {$this->_temporary} TABLE $tmpTableName
    (
     `contact_id` INT(10) NULL,
@@ -3172,7 +3172,7 @@ ON {$this->_aliases['civicrm_membership']}.membership_type_id = {$this->_aliases
 
   function joinContributionFromLineItem() {
     $temporary = $this->_temporary;
-    $tempTable = 'civicrm_temp_report_line_items' . rand(1, 10000);
+    $tempTable = 'civicrm_report_temp_line_items' . rand(1, 10000);
     $createTablesql = "
     CREATE  $temporary TABLE $tempTable (
     `lid` INT(10) UNSIGNED NOT NULL DEFAULT '0' COMMENT 'Line Item',
@@ -3231,7 +3231,7 @@ ON {$this->_aliases['civicrm_membership']}.membership_type_id = {$this->_aliases
 
   function joinLineItemFromContribution() {
     $temporary = $this->_temporary;// because we like to change this for debugging
-    $tempTable = 'civicrm_temp_report_line_item_map' . rand(1, 10000);
+    $tempTable = 'civicrm_report_temp_line_item_map' . rand(1, 10000);
     $createTablesql = "
     CREATE  $temporary TABLE $tempTable (
     `contid` INT(10) UNSIGNED NULL DEFAULT '0' COMMENT 'Contribution ID',
@@ -3331,6 +3331,55 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
 ({$this->_aliases['civicrm_event']}.is_template IS NULL OR
 {$this->_aliases['civicrm_event']}.is_template = 0)";
   }
+
+  /**
+   *
+   * @param string $prefix
+   * @param array $extra
+   */
+  function joinContributionSummaryTableFromContact($prefix, $extra){
+    $temporary = $this->_temporary;
+    $tempTable = 'civicrm_report_temp_contsumm'. $prefix . date('d_H_I') . rand(1, 10000);
+    $dropSql = "DROP TABLE IF EXISTS $tempTable";
+    $criteria = " is_test = 0 ";
+    if(!empty($extra['criteria'])){
+      $criteria .= " AND " . implode(' AND ', $extra['criteria']);
+    }
+    $createSql = "
+      CREATE TABLE $tempTable (
+      `contact_id` INT(10) UNSIGNED NOT NULL COMMENT 'Foreign key to civicrm_contact.id .',
+      `contributionsummary{$prefix}` VARCHAR(1024) NULL DEFAULT NULL COLLATE 'utf8_unicode_ci',
+      INDEX `contact_id` (`contact_id`)
+      )
+      COLLATE='utf8_unicode_ci'
+      ENGINE=InnoDB";
+    $insertSql = "
+      INSERT INTO
+      $tempTable
+      SELECT  contact_id,
+        CONCAT('<table><tr>',
+        GROUP_CONCAT(
+        CONCAT(
+        '<td>', DATE_FORMAT(receive_date,'%m-%d-%Y'),
+        '</td><td>', financial_type_name,
+        '</td><td>',total_amount, '</td>')
+        ORDER BY receive_date DESC SEPARATOR  '<tr></tr>' )
+      ,'</tr></table>') as contributions{$prefix}
+      FROM (SELECT contact_id, receive_date, total_amount, name as financial_type_name
+        FROM civicrm_contribution {$this->_aliases['civicrm_contribution']}
+        LEFT JOIN civicrm_" . substr($this->financialTypeField, 0,-3) . " financial_type
+        ON financial_type.id = {$this->_aliases['civicrm_contribution']}.{$this->financialTypeField}
+        WHERE $criteria
+        ORDER BY receive_date DESC ) as conts
+      GROUP BY contact_id
+      ORDER BY NULL
+     ";
+      CRM_Core_DAO::executeQuery($dropSql);
+      CRM_Core_DAO::executeQuery($createSql);
+      CRM_Core_DAO::executeQuery($insertSql);
+      $this->_from .= " LEFT JOIN $tempTable {$this->_aliases['civicrm_contribution_summary' . $prefix]}
+      ON {$this->_aliases['civicrm_contribution_summary' . $prefix]}.contact_id = {$this->_aliases['civicrm_contact']}.id";
+    }
 
   /*
    * Retrieve text for contribution type from pseudoconstant
