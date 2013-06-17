@@ -276,6 +276,33 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     }
     $this->_select .= " , SUM( CASE {$tableAlias}.{$fieldName} WHEN '{$option['value']}' THEN 1 ELSE 0 END ) AS $fieldAlias ";
   }
+
+  /**
+   * overridden purely for annoying 4.2 e-notice on $selectColumns(fixed in 4.3)
+   */
+
+  function unselectedSectionColumns() {
+    $selectColumns = array();
+    foreach ($this->_columns as $tableName => $table) {
+      if (array_key_exists('fields', $table)) {
+        foreach ($table['fields'] as $fieldName => $field) {
+          if (CRM_Utils_Array::value('required', $field) ||
+            CRM_Utils_Array::value($fieldName, $this->_params['fields'])
+          ) {
+
+            $selectColumns["{$tableName}_{$fieldName}"] = 1;
+          }
+        }
+      }
+    }
+    if (is_array($this->_sections) && is_array($selectColumns)) {
+      return array_diff_key($this->_sections, $selectColumns);
+    }
+    else {
+      return array();
+    }
+  }
+
   /*
 * From clause build where baseTable & fromClauses are defined
 */
