@@ -614,10 +614,14 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     }
     $this->assign('filters', $filters);
   }
-
+/**
+ * We have over-riden this to provide the option of setting single date fields with defaults
+ * and the option of setting 'to', 'from' defaults on date fields
+ * @param boolean $freeze
+ * @return Ambigous <string, multitype:, unknown>
+ */
   function setDefaultValues($freeze = TRUE) {
     $freezeGroup = array();
-
     // FIXME: generalizing form field naming conventions would reduce
     // lots of lines below.
     foreach ($this->_columns as $tableName => $table) {
@@ -631,9 +635,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
               if ($freeze) {
                 // find element object, so that we could use quickform's freeze method
                 // for required elements
-                $obj = $this->getElementFromGroup("fields",
-                  $fieldName
-                );
+                $obj = $this->getElementFromGroup("fields", $fieldName);
                 if ($obj) {
                   $freezeGroup[] = $obj;
                 }
@@ -681,7 +683,8 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
         }
       }
 
-      if (array_key_exists('order_bys', $table) &&
+      if (
+        array_key_exists('order_bys', $table) &&
         is_array($table['order_bys'])
       ) {
 
@@ -690,7 +693,8 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
           $this->_defaults['order_bys'] = array();
         }
         foreach ($table['order_bys'] as $fieldName => $field) {
-          if (CRM_Utils_Array::value('default', $field) ||
+          if (
+            CRM_Utils_Array::value('default', $field) ||
             CRM_Utils_Array::value('default_order', $field) ||
             CRM_Utils_Array::value('default_is_section', $field) ||
             CRM_Utils_Array::value('default_weight', $field)
@@ -2171,6 +2175,12 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     );
   }
 
+
+/**
+ *
+ * @param unknown_type $options
+ * @return Ambigous <multitype:multitype:NULL  , multitype:multitype:string  multitype:NULL  multitype:string NULL  , multitype:multitype:string  multitype:NULL string  multitype:number string boolean multitype:string  NULL  multitype:NULL  multitype:string NULL  >
+ */
   function getContributionColumns($options = array()) {
     $defaultOptions = array(
       'prefix' => '',
