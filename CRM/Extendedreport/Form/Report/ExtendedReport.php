@@ -345,16 +345,21 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     $this->selectableCustomDataFrom();
   }
 
+  /**
+   *  constrainedWhere applies to Where clauses applied AFTER the
+   * 'pre-constrained' report universe is created.
+   *
+   * For example the universe might be limited to a group of contacts in the first round
+   * in the second round this Where clause is applied
+   */
+  function constrainedWhere(){
+  }
   /*
    * Override exists purely to handle unusual date fields by passing field metadata to date clause
    * Also store where clauses to an array
    */
   function where() {
     $whereClauses = $havingClauses = array();
-    if($this->_preConstrained){
-      $this->_where = ' ';
-      return;
-    }
     foreach ($this->_columns as $tableName => $table) {
       if (array_key_exists('filters', $table)) {
         foreach ($table['filters'] as $fieldName => $field) {
@@ -825,7 +830,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     // modifying column headers before using it to build result set i.e $rows.
     $rows = array();
     $this->buildRows($sql, $rows);
-dpm($sql);
     // format result set.
     $this->formatDisplay($rows);
 
@@ -867,13 +871,11 @@ dpm($sql);
    */
   function beginPostProcess() {
     $this->_params = $this->controller->exportValues($this->_name);
-
     if (empty($this->_params) &&
       $this->_force
     ) {
       $this->_params = $this->_formValues;
     }
-
     // hack to fix params when submitted from dashboard, CRM-8532
     // fields array is missing because form building etc is skipped
     // in dashboard mode for report
@@ -895,7 +897,7 @@ dpm($sql);
 
 /**
  * Over-written to allow pre-constraints
- * @param unknown_type $applyLimit
+ * @param boolean $applyLimit
  * @return string
  */
 
@@ -910,7 +912,7 @@ dpm($sql);
       $this->select();
       $this->from();
       $this->customDataFrom();
-      $this->where();
+      $this->constrainedWhere();
     }
     $this->groupBy();
     $this->orderBy();
@@ -931,9 +933,18 @@ dpm($sql);
     $sql = "{$this->_select} {$this->_from} {$this->_where} {$this->_groupBy} {$this->_having} {$this->_orderBy} {$this->_limit}";
     return $sql;
   }
-
+/**
+ * Generate a temp table to reflect the pre-constrained report group
+ * This could be a group of contacts on whom we are going to do a series of contribution
+ * comparisons.
+ *
+ * We apply where criteria from the form to generate this
+ *
+ * We create a temp table of their ids in the first instance
+ * and use this as the base
+ */
   function generateTempTable(){
-    $tempTable = 'civicrm_report_temp_' . $this->_baseTable . rand(1, 10000);
+    $tempTable = 'civicrm_report_temp_' . $this->_baseTable . date('d_H_I') . rand(1, 10000);
     $sql = "CREATE {$this->_temporary} TABLE $tempTable
       (`id` INT(10) UNSIGNED NULL DEFAULT '0',
         INDEX `id` (`id`)
@@ -946,6 +957,7 @@ dpm($sql);
     CRM_Core_DAO::executeQuery($sql);
     $this->_aliases[$tempTable] = $this->_aliases[$this->_baseTable];
     $this->_baseTable = $tempTable;
+    $this->_tempTables['base'] = $tempTable;
   }
 
 
@@ -3542,6 +3554,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
       $this->_from .= " LEFT JOIN $tempTable {$this->_aliases['civicrm_contribution_summary' . $prefix]}
       ON {$this->_aliases['civicrm_contribution_summary' . $prefix]}.contact_id = {$this->_aliases['civicrm_contact']}.id";
     }
+
 
   /*
    * Retrieve text for contribution type from pseudoconstant
