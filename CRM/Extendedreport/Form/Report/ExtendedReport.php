@@ -2215,10 +2215,11 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
           ),
           $this->financialTypeField => array(
             'title' => ts($this->financialTypeLabel),
-            'default' => TRUE,
+            'type' => CRM_Utils_Type::T_INT,
             'alter_display' => 'alterFinancialType',
           ),
           'payment_instrument_id' => array('title' => ts('Payment Instrument'),
+            'type' => CRM_Utils_Type::T_INT,
             'alter_display' => 'alterPaymentType',
           ),
           'campaign_id' => array(
@@ -2233,9 +2234,10 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
           'receipt_date' => NULL,
           'fee_amount' => NULL,
           'net_amount' => NULL,
-          'total_amount' => array('title' => ts('Amount'),
-          'statistics' =>
-            array('sum' => ts('Total Amount')),
+          'total_amount' => array(
+            'title' => ts('Amount'),
+            'statistics' =>
+              array('sum' => ts('Total Amount')),
             'type' => CRM_Utils_Type::T_MONEY,
           ),
        );
@@ -2245,20 +2247,11 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
           'receive_date' => array(
               'operatorType' => CRM_Report_Form::OP_DATE
             ),
-            $this->financialTypeField => array(
-              'title' => ts($this->financialTypeLabel),
-              'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-              'options' => CRM_Contribute_PseudoConstant::$pseudoMethod(),
-            ),
-          'payment_instrument_id' =>
-          array('title' => ts('Payment Type'),
-            'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-            'options' => CRM_Contribute_PseudoConstant::paymentInstrument(),
-          ),
           'contribution_status_id' =>
           array('title' => ts('Contribution Status'),
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
             'options' => CRM_Contribute_PseudoConstant::contributionStatus(),
+            'type' => CRM_Utils_Type::T_INT,
           ),
           $this->financialTypeField => array(
             'title' => ts($this->financialTypeLabel),
@@ -2291,9 +2284,8 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
             'hidden' => TRUE,
             'options' => array('0' => 'Live', '1' => 'Test'),
           ),
-*/
-          'total_amount' =>
-          array('title' => ts('Contribution Amount')),
+          */
+
         );
      if($options['order_by']){
       $fields['civicrm_contribution']['order_bys'] =
@@ -3313,6 +3305,7 @@ ON pp.membership_id = {$this->_aliases['civicrm_membership']}.id
     }
     $this->_from .= " LEFT JOIN civicrm_contribution {$this->_aliases['civicrm_contribution']}
     ON {$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_contribution']}.contact_id
+    AND {$this->_aliases['civicrm_contribution']}.is_test = 0
   ";
     }
 
@@ -3603,12 +3596,6 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
     return "<div id=contact-{$contactID} class='crm-entity'><span class='crm-editable crmf-nick_name crm-editable-enabled' data-action='create'>" . $value . "</span></div>";
   }
 
-  /*
-* Retrieve text for contribution type from pseudoconstant
-*/
-  function alterFinancialType($value, &$row) {
-    return is_string(CRM_Contribute_PseudoConstant::financialType($value, FALSE)) ? CRM_Contribute_PseudoConstant::financialType($value, FALSE) : '';
-  }
 
   /*
    * Retrieve text for contribution type from pseudoconstant
