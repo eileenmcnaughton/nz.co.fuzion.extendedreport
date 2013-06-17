@@ -2417,7 +2417,13 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
             'title' => ts($options['prefix_label'] . 'Contact Name'),
             'name' => 'sort_name',
           ),
-        );
+          $options['prefix'] . 'contact_type' => array(
+           'title' => ts($options['prefix_label'] . 'Contact Type'),
+           'name' => 'contact_type',
+           'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+           'options' => CRM_Contribute_PseudoConstant::contactType(),
+          ),
+      );
     }
 
     if(!empty($options['order_by'])){
