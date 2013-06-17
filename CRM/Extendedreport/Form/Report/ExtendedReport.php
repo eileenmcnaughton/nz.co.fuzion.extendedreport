@@ -2314,6 +2314,43 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
      }
      return $fields;
   }
+  /**
+   *
+   * @param unknown_type $options
+   * @return Ambigous <multitype:multitype:NULL  , multitype:multitype:string  multitype:NULL  multitype:string NULL  , multitype:multitype:string  multitype:NULL string  multitype:number string boolean multitype:string  NULL  multitype:NULL  multitype:string NULL  >
+   */
+  function getContributionSummaryColumns($options = array()) {
+    $defaultOptions = array(
+      'prefix' => '',
+      'prefix_label' => '',
+      'fields' => true,
+      'group_by' => false,
+      'order_by' => true,
+      'filters' => true,
+      'defaults' => array(
+      ),
+    );
+    $options = array_merge($defaultOptions,$options);
+    $pseudoMethod = $this->financialTypePseudoConstant;
+    $fields =  array('civicrm_contribution_summary' . $options['prefix'] =>  array(
+      'dao' => 'CRM_Contribute_DAO_Contribution',
+      'grouping' => 'contribution-fields',
+    )
+    );
+
+    if($options['fields']){
+      $fields['civicrm_contribution_summary' . $options['prefix']]['fields'] =
+      array(
+        'contributionsummary'. $options['prefix'] => array(
+          'title' => $options['prefix_label'] . ts('Contribution Details'),
+          'default' => TRUE,
+          'required' => TRUE,
+        ),
+
+      );
+    }
+    return $fields;
+  }
 
   function getContactColumns($options = array()) {
 
@@ -3108,6 +3145,11 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
          'rightTable' => 'civicrm_tag',
          'callback' => 'joinEntityTagFromContact',
        ),
+      'contribution_summary_table_from_contact' => array(
+        'leftTable' => 'civicrm_contact',
+        'rightTable' => 'civicrm_contribution_summary',
+        'callback' => 'joinContributionSummaryTableFromContact',
+      ),
     );
   }
 
