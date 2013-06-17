@@ -663,7 +663,14 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
           if (isset($field['default'])) {
             if (CRM_Utils_Array::value('type', $field) & CRM_Utils_Type::T_DATE
                && !(CRM_Utils_Array::value('operatorType', $field) == self::OP_SINGLEDATE)) {
-              $this->_defaults["{$fieldName}_relative"] = $field['default'];
+              if(is_array($field['default'])){
+                $this->_defaults["{$fieldName}_from"] = CRM_Utils_Array::value('from', $field['default']);
+                $this->_defaults["{$fieldName}_to"] = CRM_Utils_Array::value('to', $field['default']);
+                $this->_defaults["{$fieldName}_relative"] = 0;
+              }
+              else{
+                $this->_defaults["{$fieldName}_relative"] = $field['default'];
+              }
             }
             else {
               $this->_defaults["{$fieldName}_value"] = $field['default'];
@@ -687,9 +694,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
         array_key_exists('order_bys', $table) &&
         is_array($table['order_bys'])
       ) {
-
         if (!array_key_exists('order_bys', $this->_defaults)) {
-
           $this->_defaults['order_bys'] = array();
         }
         foreach ($table['order_bys'] as $fieldName => $field) {
@@ -2283,6 +2288,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
             'title' => ts("Contribution Mode"),
             'default' => 0,
             'name' => 'is_test',
+            'hidden' => TRUE,
             'options' => array('0' => 'Live', '1' => 'Test'),
           ),
 */
