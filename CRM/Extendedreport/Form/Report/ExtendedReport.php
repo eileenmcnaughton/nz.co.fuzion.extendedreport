@@ -1177,15 +1177,18 @@ ORDER BY cg.weight, cf.weight";
           'group_title' => $customDAO->title,
           'name' => $customDAO->table_name,
         );
-        $this->_customFields[$currentTable] = array();
+        if(!isset($this->_customFields[$currentTable])) {
+          $this->_customFields[$currentTable] = array();
+        }
       }
       $filters = array();
       $table['fields'][$fieldName] = $this->extractFieldsAndFilters($customDAO, $fieldName, $filters);
       $table['filters'][$fieldName] = $filters;
-      $this->_customFields[$currentTable] = array_merge($this->_customFields[$currentTable], $table);
+      $this->_customFields[$currentTable] = array_merge_recursive($this->_customFields[$currentTable], $table);
       $fieldTableMapping[$fieldName] = $currentTable;
       $customTableMapping[$customDAO->extends][] = $currentTable;
     }
+
     /*
      * so, now we have all the information about the custom fields - let's apply it once per
      * entity
