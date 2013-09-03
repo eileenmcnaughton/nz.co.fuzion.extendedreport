@@ -84,6 +84,20 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       return CRM_Contact_BAO_Contact::buildOptions('contact_type');
     }
   }
+
+  /**
+   * wrapper for getOptions / pseudoconstant to get contact type options
+   */
+  function getLocationTypeOptions(){
+    if(method_exists('CRM_Core_PseudoConstant', 'locationType')){
+      return CRM_Core_PseudoConstant::locationType();
+    }
+    else{
+      $result = civicrm_api3('address', 'getoptions', array('field' => 'location_type_id'));
+      return $result['values'];
+    }
+  }
+
   /**
    * Backported purely to provide CRM-12687 which is in 4.4
    */
@@ -1447,7 +1461,7 @@ ORDER BY cg.weight, cf.weight";
                   'name' => $customfields[$fieldName][$index] . "_" . $fieldName,
                   $customfields[$fieldName][$index] . "_" . $fieldName => array(
                       'title' => $title,
-                      'type' => $table['fields'][$fieldName]['type'],
+                      'type' => CRM_Utils_Array::value('type', $table['fields'][$fieldName], 'String'),
                   )
               );
             }
@@ -3776,7 +3790,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    */
   function alterPhoneGroup($value) {
 
-    $locationTypes = CRM_Core_PseudoConstant::locationType();
+    $locationTypes = $this->getLocationTypeOptions();
     $phones = explode(',', $value);
     $return = array();
     $html = "<table>";

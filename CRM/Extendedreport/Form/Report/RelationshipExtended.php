@@ -10,16 +10,30 @@ class CRM_Extendedreport_Form_Report_RelationshipExtended extends CRM_Extendedre
     $this->_columns = $this->getContactColumns(array(
       'prefix' => 'contact_a_',
       'prefix_label' => 'Contact A ::'
-    )) + $this->getContactColumns(array(
+    ))
+    + $this->getContactColumns(array(
       'prefix' => 'contact_b_',
       'prefix_label' => 'Contact B ::'
-    )) + $this->getEmailColumns(array(
+    ))
+    + $this->getEmailColumns(array(
       'prefix' => 'contact_a_',
       'prefix_label' => 'Contact A ::'
-    )) + $this->getEmailColumns(array(
+    ))
+    + $this->getEmailColumns(array(
       'prefix' => 'contact_b_',
       'prefix_label' => 'Contact B ::'
-    )) + $this->getRelationshipColumns() + array(
+    ))
+    + $this->getPhoneColumns(array(
+      'prefix' => 'contact_a_',
+      'prefix_label' => 'Contact A ::',
+      'subquery' => false,
+    ))
+    + $this->getPhoneColumns(array(
+      'prefix' => 'contact_b_',
+      'prefix_label' => 'Contact B ::',
+      'subquery' => false,
+    ))
+    + $this->getRelationshipColumns() + array(
       'civicrm_relationship_type' => array(
         'dao' => 'CRM_Contact_DAO_RelationshipType',
         'fields' => array(
@@ -63,7 +77,16 @@ class CRM_Extendedreport_Form_Report_RelationshipExtended extends CRM_Extendedre
           )
         )
       )
-    ) + $this->getCaseColumns() + $this->getAddressColumns();
+    )
+    + $this->getCaseColumns()
+    + $this->getAddressColumns(array(
+      'prefix' => 'contact_a_',
+      'prefix_label' => 'Contact A ::')
+      )
+    + $this->getAddressColumns(array(
+      'prefix' => 'contact_b_',
+      'prefix_label' => 'Contact B ::')
+    );
     parent::__construct();
   }
   function from() {
@@ -85,34 +108,57 @@ class CRM_Extendedreport_Form_Report_RelationshipExtended extends CRM_Extendedre
           LEFT JOIN civicrm_relationship rccoordinator ON ({$this->_aliases['contact_b_civicrm_contact']}.id = rccoordinator.contact_id_a AND rccoordinator.relationship_type_id = 8)
           LEFT JOIN civicrm_case case_civireport ON rccoordinator .case_id = case_civireport.id";
 
-
-    $this->_from .= "
-          LEFT JOIN civicrm_address {$this->_aliases['civicrm_address']}
-          ON (( {$this->_aliases['civicrm_address']}.contact_id =
-          {$this->_aliases['contact_a_civicrm_contact']}.id) AND
-          {$this->_aliases['civicrm_address']}.is_primary = 1 ) ";
-
-
     $this->_from .= "
           INNER JOIN civicrm_relationship_type {$this->_aliases['civicrm_relationship_type']}
           ON ( {$this->_aliases['civicrm_relationship']}.relationship_type_id  =
           {$this->_aliases['civicrm_relationship_type']}.id  ) ";
 
     // include Email Field
-    if ($this->_emailField_a) {
+    if ($this->isTableSelected('contact_a_civicrm_email')) {
       $this->_from .= "
-          LEFT JOIN civicrm_email {$this->_aliases['civicrm_email']}
-          ON ( {$this->_aliases['contact_a_civicrm_contact']}.id =
-          {$this->_aliases['civicrm_email']}.contact_id AND
-          {$this->_aliases['civicrm_email']}.is_primary = 1 )";
+        LEFT JOIN civicrm_email {$this->_aliases['contact_a_civicrm_email']}
+        ON ( {$this->_aliases['contact_a_civicrm_contact']}.id =
+          {$this->_aliases['contact_a_civicrm_email']}.contact_id
+          AND {$this->_aliases['contact_a_civicrm_email']}.is_primary = 1 )";
     }
-    if ($this->_emailField_b) {
+    if ($this->isTableSelected('contact_b_civicrm_email')) {
       $this->_from .= "
-              LEFT JOIN civicrm_email {$this->_aliases['civicrm_email_b']}
-              ON ( {$this->_aliases['civicrm_contact']}.id =
-              {$this->_aliases['civicrm_email_b']}.contact_id AND
-                {$this->_aliases['civicrm_email_b']}.is_primary = 1 )";
+        LEFT JOIN civicrm_email {$this->_aliases['contact_b_civicrm_email']}
+        ON ( {$this->_aliases['contact_b_civicrm_contact']}.id =
+          {$this->_aliases['contact_b_civicrm_email']}.contact_id
+          AND {$this->_aliases['contact_b_civicrm_email']}.is_primary = 1 )";
     }
+    // include phone Field
+    if ($this->isTableSelected('contact_a_civicrm_phone')) {
+      $this->_from .= "
+      LEFT JOIN civicrm_phone {$this->_aliases['contact_a_civicrm_phone']}
+        ON ( {$this->_aliases['contact_a_civicrm_contact']}.id =
+        {$this->_aliases['contact_a_civicrm_phone']}.contact_id
+          AND {$this->_aliases['contact_a_civicrm_phone']}.is_primary = 1 )";
+    }
+    if ($this->isTableSelected('contact_b_civicrm_phone')) {
+      $this->_from .= "
+        LEFT JOIN civicrm_phone {$this->_aliases['contact_b_civicrm_phone']}
+        ON ( {$this->_aliases['contact_b_civicrm_contact']}.id =
+        {$this->_aliases['contact_b_civicrm_phone']}.contact_id
+        AND {$this->_aliases['contact_b_civicrm_phone']}.is_primary = 1 )";
+    }
+
+    if ($this->isTableSelected('contact_a_civicrm_address')) {
+      $this->_from .= "
+      LEFT JOIN civicrm_address {$this->_aliases['contact_a_civicrm_address']}
+        ON ( {$this->_aliases['contact_a_civicrm_contact']}.id =
+        {$this->_aliases['contact_a_civicrm_address']}.contact_id
+        AND {$this->_aliases['contact_a_civicrm_address']}.is_primary = 1 )";
+    }
+    if ($this->isTableSelected('contact_b_civicrm_address')) {
+      $this->_from .= "
+          LEFT JOIN civicrm_address {$this->_aliases['contact_b_civicrm_address']}
+          ON ( {$this->_aliases['contact_b_civicrm_contact']}.id =
+        {$this->_aliases['contact_b_civicrm_address']}.contact_id
+        AND {$this->_aliases['contact_b_civicrm_address']}.is_primary = 1 )";
+    }
+
     $this->selectableCustomDataFrom();
   }
   function statistics(&$rows) {
@@ -155,6 +201,7 @@ class CRM_Extendedreport_Form_Report_RelationshipExtended extends CRM_Extendedre
     $this->relationType = null;
     $relType = $originalRelationshipTypes = array();
 
+    $relationships = array();
     if (CRM_Utils_Array::value('relationship_type_id_value', $this->_params) && is_array($this->_params['relationship_type_id_value'])) {
       $originalRelationshipTypes = $this->_params['relationship_type_id_value'];
       foreach ($this->_params['relationship_type_id_value'] as $relString) {
@@ -177,6 +224,7 @@ class CRM_Extendedreport_Form_Report_RelationshipExtended extends CRM_Extendedre
     $this->endPostProcess($rows);
   }
   function alterDisplay(&$rows) {
+    parent::alterDisplay($rows);
     // custom code to alter rows
     $entryFound = true;
 
@@ -189,21 +237,6 @@ class CRM_Extendedreport_Form_Report_RelationshipExtended extends CRM_Extendedre
           $entryFound = true;
         }
       }
-      // handle country
-      if (array_key_exists('civicrm_address_country_id', $row)) {
-        if ($value = $row['civicrm_address_country_id']) {
-          $rows[$rowNum]['civicrm_address_country_id'] = CRM_Core_PseudoConstant::country($value, false);
-        }
-        $entryFound = true;
-      }
-
-      if (array_key_exists('civicrm_address_state_province_id', $row)) {
-        if ($value = $row['civicrm_address_state_province_id']) {
-          $rows[$rowNum]['civicrm_address_state_province_id'] = CRM_Core_PseudoConstant::stateProvince($value, false);
-        }
-        $entryFound = true;
-      }
-
       if (array_key_exists('civicrm_contact_sort_name_a', $row) && array_key_exists('civicrm_contact_id', $row)) {
         $url = CRM_Report_Utils_Report::getNextUrl('contact/detail', 'reset=1&force=1&id_op=eq&id_value=' . $row['civicrm_contact_id'], $this->_absoluteUrl, $this->_id);
         $rows[$rowNum]['civicrm_contact_sort_name_a_link'] = $url;
