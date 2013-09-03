@@ -73,7 +73,17 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       $this->financialTypePseudoConstant = 'contributionType';
     }
   }
-
+  /**
+   * wrapper for getOptions / pseudoconstant to get contact type options
+   */
+  function getContactTypeOptions(){
+    if(method_exists('CRM_Contribute_PseudoConstant', 'contactType')){
+      return CRM_Contribute_PseudoConstant::contactType();
+    }
+    else{
+      return CRM_Contact_BAO_Contact::buildOptions('contact_type');
+    }
+  }
   /**
    * Backported purely to provide CRM-12687 which is in 4.4
    */
@@ -2424,7 +2434,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
            'title' => ts($options['prefix_label'] . 'Contact Type'),
            'name' => 'contact_type',
            'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-           'options' => CRM_Contribute_PseudoConstant::contactType(),
+           'options' => $this->getContactTypeOptions(),
           ),
       );
     }
@@ -2450,6 +2460,11 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
   }
 
   function getCaseColumns() {
+    $config = CRM_Core_Config::singleton();
+    if (!in_array('CiviCase', $config->enableComponents)) {
+      return array();
+    }
+
     return array(
       'civicrm_case' => array(
         'dao' => 'CRM_Case_DAO_Case',
