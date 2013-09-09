@@ -1641,12 +1641,13 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       }
     }
   }
-  /*
+
+  /**
    * We are overriding this function to apply crm-editable where appropriate
    * It would be more efficient if we knew the entity being extended (which the parent function
    * does know) but we want to avoid extending any functions we don't have to
    */
-  function formatCustomValues($value, $customField, $fieldValueMap, $row) {
+  function formatCustomValues($value, $customField, $fieldValueMap, $row = array()) {
     if(!empty($this->_customGroupExtends) && count($this->_customGroupExtends) ==1){
       //lets only extend apply editability where only one entity extended
       // we can easily extend to contact combos
