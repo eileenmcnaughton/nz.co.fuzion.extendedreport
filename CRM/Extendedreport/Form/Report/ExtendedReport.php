@@ -456,22 +456,19 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       $this->_having = "HAVING " . implode(' AND ', $havingClauses);
     }
   }
+  /**
+   * over-ridden to include clause if specified, also to allow for unset meaning null
+   * e.g membership_end_date > now
+   * also, parent was giving incorrect results without the single quotes
+   */
+  function dateClause($fieldName,
+                      $relative, $from, $to, $field = NULL, $fromTime = NULL, $toTime = NULL, $includeUnset = FALSE
+  ) {
+    $type = $field['type'];
+    $clauses = array();
+    list($from, $to) = self::getFromTo($relative, $from, $to, $fromTime, $toTime);
 
-    /*
-     * over-ridden to include clause if specified
-     */
-    function dateClause($fieldName,
-      $relative, $from, $to, $field, $fromTime = NULL, $toTime = NULL
-    ) {
-      $type = $field['type'];
-      if(empty($field['clause']))
-      {
-        return parent::dateClause($fieldName,
-          $relative, $from, $to, $type, $fromTime = NULL, $toTime = NULL);
-      }
-      $clauses = array();
-
-      list($from, $to) = self::getFromTo($relative, $from, $to, $fromTime, $toTime);
+    if(!empty($field['clause'])) {
       eval("\$clause = \"{$field['clause']}\";");
       $clauses[] = $clause;
       if (!empty($clauses)) {
@@ -479,6 +476,33 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       }
       return NULL;
     }
+    else {
+      if (in_array($relative, array_keys($this->getOperationPair(CRM_Report_FORM::OP_DATE)))) {
+        $sqlOP = $this->getSQLOperator($relative);
+        return "( {$fieldName} {$sqlOP} )";
+      }
+
+      if ($from) {
+        $from = ($type == CRM_Utils_Type::T_DATE) ? substr($from, 0, 8) : $from;
+        if(empty($to)) {
+          $clauses[] = "( {$fieldName} >= '{$from}'  OR ISNULL($fieldName))";
+        }
+        else {
+          $clauses[] = "( {$fieldName} >= '{$from}')";
+        }
+      }
+
+      if ($to) {
+        $to = ($type == CRM_Utils_Type::T_DATE) ? substr($to, 0, 8) : $to;
+        $clauses[] = "( {$fieldName} <= '{$to}' )";
+      }
+
+      if (!empty($clauses)) {
+        return implode(' AND ', $clauses);
+      }
+      return NULL;
+    }
+  }
 
 
 
