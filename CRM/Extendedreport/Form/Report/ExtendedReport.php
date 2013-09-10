@@ -2535,10 +2535,14 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       'defaults' => array(
         'country_id' => TRUE
       ),
-     );
+      'contact_type' => NULL,
+    );
 
     $options = array_merge($defaultOptions,$options);
-
+    $orgOnly = False;
+    if(CRM_Utils_Array::value('contact_type', $options) == 'Organization') {
+      $orgOnly = True;
+    }
     $contactFields = array(
       $options['prefix'] . 'civicrm_contact' => array(
         'dao' => 'CRM_Contact_DAO_Contact',
