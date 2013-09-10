@@ -86,6 +86,16 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   }
 
   /**
+   * check if ActivityContact table should be used
+   */
+
+  function isActivityContact() {
+    if(class_exists('CRM_Activity_DAO_ActivityContact')) {
+      return TRUE;
+    }
+    return FALSE;
+  }
+  /**
    * wrapper for getOptions / pseudoconstant to get contact type options
    */
   function getLocationTypeOptions(){
@@ -3212,6 +3222,79 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'callback' => 'joinContributionSummaryTableFromContact',
       ),
     );
+  }
+
+  /**
+   * Define join from Activity to Activity Target
+   */
+  function joinActivityTargetFromActivity() {
+    if($this->isActivityContact()) {
+      $activityContacts = CRM_Core_OptionGroup::values('activity_contacts', FALSE, FALSE, FALSE, NULL, 'name');
+      $targetID = CRM_Utils_Array::key('Activity Targets', $activityContacts);
+      $this->_from .= "
+        LEFT JOIN civicrm_activity_contact civicrm_activity_target
+          ON {$this->_aliases['civicrm_activity']}.id = civicrm_activity_target.activity_id
+          AND civicrm_activity_target.record_type_id = {$targetID}
+        LEFT JOIN civicrm_contact {$this->_aliases['target_civicrm_contact']}
+          ON civicrm_activity_target.contact_id = {$this->_aliases['target_civicrm_contact']}.id
+        ";
+    }
+    else {
+      $this->_from .= "
+      LEFT JOIN civicrm_activity_target
+        ON {$this->_aliases['civicrm_activity']}.id = civicrm_activity_target.activity_id
+      LEFT JOIN civicrm_contact {$this->_aliases['target_civicrm_contact']}
+        ON civicrm_activity_target.target_contact_id = {$this->_aliases['target_civicrm_contact']}.id
+      ";
+    }
+  }
+
+
+  /**
+   * Define join from Activity to Activity Assignee
+   */
+  function joinActivityAssigneeFromActivity() {
+    if($this->isActivityContact()) {
+      $activityContacts = CRM_Core_OptionGroup::values('activity_contacts', FALSE, FALSE, FALSE, NULL, 'name');
+      $assigneeID = CRM_Utils_Array::key('Activity Assignees', $activityContacts);
+      $this->_from .= "
+        LEFT JOIN civicrm_activity_contact civicrm_activity_assignment
+          ON {$this->_aliases['civicrm_activity']}.id = civicrm_activity_assignment.activity_id
+          AND civicrm_activity_assignment.record_type_id = {$assigneeID}
+        LEFT JOIN civicrm_contact civicrm_contact_assignee
+          ON civicrm_activity_assignment.contact_id = civicrm_contact_assignee.id
+          ";
+    }
+    else {
+      $this->_from .= "
+        LEFT JOIN civicrm_activity_assignment
+          ON {$this->_aliases['civicrm_activity']}.id = civicrm_activity_assignment.activity_id
+        LEFT JOIN civicrm_contact civicrm_contact_assignee
+          ON civicrm_activity_assignment.assignee_contact_id = civicrm_contact_assignee.id
+        ";
+    }
+  }
+
+  /**
+   * Define join from Activity to Activity Source
+   */
+  function joinActivitySourceFromActivity() {
+    if($this->isActivityContact()) {
+      $activityContacts = CRM_Core_OptionGroup::values('activity_contacts', FALSE, FALSE, FALSE, NULL, 'name');
+      $sourceID = CRM_Utils_Array::key('Activity Source', $activityContacts);
+      $this->_from .= "
+        LEFT JOIN civicrm_activity_contact civicrm_activity_source
+        ON {$this->_aliases['civicrm_activity']}.id = civicrm_activity_source.activity_id
+        AND civicrm_activity_source.record_type_id = {$sourceID}
+        LEFT JOIN civicrm_contact {$this->_aliases['civicrm_contact']}
+        ON civicrm_activity_source.contact_id = {$this->_aliases['civicrm_contact']}.id
+        ";
+    }
+    else {
+      $this->_from .= "
+        LEFT JOIN civicrm_contact {$this->_aliases['civicrm_contact']}
+        ON {$this->_aliases['civicrm_activity']}.source_contact_id = {$this->_aliases['civicrm_contact']}.id";
+    }
   }
 
   /*

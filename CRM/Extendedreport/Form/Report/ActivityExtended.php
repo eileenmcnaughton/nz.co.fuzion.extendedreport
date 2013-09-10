@@ -20,6 +20,7 @@ class CRM_Extendedreport_Form_Report_ActivityExtended extends CRM_Extendedreport
     + $this->getContactColumns(array('prefix' => '', 'prefix_label' => 'Source Contact ::'))
     + $this->getContactColumns(array('prefix' => 'target_', 'prefix_label' => 'Target Contact ::'))
     + $this->getActivityColumns();
+
     parent::__construct();
   }
 
@@ -29,22 +30,11 @@ class CRM_Extendedreport_Form_Report_ActivityExtended extends CRM_Extendedreport
   function from() {
 
     $this->_from = "
-    FROM civicrm_activity {$this->_aliases['civicrm_activity']}
-
-   LEFT JOIN civicrm_activity_target
-   ON {$this->_aliases['civicrm_activity']}.id = civicrm_activity_target.activity_id
-
-   LEFT JOIN civicrm_activity_assignment
-   ON {$this->_aliases['civicrm_activity']}.id = civicrm_activity_assignment.activity_id
-
-   LEFT JOIN civicrm_contact {$this->_aliases['civicrm_contact']}
-   ON {$this->_aliases['civicrm_activity']}.source_contact_id = {$this->_aliases['civicrm_contact']}.id
-
-   LEFT JOIN civicrm_contact {$this->_aliases['target_civicrm_contact']}
-   ON civicrm_activity_target.target_contact_id = {$this->_aliases['target_civicrm_contact']}.id
-
-   LEFT JOIN civicrm_contact civicrm_contact_assignee
-   ON civicrm_activity_assignment.assignee_contact_id = civicrm_contact_assignee.id
+    FROM civicrm_activity {$this->_aliases['civicrm_activity']}";
+    $this->joinActivityTargetFromActivity();
+    $this->joinActivityAssigneeFromActivity();
+    $this->joinActivitySourceFromActivity();
+    $this->_from .= "
 
    {$this->_aclFrom}
 
@@ -68,7 +58,7 @@ class CRM_Extendedreport_Form_Report_ActivityExtended extends CRM_Extendedreport
                          civicrm_email_assignee.is_primary = 1 ";
     }
     $this->addAddressFromClause();
-        $this->selectableCustomDataFrom();
+    $this->selectableCustomDataFrom();
   }
 
   function postProcess() {
