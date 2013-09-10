@@ -2197,44 +2197,50 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
             'title' => ts('Current Membership Cycle End Date'),
           ),
 
-           'id' => array(
-                'title' => 'Membership ID / Count',
-                'name' => 'id',
-                'statistics' =>
-                array('count' => ts('Number of Memberships')),
-            ),
+          'id' => array(
+            'title' => 'Membership ID / Count',
+            'name' => 'id',
+            'statistics' =>
+            array('count' => ts('Number of Memberships')),
+          ),
         ),
         'group_bys' => array(
           'membership_type_id' => array(
             'title' => ts('Membership Type'),
           ),
           'status_id' => array(
-                'title' => ts('Membership Status'),
-            ),
-           'end_date' => array(
-               'title' => 'Current Membership Cycle End Date',
-              'frequency' => TRUE,
-               'type' => CRM_Utils_Type::T_DATE,
-            )
+            'title' => ts('Membership Status'),
+          ),
+          'end_date' => array(
+            'title' => 'Current Membership Cycle End Date',
+            'frequency' => TRUE,
+            'type' => CRM_Utils_Type::T_DATE,
+          )
         ),
         'filters' => array(
           'join_date' => array(
             'type' => CRM_Utils_Type::T_DATE,
             'operatorType' => CRM_Report_Form::OP_DATE,
           ),
-            'membership_end_date' => array(
-                'name' => 'end_date',
-                'title' => 'Membership Expiry',
-                'type' => CRM_Utils_Type::T_DATE,
-                'operatorType' => CRM_Report_Form::OP_DATE,
-            ),
-            'membership_status_id' => array(
-                'name' => 'status_id',
-                'title' => 'Membership Status',
-                'type' => CRM_Utils_Type::T_INT,
-                'options' => CRM_Member_PseudoConstant::membershipStatus(),
-                'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-            ),
+          'membership_start_date' => array(
+            'name' => 'start_date',
+            'title' => ts('Membership Start'),
+            'type' => CRM_Utils_Type::T_DATE,
+            'operatorType' => CRM_Report_Form::OP_DATE,
+          ),
+          'membership_end_date' => array(
+            'name' => 'end_date',
+            'title' => 'Membership Expiry',
+            'type' => CRM_Utils_Type::T_DATE,
+            'operatorType' => CRM_Report_Form::OP_DATE,
+          ),
+          'membership_status_id' => array(
+            'name' => 'status_id',
+            'title' => 'Membership Status',
+            'type' => CRM_Utils_Type::T_INT,
+            'options' => CRM_Member_PseudoConstant::membershipStatus(),
+            'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+          ),
         ),
       ),
     );
