@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <extension key="nz.co.fuzion.extendedreport" type="module">
-  <downloadUrl>http://github.com/eileenmcnaughton/nz.co.fuzion.extendedreport/archive/v1.2.zip</downloadUrl>
+  <downloadUrl>http://github.com/eileenmcnaughton/nz.co.fuzion.extendedreport/archive/v1.4.zip</downloadUrl>
   <file>extendedreport</file>
   <name>ExtendedReport</name>
   <description>Extended reports</description>
@@ -22,6 +22,7 @@
     <ver>4.1</ver>
     <ver>4.2</ver>
     <ver>4.3</ver>
+    <ver>4.4</ver>
   </compatibility>
   <comments>Extended reports create other report options such as crosstab urls, multiple contact custom fields, price set reports</comments>
   <civix>
@@ -29,6 +30,6 @@
   </civix>
     <typeInfo>
     <reportUrl>price/contributionbased</reportUrl>
-    <component>CiviContribute</component>      
+    <component>CiviContribute</component>
   </typeInfo>
 </extension>
