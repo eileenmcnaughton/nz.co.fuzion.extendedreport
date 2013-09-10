@@ -987,7 +987,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     $this->select();
     $this->from();
     $this->customDataFrom();
-    $this->selectableCustomDataFrom();
     $this->where();
     if($this->_preConstrain && !$this->_preConstrained){
       $this->generateTempTable();
