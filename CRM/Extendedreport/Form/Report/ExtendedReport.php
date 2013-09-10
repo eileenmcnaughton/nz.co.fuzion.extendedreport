@@ -812,26 +812,35 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     return $this->_defaults;
   }
 
-  // Note: $fieldName param allows inheriting class to build operationPairs
-  // specific to a field.
-  // we can't override getOperationPair because it is static in 4.3 & not static in 4.2 so rename
-   function getOperators($type = "string", $fieldName = NULL) {
+  /**
+   * We can't override getOperationPair because it is static in 4.3 & not static in 4.2 so
+   * use this function to effect an over-ride rename
+   *  Note: $fieldName param allows inheriting class to build operationPairs
+   * specific to a field.
+   *
+   * @param string $type
+   * @param null $fieldName
+   *
+   * @return array
+   */
+  function getOperators($type = "string", $fieldName = NULL) {
     // FIXME: At some point we should move these key-val pairs
     // to option_group and option_value table.
 
     switch ($type) {
       case CRM_Report_FORM::OP_INT:
       case CRM_Report_FORM::OP_FLOAT:
-        return array('lte' => ts('Is less than or equal to'),
-        'gte' => ts('Is greater than or equal to'),
-        'bw' => ts('Is between'),
-        'eq' => ts('Is equal to'),
-        'lt' => ts('Is less than'),
-        'gt' => ts('Is greater than'),
-        'neq' => ts('Is not equal to'),
-        'nbw' => ts('Is not between'),
-        'nll' => ts('Is empty (Null)'),
-        'nnll' => ts('Is not empty (Null)'),
+        return array(
+          'lte' => ts('Is less than or equal to'),
+          'gte' => ts('Is greater than or equal to'),
+          'bw' => ts('Is between'),
+          'eq' => ts('Is equal to'),
+          'lt' => ts('Is less than'),
+          'gt' => ts('Is greater than'),
+          'neq' => ts('Is not equal to'),
+          'nbw' => ts('Is not between'),
+          'nll' => ts('Is empty (Null)'),
+          'nnll' => ts('Is not empty (Null)'),
         );
         break;
 
@@ -840,14 +849,16 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
 
       case CRM_Report_FORM::OP_MONTH:
       case CRM_Report_FORM::OP_MULTISELECT:
-        return array('in' => ts('Is one of'),
-        'notin' => ts('Is not one of'),
+        return array(
+          'in' => ts('Is one of'),
+          'notin' => ts('Is not one of'),
         );
         break;
 
       case CRM_Report_FORM::OP_DATE:
-        return array('nll' => ts('Is empty (Null)'),
-        'nnll' => ts('Is not empty (Null)'),
+        return array(
+          'nll' => ts('Is empty (Null)'),
+          'nnll' => ts('Is not empty (Null)'),
         );
         break;
       case self::OP_SINGLEDATE:
@@ -863,20 +874,24 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
 
       default:
         // type is string
-        return array('has' => ts('Contains'),
-        'sw' => ts('Starts with'),
-        'ew' => ts('Ends with'),
-        'nhas' => ts('Does not contain'),
-        'eq' => ts('Is equal to'),
-        'neq' => ts('Is not equal to'),
-        'nll' => ts('Is empty (Null)'),
-        'nnll' => ts('Is not empty (Null)'),
+        return array(
+          'has' => ts('Contains'),
+          'sw' => ts('Starts with'),
+          'ew' => ts('Ends with'),
+          'nhas' => ts('Does not contain'),
+          'eq' => ts('Is equal to'),
+          'neq' => ts('Is not equal to'),
+          'nll' => ts('Is empty (Null)'),
+          'nnll' => ts('Is not empty (Null)'),
         );
     }
   }
 
-
-
+  /**
+   * @param $rows
+   *
+   * @return mixed
+   */
   function statistics(&$rows) {
     return parent::statistics($rows);
   }
@@ -3915,5 +3930,28 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
 
     $html .= "</table>";
     return $html;
+  }
+  /**
+   * If in csv mode we will output line breaks
+   * @param string $value
+   */
+  function alterDisplaycsvbr2nt($value) {
+    if($this->_outputMode == 'csv') {
+      return preg_replace('/<br\\s*?\/??>/i', "\n", $value);
+    }
+    return $value;
+  }
+
+  /**
+   * If in csv mode we will output line breaks in the table
+   * @param string $value
+   */
+  function alterDisplaytable2csv($value) {
+    if($this->_outputMode == 'csv') {
+      // return
+      $value = preg_replace('/<\/tr\\s*?\/??>/i', "\n", $value);
+      $value = preg_replace('/<\/td\\s*?\/??>/i', " - ", $value);
+    }
+    return $value;
   }
 }
