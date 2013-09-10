@@ -1821,6 +1821,18 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       CRM_Core_Session::setStatus(ts("Listed contact(s) have been added to the selected group."));
     }
   }
+
+  /**
+   * check if a table exists
+   * @param string $tableName Name of table
+   */
+  function tableExists($tableName) {
+    $sql = "SHOW TABLES LIKE '{$tableName}'";
+    $result = CRM_Core_DAO::executeQuery($sql);
+    $result->fetch();
+    return $result->N ? TRUE : FALSE;
+  }
+
   /*
    * Function is over-ridden to support multiple add to groups
   */
@@ -3177,6 +3189,11 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'rightTable' => 'civicrm_membership_type',
         'callback' => 'joinMembershipTypeFromMembership',
       ),
+      'membershipStatus_from_membership' => array(
+        'leftTable' => 'civicrm_membership',
+        'rightTable' => 'civicrm_membership_status',
+        'callback' => 'joinMembershipStatusFromMembership',
+      ),
       'lineItem_from_contribution' => array(
         'leftTable' => 'civicrm_contribution',
         'rightTable' => 'civicrm_line_item',
@@ -3212,26 +3229,31 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'rightTable' => 'civicrm_address',
         'callback' => 'joinAddressFromContact',
       ),
+      'contact_from_address' => array(
+        'leftTable' => 'civicrm_address',
+        'rightTable' => 'civicrm_contact',
+        'callback' => 'joinContactFromAddress',
+      ),
       'email_from_contact' => array(
         'leftTable' => 'civicrm_contact',
         'rightTable' => 'civicrm_email',
         'callback' => 'joinEmailFromContact',
       ),
       'phone_from_contact' => array(
-         'leftTable' => 'civicrm_contact',
-         'rightTable' => 'civicrm_phone',
-         'callback' => 'joinPhoneFromContact',
-        ),
+        'leftTable' => 'civicrm_contact',
+        'rightTable' => 'civicrm_phone',
+        'callback' => 'joinPhoneFromContact',
+      ),
       'latestactivity_from_contact' => array(
         'leftTable' => 'civicrm_contact',
         'rightTable' => 'civicrm_email',
         'callback' => 'joinLatestActivityFromContact',
-        ),
-       'entitytag_from_contact' => array(
-         'leftTable' => 'civicrm_contact',
-         'rightTable' => 'civicrm_tag',
-         'callback' => 'joinEntityTagFromContact',
-       ),
+      ),
+      'entitytag_from_contact' => array(
+        'leftTable' => 'civicrm_contact',
+        'rightTable' => 'civicrm_tag',
+        'callback' => 'joinEntityTagFromContact',
+      ),
       'contribution_summary_table_from_contact' => array(
         'leftTable' => 'civicrm_contact',
         'rightTable' => 'civicrm_contribution_summary',
@@ -3324,17 +3346,32 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
 
     $this->_from .= " LEFT JOIN civicrm_address {$this->_aliases[$prefix . 'civicrm_address']}
     ON {$this->_aliases[$prefix . 'civicrm_address']}.contact_id = {$this->_aliases[$prefix . 'civicrm_contact']}.id
+    AND {$this->_aliases[$prefix . 'civicrm_address']}.is_primary = 1
     ";
     return true;
   }
+  /**
+   * Add join from address table to contact.
+   * @param string $prefix prefix to add to table names
+   * @param array $extra extra join parameters
+   * @return bool true or false to denote whether extra filters can be appended to join
+   */
+  function joinContactFromAddress( $prefix = '', $extra = array()) {
 
+    $this->_from .= " LEFT JOIN civicrm_contact {$this->_aliases[$prefix . 'civicrm_contact']}
+    ON {$this->_aliases[$prefix . 'civicrm_address']}.contact_id = {$this->_aliases[$prefix . 'civicrm_contact']}.id
+    ";
+    return true;
+  }
   /*
   * Add join from contact table to email. Prefix will be added to both tables
   * as it's assumed you are using it to get address of a secondary contact
 */
   function joinEmailFromContact( $prefix = '') {
     $this->_from .= " LEFT JOIN civicrm_email {$this->_aliases[$prefix . 'civicrm_email']}
-ON {$this->_aliases[$prefix . 'civicrm_email']}.contact_id = {$this->_aliases[$prefix . 'civicrm_contact']}.id";
+   ON {$this->_aliases[$prefix . 'civicrm_email']}.contact_id = {$this->_aliases[$prefix . 'civicrm_contact']}.id
+   AND {$this->_aliases[$prefix . 'civicrm_email']}.is_primary = 1
+";
   }
 
   /*
@@ -3344,15 +3381,18 @@ ON {$this->_aliases[$prefix . 'civicrm_email']}.contact_id = {$this->_aliases[$p
   function joinPhoneFromContact( $prefix = '') {
     $this->_from .= " LEFT JOIN civicrm_phone {$this->_aliases[$prefix . 'civicrm_phone']}
     ON {$this->_aliases[$prefix . 'civicrm_phone']}.contact_id = {$this->_aliases[$prefix . 'civicrm_contact']}.id";
-    }
+  }
 
-/*
- *
- */
+  /*
+   *
+   */
   function joinEntityTagFromContact($prefix = '') {
+    if(!$this->isTableSelected($prefix . 'civicrm_tag')){
+      return;
+    }
     static $tmpTableName = null;
     if(empty($tmpTableName)){
-      $tmpTableName = 'civicrm_report_temp_entity_tag' . date('his');
+      $tmpTableName = 'civicrm_report_temp_entity_tag' . date('his') . rand(1, 1000);
     }
     $sql = "CREATE {$this->_temporary} TABLE $tmpTableName
     (
@@ -3376,22 +3416,22 @@ ON {$this->_aliases[$prefix . 'civicrm_email']}.contact_id = {$this->_aliases[$p
     ON {$this->_aliases[$prefix . 'civicrm_contact']}.id = {$this->_aliases[$prefix . 'civicrm_tag']}.contact_id
     ";
   }
-/*
- * At this stage we are making this unfilterable but later will add
- * some options to filter this join. We'll do a full temp table for now
- * We create 3 temp tables because we can't join twice onto a temp table (for inserting)
- * & it's hard to see how to otherwise avoid nasty joins or unions
- *
- *
- */
+  /*
+   * At this stage we are making this unfilterable but later will add
+   * some options to filter this join. We'll do a full temp table for now
+   * We create 3 temp tables because we can't join twice onto a temp table (for inserting)
+   * & it's hard to see how to otherwise avoid nasty joins or unions
+   *
+   *
+   */
   function joinLatestActivityFromContact(){
     static $tmpTableName = null;
     if(empty($tmpTableName)){
 
-    $tmpTableName = 'civicrm_report_temp_lastestActivity' . date('his');
-    $targetTable = 'civicrm_report_temp_target' . date('his');
-    $assigneeTable = 'civicrm_report_temp_assignee' . date('his');
-    $sql = "CREATE {$this->_temporary} TABLE $tmpTableName
+      $tmpTableName = 'civicrm_report_temp_lastestActivity' . date('his') . rand(1, 1000);
+      $targetTable = 'civicrm_report_temp_target' . date('his') . rand(1, 1000);
+      $assigneeTable = 'civicrm_report_temp_assignee' . date('his') . rand(1, 1000);
+      $sql = "CREATE {$this->_temporary} TABLE $tmpTableName
    (
     `contact_id` INT(10) NULL,
     `id` INT(10) NULL,
@@ -3453,13 +3493,13 @@ ON {$this->_aliases[$prefix . 'civicrm_email']}.contact_id = {$this->_aliases[$p
   GROUP BY target_contact_id,  a.activity_date_time DESC
   ";
 
-  CRM_Core_DAO::executeQuery($sql);
-  $sql = "REPLACE INTO $tmpTableName
+      CRM_Core_DAO::executeQuery($sql);
+      $sql = "REPLACE INTO $tmpTableName
   SELECT * FROM $targetTable
   ";
-  CRM_Core_DAO::executeQuery($sql);
-  }
-  $this->_from .= " LEFT JOIN $tmpTableName {$this->_aliases['civicrm_activity']}
+      CRM_Core_DAO::executeQuery($sql);
+    }
+    $this->_from .= " LEFT JOIN $tmpTableName {$this->_aliases['civicrm_activity']}
    ON {$this->_aliases['civicrm_activity']}.contact_id = {$this->_aliases['civicrm_contact']}.id";
 
   }
@@ -3553,6 +3593,15 @@ ON pp.membership_id = {$this->_aliases['civicrm_membership']}.id";
 LEFT JOIN civicrm_membership_type {$this->_aliases['civicrm_membership_type']}
 ON {$this->_aliases['civicrm_membership']}.membership_type_id = {$this->_aliases['civicrm_membership_type']}.id
 ";
+  }
+  /**
+   *
+   */
+  function joinMembershipStatusFromMembership() {
+    $this->_from .= "
+    LEFT JOIN civicrm_membership_status {$this->_aliases['civicrm_membership_status']}
+    ON {$this->_aliases['civicrm_membership']}.status_id = {$this->_aliases['civicrm_membership_status']}.id
+    ";
   }
 
   function joinContributionFromLineItem() {
@@ -3723,6 +3772,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    * @param array $extra
    */
   function joinContributionSummaryTableFromContact($prefix, $extra){
+    CRM_Core_DAO::executeQuery("SET group_concat_max_len=15000");
     $temporary = $this->_temporary;
     $tempTable = 'civicrm_report_temp_contsumm'. $prefix . date('d_H_I') . rand(1, 10000);
     $dropSql = "DROP TABLE IF EXISTS $tempTable";
@@ -3733,7 +3783,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
     $createSql = "
       CREATE TABLE $tempTable (
       `contact_id` INT(10) UNSIGNED NOT NULL COMMENT 'Foreign key to civicrm_contact.id .',
-      `contributionsummary{$prefix}` VARCHAR(1024) NULL DEFAULT NULL COLLATE 'utf8_unicode_ci',
+      `contributionsummary{$prefix}` longtext NULL DEFAULT NULL COLLATE 'utf8_unicode_ci',
       INDEX `contact_id` (`contact_id`)
       )
       COLLATE='utf8_unicode_ci'
@@ -3871,7 +3921,13 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
   }
 
   function alterContactID($value, &$row, $fieldname) {
-    $row[$fieldname . '_link'] = CRM_Utils_System::url("civicrm/contact/view", 'reset=1&cid=' . $value, $this->_absoluteUrl);
+    $nameField = substr($fieldname,0, -2) . 'name';
+    if(array_key_exists($nameField, $row)) {
+      $row[$nameField . '_link'] = CRM_Utils_System::url("civicrm/contact/view", 'reset=1&cid=' . $value, $this->_absoluteUrl);
+    }
+    else{
+      $row[$fieldname . '_link'] = CRM_Utils_System::url("civicrm/contact/view", 'reset=1&cid=' . $value, $this->_absoluteUrl);
+    }
     return $value;
   }
 
