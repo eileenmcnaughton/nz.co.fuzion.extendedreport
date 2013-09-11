@@ -89,7 +89,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    */
 
   function isActivityContact() {
-    if(class_exists('CRM_Activity_DAO_ActivityContact')) {
+    if($this->tableExists('civicrm_activity_contact')) {
       return TRUE;
     }
     return FALSE;
