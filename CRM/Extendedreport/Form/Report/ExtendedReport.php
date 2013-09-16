@@ -1425,26 +1425,46 @@ ORDER BY cg.weight, cf.weight";
     return $field;
   }
 
-  /*
+  /**
    * Add the SELECT AND From clauses for the extensible CustomData
    * Still refactoring this from original copy & paste code to something simpler
    */
   function selectableCustomDataFrom() {
-
-    if (empty($this->_customGroupExtended) || empty($this->_params['custom_fields'])) {
+    $customFields = $this->_params['custom_fields'];
+    foreach($this->_params as $key => $param) {
+      if(substr($key, 0, 7) == 'custom_') {
+        $splitField = explode('_', $key);
+        $field = $splitField[0] . '_' . $splitField[1];
+        foreach($this->_columns as $table => $spec) {
+          if(array_key_exists($field, $spec['filters'])) {
+            // we will just support activity & source contact customfields for now
+            //@todo these lines are looking pretty hard-coded
+            if($spec['filters'][$key]['extends'] == 'Activity') {
+              $fieldString = 'custom_activity:' . $field;
+            }
+            else{
+              $fieldString = 'contact_activity:' . $field;
+            }
+            if(!in_array($fieldString, $customFields)) {
+              $customFields[] = $fieldString;
+            }
+          }
+        }
+      }
+    }
+    if (empty($this->_customGroupExtended) || empty($customFields)) {
       return;
     }
 
     $tables = array();
-    foreach ($this->_params['custom_fields'] as $customField){
+    foreach ($customFields as $customField){
       $fieldArr = explode(":", $customField);
       $tables[$fieldArr[0]] = 1;
-      $customfields[$fieldArr[1]][] = $fieldArr[0];
+      $formattedCustomFields[$fieldArr[1]][] = $fieldArr[0];
     }
 
     $selectedTables = array();
-    $myColumns = $this->extractCustomFields( $customfields, $selectedTables);
-
+    $myColumns = $this->extractCustomFields($formattedCustomFields, $selectedTables);
     foreach ($this->_params['custom_fields'] as $fieldName){
       $name = $myColumns[$fieldName]['name'];
       $this->_columnHeaders[$name] = $myColumns[$fieldName][$name];
@@ -1454,9 +1474,9 @@ ORDER BY cg.weight, cf.weight";
       $this->_from .= "
         LEFT JOIN {$properties['name']} $selectedTable ON {$selectedTable}.entity_id = {$this->_aliases[$extendsTable]}.id";
     }
-
   }
-  /*
+
+  /**
    * here we can define select clauses for any particular row. At this stage we are going
    * to csv tags
    */
