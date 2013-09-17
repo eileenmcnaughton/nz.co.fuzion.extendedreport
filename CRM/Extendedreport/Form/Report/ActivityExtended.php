@@ -1,34 +1,62 @@
 <?php
 
+/**
+ * Class CRM_Extendedreport_Form_Report_ActivityExtended
+ */
 class CRM_Extendedreport_Form_Report_ActivityExtended extends CRM_Extendedreport_Form_Report_ExtendedReport {
 //todo move def to getActivityColumns
+  /**
+   * @var array
+   */
   protected $_customGroupExtended = array(
-      'contact_activity' => array(
-          'extends' => array('Activity'),
-          'title'  => 'Activity',
-      ),
+    'contact_activity' => array(
+      'extends' => array('Activity'),
+      'title'  => 'Activity',
+    ),
   );
+  /**
+   * @var bool
+   */
   protected $_addressField = FALSE;
+  /**
+   * @var bool
+   */
   protected $_emailField = FALSE;
+  /**
+   * @var null
+   */
   protected $_summary = NULL;
+  /**
+   * @var bool
+   */
   protected $_exposeContactID = FALSE;
+  /**
+   * @var bool
+   */
   protected $_customGroupGroupBy = FALSE;
+  /**
+   * @var string
+   */
   protected $_baseTable = 'civicrm_activity';
 
+  /**
+   * constructor
+   * @todo allow filtering on other contacts
+   */
   function __construct() {
     $this->_columns = $this->getContactColumns()
-    + $this->getContactColumns(array('prefix' => '', 'prefix_label' => 'Source Contact ::'))
-    + $this->getContactColumns(array('prefix' => 'target_', 'prefix_label' => 'Target Contact ::'))
+    + $this->getContactColumns(array('prefix' => '', 'prefix_label' => 'Source Contact ::', 'filters' => TRUE))
+    + $this->getContactColumns(array('prefix' => 'target_', 'prefix_label' => 'Target Contact ::', 'filters' => FALSE))
     + $this->getActivityColumns();
 
     parent::__construct();
   }
 
-/*
- * Should remove all this to parent class
- */
+  /**
+   * Generate From clause
+   * @todo Should remove all this to parent class
+   */
   function from() {
-
     $this->_from = "
     FROM civicrm_activity {$this->_aliases['civicrm_activity']}";
     $this->joinActivityTargetFromActivity();
@@ -61,6 +89,9 @@ class CRM_Extendedreport_Form_Report_ActivityExtended extends CRM_Extendedreport
     $this->selectableCustomDataFrom();
   }
 
+  /**
+   *
+   */
   function postProcess() {
 
     $this->beginPostProcess();
