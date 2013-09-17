@@ -1277,6 +1277,11 @@ ORDER BY cg.weight, cf.weight";
               $this->_columns[$tableAlias] = $this->_customFields[$tableName];
               $this->_columns[$tableAlias]['alias'] = $tableAlias;
               $this->_columns[$table]['dao'] = 'CRM_Contact_DAO_Contact';
+              if(!array_key_exists('filters', $this->_columns[$tableName]) && isset($this->_columns[$tableAlias]['filters'])) {
+                //checking whether parent filters are defined for the parent table is used as the basis / a shaort hand for / a hack for whether to add them in
+                // for the custom field
+                unset($this->_columns[$tableAlias]);
+              }
               unset ($this->_columns[$tableAlias]['fields']);
             }
 
@@ -2542,6 +2547,11 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     return $fields;
   }
 
+  /**
+   * @param array $options
+   *
+   * @return array
+   */
   function getContactColumns($options = array()) {
 
     $defaultOptions = array(
@@ -2645,6 +2655,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       $this->_customGroupExtended[$options['prefix'] . 'civicrm_contact'] = array(
         'extends' => $options['custom_fields'],
         'title' => $options['prefix_label'],
+        'filters' => $options['filters'],
       );
     }
     return $contactFields;
