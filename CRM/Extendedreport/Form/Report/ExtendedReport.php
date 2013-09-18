@@ -1278,10 +1278,8 @@ ORDER BY cg.weight, cf.weight";
               $this->_columns[$tableAlias] = $this->_customFields[$tableName];
               $this->_columns[$tableAlias]['alias'] = $tableAlias;
               $this->_columns[$table]['dao'] = 'CRM_Contact_DAO_Contact';
-              if(!array_key_exists('filters', $this->_columns[$tableName]) && isset($this->_columns[$tableAlias]['filters'])) {
-                //checking whether parent filters are defined for the parent table is used as the basis / a shaort hand for / a hack for whether to add them in
-                // for the custom field
-                unset($this->_columns[$tableAlias]);
+              if(!$spec['filters']) {
+                unset($this->_columns[$tableAlias]['filters']);
               }
               unset ($this->_columns[$tableAlias]['fields']);
             }
@@ -1294,7 +1292,6 @@ ORDER BY cg.weight, cf.weight";
         }
       }
     }
-
     asort($customFieldsFlat);
 
     if($this->_customGroupAggregates){
@@ -1442,7 +1439,7 @@ ORDER BY cg.weight, cf.weight";
         $splitField = explode('_', $key);
         $field = $splitField[0] . '_' . $splitField[1];
         foreach($this->_columns as $table => $spec) {
-          if(array_key_exists($field, $spec['filters'])) {
+          if(array_key_exists($field, $spec['filters']) && $this->_params[$field . '_value'] != NULL) {
             // we will just support activity & source contact customfields for now
             //@todo these lines are looking pretty hard-coded
             if($spec['filters'][$key]['extends'] == 'Activity') {
@@ -3427,16 +3424,16 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         LEFT JOIN civicrm_activity_contact civicrm_activity_assignment
           ON {$this->_aliases['civicrm_activity']}.id = civicrm_activity_assignment.activity_id
           AND civicrm_activity_assignment.record_type_id = {$assigneeID}
-        LEFT JOIN civicrm_contact civicrm_contact_assignee
-          ON civicrm_activity_assignment.contact_id = civicrm_contact_assignee.id
+        LEFT JOIN civicrm_contact civicrm_contact_assignee {$this->_aliases['assignee_civicrm_contact']}
+          ON civicrm_activity_assignment.contact_id = {$this->_aliases['assignee_civicrm_contact']}.id
           ";
     }
     else {
       $this->_from .= "
         LEFT JOIN civicrm_activity_assignment
           ON {$this->_aliases['civicrm_activity']}.id = civicrm_activity_assignment.activity_id
-        LEFT JOIN civicrm_contact civicrm_contact_assignee
-          ON civicrm_activity_assignment.assignee_contact_id = civicrm_contact_assignee.id
+        LEFT JOIN civicrm_contact {$this->_aliases['assignee_civicrm_contact']}
+          ON civicrm_activity_assignment.assignee_contact_id = {$this->_aliases['assignee_civicrm_contact']}.id
         ";
     }
   }
