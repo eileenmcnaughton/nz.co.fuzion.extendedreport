@@ -12,6 +12,14 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   protected $_editableFields = TRUE;
   protected $_outputMode = array();
 
+  /**
+   * we will set $this->aliases['civicrm_contact'] to match the primary contact because many upstream functions
+   * (e.g tag filters)
+   * assume the join will be on that field
+   * @var string
+   */
+  protected $_primaryContactPrefix = '';
+
   /*
    * adding support for a single date in here
    */
@@ -387,7 +395,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    */
   function constrainedWhere(){
   }
-  /*
+  /**
    * Override exists purely to handle unusual date fields by passing field metadata to date clause
    * Also store where clauses to an array
    */
@@ -974,6 +982,9 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       )
     ) {
       $this->assign('updateReportButton', TRUE);
+    }
+    if(isset($this->_aliases[$this->_primaryContactPrefix . 'civicrm_contact'])) {
+      $this->_aliases['civicrm_contact'] = $this->_aliases[$this->_primaryContactPrefix . 'civicrm_contact'];
     }
     $this->processReportMode();
   }
