@@ -479,6 +479,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     list($from, $to) = self::getFromTo($relative, $from, $to, $fromTime, $toTime);
 
     if(!empty($field['clause'])) {
+      $clause = '';
       eval("\$clause = \"{$field['clause']}\";");
       $clauses[] = $clause;
       if (!empty($clauses)) {
