@@ -20,7 +20,7 @@ class CRM_Extendedreport_Form_Report_Contact_Basiccontact extends CRM_Extendedre
     + $this->getLatestActivityColumns(array('filters' => false, 'fields' => array('activity_type' => array('title' => 'Latest Activity'))))
     + $this->getTagColumns()
     + $this->getPhoneColumns();
-    + $this->_columns['civicrm_contact']['fields']['id']['required'] = true;
+    $this->_columns['civicrm_contact']['fields']['id']['required'] = true;
     $this->addTemplateSelector();
     $this->_groupFilter = true;
     parent::__construct();
