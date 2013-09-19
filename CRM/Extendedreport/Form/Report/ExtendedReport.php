@@ -3151,13 +3151,13 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       'activity_type_id' =>
       array(
         'title' => ts('Latest Activity Type'),
-        'default' => TRUE,
+        'default' => FALSE,
         'type' => CRM_Utils_Type::T_STRING,
         'alter_display' => 'alterActivityType',
       ),
       'activity_date_time' =>
       array('title' => ts('Latest Activity Date'),
-        'default' => TRUE,
+        'default' => FALSE,
       ),
     );
     return $activityFields;
@@ -3566,7 +3566,10 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    *
    *
    */
-  function joinLatestActivityFromContact(){
+  function joinLatestActivityFromContact() {
+    if(!$this->isTableSelected('civicrm_activity')) {
+      return;
+    }
     static $tmpTableName = null;
     if(empty($tmpTableName)){
 
