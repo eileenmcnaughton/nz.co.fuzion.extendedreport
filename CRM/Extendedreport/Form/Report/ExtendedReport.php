@@ -1442,6 +1442,12 @@ ORDER BY cg.weight, cf.weight";
   /**
    * Add the SELECT AND From clauses for the extensible CustomData
    * Still refactoring this from original copy & paste code to something simpler
+   *
+   * @todo the way this is done is actually awful. After trying to figure out who to blame I realised it would
+   * be hard to avoid blaming the person who wrote it :-)
+   * However, I also finally remembered why it is so awful. When I wrote it I was trying to over-write as few classes as possible
+   * Over time I have, however, overwritten a lot of classes & I think the avoiding of over-writing is perhaps less important
+   * than improving the code - so this should be set up so that the select & the FROM are not BOTH done from the from function
    */
   function selectableCustomDataFrom() {
     $customFields = $this->_params['custom_fields'];
@@ -1457,7 +1463,7 @@ ORDER BY cg.weight, cf.weight";
               $fieldString = 'custom_activity:' . $field;
             }
             else{
-              $fieldString = 'contact_activity:' . $field;
+              $fieldString = 'civicrm_contact:' . $field;
             }
             if(!in_array($fieldString, $customFields)) {
               $customFields[] = $fieldString;
