@@ -1456,7 +1456,7 @@ ORDER BY cg.weight, cf.weight";
         $splitField = explode('_', $key);
         $field = $splitField[0] . '_' . $splitField[1];
         foreach($this->_columns as $table => $spec) {
-          if(array_key_exists($field, $spec['filters']) && $this->_params[$field . '_value'] != NULL) {
+          if(is_array($spec['filters']) && array_key_exists($field, $spec['filters']) && $this->_params[$field . '_value'] != NULL) {
             // we will just support activity & source contact customfields for now
             //@todo these lines are looking pretty hard-coded
             if($spec['filters'][$key]['extends'] == 'Activity') {
