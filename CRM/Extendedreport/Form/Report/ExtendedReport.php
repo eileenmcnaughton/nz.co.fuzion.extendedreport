@@ -1517,6 +1517,11 @@ ORDER BY cg.weight, cf.weight";
               if(!$spec['filters']) {
                 unset($this->_columns[$tableAlias]['filters']);
               }
+              else{
+               foreach ($this->_columns[$tableAlias]['filters'] as &$filter) {
+                 $filter['title'] = $spec['title'] . $filter['title'];
+               }
+              }
               unset ($this->_columns[$tableAlias]['fields']);
             }
 
@@ -2944,6 +2949,8 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'extends' => $options['custom_fields'],
         'title' => $options['prefix_label'],
         'filters' => $options['filters'],
+        'prefix' => $options['prefix'],
+        'prefix_label' => $options['prefix_label'],
       );
     }
     return $contactFields;
