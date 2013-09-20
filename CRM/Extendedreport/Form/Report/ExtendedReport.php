@@ -2850,15 +2850,19 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       );
       $individualFields = array(
         $options['prefix'] . 'first_name' => array(
+          'name' => 'first_name',
           'title' => ts($options['prefix_label'] . 'First Name'),
         ),
         $options['prefix'] . 'middle_name' => array(
+          'name' => 'middle_name',
           'title' => ts($options['prefix_label'] . 'Middle Name'),
         ),
         $options['prefix'] . 'last_name' => array(
+          'name' => 'last_name',
           'title' => ts($options['prefix_label'] . 'Last Name'),
         ),
         $options['prefix'] . 'nick_name' => array(
+          'name' => 'nick_name',
           'title' => ts($options['prefix_label'] . 'Nick Name'),
           'alter_display' => 'alterNickName',
         ),
