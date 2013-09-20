@@ -2811,7 +2811,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    * @return array
    */
   function getContactColumns($options = array()) {
-
+    static $weight = 0;
     $defaultOptions = array(
       'prefix' => '',
       'prefix_label' => '',
@@ -2905,41 +2905,43 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       $contactFields[$options['prefix'] . 'civicrm_contact']['order_bys'] =  array(
         'sort_name' => array(
           'title' => ts($options['prefix_label'] . 'Name'),
-          'default' => '1',
-          'default_weight' => '0',
+          'default' => 1,
+          'default_weight' => $weight = 0,
           'default_order' => 'ASC',
           'name' => 'sort_name',
         ),
         $options['prefix'] . 'first_name' => array(
           'title' => ts($options['prefix_label'] . 'First Name'),
           'default' => '0',
-          'default_weight' => '0',
+          'default_weight' => $weight + 1,
           'default_order' => 'ASC',
           'name' => 'sort_name',
         ),
         $options['prefix'] . 'last_name' => array(
           'title' => ts($options['prefix_label'] . 'Last Name'),
-          'default' => '1',
-          'default_weight' => '0',
+          'default' => '0',
+          'default_weight' => $weight + 2,
           'default_order' => 'ASC',
           'name' => 'last_name',
         ),
         $options['prefix'] . 'nick_name' => array(
-          'title' => ts($options['prefix_label'] . 'Name'),
-          'default' => '1',
-          'default_weight' => '0',
+          'title' => ts($options['prefix_label'] . 'Nick Name'),
+          'default' => '0',
+          'default_weight' => $weight + 3,
           'default_order' => 'ASC',
           'name' => 'nick_name',
         ),
         $options['prefix'] . 'external_identifier' => array(
           'title' => ts($options['prefix_label'] . 'External ID'),
           'type' => CRM_Utils_Type::T_INT,
+          'default_weight' => $weight + 4,
           'name' => 'external_identifier',
         ),
         $options['prefix'] . 'source' => array(
           'name' => 'source',
           'title' => ts($options['prefix_label'] . 'Source'),
           'name' => 'external_identifier',
+          'default_weight' => $weight + 5,
         )
       );
     }
@@ -2953,6 +2955,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'prefix_label' => $options['prefix_label'],
       );
     }
+    $weight = $weight + 5;
     return $contactFields;
   }
 
