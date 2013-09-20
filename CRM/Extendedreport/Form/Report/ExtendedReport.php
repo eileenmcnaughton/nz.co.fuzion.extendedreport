@@ -2868,7 +2868,6 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         $options['prefix'] . 'nick_name' => array(
           'name' => 'nick_name',
           'title' => ts($options['prefix_label'] . 'Nick Name'),
-          'alter_display' => 'alterNickName',
         ),
       );
       if(!$orgOnly) {
