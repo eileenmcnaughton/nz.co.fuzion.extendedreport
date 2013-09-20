@@ -2904,7 +2904,39 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
           'default' => '1',
           'default_weight' => '0',
           'default_order' => 'ASC',
+          'name' => 'sort_name',
         ),
+        $options['prefix'] . 'first_name' => array(
+          'title' => ts($options['prefix_label'] . 'First Name'),
+          'default' => '0',
+          'default_weight' => '0',
+          'default_order' => 'ASC',
+          'name' => 'sort_name',
+        ),
+        $options['prefix'] . 'last_name' => array(
+          'title' => ts($options['prefix_label'] . 'Last Name'),
+          'default' => '1',
+          'default_weight' => '0',
+          'default_order' => 'ASC',
+          'name' => 'last_name',
+        ),
+        $options['prefix'] . 'nick_name' => array(
+          'title' => ts($options['prefix_label'] . 'Name'),
+          'default' => '1',
+          'default_weight' => '0',
+          'default_order' => 'ASC',
+          'name' => 'nick_name',
+        ),
+        $options['prefix'] . 'external_identifier' => array(
+          'title' => ts($options['prefix_label'] . 'External ID'),
+          'type' => CRM_Utils_Type::T_INT,
+          'name' => 'external_identifier',
+        ),
+        $options['prefix'] . 'source' => array(
+          'name' => 'source',
+          'title' => ts($options['prefix_label'] . 'Source'),
+          'name' => 'external_identifier',
+        )
       );
     }
 
