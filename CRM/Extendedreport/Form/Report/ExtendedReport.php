@@ -1445,7 +1445,7 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
       array('id' => 'templates', 'title' => ts('- select -'),)
     );
   }
-  
+
   /**
    * This is all just copied from the addCustomFields function -
    * The point of this is to
@@ -2849,16 +2849,16 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         )
       );
       $individualFields = array(
-        'first_name' => array(
+        $options['prefix'] . 'first_name' => array(
           'title' => ts($options['prefix_label'] . 'First Name'),
         ),
-        'middle_name' => array(
+        $options['prefix'] . 'middle_name' => array(
           'title' => ts($options['prefix_label'] . 'Middle Name'),
         ),
-        'last_name' => array(
+        $options['prefix'] . 'last_name' => array(
           'title' => ts($options['prefix_label'] . 'Last Name'),
         ),
-        'nick_name' => array(
+        $options['prefix'] . 'nick_name' => array(
           'title' => ts($options['prefix_label'] . 'Nick Name'),
           'alter_display' => 'alterNickName',
         ),
