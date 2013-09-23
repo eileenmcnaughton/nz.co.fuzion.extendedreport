@@ -6,13 +6,13 @@
 return array (
   0 =>
   array (
-    'name' => 'Participant Line Item Report',
+    'name' => 'Extended Report - Participant Line Item Report',
     'entity' => 'ReportTemplate',
     'params' =>
     array (
       'version' => 3,
-      'label' => 'Participant Line Items',
-      'description' => 'Line Item report for participants',
+      'label' => 'Extended Report - Participant Line Items',
+      'description' => 'Extended Report - Line Item report for participants',
       'class_name' => 'CRM_Extendedreport_Form_Report_Price_Lineitemparticipant',
       'report_url' => 'price/lineitemparticipant',
       'component' => 'CiviEvent',

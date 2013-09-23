@@ -6,13 +6,13 @@
 return array (
   0 =>
   array (
-    'name' => 'Membership Price Set Report',
+    'name' => 'Extended Report - Membership Price Set Report',
     'entity' => 'ReportTemplate',
     'params' =>
     array (
       'version' => 3,
-      'label' => 'Membership Price Set Report',
-      'description' => 'Memberships with Price set information',
+      'label' => 'Extended Report - Membership Price Set Report',
+      'description' => 'Extended Report - Memberships with Price set information',
       'class_name' => 'CRM_Extendedreport_Form_Report_Price_Lineitemmembership',
       'report_url' => 'price/lineitemmembership',
       'component' => 'CiviMember',

@@ -6,13 +6,13 @@
 return array (
   0 =>
   array (
-    'name' => 'Pledge LYBUNS Report',
+    'name' => 'Extended Report - Pledge LYBUNS Report',
     'entity' => 'ReportTemplate',
     'params' =>
     array (
       'version' => 3,
-      'label' => 'Pledge Last Year but not Since',
-      'description' => 'Pledge LYBUNS',
+      'label' => 'Extended Report - Pledge Last Year but not Since',
+      'description' => 'Extended Report - Pledge LYBUNS',
       'class_name' => 'CRM_Extendedreport_Form_Report_Pledge_Lybuns',
       'report_url' => 'pledgelybns',
       'component' => 'CiviPledge',

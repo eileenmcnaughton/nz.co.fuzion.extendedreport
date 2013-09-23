@@ -6,13 +6,13 @@
 return array (
   0 =>
   array (
-    'name' => 'Extended Relationship Report',
+    'name' => 'Extended Report - Relationships',
     'entity' => 'ReportTemplate',
     'params' =>
     array (
       'version' => 3,
-      'label' => 'Extended Relationship Report',
-      'description' => 'Enhanced Relationship Report',
+      'label' => 'Extended Report - Relationships, includes data from both sides of the relationship',
+      'description' => 'Extended Report - Relationships',
       'class_name' => 'CRM_Extendedreport_Form_Report_RelationshipExtended',
       'report_url' => 'relationshipextended',
       'component' => '',

@@ -6,13 +6,13 @@
 return array (
   0 =>
   array (
-    'name' => 'Contributions with Price Set Data',
+    'name' => 'Extended Report - Contributions with Price Set data',
     'entity' => 'ReportTemplate',
     'params' =>
     array (
       'version' => 3,
-      'label' => 'Contributions with Price Set data',
-      'description' => 'Line item Report (based on contributions) (nz.co.fuzion.extendedreport)',
+      'label' => 'Extended Report - Contributions with Price Set data',
+      'description' => 'Extended Report - Line item Report (based on contributions)',
       'class_name' => 'CRM_Extendedreport_Form_Report_Price_Contributionbased',
       'report_url' => 'price/contributionbased',
       'component' => 'CiviContribute',
