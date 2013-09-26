@@ -1514,7 +1514,7 @@ ORDER BY cg.weight, cf.weight";
               $this->_columns[$tableAlias] = $this->_customFields[$tableName];
               $this->_columns[$tableAlias]['alias'] = $tableAlias;
               $this->_columns[$table]['dao'] = 'CRM_Contact_DAO_Contact';
-              if(!$spec['filters']) {
+              if(!$spec['filters'] && isset($this->_columns[$tableAlias]['filters'])) {
                 unset($this->_columns[$tableAlias]['filters']);
               }
               else{
