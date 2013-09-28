@@ -11,8 +11,8 @@ return array (
     'params' =>
     array (
       'version' => 3,
-      'label' => 'Extended Report - Pledge Some Year but not Since',
-      'description' => 'Extended Report - Pledge SYBUNS',
+      'label' => 'Extended Report - Pledge SYBUNS',
+      'description' => 'Extended Report - Pledge Some Year but not Since',
       'class_name' => 'CRM_Extendedreport_Form_Report_Pledge_Sybuns',
       'report_url' => 'pledge/sybuns',
       'component' => 'CiviPledge',

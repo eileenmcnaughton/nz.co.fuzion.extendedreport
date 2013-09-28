@@ -11,8 +11,8 @@ return array (
     'params' =>
     array (
       'version' => 3,
-      'label' => 'Extended Report - Pledge in this range but not Since',
-      'description' => 'Extended Report - Pledge TBNS',
+      'label' => 'Extended Report - Pledge TBNS',
+      'description' => 'Extended Report - Pledge in this range but not Since',
       'class_name' => 'CRM_Extendedreport_Form_Report_Pledge_Btbns',
       'report_url' => 'pledge/tbns',
       'component' => 'CiviPledge',
