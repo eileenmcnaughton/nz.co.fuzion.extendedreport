@@ -1514,7 +1514,7 @@ ORDER BY cg.weight, cf.weight";
               $this->_columns[$tableAlias] = $this->_customFields[$tableName];
               $this->_columns[$tableAlias]['alias'] = $tableAlias;
               $this->_columns[$table]['dao'] = 'CRM_Contact_DAO_Contact';
-              if(!$spec['filters'] && isset($this->_columns[$tableAlias]['filters'])) {
+              if(empty($spec['filters']) && isset($this->_columns[$tableAlias]['filters'])) {
                 unset($this->_columns[$tableAlias]['filters']);
               }
               else{
@@ -1526,8 +1526,8 @@ ORDER BY cg.weight, cf.weight";
             }
 
             foreach ($customFieldsTableFields[$extendedEntity] as $customFieldName => $customFieldLabel){
-              $customFields[$table][$table . ':' . $customFieldName] = $spec['title'] . $customFieldLabel;
-              $customFieldsFlat[$table . ':' . $customFieldName] = $spec['title'] . $customFieldLabel;
+              $customFields[$table][$table . ':' . $customFieldName] = $spec['title'] . " " . $customFieldLabel;
+              $customFieldsFlat[$table . ':' . $customFieldName] = $spec['title'] . " " . $customFieldLabel;
             }
           }
         }
@@ -2825,8 +2825,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       ),
       'contact_type' => NULL,
     );
-
-    $options = array_merge($defaultOptions,$options);
+    $options = array_merge($defaultOptions, $options);
     $orgOnly = False;
     if(CRM_Utils_Array::value('contact_type', $options) == 'Organization') {
       $orgOnly = True;
@@ -2903,11 +2902,11 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
 
     if(!empty($options['order_by'])){
       $contactFields[$options['prefix'] . 'civicrm_contact']['order_bys'] =  array(
-        'sort_name' => array(
+        $options['prefix'] . 'sort_name' => array(
           'title' => ts($options['prefix_label'] . 'Name'),
-          'default' => 1,
-          'default_weight' => $weight = 0,
-          'default_order' => 'ASC',
+          'default' => $weight == 0 ? TRUE : FALSE,
+          'default_weight' => $weight,
+          'default_order' => $weight == 0 ? 'ASC' : NULL,
           'name' => 'sort_name',
         ),
         /*
@@ -2957,7 +2956,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'prefix_label' => $options['prefix_label'],
       );
     }
-    $weight = $weight + 5;
+    $weight = $weight + 1;
     return $contactFields;
   }
 
