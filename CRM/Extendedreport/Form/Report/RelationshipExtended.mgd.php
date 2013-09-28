@@ -11,8 +11,8 @@ return array (
     'params' =>
     array (
       'version' => 3,
-      'label' => 'Extended Report - Relationships, includes data from both sides of the relationship',
-      'description' => 'Extended Report - Relationships',
+      'label' => 'Extended Report - Relationships',
+      'description' => 'Extended Report - Relationships, includes data from both sides of the relationship',
       'class_name' => 'CRM_Extendedreport_Form_Report_RelationshipExtended',
       'report_url' => 'relationshipextended',
       'component' => '',
