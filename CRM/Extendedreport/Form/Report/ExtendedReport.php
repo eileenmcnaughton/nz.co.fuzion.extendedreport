@@ -3768,7 +3768,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         LEFT JOIN civicrm_activity_contact civicrm_activity_assignment
           ON {$this->_aliases['civicrm_activity']}.id = civicrm_activity_assignment.activity_id
           AND civicrm_activity_assignment.record_type_id = {$assigneeID}
-        LEFT JOIN civicrm_contact civicrm_contact_assignee {$this->_aliases['assignee_civicrm_contact']}
+        LEFT JOIN civicrm_contact {$this->_aliases['assignee_civicrm_contact']}
           ON civicrm_activity_assignment.contact_id = {$this->_aliases['assignee_civicrm_contact']}.id
           ";
     }
