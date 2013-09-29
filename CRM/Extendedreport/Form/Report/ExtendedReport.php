@@ -2904,9 +2904,11 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       $contactFields[$options['prefix'] . 'civicrm_contact']['order_bys'] =  array(
         $options['prefix'] . 'sort_name' => array(
           'title' => ts($options['prefix_label'] . 'Name'),
-          'default' => $weight == 0 ? TRUE : FALSE,
+          //this seems to re-load others once the report is saved for some reason
+          //'default' => $weight == 0 ? TRUE : FALSE,
+          'default' => $options['prefix'] ? FALSE :TRUE,
           'default_weight' => $weight,
-          'default_order' => $weight == 0 ? 'ASC' : NULL,
+          'default_order' => $options['prefix'] ? NULL : 'ASC',
           'name' => 'sort_name',
         ),
         /*
