@@ -12,6 +12,7 @@ class CRM_Extendedreport_Form_Report_ActivityExtended extends CRM_Extendedreport
     'contact_activity' => array(
       'extends' => array('Activity'),
       'title'  => 'Activity',
+      'filters' => TRUE,
     ),
   );
   /**

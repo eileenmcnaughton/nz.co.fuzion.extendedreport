@@ -1680,21 +1680,21 @@ ORDER BY cg.weight, cf.weight";
    * than improving the code - so this should be set up so that the select & the FROM are not BOTH done from the from function
    */
   function selectableCustomDataFrom() {
-   $customFields = CRM_Utils_Array::value('custom_fields', $this->_params);
-   if(empty($customFields)) {
-    return;
-   }
-    $customFields = $this->_params['custom_fields'];
+   $customFields = CRM_Utils_Array::value('custom_fields', $this->_params, array());
     foreach($this->_params as $key => $param) {
       if(substr($key, 0, 7) == 'custom_') {
         $splitField = explode('_', $key);
         $field = $splitField[0] . '_' . $splitField[1];
         foreach($this->_columns as $table => $spec) {
-          if(!empty($spec['filters']) && is_array($spec['filters']) && array_key_exists($field, $spec['filters']) && isset($this->_params[$field . '_value']) && $this->_params[$field . '_value'] != NULL) {
+          if(!empty($spec['filters'])
+            && is_array($spec['filters'])
+            && array_key_exists($field, $spec['filters'])
+            && isset($this->_params[$field . '_value'])
+            && $this->_params[$field . '_value'] != NULL) {
             // we will just support activity & source contact customfields for now
             //@todo these lines are looking pretty hard-coded
-            if($spec['filters'][$key]['extends'] == 'Activity') {
-              $fieldString = 'custom_activity:' . $field;
+            if($spec['extends'] == 'Activity') {
+              $fieldString = 'contact_activity:' . $field;
             }
             else{
               $fieldString = 'civicrm_contact:' . $field;
