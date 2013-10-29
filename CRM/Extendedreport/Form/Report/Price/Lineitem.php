@@ -54,7 +54,7 @@ class CRM_Extendedreport_Form_Report_Price_Lineitem extends CRM_Extendedreport_F
         $this->_columns = $this->getContactColumns()
                         + $this->getEventColumns()
                         + $this->getParticipantColumns()
-                        + $this->getContributionColumns()
+                        + $this->getContributionColumns(array('group_by' => TRUE))
                         + $this->getPriceFieldColumns()
                         + $this->getPriceFieldValueColumns()
                         + $this->getLineItemColumns()
