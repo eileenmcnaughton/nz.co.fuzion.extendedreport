@@ -120,6 +120,35 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   }
 
   /**
+   * Get the name of the PriceFieldValueBAO correct for the civi version
+   * @return string BAO Name
+   */
+  function getPriceFieldValueBAO() {
+    $codeVersion = explode('.', CRM_Utils_System::version());
+    // if db.ver < code.ver, time to upgrade
+    if (version_compare($codeVersion[0] . '.' . $codeVersion[1], 4.4) <= 0) {
+      return 'CRM_Price_BAO_PriceFieldValue';
+    }
+    else {
+      return 'CRM_Price_BAO_FieldValue';
+    }
+  }
+
+  /**
+   * Get the name of the PriceFieldValueBAO correct for the civi version
+   * @return string BAO name
+   */
+  function getPriceFieldBAO() {
+    $codeVersion = explode('.', CRM_Utils_System::version());
+    // if db.ver < code.ver, time to upgrade
+    if (version_compare($codeVersion[0] . '.' . $codeVersion[1], 4.4) <= 0) {
+      return 'CRM_Price_BAO_PriceField';
+    }
+    else {
+      return 'CRM_Price_BAO_Field';
+    }
+  }
+  /**
    * Backported purely to provide CRM-12687 which is in 4.4
    */
   function preProcess() {
@@ -2304,7 +2333,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     return array(
       'civicrm_price_field_value' =>
       array(
-        'dao' => 'CRM_Price_BAO_FieldValue',
+        'dao' => $this->getPriceFieldValueBAO(),
         'fields' => array(
           'price_field_value_label' =>
           array('title' => ts('Price Field Value Label'),
@@ -2345,7 +2374,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     return array(
       'civicrm_price_field' =>
       array(
-        'dao' => 'CRM_Price_BAO_Field',
+        'dao' => $this->getPriceFieldBAO(),
         'fields' =>
         array(
           'price_field_label' =>
