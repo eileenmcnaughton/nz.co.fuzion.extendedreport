@@ -126,7 +126,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   function getPriceFieldValueBAO() {
     $codeVersion = explode('.', CRM_Utils_System::version());
     // if db.ver < code.ver, time to upgrade
-    if (version_compare($codeVersion[0] . '.' . $codeVersion[1], 4.4) <= 0) {
+    if (version_compare($codeVersion[0] . '.' . $codeVersion[1], 4.4) >= 0) {
       return 'CRM_Price_BAO_PriceFieldValue';
     }
     else {
@@ -141,7 +141,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   function getPriceFieldBAO() {
     $codeVersion = explode('.', CRM_Utils_System::version());
     // if db.ver < code.ver, time to upgrade
-    if (version_compare($codeVersion[0] . '.' . $codeVersion[1], 4.4) <= 0) {
+    if (version_compare($codeVersion[0] . '.' . $codeVersion[1], 4.4) >= 0) {
       return 'CRM_Price_BAO_PriceField';
     }
     else {
