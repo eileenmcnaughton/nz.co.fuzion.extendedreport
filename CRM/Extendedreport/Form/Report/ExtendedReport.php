@@ -15,6 +15,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   protected $_baseTable = 'civicrm_contact';
   protected $_editableFields = TRUE;
   protected $_outputMode = array();
+  protected $_customGroupOrderBy = FALSE; // add order bys for custom fields (note reports break after 5 fields exposed due to civi bug
 
   /**
    * we will set $this->aliases['civicrm_contact'] to match the primary contact because many upstream functions
