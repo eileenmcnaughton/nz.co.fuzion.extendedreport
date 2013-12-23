@@ -547,7 +547,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       return NULL;
     }
     else {
-      if (in_array($relative, array_keys($this->getOperationPair(CRM_Report_FORM::OP_DATE)))) {
+      if (in_array($relative, array_keys($this->getOperationPair(CRM_Report_Form::OP_DATE)))) {
         $sqlOP = $this->getSQLOperator($relative);
         return "( {$fieldName} {$sqlOP} )";
       }
@@ -672,8 +672,8 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
               // required so that filter statistics show properly.
               $this->_columns[$table]['filters'][$fieldName]['options'] = $field['options'];
             }
-          case CRM_Report_FORM::OP_MULTISELECT:
-          case CRM_Report_FORM::OP_MULTISELECT_SEPARATOR:
+          case CRM_Report_Form::OP_MULTISELECT:
+          case CRM_Report_Form::OP_MULTISELECT_SEPARATOR:
             // assume a multi-select field
             if (!empty($field['options'])) {
               $element = $this->addElement('select', "{$fieldName}_op", ts('Operator:'), $operations);
@@ -696,7 +696,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
             $this->addElement('select', "{$fieldName}_value", NULL, $field['options']);
             break;
 
-          case CRM_Report_FORM::OP_DATE:
+          case CRM_Report_Form::OP_DATE:
             // build datetime fields
             CRM_Core_Form_Date::buildDateRange($this, $fieldName, $count);
             $count++;
@@ -713,8 +713,8 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
             $this->addDate("{$fieldName}_value", ts(''), FALSE);
             $count++;
             break;
-          case CRM_Report_FORM::OP_INT:
-          case CRM_Report_FORM::OP_FLOAT:
+          case CRM_Report_Form::OP_INT:
+          case CRM_Report_Form::OP_FLOAT:
             // and a min value input box
             $this->add('text', "{$fieldName}_min", ts('Min'));
             // and a max value input box
