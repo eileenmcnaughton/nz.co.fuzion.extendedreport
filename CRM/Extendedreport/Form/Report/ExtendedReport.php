@@ -1721,7 +1721,7 @@ ORDER BY cg.weight, cf.weight";
             && array_key_exists($field, $spec['filters'])
             && (isset($this->_params[$field . '_value'])
               && $this->_params[$field . '_value'] != NULL) ||
-              $this->_params[$field . '_op'] == 'nll'
+              CRM_Utils_Array::value($field . '_op', $this->_params) == 'nll'
               ) {
             // we will just support activity & source contact customfields for now
             //@todo these lines are looking pretty hard-coded
