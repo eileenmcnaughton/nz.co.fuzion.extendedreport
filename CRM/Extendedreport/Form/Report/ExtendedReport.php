@@ -3591,12 +3591,15 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'type' => CRM_Utils_Type::T_STRING,
         'alter_display' => 'alterActivityStatus',
       ),
-      'duration' =>
-      array('title' => ts('Duration'),
+      'duration' => array(
+        'title' => ts('Duration'),
         'type' => CRM_Utils_Type::T_INT,
       ),
-    )
-    ;
+      'details' => array(
+        'title' => ts('Activity Details'),
+      )
+    );
+
     if($options['filters']){
       $activityFields['civicrm_activity']['filters'] =
         array(
@@ -3605,15 +3608,16 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
             'default' => 'this.month',
             'operatorType' => CRM_Report_Form::OP_DATE,
           ),
-          'activity_subject' =>
-          array('title' => ts('Activity Subject')),
-          'activity_type_id' =>
-          array('title' => ts('Activity Type'),
+          'activity_subject' => array(
+            'title' => ts('Activity Subject')
+          ),
+          'activity_type_id' => array(
+            'title' => ts('Activity Type'),
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
             'options' => CRM_Core_PseudoConstant::activityType(True, True),
           ),
-          'status_id' =>
-          array('title' => ts('Activity Status'),
+          'status_id' => array(
+            'title' => ts('Activity Status'),
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
             'options' => CRM_Core_PseudoConstant::activityStatus(),
           ),
@@ -3624,6 +3628,10 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
             'default' => 1,
             'name' => 'is_current_revision',
             'options' => array('0' => 'No', '1' => 'Yes'),
+          ),
+          'details' => array(
+            'title' => ts('Activity Details'),
+            'type' => CRM_Utils_Type::T_TEXT,
           )
         );
     }
