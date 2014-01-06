@@ -2665,6 +2665,55 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     );
   }
 
+  /**
+   * Get Columns for Event totals Summary
+   * @param array $options
+   * @return Ambigous <multitype:multitype:NULL  , multitype:multitype:string  multitype:NULL  multitype:string NULL  , multitype:multitype:string  multitype:NULL string  multitype:number string boolean multitype:string  NULL  multitype:NULL  multitype:string NULL  >
+   */
+  function getEventSummaryColumns($options = array()) {
+    $defaultOptions = array(
+      'prefix' => '',
+      'prefix_label' => '',
+      'fields' => true,
+      'group_by' => false,
+      'order_by' => true,
+      'filters' => true,
+      'defaults' => array(
+      ),
+    );
+    $options = array_merge($defaultOptions,$options);
+
+    $fields =  array('civicrm_event_summary' . $options['prefix'] =>  array(
+      'grouping' => 'event-fields',
+    )
+    );
+
+    if($options['fields']){
+      $fields['civicrm_event_summary' . $options['prefix']]['fields'] =
+      array(
+        'registered_amount'. $options['prefix'] => array(
+          'title' => $options['prefix_label'] . ts('Total Income'),
+          'default' => TRUE,
+          'type' => CRM_Utils_Type::T_MONEY,
+          'statistics' => array('sum' => ts('Total Income')),
+        ),
+        'paid_amount'. $options['prefix'] => array(
+          'title' => $options['prefix_label'] . ts('Paid Up Income'),
+          'default' => TRUE,
+          'type' => CRM_Utils_Type::T_MONEY,
+          'statistics' => array('sum' => ts('Total Paid Up Income')),
+        ),
+        'pending_amount'. $options['prefix'] => array(
+          'title' => $options['prefix_label'] . ts('Pending Income'),
+          'default' => TRUE,
+          'type' => CRM_Utils_Type::T_MONEY,
+          'statistics' => array('sum' => ts('Total Pending Income')),
+        ),
+      );
+    }
+    return $fields;
+  }
+
 
   /**
    *
@@ -2721,8 +2770,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
           'net_amount' => NULL,
           'total_amount' => array(
             'title' => ts('Amount'),
-            'statistics' =>
-            array('sum' => ts('Total Amount')),
+            'statistics' => array('sum' => ts('Total Amount')),
             'type' => CRM_Utils_Type::T_MONEY,
           ),
         );
@@ -2800,8 +2848,8 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     return $fields;
   }
   /**
-   *
-   * @param unknown_type $options
+   * Get Columns for Contact Contribution Summary
+   * @param array $options
    * @return Ambigous <multitype:multitype:NULL  , multitype:multitype:string  multitype:NULL  multitype:string NULL  , multitype:multitype:string  multitype:NULL string  multitype:number string boolean multitype:string  NULL  multitype:NULL  multitype:string NULL  >
    */
   function getContributionSummaryColumns($options = array()) {
@@ -3736,6 +3784,11 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'rightTable' => 'civicrm_event',
         'callback' => 'joinEventFromParticipant',
       ),
+      'eventsummary_from_event' => array(
+        'leftTable' => 'civicrm_event',
+        'rightTable' => 'civicrm_event_summary',
+        'callback' => 'joinEventSummaryFromEvent',
+      ),
       'address_from_contact' => array(
         'leftTable' => 'civicrm_contact',
         'rightTable' => 'civicrm_address',
@@ -4284,6 +4337,48 @@ ON {$this->_aliases['civicrm_contribution']}.contact_id = {$this->_aliases['civi
 ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participant']}.event_id ) AND
 ({$this->_aliases['civicrm_event']}.is_template IS NULL OR
 {$this->_aliases['civicrm_event']}.is_template = 0)";
+  }
+
+  function joinEventSummaryFromEvent($prefix) {
+    $temporary = $this->_temporary;
+    $tempTable = 'civicrm_report_temp_contsumm'. $prefix . date('d_H_I') . rand(1, 10000);
+    $dropSql = "DROP TABLE IF EXISTS $tempTable";
+    //@todo currently statuses are hard-coded as 1 for complete & 5-6 for pending
+    $createSQL = "
+    CREATE {$this->temporary} table  $tempTable (
+      `event_id` INT(10) UNSIGNED NULL DEFAULT '0' COMMENT 'FK to Event ID',
+      `paid_amount` DECIMAL(42,2) NULL DEFAULT 0,
+      `registered_amount` DECIMAL(48,6) NULL DEFAULT 0,
+      `pending_amount` DECIMAL(48,6) NOT NULL DEFAULT '0',
+      PRIMARY KEY (`event_id`)
+    )";
+    $tempPayments = CRM_Core_DAO::executeQuery($createSQL);
+    $tempPayments = CRM_Core_DAO::executeQuery(
+      "INSERT INTO  $tempTable  (
+       SELECT event_id, sum(total_amount) as paid_amount, sum(total_amount)/1.15 as registered_amount, 0 as pending_amount
+       FROM civicrm_participant p
+       LEFT JOIN civicrm_participant_payment pp on p.id = pp.participant_id
+       LEFT JOIN civicrm_contribution c ON c.id = pp.contribution_id
+       WHERE status_id IN (1)
+       GROUP BY event_id)");
+    $replaceSQL = "
+      INSERT INTO $tempTable (event_id, pending_amount)
+      SELECT * FROM (
+        SELECT event_id, coalesce(sum(total_amount),0) as pending_amount FROM civicrm_participant p
+        LEFT JOIN civicrm_participant_payment pp on p.id = pp.participant_id
+        LEFT JOIN civicrm_contribution c ON c.id = pp.contribution_id
+        WHERE status_id IN (5,6) GROUP BY event_id
+      ) as p
+      ON DUPLICATE KEY UPDATE pending_amount = p.pending_amount;
+    ";
+
+    $updateSQL = "UPDATE $tempTable SET registered_amount = (pending_amount  + paid_amount) / 1.15 ";
+    CRM_Core_DAO::executeQuery($replaceSQL);
+    CRM_Core_DAO::executeQuery($updateSQL);
+    $this->_from .= "
+      LEFT JOIN $tempTable {$this->_aliases['civicrm_event_summary' . $prefix]}
+      ON {$this->_aliases['civicrm_event_summary' . $prefix]}.event_id = {$this->_aliases['civicrm_event']}.id
+    ";
   }
 
   /**
