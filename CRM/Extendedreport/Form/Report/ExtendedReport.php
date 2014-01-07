@@ -4017,63 +4017,84 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
   )
   ENGINE=HEAP;";
       CRM_Core_DAO::executeQuery($sql);
-      $sql = "CREATE  TABLE $assigneeTable
-    (
-    `contact_id` INT(10) NULL,
-    `id` INT(10) NULL,
-    `activity_type_id` VARCHAR(50) NULL,
-    `activity_date_time` DATETIME NULL,
-    PRIMARY KEY (`contact_id`)
-    )
-    ENGINE=HEAP;";
-      CRM_Core_DAO::executeQuery($sql);
-      $sql = "CREATE  TABLE $targetTable
-     (
-    `contact_id` INT(10) NULL,
-    `id` INT(10) NULL,
-    `activity_type_id` VARCHAR(50) NULL,
-    `activity_date_time` DATETIME NULL,
-    PRIMARY KEY (`contact_id`)
-    )
-    ENGINE=HEAP;";
-      CRM_Core_DAO::executeQuery($sql);
-      $sql=
-        "REPLACE INTO $tmpTableName
-   SELECT source_contact_id as contact_id, max(id), activity_type_id, activity_date_time
-   FROM civicrm_activity
-   GROUP BY source_contact_id,  activity_date_time DESC
-  ";
-      CRM_Core_DAO::executeQuery($sql);
 
-      $sql = "REPLACE INTO $assigneeTable
-  SELECT assignee_contact_id as contact_id, activity_id as id, a.activity_type_id, a.activity_date_time
-  FROM civicrm_activity_assignment aa
-  LEFT JOIN civicrm_activity a on a.id = aa.activity_id
-  LEFT JOIN $tmpTableName tmp ON tmp.contact_id = aa.assignee_contact_id
-  WHERE (a.activity_date_time < tmp.activity_date_time OR tmp.activity_date_time IS NULL)
-  GROUP BY assignee_contact_id,  a.activity_date_time DESC
-  ";
+    if($this->isActivityContact()) {
+      $sql= "
+      REPLACE INTO $tmpTableName
+      SELECT contact_id, a.id, activity_type_id, activity_date_time
+      FROM civicrm_activity_contact ac
+      LEFT JOIN civicrm_activity a ON a.id = ac.activity_id
+      GROUP BY contact_id,  activity_date_time DESC
+      ";
       CRM_Core_DAO::executeQuery($sql);
-
-      $sql = "REPLACE INTO $tmpTableName
-  SELECT * FROM $assigneeTable
-  ";
-      CRM_Core_DAO::executeQuery($sql);
-
-      $sql = "REPLACE INTO $targetTable
-  SELECT target_contact_id as contact_id, activity_id as id, a.activity_type_id, a.activity_date_time
-  FROM civicrm_activity_target aa
-  LEFT JOIN civicrm_activity a on a.id = aa.activity_id
-  LEFT JOIN $tmpTableName tmp ON tmp.contact_id = aa.target_contact_id
-  WHERE (a.activity_date_time < tmp.activity_date_time OR tmp.activity_date_time IS NULL)
-  GROUP BY target_contact_id,  a.activity_date_time DESC
-  ";
+    }
+    else {
+      $sql = "
+        CREATE  TABLE $assigneeTable
+        (
+          `contact_id` INT(10) NULL,
+          `id` INT(10) NULL,
+          `activity_type_id` VARCHAR(50) NULL,
+          `activity_date_time` DATETIME NULL,
+          PRIMARY KEY (`contact_id`)
+      )
+      ENGINE=HEAP;";
 
       CRM_Core_DAO::executeQuery($sql);
-      $sql = "REPLACE INTO $tmpTableName
-  SELECT * FROM $targetTable
-  ";
+      $sql = "
+        CREATE  TABLE $targetTable
+        (
+        `contact_id` INT(10) NULL,
+        `id` INT(10) NULL,
+        `activity_type_id` VARCHAR(50) NULL,
+        `activity_date_time` DATETIME NULL,
+        PRIMARY KEY (`contact_id`)
+        )
+        ENGINE=HEAP;";
+        CRM_Core_DAO::executeQuery($sql);
+
+      $sql= "
+        REPLACE INTO $tmpTableName
+        SELECT source_contact_id as contact_id, max(id), activity_type_id, activity_date_time
+        FROM civicrm_activity
+        GROUP BY source_contact_id,  activity_date_time DESC
+      ";
       CRM_Core_DAO::executeQuery($sql);
+
+      $sql = "
+        REPLACE INTO $assigneeTable
+        SELECT assignee_contact_id as contact_id, activity_id as id, a.activity_type_id, a.activity_date_time
+        FROM civicrm_activity_assignment aa
+        LEFT JOIN civicrm_activity a on a.id = aa.activity_id
+        LEFT JOIN $tmpTableName tmp ON tmp.contact_id = aa.assignee_contact_id
+        WHERE (a.activity_date_time < tmp.activity_date_time OR tmp.activity_date_time IS NULL)
+        GROUP BY assignee_contact_id,  a.activity_date_time DESC
+      ";
+      CRM_Core_DAO::executeQuery($sql);
+
+      $sql = "
+        REPLACE INTO $tmpTableName
+        SELECT * FROM $assigneeTable
+      ";
+      CRM_Core_DAO::executeQuery($sql);
+
+      $sql = "
+        REPLACE INTO $targetTable
+        SELECT target_contact_id as contact_id, activity_id as id, a.activity_type_id, a.activity_date_time
+        FROM civicrm_activity_target aa
+        LEFT JOIN civicrm_activity a on a.id = aa.activity_id
+        LEFT JOIN $tmpTableName tmp ON tmp.contact_id = aa.target_contact_id
+        WHERE (a.activity_date_time < tmp.activity_date_time OR tmp.activity_date_time IS NULL)
+        GROUP BY target_contact_id,  a.activity_date_time DESC
+      ";
+
+      CRM_Core_DAO::executeQuery($sql);
+      $sql = "
+        REPLACE INTO $tmpTableName
+        SELECT * FROM $targetTable
+      ";
+      CRM_Core_DAO::executeQuery($sql);
+    }
     }
     $this->_from .= " LEFT JOIN $tmpTableName {$this->_aliases['civicrm_activity']}
    ON {$this->_aliases['civicrm_activity']}.contact_id = {$this->_aliases['civicrm_contact']}.id";
