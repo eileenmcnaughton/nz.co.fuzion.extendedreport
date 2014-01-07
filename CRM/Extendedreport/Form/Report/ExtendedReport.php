@@ -590,6 +590,15 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     $this->storeGroupByArray();
     if (!empty($this->_groupByArray)) {
       $this->_groupBy = "GROUP BY " . implode(', ', $this->_groupByArray);
+      if(!empty($this->_sections)) {
+        // if we have group bys & sections the sections need to be grouped
+        //otherwise we won't interfere with the parent class
+        // assumption is that they shouldn't co-exist but there are many reasons for setting group bys
+        // that don't relate to the confusion of the odd form appearance
+        foreach ($this->_sections as $section) {
+          $this->_groupBy .= ", " . $section['dbAlias'];
+        }
+      }
     }
   }
 
@@ -1059,9 +1068,8 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       $this->customDataFrom();
       $this->constrainedWhere();
     }
-    $this->groupBy();
     $this->orderBy();
-
+    $this->groupBy();
     // order_by columns not selected for display need to be included in SELECT
     $unselectedSectionColumns = $this->unselectedSectionColumns();
     foreach ($unselectedSectionColumns as $alias => $section) {
@@ -2413,7 +2421,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     );
   }
 
-  function getParticipantColumns() {
+  function getParticipantColumns($options = array()) {
     static $_events = array();
     if (!isset($_events['all'])) {
       CRM_Core_PseudoConstant::populate($_events['all'], 'CRM_Event_DAO_Event', FALSE, 'title', 'is_active', "is_template IS NULL OR is_template = 0", 'end_date DESC');
