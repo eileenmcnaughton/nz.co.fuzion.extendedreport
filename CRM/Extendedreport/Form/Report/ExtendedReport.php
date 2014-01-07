@@ -4026,7 +4026,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       (  SELECT contact_id, a.id, activity_type_id, activity_date_time FROM
         civicrm_activity_contact ac
         LEFT JOIN civicrm_activity a ON a.id = ac.activity_id
-        GROUP BY contact_id,  activity_date_time DESC
+        ORDER BY contact_id,  activity_date_time DESC
       ) as a
       GROUP BY contact_id
       ";
