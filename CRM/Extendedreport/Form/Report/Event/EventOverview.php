@@ -3,7 +3,7 @@
 class CRM_Extendedreport_Form_Report_Event_EventOverview extends CRM_Extendedreport_Form_Report_ExtendedReport {
   protected $_baseTable = 'civicrm_event';
   protected $skipACL = true;
-  protected $_customGroupExtends = array( 'Event' );
+  protected $_customGroupExtends = array('Event');
   protected $_customGroupGroupBy = TRUE;
 
   function __construct() {
@@ -17,5 +17,4 @@ class CRM_Extendedreport_Form_Report_Event_EventOverview extends CRM_Extendedrep
       'eventsummary_from_event',
     );
   }
-
 }
