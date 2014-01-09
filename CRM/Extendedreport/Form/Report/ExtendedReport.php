@@ -4397,6 +4397,11 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
     $temporary = $this->_temporary;
     $tempTable = 'civicrm_report_temp_contsumm'. $prefix . date('d_H_I') . rand(1, 10000);
     $dropSql = "DROP TABLE IF EXISTS $tempTable";
+    $registeredStatuses = CRM_Event_PseudoConstant::participantStatus(NULL, "class = 'Positive'");
+    $registeredStatuses = implode(', ', array_keys($registeredStatuses));
+    $pendingStatuses = CRM_Event_PseudoConstant::participantStatus(NULL, "class = 'Pending'");
+    $pendingStatuses = implode(', ', array_keys($pendingStatuses));
+
     //@todo currently statuses are hard-coded as 1 for complete & 5-6 for pending
     $createSQL = "
     CREATE {$this->temporary} table  $tempTable (
@@ -4420,7 +4425,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
        FROM civicrm_participant p
        LEFT JOIN civicrm_participant_payment pp on p.id = pp.participant_id
        LEFT JOIN civicrm_contribution c ON c.id = pp.contribution_id
-       WHERE status_id IN (1)
+       WHERE status_id IN ( $registeredStatuses )
        GROUP BY event_id)");
     $replaceSQL = "
       INSERT INTO $tempTable (event_id, pending_amount, pending_count)
@@ -4431,7 +4436,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
         FROM civicrm_participant p
         LEFT JOIN civicrm_participant_payment pp on p.id = pp.participant_id
         LEFT JOIN civicrm_contribution c ON c.id = pp.contribution_id
-        WHERE status_id IN (5,6) GROUP BY event_id
+        WHERE status_id IN ( $pendingStatuses ) GROUP BY event_id
       ) as p
       ON DUPLICATE KEY UPDATE pending_amount = p.pending_amount, pending_count = p.pending_count;
     ";
