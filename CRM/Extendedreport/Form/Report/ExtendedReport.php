@@ -4022,7 +4022,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       $sql= "
       REPLACE INTO $tmpTableName
       SELECT contact_id, a.id, activity_type_id, activity_date_time
-      FROM 
+      FROM
       (  SELECT contact_id, a.id, activity_type_id, activity_date_time FROM
         civicrm_activity_contact ac
         LEFT JOIN civicrm_activity a ON a.id = ac.activity_id
