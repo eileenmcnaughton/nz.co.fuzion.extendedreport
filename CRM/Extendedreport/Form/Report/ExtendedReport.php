@@ -2717,6 +2717,24 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
           'type' => CRM_Utils_Type::T_MONEY,
           'statistics' => array('sum' => ts('Total Pending Income')),
         ),
+        'registered_count'. $options['prefix'] => array(
+          'title' => $options['prefix_label'] . ts('No. Participants'),
+          'default' => TRUE,
+          'type' => CRM_Utils_Type::T_INT,
+          'statistics' => array('sum' => ts('Total No. Participants')),
+        ),
+        'paid_count'. $options['prefix'] => array(
+          'title' => $options['prefix_label'] . ts('Paid Up Participants'),
+          'default' => TRUE,
+          'type' => CRM_Utils_Type::T_INT,
+          'statistics' => array('sum' => ts('Total No,. Paid Up Participants')),
+        ),
+        'pending_count'. $options['prefix'] => array(
+          'title' => $options['prefix_label'] . ts('Pending Participants'),
+          'default' => TRUE,
+          'type' => CRM_Utils_Type::T_INT,
+          'statistics' => array('sum' => ts('Total Pending Participants')),
+        ),
       );
     }
     return $fields;
@@ -4383,29 +4401,40 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
       `paid_amount` DECIMAL(42,2) NULL DEFAULT 0,
       `registered_amount` DECIMAL(48,6) NULL DEFAULT 0,
       `pending_amount` DECIMAL(48,6) NOT NULL DEFAULT '0',
+      `paid_count` INT(10) UNSIGNED NULL DEFAULT '0',
+      `registered_count` INT(10) UNSIGNED NULL DEFAULT '0',
+      `pending_count` INT(10) UNSIGNED NULL DEFAULT '0',
       PRIMARY KEY (`event_id`)
     )";
     $tempPayments = CRM_Core_DAO::executeQuery($createSQL);
     $tempPayments = CRM_Core_DAO::executeQuery(
       "INSERT INTO  $tempTable  (
-       SELECT event_id, sum(total_amount) as paid_amount, sum(total_amount)/1.15 as registered_amount, 0 as pending_amount
+       SELECT event_id
+          , COALESCE(sum(total_amount)) as paid_amount
+          , 0 as registered_amount
+          , 0 as pending_amount
+      , COALESCE(count(p.id)) as paid_count, 0 as registered_count, 0 as pending_count
        FROM civicrm_participant p
        LEFT JOIN civicrm_participant_payment pp on p.id = pp.participant_id
        LEFT JOIN civicrm_contribution c ON c.id = pp.contribution_id
        WHERE status_id IN (1)
        GROUP BY event_id)");
     $replaceSQL = "
-      INSERT INTO $tempTable (event_id, pending_amount)
+      INSERT INTO $tempTable (event_id, pending_amount, pending_count)
       SELECT * FROM (
-        SELECT event_id, coalesce(sum(total_amount),0) as pending_amount FROM civicrm_participant p
+        SELECT event_id
+        , COALESCE(sum(total_amount),0) as pending_amount
+        , COALESCE(count(p.id)) as pending_count
+        FROM civicrm_participant p
         LEFT JOIN civicrm_participant_payment pp on p.id = pp.participant_id
         LEFT JOIN civicrm_contribution c ON c.id = pp.contribution_id
         WHERE status_id IN (5,6) GROUP BY event_id
       ) as p
-      ON DUPLICATE KEY UPDATE pending_amount = p.pending_amount;
+      ON DUPLICATE KEY UPDATE pending_amount = p.pending_amount, pending_count = p.pending_count;
     ";
 
-    $updateSQL = "UPDATE $tempTable SET registered_amount = (pending_amount  + paid_amount) / 1.15 ";
+    $updateSQL = "UPDATE $tempTable SET registered_amount = (pending_amount  + paid_amount)
+      , registered_count = (pending_count  + paid_count) ";
     CRM_Core_DAO::executeQuery($replaceSQL);
     CRM_Core_DAO::executeQuery($updateSQL);
     $this->_from .= "
