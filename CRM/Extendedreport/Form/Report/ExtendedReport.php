@@ -2595,6 +2595,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'fields' =>
         array(
           'id' => array(
+            'title' => ts('Event ID'),
           ),
           'title' => array('title' => ts('Event Title'),
             'crm_editable' => array(
@@ -2602,6 +2603,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
               'id_field' => 'id',
               'entity' => 'event',
             ),
+            'type' => CRM_Utils_Type::T_STRING,
           ),
           'event_type_id' => array('title' => ts('Event Type'),
             'alter_display' => 'alterEventType',
@@ -2650,6 +2652,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
             'name' => 'title',
             'title' => ts('Event Title'),
             'operatorType' => CRM_Report_Form::OP_STRING,
+            'type' => CRM_Utils_Type::T_STRING,
           ),
           'event_start_date' => array(
             'title' => ts('Event start date'),
