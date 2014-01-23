@@ -324,7 +324,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       $this->_select = " SELECT 1 ";
     }
   }
-  /*
+  /**
    * Function to do a simple cross-tab
    */
   function aggregateSelect(){
@@ -351,6 +351,14 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     }
   }
 
+  /**
+   * Add Select for pivot chart style report
+   *
+   * @param string $fieldName
+   * @param string $tableAlias
+   * @param array $spec
+   * @throws Exception
+   */
   function addColumnAggregateSelect($fieldName, $tableAlias, $spec){
     if(empty($spec['option_group_id'])){
       throw new Exception('currently column headers need to be radio or select');
@@ -2287,7 +2295,36 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       )
     );
   }
+  /**
+   * Function to add columns because I wasn't enjoying adding filters to each fn
+   * @param string $type
+   * @param array $options
+   */
+  function getColumns($type, $options = array()){
+    $defaultOptions = array(
+      'prefix' => '',
+      'prefix_label' => '',
+      'fields' => true,
+      'group_by' => false,
+      'order_by' => true,
+      'filters' => true,
+    );
+    $options = array_merge($defaultOptions,$options);
 
+    $fn = 'get' . $type . 'Columns';
+    $columns = $this->$fn($options);
+
+    foreach (array('fields', 'filters', 'group_by', 'order_by') as $type) {
+      if(!$options[$type]) {
+        foreach ($columns as $tables => &$table) {
+          if(isset($table[$type])) {
+            unset($table[$type]);
+          }
+        }
+      }
+    }
+    return $columns;
+  }
   function getLineItemColumns() {
     return array(
       'civicrm_line_item' =>
@@ -2430,6 +2467,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       'civicrm_participant' =>
       array(
         'dao' => 'CRM_Event_DAO_Participant',
+        'grouping' => 'event-fields',
         'fields' =>
         array('participant_id' => array('title' => 'Participant ID'),
           'participant_record' => array(
@@ -2450,7 +2488,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
           'participant_fee_amount' => NULL,
           'participant_register_date' => array('title' => ts('Registration Date')),
         ),
-        'grouping' => 'event-fields',
+
         'filters' =>
         array(
           'event_id' => array('name' => 'event_id',
@@ -2588,7 +2626,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     );
   }
 
-  function getEventColumns() {
+  function getEventColumns($options) {
     return array(
       'civicrm_event' => array(
         'dao' => 'CRM_Event_DAO_Event',
