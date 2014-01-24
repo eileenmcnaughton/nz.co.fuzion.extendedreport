@@ -5,6 +5,7 @@ class CRM_Extendedreport_Form_Report_Event_EventOverview extends CRM_Extendedrep
   protected $skipACL = true;
   protected $_customGroupExtends = array('Event');
   protected $_customGroupGroupBy = TRUE;
+  protected $_autoIncludeIndexedFieldsAsOrderBys = TRUE;
 
   function __construct() {
     $this->_columns = $this->getEventColumns()
