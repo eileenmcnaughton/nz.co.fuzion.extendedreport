@@ -1672,7 +1672,12 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
             }
 
             foreach ($customFieldsTableFields[$extendedEntity] as $customFieldName => $customFieldLabel){
-              $label = $spec['title'] . " (" . $this->_customFields[$customTable]['group_title'] . ") " . $customFieldLabel;
+              //@todo - pretty long winded - extract of make easier to access
+              $customFieldParts = explode('_', $customFieldName);
+              $customFieldID = $customFieldParts[1];
+              $customGroupID = $customFields[$customFieldID]['custom_group_id'];
+              $customGroupTitle = $customGroups[$customGroupID]['title'];
+              $label = $spec['title'] . " (" . $customGroupTitle . ") " . $customFieldLabel;
               $customFields[$table][$table . ':' . $customFieldName]
                 = $customFieldsFlat[$table . ':' . $customFieldName] = $label;
               if(!empty($validColumnHeaderFields[$customFieldName])) {
@@ -4024,8 +4029,10 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'rightTable' => 'civicrm_contact',
         'callback' => 'joinContactFromCase',
       ),
-      'activity_from_case' => array(
-
+      'case_from_activity' => array(
+        'leftTable' => 'civicrm_activity',
+        'rightTable' => 'civicrm_case',
+        'callback' => 'joinCaseFromContact',
       )
     );
   }
@@ -4689,7 +4696,15 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
     $this->_from .= " LEFT JOIN civicrm_case_activity cca ON cca.case_id = {$this->_aliases['civicrm_case']}.id
     LEFT JOIN civicrm_activity {$this->_aliases['civicrm_activity']} ON {$this->_aliases['civicrm_activity']}.id = cca.activity_id";
   }
-
+  /**
+   *
+   */
+  function joinCaseFromActivity() {
+    $this->_from .= "
+      LEFT JOIN civicrm_case_activity cca ON {$this->_aliases['civicrm_activity']}.id = cca.activity_id
+      LEFT JOIN civicrm_activity {$this->_aliases['civicrm_activity']} ON cca.case_id = {$this->_aliases['civicrm_case']}.id
+    ";
+  }
   /**
    *
    */
