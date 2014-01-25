@@ -404,10 +404,15 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    * @throws Exception
    */
   function addColumnAggregateSelect($fieldName, $tableAlias, $spec){
-    if(empty($spec['option_group_id'])){
-      throw new Exception('currently column headers need to be radio or select');
+    if($spec['data_type'] == 'Boolean') {
+      $options= array('values' => array(0 => array('label' => 'No', 'value' => 0), 1 => array('label' => 'Yes', 'value' => 1)));
     }
-    $options = civicrm_api('option_value', 'get', array('version' => 3, 'options' => array('limit' => 50,), 'option_group_id' => $spec['option_group_id']));
+    else {
+      if(empty($spec['option_group_id'])){
+        throw new Exception('currently column headers need to be radio or select');
+      }
+      $options = civicrm_api('option_value', 'get', array('version' => 3, 'options' => array('limit' => 50,), 'option_group_id' => $spec['option_group_id']));
+    }
     foreach ($options['values'] as $option){
       $fieldAlias = str_replace(array('-', '+', '\/'), '_', "{$fieldName}_" . strtolower(str_replace(' ','',$option['value'])));
       if(in_array($spec['htmlType'], array('CheckBox', 'MultiSelect'))){
