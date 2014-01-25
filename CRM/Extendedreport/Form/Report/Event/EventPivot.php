@@ -7,6 +7,11 @@ class CRM_Extendedreport_Form_Report_Event_EventPivot extends CRM_Extendedreport
   protected $_aggregatesIncludeNULL = TRUE;
   protected $_aggregatesAddTotal = TRUE;
   protected $_rollup = 'WITH ROLLUP';
+  public $_drilldownReport = array('event/participantlist' => 'Link to Participants');
+  protected $_potentialCriteria = array(
+    'rid',
+    'sid',
+  );
 
   function __construct() {
     $this->_customGroupExtended['civicrm_participant'] = array(
@@ -27,7 +32,6 @@ class CRM_Extendedreport_Form_Report_Event_EventPivot extends CRM_Extendedreport
       'event_civireport:id' => 'Event'
     );
     parent::__construct();
-
   }
 
   function fromClauses( ) {

@@ -2600,7 +2600,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
           'rid' => array(
             'name' => 'role_id',
             'title' => ts('Participant Role'),
-            'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+            'operatorType' => CRM_Report_Form::OP_MULTISELECT_SEPARATOR,
             'options' => CRM_Event_PseudoConstant::participantRole(),
           ),
           'participant_fee_level' =>  array(
@@ -4635,7 +4635,24 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
       ON {$this->_aliases['civicrm_contribution_summary' . $prefix]}.contact_id = {$this->_aliases['civicrm_contact']}.id";
   }
 
-
+  /**
+   * Get URL string of criteria to potentially pass to subreport - obtains
+   * potential criteria from $this->_potenial criteria
+   * @return string url string
+   */
+  function getCriteriaString() {
+    $queryURL = "reset=1&force=1";
+    foreach ($this->_potentialCriteria as $criterion) {
+      $name = $criterion . '_value';
+      $op = $criterion . '_op';
+      if (empty($this->_params[$name])) {
+        continue;
+      }
+      $criterionValue = is_array($this->_params[$name]) ? implode(',', $this->_params[$name]) : $this->_params[$name];
+      $queryURL .= "&{$name}=" . $criterionValue . "&{$op}=" . $this->_params[$op];
+    }
+    return $queryURL;
+}
   /*
    * Retrieve text for contribution type from pseudoconstant
   */
@@ -4689,7 +4706,16 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
     return CRM_Event_PseudoConstant::eventType($value);
   }
 
-  function alterEventID($value, &$row) {
+  function alterEventID($value, &$row, $selectedfield, $criteriaFieldName) {
+    if(isset($this->_drilldownReport)) {
+      $criteriaString = $this->getCriteriaString();
+      $url = CRM_Report_Utils_Report::getNextUrl(implode(',', array_keys($this->_drilldownReport)),
+        $criteriaString . '&event_id_op=in&event_id_value=' . $value,
+        $this->_absoluteUrl, $this->_id, $this->_drilldownReport
+      );
+      $row[$selectedfield . '_link'] = $url;
+      $row[$selectedfield . '_hover'] = ts(implode(',', $this->_drilldownReport));
+    }
     return is_string(CRM_Event_PseudoConstant::event($value, FALSE)) ? CRM_Event_PseudoConstant::event($value, FALSE) : '';
   }
 
