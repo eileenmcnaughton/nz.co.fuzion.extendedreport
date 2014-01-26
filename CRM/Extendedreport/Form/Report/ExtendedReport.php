@@ -3850,7 +3850,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'no_display' => TRUE,
         'required' => FALSE,
       ),
-      'activity_activity_date_time' => array(
+      'activity_date_time' => array(
         'title' => ts('Activity Date'),
         'default' => TRUE,
         'name' => 'activity_date_time',
@@ -3874,10 +3874,12 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     if($options['filters']){
       $activityFields['civicrm_activity']['filters'] =
         array(
-          'activity_activity_date_time' => array(
-            'default' => 'this.month',
+          'activity_date_time' => array(
+           // 'default' => 'this.month',
             'operatorType' => CRM_Report_Form::OP_DATE,
-            'name' => 'activity_type_id',
+            'name' => 'activity_date_time',
+            'title' => ts('Activity Date'),
+            'type' => CRM_Utils_Type::T_DATE,
           ),
           'activity_subject' => array(
             'title' => ts('Activity Subject')
