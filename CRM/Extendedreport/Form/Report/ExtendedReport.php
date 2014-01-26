@@ -45,6 +45,13 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    */
   protected $_aggregatesIncludeNULL = TRUE;
 
+
+  /**
+   * Allow the aggregate column to be unset which will just give totalss
+   * @property _aggregatesIncludeNULL boolean
+   */
+  protected $_aggregatesColumnsOptions = TRUE;
+
   /**
    * Add a total column to aggregate (pivot) fields
    * @property _aggregatesAddTotal boolean
@@ -422,6 +429,10 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    * @throws Exception
    */
   function addColumnAggregateSelect($fieldName, $tableAlias, $spec){
+    if(empty($fieldName)){
+      $this->addAggregateTotal($fieldName);
+      return;
+    }
     if($spec['data_type'] == 'Boolean') {
       $options= array('values' => array(0 => array('label' => 'No', 'value' => 0), 1 => array('label' => 'Yes', 'value' => 1)));
     }
@@ -455,13 +466,16 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       $this->_statFields[] = $fieldAlias;
     }
     if($this->_aggregatesAddTotal) {
-      $fieldAlias = "{$fieldName}_total";
-      $this->_columnHeaders[$fieldAlias] = array('title' => ts('Total'));
-      $this->_select .= " , SUM( IF (1 = 1, 1, 0)) AS $fieldAlias ";
-      $this->_statFields[] = $fieldAlias;
+      $this->addAggregateTotal($fieldName);
     }
   }
 
+  function addAggregateTotal($fieldName) {
+    $fieldAlias = "{$fieldName}_total";
+    $this->_columnHeaders[$fieldAlias] = array('title' => ts('Total'));
+    $this->_select .= " , SUM( IF (1 = 1, 1, 0)) AS $fieldAlias ";
+    $this->_statFields[] = $fieldAlias;
+  }
   /**
    * overridden purely for annoying 4.2 e-notice on $selectColumns(fixed in 4.3)
    */
@@ -1699,7 +1713,7 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
     asort($customFieldsFlat);
     if($this->_customGroupAggregates){
       $columnHeaderFields = array_intersect_key($customFieldsFlat, array_flip($validColumnHeaderFields));
-      $this->_aggregateColumnHeaderFields = $this->_aggregateColumnHeaderFields + $columnHeaderFields;
+      $this->_aggregateColumnHeaderFields = array('' => ts('--Select--')) + $this->_aggregateColumnHeaderFields + $columnHeaderFields;
       $this->_aggregateRowFields = array('' => ts('--Select--')) + $this->_aggregateRowFields + $customFieldsFlat;
       $this->add('select', 'aggregate_column_headers', ts('Aggregate Report Column Headers'), $this->_aggregateColumnHeaderFields, FALSE,
         array('id' => 'aggregate_column_headers',  'title' => ts('- select -'))
