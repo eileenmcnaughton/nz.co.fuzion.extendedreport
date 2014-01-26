@@ -387,8 +387,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
         $tableAlias = $fieldDetails[0];
         $tableName = array_search($tableAlias, $this->_aliases);
         $fieldAlias = str_replace('-', '_', $tableName . '_' . $field);
-        $this->addRowHeader($tableAlias, $field, $fieldAlias);
-        $this->_columnHeaders[$fieldAlias] = array($this->_columns[$tableName]['fields'][$field]['title']);
+        $this->addRowHeader($tableAlias, $field, $fieldAlias, $this->_columns[$tableName]['fields'][$field]['title']);
       }
 
     }
@@ -1077,7 +1076,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       $rows = array();
       $this->buildRows($sql, $rows);
       // format result set.
-
       $this->formatDisplay($rows);
 
       // assign variables to templates
@@ -1975,8 +1973,9 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
  * @param tableAlias
  * @param fieldName actual DB name of field
  * @param fieldAlias
+ * @param title
  */
- private function addRowHeader($tableAlias, $fieldName, $fieldAlias) {
+ private function addRowHeader($tableAlias, $fieldName, $fieldAlias, $title = '') {
     if(empty($tableAlias)) {
       $this->_select = 'SELECT 1 ';// add a fake value just to save lots of code to calculate whether a comma is required later
       $this->_rollup = NULL;
@@ -1986,6 +1985,11 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
     $this->_select = "SELECT {$tableAlias}.{$fieldName} as $fieldAlias ";
     $this->_groupByArray[] = $fieldAlias;
     $this->_groupBy = "GROUP BY $fieldAlias " . $this->_rollup;
+    $this->_columnHeaders[$fieldAlias] = array('title' => $title,);
+    $key = array_search($fieldAlias, $this->_noDisplay);
+    if(is_int($key)) {
+      unset($this->_noDisplay[$key]);
+    }
   }
 
 
@@ -4882,6 +4886,11 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
     if(!is_array($counties)){
       return $counties;
     }
+  }
+
+  function alterGenderID($value, &$row,$selectedfield, $criteriaFieldName) {
+    $values = CRM_Contact_BAO_Contact::buildOptions('gender_id');
+    return $values[$value];
   }
 
   function alterStateProvinceID($value, &$row, $selectedfield, $criteriaFieldName) {

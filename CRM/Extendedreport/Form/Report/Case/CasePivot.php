@@ -28,6 +28,7 @@ class CRM_Extendedreport_Form_Report_Case_CasePivot extends CRM_Extendedreport_F
     $this->_columns['civicrm_case']['fields']['id']['title'] = 'Case';
     $this->_columns['civicrm_contact']['fields']['gender_id']['no_display'] = true;
     $this->_columns['civicrm_contact']['fields']['gender_id']['title'] = 'Gender';
+    $this->_columns['civicrm_contact']['fields']['gender_id']['alter_display'] = 'alterGenderID';
 
     $this->_aggregateRowFields  = array(
       'case_civireport:id' => 'Case',
