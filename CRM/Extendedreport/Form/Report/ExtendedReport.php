@@ -95,6 +95,15 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    * Set to true once temp table has been generated
    */
   protected $_preConstrained = FALSE;
+  /**
+   * Name of table that links activities to cases. The 'real' table can be replaced by a temp table
+   * during processing when a pre-filter is required (e.g we want all cases whether or not they
+   * have an activity of type x but we only want activities of type x)
+   * (See case with Activity Pivot)
+   *
+   * @var unknown
+   */
+  protected $_caseActivityTable = 'civicrm_case_activity';
 
   protected $financialTypeField = 'financial_type_id';
   protected $financialTypeLabel = 'Financial Type';
@@ -1584,6 +1593,7 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
     if(!empty($this->_customGroupExtended)){
       //lets try to assign custom data select fields
       foreach ($this->_customGroupExtended as $spec){
+        //@todo this array_merge looks dodgey here - maybe should be +
         $extends = array_merge($extends, $spec['extends']);
       }
     }
@@ -1665,7 +1675,7 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
               }
               else{
                foreach ($this->_columns[$tableAlias]['filters'] as &$filter) {
-                 $filter['title'] = $spec['title'] . $filter['title'];
+                 $filter['title'] = $spec['title'] . " " . $filter['title'];
                }
               }
               unset ($this->_columns[$tableAlias]['fields']);
@@ -1949,6 +1959,15 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
     return $myColumns;
   }
 
+  /**
+   * Add null option to an option filter
+   * @param string $table
+   * @param string $fieldName
+   * @param string $label
+   */
+  protected function addNullToFilterOptions($table, $fieldName, $label = '--does not exist--') {
+    $this->_columns[$table]['filters'][$fieldName]['options'] = array('' => $label) + $this->_columns[$table]['filters'][$fieldName]['options'];
+  }
 /**
  * Add row as the header for a pivot table. If it is to be the header it must be selected
  * and be the group by.
@@ -1956,7 +1975,8 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
  * @param tableAlias
  * @param fieldName actual DB name of field
  * @param fieldAlias
- */private function addRowHeader($tableAlias, $fieldName, $fieldAlias) {
+ */
+ private function addRowHeader($tableAlias, $fieldName, $fieldAlias) {
     if(empty($tableAlias)) {
       $this->_select = 'SELECT 1 ';// add a fake value just to save lots of code to calculate whether a comma is required later
       $this->_rollup = NULL;
@@ -3812,8 +3832,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'no_display' => TRUE,
         'required' => FALSE,
       ),
-      'activity_type_id' =>
-      array(
+      'activity_type_id' => array(
         'title' => ts('Activity Type'),
         'default' => TRUE,
         'type' => CRM_Utils_Type::T_STRING,
@@ -3823,14 +3842,14 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       array('title' => ts('Subject'),
         'default' => TRUE,
       ),
-      'source_contact_id' =>
-      array(
+      'source_contact_id' => array(
         'no_display' => TRUE,
         'required' => FALSE,
       ),
-      'activity_date_time' =>
-      array('title' => ts('Activity Date'),
+      'activity_activity_date_time' => array(
+        'title' => ts('Activity Date'),
         'default' => TRUE,
+        'name' => 'activity_date_time',
       ),
       'activity_status_id' => array(
         'title' => ts('Activity Status'),
@@ -3851,23 +3870,26 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     if($options['filters']){
       $activityFields['civicrm_activity']['filters'] =
         array(
-          'activity_date_time' =>
-          array(
+          'activity_activity_date_time' => array(
             'default' => 'this.month',
             'operatorType' => CRM_Report_Form::OP_DATE,
+            'name' => 'activity_type_id',
           ),
           'activity_subject' => array(
             'title' => ts('Activity Subject')
           ),
-          'activity_type_id' => array(
+          'activity_activity_type_id' => array(
             'title' => ts('Activity Type'),
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
             'options' => CRM_Core_PseudoConstant::activityType(True, True),
+            'name' => 'activity_type_id',
+            'type' => CRM_Utils_Type::T_INT,
           ),
-          'status_id' => array(
+          'activity_status_id' => array(
             'title' => ts('Activity Status'),
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
             'options' => CRM_Core_PseudoConstant::activityStatus(),
+            'status_id',
           ),
           'activity_is_current_revision' =>  array(
             'type' => CRM_Report_Form::OP_INT,
@@ -4032,8 +4054,19 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       'case_from_activity' => array(
         'leftTable' => 'civicrm_activity',
         'rightTable' => 'civicrm_case',
-        'callback' => 'joinCaseFromContact',
-      )
+        'callback' => 'joinCaseFromActivity',
+      ),
+      'case_activities_from_case' => array(
+        'callback' => 'joinCaseActivitiesFromCase',
+      ),
+      'single_contribution_comparison_from_contact' => array(
+        'callback' => 'joinContributionSinglePeriod'
+      ),
+      'activity_from_case' => array(
+        'leftTable' => 'civicrm_case',
+        'rightTable' => 'civicrm_activity',
+        'callback' => 'joinActivityFromCase',
+      ),
     );
   }
 
@@ -4686,15 +4719,16 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    *
    */
   function joinCaseFromContact() {
-    $this->_from .= " LEFT JOIN civicrm_case_contact ccc ON ccc.contact_id = {$this->_aliases['civicrm_contact']}.id
-    LEFT JOIN civicrm_case {$this->_aliases['civicrm_case']} ON {$this->_aliases['civicrm_case']}.id = ccc.case_id ";
+    $this->_from .= " LEFT JOIN civicrm_case_contact casecontact ON casecontact.contact_id = {$this->_aliases['civicrm_contact']}.id
+    LEFT JOIN civicrm_case {$this->_aliases['civicrm_case']} ON {$this->_aliases['civicrm_case']}.id = casecontact.case_id ";
   }
   /**
    *
    */
   function joinActivityFromCase() {
-    $this->_from .= " LEFT JOIN civicrm_case_activity cca ON cca.case_id = {$this->_aliases['civicrm_case']}.id
-    LEFT JOIN civicrm_activity {$this->_aliases['civicrm_activity']} ON {$this->_aliases['civicrm_activity']}.id = cca.activity_id";
+    $this->_from .= "
+      LEFT JOIN {$this->_caseActivityTable} cca ON cca.case_id = {$this->_aliases['civicrm_case']}.id
+      LEFT JOIN civicrm_activity {$this->_aliases['civicrm_activity']} ON {$this->_aliases['civicrm_activity']}.id = cca.activity_id";
   }
   /**
    *
@@ -4702,7 +4736,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
   function joinCaseFromActivity() {
     $this->_from .= "
       LEFT JOIN civicrm_case_activity cca ON {$this->_aliases['civicrm_activity']}.id = cca.activity_id
-      LEFT JOIN civicrm_activity {$this->_aliases['civicrm_activity']} ON cca.case_id = {$this->_aliases['civicrm_case']}.id
+      LEFT JOIN civicrm_case {$this->_aliases['civicrm_case']} ON cca.case_id = {$this->_aliases['civicrm_case']}.id
     ";
   }
   /**
