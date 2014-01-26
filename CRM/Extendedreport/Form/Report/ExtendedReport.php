@@ -1941,7 +1941,7 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
               $customFieldsToTables[$fieldName] = $tableName;
               $fieldAlias = $customFields[$fieldName][$index] . "_" . $fieldName;
               $tableAlias = $customFields[$fieldName][$index]  . "_" . $tableName . '_civireport';
-              $title = $this->_customGroupExtended[$customFields[$fieldName][$index]]['title']  . $table['fields'][$fieldName]['title'];
+              $title = $this->_customGroupExtended[$customFields[$fieldName][$index]]['title'] .' ' . $table['fields'][$fieldName]['title'];
               $selectedTables[$tableAlias] = array(
                 'name' => $tableName,
                 'extends_table' => $customFields[$fieldName][$index]);
