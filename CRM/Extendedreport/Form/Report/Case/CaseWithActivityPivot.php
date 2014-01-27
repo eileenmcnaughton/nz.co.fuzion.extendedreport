@@ -2,7 +2,7 @@
 
 class CRM_Extendedreport_Form_Report_Case_CaseWithActivityPivot extends CRM_Extendedreport_Form_Report_ExtendedReport {
   protected $_baseTable = 'civicrm_case';
-  protected $skipACL = true;
+  protected $skipACL = FALSE;
   protected $_customGroupAggregates = true;
   protected $_aggregatesIncludeNULL = TRUE;
   protected $_aggregatesAddTotal = TRUE;

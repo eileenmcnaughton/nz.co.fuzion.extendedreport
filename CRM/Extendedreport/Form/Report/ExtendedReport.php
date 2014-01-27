@@ -115,7 +115,12 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   protected $financialTypeField = 'financial_type_id';
   protected $financialTypeLabel = 'Financial Type';
   protected $financialTypePseudoConstant = 'financialType';
-
+  /**
+   * The contact_is deleted clause gets added whenever we call the ACL clause - if we don't want
+   * it we will specifically allow skipping it
+   * @boolean skipACLContactDeletedClause
+   */
+  protected $_skipACLContactDeletedClause = FALSE;
   protected $whereClauses = array();
 
   function __construct() {
@@ -1193,6 +1198,25 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     }
     $sql = "{$this->_select} {$this->_from} {$this->_where} {$this->_groupBy} {$this->_having} {$this->_orderBy} {$this->_limit}";
     return $sql;
+  }
+
+  /**
+   * We are over-riding this because the current choice is NO acls or automatically adding contact.is_deleted
+   * which is a pain when left joining form another table
+   * @see CRM_Report_Form::buildACLClause($tableAlias)
+   *@param string $tableAlias
+   *
+   */
+  function buildACLClause($tableAlias = 'contact_a') {
+    list($this->_aclFrom, $this->_aclWhere) = CRM_Contact_BAO_Contact_Permission::cacheClause($tableAlias);
+    if($this->_skipACLContactDeletedClause && CRM_Core_Permission::check('access deleted contacts')) {
+      if(trim($this->_aclWhere) == "{$tableAlias}.is_deleted = 0") {
+        $this->_aclWhere = NULL;
+      }
+      else {
+        $this->_aclWhere == str_replace("AND {$tableAlias}.is_deleted = 0", '', $this->_aclWhere);
+      }
+    }
   }
   /**
    * Generate a temp table to reflect the pre-constrained report group
