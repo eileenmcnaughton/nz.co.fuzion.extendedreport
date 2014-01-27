@@ -30,13 +30,21 @@ class CRM_Extendedreport_Form_Report_Case_CasePivot extends CRM_Extendedreport_F
     $this->_columns['civicrm_contact']['fields']['gender_id']['no_display'] = true;
     $this->_columns['civicrm_contact']['fields']['gender_id']['title'] = 'Gender';
     $this->_columns['civicrm_contact']['fields']['gender_id']['alter_display'] = 'alterGenderID';
+    $this->_columns['civicrm_case']['fields']['case_status_id']['title'] = ts('Case Status');
+    $this->_columns['civicrm_case']['fields']['case_status_id']['options'] = CRM_Case_BAO_Case::buildOptions('status_id');
+    $this->_columns['civicrm_contact']['fields']['case_status_id']['no_display'] = true;
+    $this->_columns['civicrm_case']['fields']['case_status_id']['name'] = 'status_id';
+    $this->_columns['civicrm_case']['filters']['case_is_deleted']['default'] = 0;
+
 
     $this->_aggregateRowFields  = array(
       'case_civireport:id' => 'Case',
+      'case_civireport:case_status_id' => 'Case Status',
       'civicrm_contact_civireport:gender_id' => 'Gender',
     );
     $this->_aggregateColumnHeaderFields  = array(
       'civicrm_contact_civireport:gender_id' => 'Gender',
+      'case_civireport:case_status_id' => 'Case Status',
     );
     parent::__construct();
   }
