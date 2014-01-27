@@ -3384,7 +3384,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
             'title' => ts('Case Deleted?'),
             'type' => CRM_Report_Form::OP_INT,
             'operatorType' => CRM_Report_Form::OP_SELECT,
-            'options' => $this->deleted_labels,
+            'options' => array('' => '--select--') +  CRM_Case_BAO_Case::buildOptions('is_deleted'),
             'name' => 'is_deleted'
           )
         )
