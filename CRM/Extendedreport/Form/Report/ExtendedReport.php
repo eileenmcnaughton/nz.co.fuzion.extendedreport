@@ -415,7 +415,8 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       $tableAlias = $fieldDetails[0];
       $tableName = array_search($tableAlias, $this->_aliases);
       $spec = $this->_columns[$tableName]['fields'][$field];
-      $this->addColumnAggregateSelect($field, $fieldDetails[0], $spec);
+      $fieldName = !empty($spec['name']) ? $spec['name'] : $field;
+      $this->addColumnAggregateSelect($fieldName, $fieldDetails[0], $spec);
       }
     }
     foreach ($selectedTables as $selectedTable => $properties){
