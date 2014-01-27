@@ -456,7 +456,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       else {
         $this->_select .= " , SUM( CASE {$tableAlias}.{$fieldName} WHEN '{$option['value']}' THEN 1 ELSE 0 END ) AS $fieldAlias ";
       }
-      $this->_columnHeaders[$fieldAlias] = array('title' => $spec['title'] . " - " . $option['label']);
+      $this->_columnHeaders[$fieldAlias] = array('title' =>  $option['label']);
       $this->_statFields[] = $fieldAlias;
     }
     if($this->_aggregatesIncludeNULL) {
