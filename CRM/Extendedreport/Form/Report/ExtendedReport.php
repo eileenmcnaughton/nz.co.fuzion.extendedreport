@@ -2907,6 +2907,8 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
             'title' => ts('Event start date'),
             'default_weight' => '1',
             'default_order' => 'ASC',
+            'type' => CRM_Utils_Type::T_DATE,
+            'operatorType' => CRM_Report_Form::OP_DATE,
           )
         ),
         'order_bys' => array(
