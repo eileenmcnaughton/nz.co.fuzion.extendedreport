@@ -7,6 +7,7 @@ class CRM_Extendedreport_Form_Report_Case_ActivityPivot extends CRM_Extendedrepo
   protected $_aggregatesIncludeNULL = TRUE;
   protected $_aggregatesAddTotal = TRUE;
   protected $_rollup = 'WITH ROLLUP';
+  protected $_aggregatesAddPercentage = TRUE;
   public $_drilldownReport = array();
   protected $_potentialCriteria = array(
   );

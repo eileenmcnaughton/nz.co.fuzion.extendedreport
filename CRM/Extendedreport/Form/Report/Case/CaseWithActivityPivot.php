@@ -8,6 +8,7 @@ class CRM_Extendedreport_Form_Report_Case_CaseWithActivityPivot extends CRM_Exte
   protected $_aggregatesAddTotal = TRUE;
   protected $_rollup = 'WITH ROLLUP';
   protected $_temporary = ' TEMPORARY ';
+  protected $_aggregatesAddPercentage = TRUE;
   public $_drilldownReport = array();
   /**
    * PreConstrain means the query gets run twice - the first time for generating temp tables
