@@ -462,12 +462,12 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       else {
         $this->_select .= " , SUM( CASE {$tableAlias}.{$fieldName} WHEN '{$option['value']}' THEN 1 ELSE 0 END ) AS $fieldAlias ";
       }
-      $this->_columnHeaders[$fieldAlias] = array('title' =>  $option['label']);
+      $this->_columnHeaders[$fieldAlias] = array('title' =>  $option['label'], 'type' => CRM_Utils_Type::T_INT);
       $this->_statFields[] = $fieldAlias;
     }
     if($this->_aggregatesIncludeNULL) {
       $fieldAlias = "{$fieldName}_null";
-      $this->_columnHeaders[$fieldAlias] = array('title' => ts('Unknown'));
+      $this->_columnHeaders[$fieldAlias] = array('title' => ts('Unknown'), 'type' => CRM_Utils_Type::T_INT);
       $this->_select .= " , SUM( IF ({$tableAlias}.{$fieldName} IS NULL, 1, 0)) AS $fieldAlias ";
       $this->_statFields[] = $fieldAlias;
     }
@@ -478,7 +478,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
 
   function addAggregateTotal($fieldName) {
     $fieldAlias = "{$fieldName}_total";
-    $this->_columnHeaders[$fieldAlias] = array('title' => ts('Total'));
+    $this->_columnHeaders[$fieldAlias] = array('title' => ts('Total'), 'type' => CRM_Utils_Type::T_INT);
     $this->_select .= " , SUM( IF (1 = 1, 1, 0)) AS $fieldAlias ";
     $this->_statFields[] = $fieldAlias;
   }
@@ -516,6 +516,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       if(!empty($this->_aliases['civicrm_contact'])){
         $this->buildACLClause($this->_aliases['civicrm_contact']);
       }
+
       $this->_from = "FROM {$this->_baseTable} " . (empty($this->_aliases[$this->_baseTable]) ? '': $this->_aliases[$this->_baseTable]);
       $availableClauses = $this->getAvailableJoins();
       foreach ($this->fromClauses() as $clausekey => $fromClause) {
@@ -1095,6 +1096,8 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       // modifying column headers before using it to build result set i.e $rows.
       $rows = array();
       $this->buildRows($sql, $rows);
+      $this->addAggregatePercentRow($rows);
+
       // format result set.
       $this->formatDisplay($rows);
 
@@ -1130,6 +1133,23 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
 
     }
   }
+/**
+ * Add an extra row with percentages for a single row result to the chart (this is where
+ * there is no grandTotal row
+ * @param array rows
+ */private function addAggregatePercentRow($rows) {
+    if(!empty($this->_aggregatesAddPercentage) && count($rows) == 1 && $this->_aggregatesAddTotal) {
+        foreach ($rows as $row) {
+          $total = end($row);
+          //   reset($row);
+          $stats = array();
+          foreach ($row as $key => $column) {
+            $stats[$key] = sprintf("%.1f%%", $column/ $total * 100);
+          }
+          $this->assign('grandStat', $stats);
+        }
+      }}
+
 
   /**
    * overriding because to post && !$this->_noFields from 4.3 to 4.2
@@ -2037,11 +2057,12 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
 
     //THis is all generic functionality which can hopefully go into the parent class
     // it introduces the option of defining an alter display function as part of the column definition
-    // @tod tidy up the iteration so it happens in this function
+    // @todo tidy up the iteration so it happens in this function
 
     if(!empty($this->_rollup ) && !empty($this->_groupBysArray)){
       $this->assignSubTotalLines($rows);
     }
+
     if(empty($rows)){
       return;
     }
@@ -3382,7 +3403,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
           ),
           'case_is_deleted' => array(
             'title' => ts('Case Deleted?'),
-            'type' => CRM_Report_Form::OP_INT,
+            'type' => CRM_Utils_Type::T_BOOLEAN,
             'operatorType' => CRM_Report_Form::OP_SELECT,
             'options' => array('' => '--select--') +  CRM_Case_BAO_Case::buildOptions('is_deleted'),
             'name' => 'is_deleted'
