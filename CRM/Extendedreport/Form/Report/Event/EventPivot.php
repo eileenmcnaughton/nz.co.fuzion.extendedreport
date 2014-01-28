@@ -14,6 +14,11 @@ class CRM_Extendedreport_Form_Report_Event_EventPivot extends CRM_Extendedreport
   );
 
   function __construct() {
+    $this->_customGroupExtended['civicrm_event'] = array(
+      'extends' => array('Event'),
+      'filters' => TRUE,
+      'title'  => ts('Event'),
+    );
     $this->_customGroupExtended['civicrm_participant'] = array(
       'extends' => array('Participant'),
       'filters' => TRUE,
