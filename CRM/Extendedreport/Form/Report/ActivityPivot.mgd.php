@@ -15,7 +15,7 @@ return array (
       'description' => 'Extended Report - Activity Pivot Chart',
       'class_name' => 'CRM_Extendedreport_Form_Report_ActivityPivot',
       'report_url' => 'activity/pivot',
-      'component' => 'Contact',
+      'component' => '',
     ),
   ),
 );
