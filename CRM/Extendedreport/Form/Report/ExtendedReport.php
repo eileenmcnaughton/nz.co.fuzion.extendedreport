@@ -2909,6 +2909,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
             'default_order' => 'ASC',
             'type' => CRM_Utils_Type::T_DATE,
             'operatorType' => CRM_Report_Form::OP_DATE,
+            'name' => 'start_date',
           )
         ),
         'order_bys' => array(
