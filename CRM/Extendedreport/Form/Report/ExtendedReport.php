@@ -1915,15 +1915,8 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
               && $this->_params[$field . '_value'] != NULL) ||
               CRM_Utils_Array::value($field . '_op', $this->_params) == 'nll'
               ) {
-            // we will just support activity & source contact customfields for now
-            //@todo these lines are looking pretty hard-coded
+            $fieldString = $this->mapFieldExtends($field, $spec);
 
-            if($spec['extends'] == 'Activity') {
-              $fieldString = 'contact_activity:' . $field;
-            }
-            else{
-              $fieldString = 'civicrm_contact:' . $field;
-            }
             if(!in_array($fieldString, $customFields)) {
               $customFields[] = $fieldString;
             }
@@ -1944,9 +1937,11 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
 
     $selectedTables = array();
     $myColumns = $this->extractCustomFields($formattedCustomFields, $selectedTables);
-    foreach ($this->_params['custom_fields'] as $fieldName){
-      $name = $myColumns[$fieldName]['name'];
-      $this->_columnHeaders[$name] = $myColumns[$fieldName][$name];
+    if(isset($this->_params['custom_fields'])) {
+      foreach ($this->_params['custom_fields'] as $fieldName){
+        $name = $myColumns[$fieldName]['name'];
+        $this->_columnHeaders[$name] = $myColumns[$fieldName][$name];
+      }
     }
     foreach ($selectedTables as $selectedTable => $properties){
       $extendsTable = $properties['extends_table'];
@@ -1954,6 +1949,34 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
         LEFT JOIN {$properties['name']} $selectedTable ON {$selectedTable}.entity_id = {$this->_aliases[$extendsTable]}.id";
     }
   }
+
+  /**
+   * Map extends = 'Entity' to a connection to the relevant table
+   * @param field
+   */
+   private function mapFieldExtends($field, $spec) {
+     $extendable = array(
+       'Activity' => 'contact_activity',
+       'Relationship' => 'civicrm_relationship',
+       'Contribution' => 'civicrm_contribution',
+       'Group' => 'civicrm_group',
+       'Membership' => 'civicrm_membership',
+       'Event' => 'civicrm_event',
+       'Participant' => 'civicrm_participant',
+       'Pledge' => 'civicrm_pledge',
+       'Grant' => 'civicrm_grant',
+       'Address' => 'civicrm_address',
+       'Campaign' => 'civicrm_campaign',
+     );
+
+     if(!empty($extendable[$spec['extends']])) {
+       return $extendable[$spec['extends']] . ':' . $field;
+     }
+     else{
+       return 'civicrm_contact:' . $field;
+    }
+  }
+
 
   /**
    * here we can define select clauses for any particular row. At this stage we are going
