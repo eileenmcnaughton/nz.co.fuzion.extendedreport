@@ -28,7 +28,8 @@ class CRM_Extendedreport_Form_Report_Event_EventPivot extends CRM_Extendedreport
     $this->_columns = $this->getColumns('Event', array(
       'fields' => false,)
     )
-    + $this->getColumns('Participant', array('fields' => false,));
+    + $this->getColumns('Participant', array('fields' => false,))
+    + $this->getColumns('Contact', array('fields' => false,));
     $this->_columns['civicrm_event']['fields']['id']['required'] = true;
     $this->_columns['civicrm_event']['fields']['id']['alter_display'] = 'alterEventID';
     $this->_columns['civicrm_event']['fields']['id']['title'] = 'Event';
@@ -36,12 +37,14 @@ class CRM_Extendedreport_Form_Report_Event_EventPivot extends CRM_Extendedreport
     $this->_aggregateRowFields  = array(
       'event_civireport:id' => 'Event'
     );
+    $this->_groupFilter = TRUE;
     parent::__construct();
   }
 
   function fromClauses( ) {
     return array(
       'event_from_participant',
+      'contact_from_participant',
     );
   }
 }
