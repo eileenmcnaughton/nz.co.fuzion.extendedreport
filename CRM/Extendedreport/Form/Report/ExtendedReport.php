@@ -2010,6 +2010,9 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
    */
   function extractCustomFields( &$customFields, &$selectedTables, $context = 'select'){
     $myColumns = array();
+    if(empty($this->_customFields)) {
+      return;
+    }
     foreach ($this->_customFields as $tableName => $table) {
       if (array_key_exists('fields', $table)) {
         $selectedFields = array_intersect_key($customFields, $table['fields']);
@@ -2562,7 +2565,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       if(!$options[$type]) {
         foreach ($columns as $tables => &$table) {
           if(isset($table[$type])) {
-            unset($table[$type]);
+            $table[$type] = array();
           }
         }
       }
@@ -3233,6 +3236,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'grouping' => $options['prefix'] . 'contact-fields',
       )
     );
+    $contactFields[$options['prefix'] . 'civicrm_contact']['fields'] =  array();
     if(!empty($options['fields'])){
       $contactFields[$options['prefix'] . 'civicrm_contact']['fields'] =  array(
         $options['prefix'] . 'display_name' => array(
