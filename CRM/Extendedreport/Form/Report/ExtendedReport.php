@@ -455,7 +455,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       $options = civicrm_api('option_value', 'get', array('version' => 3, 'options' => array('limit' => 50,), 'option_group_id' => $spec['option_group_id']));
     }
     foreach ($options['values'] as $option){
-      $fieldAlias = str_replace(array('-', '+', '\/'), '_', "{$fieldName}_" . strtolower(str_replace(' ','',$option['value'])));
+      $fieldAlias = str_replace(array('-', '+', '\/', '/'), '_', "{$fieldName}_" . strtolower(str_replace(' ','',$option['value'])));
       if(in_array($spec['htmlType'], array('CheckBox', 'MultiSelect'))){
         $this->_select .= " , SUM( CASE WHEN {$tableAlias}.{$fieldName} LIKE '%" . CRM_Core_DAO::VALUE_SEPARATOR . $option['value'] . CRM_Core_DAO::VALUE_SEPARATOR . "%' THEN 1 ELSE 0 END ) AS $fieldAlias ";
       }
