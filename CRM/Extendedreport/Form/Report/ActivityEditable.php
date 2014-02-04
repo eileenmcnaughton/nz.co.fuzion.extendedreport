@@ -40,7 +40,7 @@ class CRM_Extendedreport_Form_Report_ActivityEditable extends CRM_Extendedreport
    */
   function __construct() {
     $this->_columns = $this->getActivityColumns()
-     + $this->getColumns('Contact', array('fields' => false, 'prefix' => 'target_',));
+     + $this->getColumns('Contact', array('prefix' => 'target_',));
    $this->_columns['civicrm_activity']['fields']['id'] = array(
      'title' => 'id',
      'required' => TRUE,

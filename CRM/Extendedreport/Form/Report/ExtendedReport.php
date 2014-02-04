@@ -2291,11 +2291,11 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       case 'String':
       case 'Int':
         if (in_array($htmlType, array(
-          'Text', 'TextArea', 'Select'))) {
+          'Text', 'TextArea', 'Select', 'Radio'))) {
           $retValue = $value;
           $extra = '';
-          if($htmlType == 'Select') {
-            $options = civicrm_api('custom_field', 'getoptions', array('version' =>3, 'field' => $customField));
+          if($htmlType == 'Select' || $htmlType == 'Radio') {
+            $options = civicrm_api($entity, 'getoptions', array('version' =>3, 'field' => 'custom_' . $customField['id']));
             $options = $options['values'];
             $options['selected'] = $value;
             $extra = "data-type='select' data-options='" . json_encode($options)  . "'";
