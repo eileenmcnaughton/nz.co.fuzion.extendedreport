@@ -1912,7 +1912,9 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
             && is_array($spec['filters'])
             && array_key_exists($field, $spec['filters'])
             && (isset($this->_params[$field . '_value'])
-              && $this->_params[$field . '_value'] != NULL) ||
+              && $this->_params[$field . '_value'] != NULL
+              || isset($this->_params[$field . '_relative'])
+              ) ||
               CRM_Utils_Array::value($field . '_op', $this->_params) == 'nll'
               ) {
             $fieldString = $this->mapFieldExtends($field, $spec);
