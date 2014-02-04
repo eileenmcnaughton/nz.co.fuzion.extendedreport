@@ -2292,8 +2292,9 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         if (in_array($htmlType, array(
           'Text', 'TextArea', 'Select'))) {
           $retValue = $value;
+          $extra = '';
           if($htmlType == 'Select') {
-            $options = civicrm_api('custom_field', 'getoptions', array('version' =>3, 'field' => 'custom_28'));
+            $options = civicrm_api('custom_field', 'getoptions', array('version' =>3, 'field' => $customField));
             $options = $options['values'];
             $options['selected'] = $value;
             $extra = "data-type='select' data-options='" . json_encode($options)  . "'";
