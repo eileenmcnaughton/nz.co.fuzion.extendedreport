@@ -1947,7 +1947,7 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
     }
     foreach ($selectedTables as $selectedTable => $properties){
       $extendsTable = $properties['extends_table'];
-      if(strpos($this->_from, $selectedTable) == 0){
+      if (strpos($this->_from, " $selectedTable ON") == 0) {
         //hacky handling to prevent same alias being added twice - problem is
         // customDataFrom in parent adds this
         // solution is to back up a lot & really break up the parts of the report formation - extracting variables
@@ -1966,7 +1966,7 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
    */
    private function mapFieldExtends($field, $spec) {
      $extendable = array(
-       'Activity' => 'contact_activity',
+       'Activity' => 'civicrm_activity',
        'Relationship' => 'civicrm_relationship',
        'Contribution' => 'civicrm_contribution',
        'Group' => 'civicrm_group',
@@ -3944,9 +3944,10 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'type' => CRM_Utils_Type::T_STRING,
         'alter_display' => 'alterActivityType',
       ),
-      'activity_subject' =>
-      array('title' => ts('Subject'),
+      'activity_subject' => array(
+        'title' => ts('Subject'),
         'default' => TRUE,
+        'name' => 'subject'
       ),
       'source_contact_id' => array(
         'no_display' => TRUE,
@@ -3984,7 +3985,8 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
             'type' => CRM_Utils_Type::T_DATE,
           ),
           'activity_subject' => array(
-            'title' => ts('Activity Subject')
+            'title' => ts('Activity Subject'),
+            'name' => 'subject',
           ),
           'activity_activity_type_id' => array(
             'title' => ts('Activity Type'),

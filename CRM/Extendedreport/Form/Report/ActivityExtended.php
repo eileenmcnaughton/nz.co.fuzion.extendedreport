@@ -9,7 +9,7 @@ class CRM_Extendedreport_Form_Report_ActivityExtended extends CRM_Extendedreport
    * @var array
    */
   protected $_customGroupExtended = array(
-    'contact_activity' => array(
+    'civicrm_activity' => array(
       'extends' => array('Activity'),
       'title'  => 'Activity',
       'filters' => TRUE,
