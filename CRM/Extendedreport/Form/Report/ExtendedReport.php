@@ -2249,7 +2249,8 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         $entityID = $row[$entity_field];
       }
     }
-    if (CRM_Utils_System::isNull($value)) {
+    if (CRM_Utils_System::isNull($value) && !in_array($customField['data_type'], array('String', 'Int'))) {
+      // we will return unless it is potentially an editable field
       return;
     }
 
