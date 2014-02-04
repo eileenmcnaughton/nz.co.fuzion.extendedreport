@@ -1947,8 +1947,16 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
     }
     foreach ($selectedTables as $selectedTable => $properties){
       $extendsTable = $properties['extends_table'];
-      $this->_from .= "
-        LEFT JOIN {$properties['name']} $selectedTable ON {$selectedTable}.entity_id = {$this->_aliases[$extendsTable]}.id";
+      if(strpos($this->_from, $selectedTable) == 0){
+        //hacky handling to prevent same alias being added twice - problem is
+        // customDataFrom in parent adds this
+        // solution is to back up a lot & really break up the parts of the report formation - extracting variables
+        //, constructing arrays of the various clauses & then compiling into sql
+        // this class has sufferred from not wanting to over-write too many functions & hence putting things
+        // in inappropriate places
+        $this->_from .= "
+          LEFT JOIN {$properties['name']} $selectedTable ON {$selectedTable}.entity_id = {$this->_aliases[$extendsTable]}.id";
+      }
     }
   }
 
