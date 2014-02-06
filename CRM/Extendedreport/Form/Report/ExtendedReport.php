@@ -1070,7 +1070,16 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
         );
     }
   }
-
+  /**
+   * Wrapper for retrieving otpions for a field
+   * @param string $entity
+   * @param unknown $field
+   * @param string $action
+   */
+  protected function _getOptions($entity, $field, $action = 'get') {
+    $options = civicrm_api3($entity, 'getoptions', array('field' => $field, 'action' => $action));
+    return $options['values'];
+  }
   /**
    * @param $rows
    *
@@ -3964,6 +3973,12 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'name' => 'status_id',
         'type' => CRM_Utils_Type::T_STRING,
         'alter_display' => 'alterActivityStatus',
+        'crm_editable' => array(
+          'id_table' => 'civicrm_activity',
+          'id_field' => 'id',
+          'entity' => 'activity',
+          'options' => $this->_getOptions('activity', 'activity_status_id'),
+        ),
       ),
       'duration' => array(
         'title' => ts('Duration'),
