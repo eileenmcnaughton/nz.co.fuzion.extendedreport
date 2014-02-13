@@ -3318,7 +3318,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     if(!empty($options['order_by'])){
       $contactFields[$options['prefix'] . 'civicrm_contact']['order_bys'] =  array(
         $options['prefix'] . 'sort_name' => array(
-          'title' => ts($options['prefix_label'] . 'Name'),
+          'title' => ts($options['prefix_label'] . 'Contact Name'),
           //this seems to re-load others once the report is saved for some reason
           //'default' => $weight == 0 ? TRUE : FALSE,
           'default' => $options['prefix'] ? FALSE :TRUE,
@@ -3326,14 +3326,14 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
           'default_order' => $options['prefix'] ? NULL : 'ASC',
           'name' => 'sort_name',
         ),
-        /*
         $options['prefix'] . 'first_name' => array(
           'title' => ts($options['prefix_label'] . 'First Name'),
           'default' => '0',
           'default_weight' => $weight + 1,
           'default_order' => 'ASC',
-          'name' => 'sort_name',
+          'name' => 'first_name',
         ),
+        /*
         $options['prefix'] . 'last_name' => array(
           'title' => ts($options['prefix_label'] . 'Last Name'),
           'default' => '0',
