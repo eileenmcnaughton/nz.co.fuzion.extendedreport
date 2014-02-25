@@ -3363,7 +3363,14 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         */
       );
     }
-
+    if(!empty($options['group_by'])){
+      $contactFields[$options['prefix'] . 'civicrm_contact']['group_bys'] = array(
+        $options['prefix'] . 'sort_name' => array(
+          'title' => ts($options['prefix_label'] . 'Contact Name'),
+          'name' => 'sort_name',
+        ),
+      );
+    }
     if(!empty($options['custom_fields'])){
       $this->_customGroupExtended[$options['prefix'] . 'civicrm_contact'] = array(
         'extends' => $options['custom_fields'],
@@ -3983,6 +3990,9 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       'duration' => array(
         'title' => ts('Duration'),
         'type' => CRM_Utils_Type::T_INT,
+        'statistics' => array(
+          'sum' => ts('Total Duration')
+        ),
       ),
       'details' => array(
         'title' => ts('Activity Details'),
