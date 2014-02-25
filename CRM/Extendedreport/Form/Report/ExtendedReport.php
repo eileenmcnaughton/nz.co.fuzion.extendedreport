@@ -468,7 +468,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     if($this->_aggregatesIncludeNULL) {
       $fieldAlias = "{$fieldName}_null";
       $this->_columnHeaders[$fieldAlias] = array('title' => ts('Unknown'), 'type' => CRM_Utils_Type::T_INT);
-      $this->_select .= " , SUM( IF ({$tableAlias}.{$fieldName} IS NULL, 1, 0)) AS $fieldAlias ";
+      $this->_select .= " , SUM( IF (({$tableAlias}.{$fieldName} IS NULL OR {$tableAlias}.{$fieldName} = ''), 1, 0)) AS $fieldAlias ";
       $this->_statFields[] = $fieldAlias;
     }
     if($this->_aggregatesAddTotal) {
