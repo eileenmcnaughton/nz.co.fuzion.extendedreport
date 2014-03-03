@@ -2333,7 +2333,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
           'Text', 'TextArea', 'Select', 'Radio'))) {
           $retValue = $value;
           $extra = '';
-          if($htmlType == 'Select' || $htmlType == 'Radio') {
+          if(($htmlType == 'Select' || $htmlType == 'Radio') && !empty($entity)) {
             $options = civicrm_api($entity, 'getoptions', array('version' =>3, 'field' => 'custom_' . $customField['id']));
             $options = $options['values'];
             $options['selected'] = $value;
