@@ -4962,7 +4962,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
   */
   function alterCrmEditable($value, &$row, $selectedfield, $criteriaFieldName, $specs) {
     $id_field = $specs['id_table'] . '_' . $specs['id_field'];
-    if(empty($id_field)){
+    if(empty($id_field) || empty($value[$id_field])){
       return;
     }
     $entityID = $row[$id_field];
