@@ -2033,7 +2033,7 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
       $this->_columnHeaders["{$tableName}_{$fieldName}"]['type'] = CRM_Utils_Array::value('type', $field);
       $this->_selectAliases[] = $alias;
       $this->_columnHeaders['civicrm_tag_tag_name'];
-      return " GROUP_CONCAT(CONCAT({$field['dbAlias']},':', phone_civireport.location_type_id) ) as $alias";
+      return " GROUP_CONCAT(CONCAT({$field['dbAlias']},':', phone_civireport.location_type_id, ':', phone_civireport.phone_type_id) ) as $alias";
     }
 
     return FALSE;
@@ -5206,6 +5206,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
   function alterPhoneGroup($value) {
 
     $locationTypes = $this->getLocationTypeOptions();
+    $phoneTypes = $this->_getOptions('phone', 'phone_type_id');
     $phones = explode(',', $value);
     $return = array();
     $html = "<table>";
@@ -5215,7 +5216,10 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
       }
       $keys = explode(':', $phone);
       $return[$locationTypes[$keys[1]]] = $keys[0];
-      $html .= "<tr><td>" . $locationTypes[$keys[1]] . " : " . $keys[0] . "</td></tr>";
+      if(!empty($keys[2])) {
+        $phoneTypeString = ' (' . $phoneTypes[$keys[2]] . ') ';
+      }
+      $html .= "<tr><td>" . $locationTypes[$keys[1]] . $phoneTypeString . " : " . $keys[0] . "</td></tr>";
     }
 
     if(in_array( $this->_outputMode, array( 'print', 'pdf' ))){
