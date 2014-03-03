@@ -488,7 +488,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       $this->_columnHeaders[$fieldAlias] = array('title' =>  $option['label'], 'type' => CRM_Utils_Type::T_INT);
       $this->_statFields[] = $fieldAlias;
     }
-    if($this->_aggregatesIncludeNULL) {
+    if($this->_aggregatesIncludeNULL  && !empty($this->_params['fields']['include_null'])) {
       $fieldAlias = "{$fieldName}_null";
       $this->_columnHeaders[$fieldAlias] = array('title' => ts('Unknown'), 'type' => CRM_Utils_Type::T_INT);
       $this->_select .= " , SUM( IF (({$tableAlias}.{$fieldName} IS NULL OR {$tableAlias}.{$fieldName} = ''), 1, 0)) AS $fieldAlias ";
@@ -1797,6 +1797,11 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
       );
       $this->add('select', 'aggregate_row_headers', ts('Aggregate Report Rows'),  $this->_aggregateRowFields, FALSE,
         array('id' => 'aggregate_row_headers',  'title' => ts('- select -'))
+      );
+      $this->_columns[$this->_baseTable]['fields']['include_null'] = array(
+        'title' => 'Show column for unknown',
+        'pseudofield' => TRUE,
+        'default' => TRUE,
       );
     }
 
