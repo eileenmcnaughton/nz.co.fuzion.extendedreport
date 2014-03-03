@@ -2617,6 +2617,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         }
       }
     }
+    dpm($columns);
     return $columns;
   }
   function getLineItemColumns() {
@@ -2757,6 +2758,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     if (!isset($_events['all'])) {
       CRM_Core_PseudoConstant::populate($_events['all'], 'CRM_Event_DAO_Event', FALSE, 'title', 'is_active', "is_template IS NULL OR is_template = 0", 'title');
     }
+dpm($_events);
     return array(
       'civicrm_participant' => array(
         'bao' => 'CRM_Event_BAO_Participant',
