@@ -2592,7 +2592,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       'order_by' => true,
       'filters' => true,
     );
-    $options = array_merge($defaultOptions,$options);
+    $options = array_merge($defaultOptions, $options);
 
     $fn = 'get' . $type . 'Columns';
     $columns = $this->$fn($options);
@@ -2758,17 +2758,16 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       CRM_Core_PseudoConstant::populate($_events['all'], 'CRM_Event_DAO_Event', FALSE, 'title', 'is_active', "is_template IS NULL OR is_template = 0", 'end_date DESC');
     }
     return array(
-      'civicrm_participant' =>
-      array(
+      'civicrm_participant' => array(
         'bao' => 'CRM_Event_BAO_Participant',
         'grouping' => 'event-fields',
-        'fields' =>
-        array('participant_id' => array('title' => 'Participant ID'),
+        'fields' => array('participant_id' => array('title' => 'Participant ID'),
           'participant_record' => array(
             'name' => 'id',
             'title' => 'Participant ID',
           ),
-          'event_id' => array('title' => ts('Event ID'),
+          'event_id' => array(
+            'title' => ts('Event ID'),
             'type' => CRM_Utils_Type::T_STRING,
             'alter_display' => 'alterEventID',
           ),
@@ -2784,8 +2783,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
           'participant_register_date' => array('title' => ts('Registration Date')),
         ),
 
-        'filters' =>
-        array(
+        'filters' => array(
           'event_id' => array('name' => 'event_id',
             'title' => ts('Event'),
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
@@ -2796,6 +2794,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
             'title' => ts('Participant Status'),
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
             'options' => CRM_Event_PseudoConstant::participantStatus(NULL, NULL, 'label'),
+            'type' => CRM_Utils_Type::T_INT,
           ),
           'rid' => array(
             'name' => 'role_id',
@@ -2925,8 +2924,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     return array(
       'civicrm_event' => array(
         'dao' => 'CRM_Event_DAO_Event',
-        'fields' =>
-        array(
+        'fields' => array(
           'id' => array(
             'title' => ts('Event ID'),
           ),
@@ -3325,6 +3323,13 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
           'title' => ts($options['prefix_label'] . 'Gender ID'),
           'options' => CRM_Contact_BAO_Contact::buildOptions('gender_id'),
         ),
+        'birth_date' => array(
+          'title' => ts('Birth Date'),
+        ),
+        'age' => array(
+          'title'   => ts('Age'),
+          'dbAlias' => 'TIMESTAMPDIFF(YEAR, contact_civireport.birth_date, CURDATE())',
+        ),
       );
       if(!$orgOnly) {
         $contactFields[$options['prefix'] . 'civicrm_contact']['fields'] = array_merge($contactFields[$options['prefix'] . 'civicrm_contact']['fields'], $individualFields);
@@ -3348,6 +3353,15 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
           'name' => 'contact_type',
           'operatorType' => CRM_Report_Form::OP_MULTISELECT,
           'options' => $this->getContactTypeOptions(),
+        ),
+        'birth_date' => array(
+          'title' => 'Birth Date',
+          'operatorType' => CRM_Report_Form::OP_DATE,
+          'type'         => CRM_Utils_Type::T_DATE
+        ),
+        'gender_id' => array('title' => ts('Gender'),
+          'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+          'options' => CRM_Core_PseudoConstant::get('CRM_Contact_DAO_Contact', 'gender_id'),
         ),
       );
     }
@@ -4359,7 +4373,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
 ";
   }
 
-  /*
+  /**
    * Add join from contact table to phone. Prefix will be added to both tables
   * as it's assumed you are using it to get address of a secondary contact
   */
