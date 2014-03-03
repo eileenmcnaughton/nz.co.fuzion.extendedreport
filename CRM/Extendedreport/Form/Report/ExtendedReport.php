@@ -2922,6 +2922,25 @@ dpm($_events);
     );
   }
 
+  /**
+   * Get a standardized array of <select> options for "Event Title"
+   * - taken from core event class.
+   * @return Array
+   */
+  function getEventFilterOptions() {
+    $events = array();
+    $query = "
+      select id, start_date, title from civicrm_event
+      where (is_template IS NULL OR is_template = 0) AND is_active
+      order by title ASC, start_date
+    ";
+    $dao = CRM_Core_DAO::executeQuery($query);
+    while($dao->fetch()) {
+      $events[$dao->id] = "{$dao->title} - " . CRM_Utils_Date::customFormat(substr($dao->start_date, 0, 10)) . " (ID {$dao->id})";
+    }
+    return $events;
+  }
+
   function getEventColumns($options) {
     return array(
       'civicrm_event' => array(
