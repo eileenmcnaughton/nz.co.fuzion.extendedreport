@@ -5227,7 +5227,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
       $html .= "<tr><td>" . $locationTypes[$keys[1]] . $phoneTypeString . " : " . $keys[0] . "</td></tr>";
     }
 
-    if(in_array( $this->_outputMode, array( 'print', 'pdf' ))){
+    if(in_array( $this->_outputMode, array( 'print'))){
       return $return;
     }
 
