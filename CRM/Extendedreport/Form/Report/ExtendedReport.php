@@ -2597,11 +2597,22 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     $fn = 'get' . $type . 'Columns';
     $columns = $this->$fn($options);
 
-    foreach (array('fields', 'filters', 'group_by', 'order_by') as $type) {
+    foreach (array('filters', 'group_by', 'order_by') as $type) {
       if(!$options[$type]) {
         foreach ($columns as $tables => &$table) {
           if(isset($table[$type])) {
             $table[$type] = array();
+          }
+        }
+      }
+    }
+    if(!$options['fields']) {
+      foreach ($columns as $tables => &$table) {
+        if(isset($table['fields'])) {
+          //we still retrieve them all but unset any defaults & set no_display
+          foreach ($table['fields'] as &$field) {
+            $field['no_display'] = TRUE;
+            $field['required'] = FALSE;
           }
         }
       }
