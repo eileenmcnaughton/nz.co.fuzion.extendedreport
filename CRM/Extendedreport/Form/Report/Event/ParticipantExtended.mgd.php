@@ -14,7 +14,7 @@ return array (
       'label' => 'Extended Report - Participants',
       'description' => 'Extended Report - Participants, includes multi-contact custom fields',
       'class_name' => 'CRM_Extendedreport_Form_Report_Event_ParticipantExtended',
-      'report_url' => 'participantextended',
+      'report_url' => 'event/participantlistex',
       'component' => '',
     ),
   ),
