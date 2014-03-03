@@ -224,17 +224,16 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
 
       $this->_aliases[$tableName] = $this->_columns[$tableName]['alias'];
 
+      $daoOrBaoName = NULL;
+      $expFields = array();
       // higher preference to bao object
       if (array_key_exists('bao', $table)) {
-        require_once str_replace('_', DIRECTORY_SEPARATOR, $table['bao'] . '.php');
-        eval("\$expFields = {$table['bao']}::exportableFields( );");
+        $daoOrBaoName = $table['bao'];
+        $expFields = $daoOrBaoName::exportableFields( );
       }
       elseif (array_key_exists('dao', $table)){
-        require_once str_replace('_', DIRECTORY_SEPARATOR, $table['dao'] . '.php');
-        eval("\$expFields = {$table['dao']}::export( );");
-      }
-      else{
-        $expFields = array();
+        $daoOrBaoName = $table['dao'];
+        $expFields = $daoOrBaoName::export( );
       }
 
       $doNotCopy = array('required');
@@ -293,18 +292,42 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
               $this->_columns[$tableName][$fieldGrp][$fieldName]['dbAlias'] = $alias . '.' . $this->_columns[$tableName][$fieldGrp][$fieldName]['name'];
             }
 
-            if (CRM_Utils_Array::value('type', $this->_columns[$tableName][$fieldGrp][$fieldName]) &&
-              !isset($this->_columns[$tableName][$fieldGrp][$fieldName]['operatorType'])
-            ) {
-              if (in_array($this->_columns[$tableName][$fieldGrp][$fieldName]['type'],
-                array(CRM_Utils_Type::T_MONEY, CRM_Utils_Type::T_FLOAT)
-              )) {
-                $this->_columns[$tableName][$fieldGrp][$fieldName]['operatorType'] = CRM_Report_Form::OP_FLOAT;
-              }
-              elseif (in_array($this->_columns[$tableName][$fieldGrp][$fieldName]['type'],
-                array(CRM_Utils_Type::T_INT)
-              )) {
-                $this->_columns[$tableName][$fieldGrp][$fieldName]['operatorType'] = CRM_Report_Form::OP_INT;
+            // a few auto fills for filters
+            if ($fieldGrp == 'filters') {
+              // fill operator types
+              if (!array_key_exists('operatorType', $this->_columns[$tableName][$fieldGrp][$fieldName])) {
+                switch (CRM_Utils_Array::value('type', $this->_columns[$tableName][$fieldGrp][$fieldName])) {
+                  case CRM_Utils_Type::T_MONEY:
+                  case CRM_Utils_Type::T_FLOAT:
+                    $this->_columns[$tableName][$fieldGrp][$fieldName]['operatorType'] = CRM_Report_Form::OP_FLOAT;
+                    break;
+                  case CRM_Utils_Type::T_INT:
+                    $this->_columns[$tableName][$fieldGrp][$fieldName]['operatorType'] = CRM_Report_Form::OP_INT;
+                    break;
+                  case CRM_Utils_Type::T_DATE:
+                    $this->_columns[$tableName][$fieldGrp][$fieldName]['operatorType'] = CRM_Report_Form::OP_DATE;
+                    break;
+                  case CRM_Utils_Type::T_BOOLEAN:
+                    $this->_columns[$tableName][$fieldGrp][$fieldName]['operatorType'] = CRM_Report_Form::OP_SELECT;
+                    if (!array_key_exists('options', $this->_columns[$tableName][$fieldGrp][$fieldName])) {
+                      $this->_columns[$tableName][$fieldGrp][$fieldName]['options'] =
+                        array('' => ts('Any'), '0' => ts('No'), '1' => ts('Yes'));
+                    }
+                    break;
+                  default:
+                    if ($daoOrBaoName &&
+                      (array_key_exists('pseudoconstant', $this->_columns[$tableName][$fieldGrp][$fieldName])
+                        || array_key_exists('enumValues', $this->_columns[$tableName][$fieldGrp][$fieldName]))
+                    ) {
+                      // with multiple options operator-type is generally multi-select
+                      $this->_columns[$tableName][$fieldGrp][$fieldName]['operatorType'] = CRM_Report_Form::OP_MULTISELECT;
+                      if (!array_key_exists('options', $this->_columns[$tableName][$fieldGrp][$fieldName])) {
+                        // fill options
+                        $this->_columns[$tableName][$fieldGrp][$fieldName]['options'] = CRM_Core_PseudoConstant::get($daoOrBaoName, $fieldName);
+                      }
+                    }
+                    break;
+                }
               }
             }
           }
