@@ -169,8 +169,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       return CRM_Core_PseudoConstant::locationType();
     }
     else{
-      $result = civicrm_api3('address', 'getoptions', array('field' => 'location_type_id'));
-      return $result['values'];
+      return $this->_getOptions('address', 'location_type_id');
     }
   }
 
@@ -1100,8 +1099,14 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    * @param string $action
    */
   protected function _getOptions($entity, $field, $action = 'get') {
+    static $allOptions = array();
+    $key = "{$entity}_{$field}";
+    if(isset($allOptions[$key])) {
+      return $allOptions[$key];
+    }
     $options = civicrm_api3($entity, 'getoptions', array('field' => $field, 'action' => $action));
-    return $options['values'];
+    $allOptions[$key] = $options['values'];
+    return $allOptions[$key];
   }
   /**
    * @param $rows
