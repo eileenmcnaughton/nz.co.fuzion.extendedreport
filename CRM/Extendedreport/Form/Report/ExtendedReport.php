@@ -2752,7 +2752,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     return array(
       'civicrm_participant' =>
       array(
-        'dao' => 'CRM_Event_DAO_Participant',
+        'bao' => 'CRM_Event_BAO_Participant',
         'grouping' => 'event-fields',
         'fields' =>
         array('participant_id' => array('title' => 'Participant ID'),
@@ -2766,6 +2766,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
           ),
           'status_id' => array('title' => ts('Event Participant Status'),
             'alter_display' => 'alterParticipantStatus',
+            'options' => $this->_getOptions('participant', 'status_id', $action = 'get'),
           ),
           'role_id' => array('title' => ts('Role'),
             'alter_display' => 'alterParticipantRole',
