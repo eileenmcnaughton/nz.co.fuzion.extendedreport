@@ -2755,7 +2755,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
   function getParticipantColumns($options = array()) {
     static $_events = array();
     if (!isset($_events['all'])) {
-      CRM_Core_PseudoConstant::populate($_events['all'], 'CRM_Event_DAO_Event', FALSE, 'title', 'is_active', "is_template IS NULL OR is_template = 0", 'end_date DESC');
+      CRM_Core_PseudoConstant::populate($_events['all'], 'CRM_Event_DAO_Event', FALSE, 'title', 'is_active', "is_template IS NULL OR is_template = 0", 'title');
     }
     return array(
       'civicrm_participant' => array(
