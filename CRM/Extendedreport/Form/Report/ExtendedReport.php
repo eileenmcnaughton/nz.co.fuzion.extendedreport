@@ -1169,7 +1169,8 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
  * Add an extra row with percentages for a single row result to the chart (this is where
  * there is no grandTotal row
  * @param array rows
- */private function addAggregatePercentRow($rows) {
+ */
+ private function addAggregatePercentRow($rows) {
     if(!empty($this->_aggregatesAddPercentage) && count($rows) == 1 && $this->_aggregatesAddTotal) {
         foreach ($rows as $row) {
           $total = end($row);
@@ -1486,8 +1487,6 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
         $curTable = $customDAO->table_name;
         $curFields = $curFilters = array();
 
-        // dummy dao object
-        $this->_columns[$curTable]['dao'] = 'CRM_Contact_DAO_Contact';
         $this->_columns[$curTable]['extends'] = $customDAO->extends;
         $this->_columns[$curTable]['grouping'] = $customDAO->table_name;
         $this->_columns[$curTable]['group_title'] = $customDAO->title;
@@ -1735,7 +1734,6 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
         $this->_customFields[$currentTable] = array();
       }
       $this->_customFields[$currentTable] = array_merge(array(
-        'dao' => 'CRM_Contact_DAO_Contact', // dummy dao object
         'extends' => $group['extends'],
         'grouping' => $currentTable,
         'group_title' => $group['title'],
@@ -1758,7 +1756,6 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
               $tableAlias = $table . "_" . $this->_customFields[$customTable]['name'];
               $this->_columns[$tableAlias] = $this->_customFields[$tableName];
               $this->_columns[$tableAlias]['alias'] = $tableAlias;
-              $this->_columns[$table]['dao'] = 'CRM_Contact_DAO_Contact';
               if(empty($spec['filters']) && isset($this->_columns[$tableAlias]['filters'])) {
                 unset($this->_columns[$tableAlias]['filters']);
               }
