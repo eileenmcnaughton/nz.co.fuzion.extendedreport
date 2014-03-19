@@ -34,7 +34,7 @@ class CRM_Extendedreport_Form_Report_RelationshipExtended extends CRM_Extendedre
       'prefix_label' => 'Contact B ::',
       'subquery' => false,
     ))
-    + $this->getRelationshipColumns() + array(
+    + $this->getColumns('Relationship') + array(
       'civicrm_relationship_type' => array(
         'dao' => 'CRM_Contact_DAO_RelationshipType',
         'fields' => array(
