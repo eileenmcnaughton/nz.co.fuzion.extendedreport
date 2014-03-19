@@ -3635,18 +3635,32 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
           'end_date'   =>
           array( 'title'     => ts( 'Relationship End Date' ),
           ),
-          'description'   =>
-          array( 'title'     => ts( 'Description' ),
+          'relationship_description'   => array(
+            'title'     => ts( 'Description' ),
+            'name' => 'description',
           ),
         ),
-        'filters'   =>
-        array('is_active'=>
-        array( 'title'        => ts( 'Relationship Status' ),
-          'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-          'options'      =>
-          array( ''  => '- Any -',
-            1   => 'Active',
-            0   => 'Inactive',
+        'filters' => array(
+          'relationship_start_date' => array(
+            'name' => 'start_date',
+            'title' => 'Relationship Start Date',
+            'type' => CRM_Utils_Type::T_DATE,
+          ),
+          'relationship_end_date' => array(
+            'name' => 'end_date',
+            'title' => 'Relationship End Date',
+            'type' => CRM_Utils_Type::T_DATE,
+          ),
+          'relationship_is_active'=> array(
+            'title'        => ts( 'Relationship Status' ),
+            'name' => 'is_active',
+            'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+            'options'      => array(
+              ''  => '- Any -',
+              1   => 'Active',
+              0   => 'Inactive',
+            ),
+            'type'     => CRM_Utils_Type::T_INT
           ),
           'type'     => CRM_Utils_Type::T_INT ),
           'relationship_type_id' =>
