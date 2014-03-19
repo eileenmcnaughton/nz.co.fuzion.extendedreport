@@ -3625,15 +3625,16 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     $options = array_merge($defaultOptions,$options);
 
     $fields = array(
-      $options['prefix'] . 'civicrm_relationship' =>
-      array( 'dao'       => 'CRM_Contact_DAO_Relationship',
-        'fields'    =>
-        array( 'relationship_start_date' =>
-        array( 'title'     => ts( 'Relationship Start Date' ),
-          'name' => 'start_date'
-        ),
-          'end_date'   =>
-          array( 'title'     => ts( 'Relationship End Date' ),
+      $options['prefix'] . 'civicrm_relationship' => array(
+        'dao'       => 'CRM_Contact_DAO_Relationship',
+        'fields'    => array(
+          'relationship_start_date' => array(
+            'title'     => ts( 'Relationship Start Date' ),
+            'name' => 'start_date'
+          ),
+          'relationship_end_date'   => array(
+            'title' => ts( 'Relationship End Date' ),
+            'name' => 'end_date',
           ),
           'relationship_description'   => array(
             'title'     => ts( 'Description' ),
@@ -3662,12 +3663,12 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
             ),
             'type'     => CRM_Utils_Type::T_INT
           ),
-          'type'     => CRM_Utils_Type::T_INT ),
-          'relationship_type_id' =>
-          array( 'title'        => ts( 'Relationship Type' ),
+          'relationship_type_id' => array(
+            'title'        => ts( 'Relationship Type' ),
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-            'options'      =>
-            array( ''     => '- any relationship type -') +
+            'options'      => array(
+              ''     => '- any relationship type -'
+            ) +
             CRM_Contact_BAO_Relationship::getContactRelationshipType( null, 'null', null, null, true),
             'type'        => CRM_Utils_Type::T_INT
           ),
