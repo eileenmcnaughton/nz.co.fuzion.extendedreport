@@ -2944,7 +2944,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     return $events;
   }
 
-  function getEventColumns($options) {
+  function getEventColumns($options = array()) {
     return array(
       'civicrm_event' => array(
         'dao' => 'CRM_Event_DAO_Event',
@@ -3590,9 +3590,6 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       'group_by' => false,
       'order_by' => true,
       'filters' => true,
-      'defaults' => array(
-        'country_id' => TRUE
-      ),
     );
 
     $options = array_merge($defaultOptions,$options);
