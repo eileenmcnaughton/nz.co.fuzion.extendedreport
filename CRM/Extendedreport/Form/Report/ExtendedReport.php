@@ -2200,6 +2200,9 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
     }
 
     $customFieldIds = array();
+    if(!is_array($this->_params['fields'])) {
+      $this->_params['fields'] = array();
+    }
     foreach ($this->_params['fields'] as $fieldAlias => $value) {
       $fieldId = CRM_Core_BAO_CustomField::getKeyID($fieldAlias);
       if ($fieldId) {
