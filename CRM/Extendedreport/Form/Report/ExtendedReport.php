@@ -4110,6 +4110,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
           ),
           'activity_status_id' => array(
             'title' => ts('Activity Status'),
+            'name' => 'status_id',
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
             'options' => CRM_Core_PseudoConstant::activityStatus(),
             'status_id',
