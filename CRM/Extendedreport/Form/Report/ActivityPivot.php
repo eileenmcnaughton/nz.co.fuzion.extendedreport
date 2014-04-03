@@ -27,7 +27,8 @@ class CRM_Extendedreport_Form_Report_ActivityPivot extends CRM_Extendedreport_Fo
 //    $this->_columns['civicrm_contact']['fields']['gender_id']['title'] = 'Gender';
 
     $this->_aggregateRowFields  = array(
-      'civicrm_activity_civireport:activity_type_id' => 'Activity Type'
+      'activity_civireport:activity_type_id' => 'Activity Type',
+      'activity_civireport:result' => 'Activity Result',
 //      'civicrm_contact_civireport:gender_id' => 'Gender',
     );
     $this->_aggregateColumnHeaderFields  = array(

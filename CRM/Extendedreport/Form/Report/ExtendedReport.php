@@ -4016,9 +4016,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       'group_by' => false,
       'order_by' => true,
       'filters' => true,
-      'defaults' => array(
-        'country_id' => TRUE
-      ),
+      'defaults' => array(),
     );
 
     $options = array_merge($defaultOptions,$options);
@@ -4083,7 +4081,10 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       ),
       'details' => array(
         'title' => ts('Activity Details'),
-      )
+      ),
+      'result' => array(
+        'title' => ts('Activity Result'),
+      ),
     );
 
     if($options['filters']){
@@ -4124,7 +4125,11 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
           'details' => array(
             'title' => ts('Activity Details'),
             'type' => CRM_Utils_Type::T_TEXT,
-          )
+          ),
+          'result' => array(
+            'title' => ts('Activity Result'),
+            'type' => CRM_Utils_Type::T_TEXT,
+          ),
         );
     }
     $activityFields['civicrm_activity']['order_bys'] =
