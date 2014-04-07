@@ -16,6 +16,19 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   protected $_editableFields = TRUE;
 
   /**
+   * Flag to indicate if result-set is to be stored in a class variable which could be retrieved using getResultSet() method.
+   *
+   * @var boolean
+   */
+  protected $_storeResultSet = FALSE;
+
+  /**
+   * When _storeResultSet Flag is set use this var to store result set in form of array
+   *
+   * @var boolean
+   */
+  protected $_resultSet = array();
+  /**
    * An instruction not to add a Group By
    * This is relevant where the group by might be otherwise added after the code that determines it
    * should not be added is processed but the code does not want to mess with other fields / processing
@@ -1310,6 +1323,10 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    * Should be able to be removed once 4.3 version is in use
    */
   function endPostProcess(&$rows = NULL) {
+    if ( $this->_storeResultSet ) {
+      $this->_resultSet = $rows;
+    }
+
     if ($this->_outputMode == 'print' ||
       $this->_outputMode == 'pdf' ||
       $this->_sendmail
@@ -1317,7 +1334,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
 
       $content = $this->compileContent();
       $url = CRM_Utils_System::url("civicrm/report/instance/{$this->_id}",
-        "reset=1", TRUE
+             "reset=1", TRUE
       );
 
       if ($this->_sendmail) {
