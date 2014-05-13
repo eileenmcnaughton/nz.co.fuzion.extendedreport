@@ -47,6 +47,8 @@ class CRM_Extendedreport_Form_Report_Case_CasePivot extends CRM_Extendedreport_F
       'civicrm_contact_civireport:gender_id' => 'Gender',
       'case_civireport:case_status_id' => 'Case Status',
     );
+    $this->_tagFilter = TRUE;
+    $this->_groupFilter = TRUE;
     parent::__construct();
   }
 
