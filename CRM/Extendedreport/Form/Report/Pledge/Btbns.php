@@ -42,16 +42,20 @@ class CRM_Extendedreport_Form_Report_Pledge_Btbns extends CRM_Extendedreport_For
   protected $_customGroupExtends = array(
     'Pledge'
   );
-  protected $lifeTime_from = null;
-  protected $lifeTime_where = null;
+  protected $lifeTime_from = NULL;
+  protected $lifeTime_where = NULL;
+
+  /**
+   *
+   */
   function __construct() {
     $yearsInPast = 8;
     $yearsInFuture = 2;
-    $date = CRM_Core_SelectValues::date('custom', null, $yearsInPast, $yearsInFuture);
+    $date = CRM_Core_SelectValues::date('custom', NULL, $yearsInPast, $yearsInFuture);
     $count = $date['maxYear'];
     while ($date['minYear'] <= $count) {
       $optionYear[$date['minYear']] = $date['minYear'];
-      $date['minYear'] ++;
+      $date['minYear']++;
     }
 
     $this->_columns = array(
@@ -61,11 +65,10 @@ class CRM_Extendedreport_Form_Report_Pledge_Btbns extends CRM_Extendedreport_For
         'fields' => array(
           'display_name' => array(
             'title' => ts('Donor Name'),
-            'default' => true,
-            'required' => true
+            'default' => TRUE,
+            'required' => TRUE
           )
         ),
-
         'filters' => array(
           'sort_name' => array(
             'title' => ts('Donor Name'),
@@ -73,14 +76,13 @@ class CRM_Extendedreport_Form_Report_Pledge_Btbns extends CRM_Extendedreport_For
           )
         )
       ),
-
       'civicrm_email' => array(
         'dao' => 'CRM_Core_DAO_Email',
         'grouping' => 'contact-field',
         'fields' => array(
           'email' => array(
             'title' => ts('Email'),
-            'default' => true
+            'default' => TRUE
           )
         )
       ),
@@ -90,7 +92,7 @@ class CRM_Extendedreport_Form_Report_Pledge_Btbns extends CRM_Extendedreport_For
         'fields' => array(
           'phone' => array(
             'title' => ts('Phone No'),
-            'default' => true
+            'default' => TRUE
           )
         )
       ),
@@ -99,28 +101,26 @@ class CRM_Extendedreport_Form_Report_Pledge_Btbns extends CRM_Extendedreport_For
         'fields' => array(
           'contact_id' => array(
             'title' => ts('contactId'),
-            'required' => true,
-            'no_repeat' => true,
+            'required' => TRUE,
+            'no_repeat' => TRUE,
             'type' => CRM_Utils_Type::T_INT,
           ),
-
           'amount' => array(
             'title' => ts('Total Amount'),
-            'required' => true,
-            'no_repeat' => true,
+            'required' => TRUE,
+            'no_repeat' => TRUE,
             'type' => CRM_Utils_Type::T_MONEY,
           )
-          ,
-
+        ,
           'start_date' => array(
             'title' => ts('Start Date (within range)'),
-            'required' => true,
-            'no_repeat' => true,
+            'required' => TRUE,
+            'no_repeat' => TRUE,
             'type' => CRM_Utils_Type::T_DATE,
           )
 
         )
-        ,
+      ,
         'filters' => array(
           'yid' => array(
             'name' => 'start_date',
@@ -145,7 +145,6 @@ class CRM_Extendedreport_Form_Report_Pledge_Btbns extends CRM_Extendedreport_For
           )
         )
       ),
-
       'civicrm_group' => array(
         'dao' => 'CRM_Contact_DAO_GroupContact',
         'alias' => 'cgroup',
@@ -154,17 +153,17 @@ class CRM_Extendedreport_Form_Report_Pledge_Btbns extends CRM_Extendedreport_For
             'name' => 'group_id',
             'title' => ts('Group'),
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-            'group' => true,
+            'group' => TRUE,
             'options' => CRM_Core_PseudoConstant::group()
           )
         )
       )
-    )
-    ;
+    );
 
-    $this->_tagFilter = true;
+    $this->_tagFilter = TRUE;
     parent::__construct();
   }
+
   function preProcess() {
     parent::preProcess();
   }
@@ -188,20 +187,21 @@ class CRM_Extendedreport_Form_Report_Pledge_Btbns extends CRM_Extendedreport_For
               $this->_columnHeaders["{$previous_year}"]['title'] = $previous_year;
 
               $this->_columnHeaders["civicrm_life_time_total"]['type'] = $field['type'];
-              $this->_columnHeaders["civicrm_life_time_total"]['title'] = 'LifeTime';
-              ;
-            }
-            else if ($fieldName == 'receive_date') {
-              $select[] = " Year ( {$field[ 'dbAlias' ]} ) as {$tableName}_{$fieldName} ";
+              $this->_columnHeaders["civicrm_life_time_total"]['title'] = 'LifeTime';;
             }
             else {
-              $select[] = "{$field['dbAlias']} as {$tableName }_{$fieldName} ";
-              $this->_columnHeaders["{$tableName}_{$fieldName}"]['type'] = $field['type'];
-              $this->_columnHeaders["{$tableName}_{$fieldName}"]['title'] = $field['title'];
+              if ($fieldName == 'receive_date') {
+                $select[] = " Year ( {$field['dbAlias']} ) as {$tableName}_{$fieldName} ";
+              }
+              else {
+                $select[] = "{$field['dbAlias']} as {$tableName }_{$fieldName} ";
+                $this->_columnHeaders["{$tableName}_{$fieldName}"]['type'] = $field['type'];
+                $this->_columnHeaders["{$tableName}_{$fieldName}"]['title'] = $field['title'];
+              }
             }
 
             if (CRM_Utils_Array::value('no_display', $field)) {
-              $this->_columnHeaders["{$tableName}_{$fieldName}"]['no_display'] = true;
+              $this->_columnHeaders["{$tableName}_{$fieldName}"]['no_display'] = TRUE;
             }
           }
         }
@@ -210,6 +210,7 @@ class CRM_Extendedreport_Form_Report_Pledge_Btbns extends CRM_Extendedreport_For
 
     $this->_select = "SELECT  " . implode(', ', $select) . " ";
   }
+
   function from() {
     $this->_from = "
         FROM  civicrm_pledge  {$this->_aliases['civicrm_pledge']}
@@ -226,11 +227,17 @@ class CRM_Extendedreport_Form_Report_Pledge_Btbns extends CRM_Extendedreport_For
 
   function groupBy() {
     $this->_groupBy = "Group BY  {$this->_aliases['civicrm_pledge']}.contact_id, Year({$this->_aliases['civicrm_pledge']}.start_date) WITH ROLLUP";
-    $this->assign('chartSupported', true);
+    $this->assign('chartSupported', TRUE);
   }
+
+  /**
+   * @param $rows
+   *
+   * @return mixed
+   */
   function statistics(&$rows) {
     $statistics = parent::statistics($rows);
-    if (! empty($rows)) {
+    if (!empty($rows)) {
       $select = "
                       SELECT
                             SUM({$this->_aliases['civicrm_pledge']}.amount ) as amount ";
@@ -248,6 +255,7 @@ class CRM_Extendedreport_Form_Report_Pledge_Btbns extends CRM_Extendedreport_For
 
     return $statistics;
   }
+
   function postProcess() {
 
     // get ready with post process params
@@ -261,7 +269,7 @@ class CRM_Extendedreport_Form_Report_Pledge_Btbns extends CRM_Extendedreport_For
     $this->where();
     $this->groupBy();
     $rows = $contactIds = array();
-    if (! CRM_Utils_Array::value('charts', $this->_params)) {
+    if (!CRM_Utils_Array::value('charts', $this->_params)) {
       $this->limit();
       $getContacts = "SELECT SQL_CALC_FOUND_ROWS {$this->_aliases['civicrm_contact']}.id as cid {$this->_from} {$this->_where}  GROUP BY {$this->_aliases['civicrm_contact']}.id {$this->_limit}";
       $dao = CRM_Core_DAO::executeQuery($getContacts);
@@ -271,7 +279,7 @@ class CRM_Extendedreport_Form_Report_Pledge_Btbns extends CRM_Extendedreport_For
       $dao->free();
       $this->setPager();
     }
-    if (! empty($contactIds) || CRM_Utils_Array::value('charts', $this->_params)) {
+    if (!empty($contactIds) || CRM_Utils_Array::value('charts', $this->_params)) {
       if (CRM_Utils_Array::value('charts', $this->_params)) {
         $sql = "{$this->_select} {$this->_from} {$this->_where} {$this->_groupBy}";
       }
@@ -284,7 +292,7 @@ class CRM_Extendedreport_Form_Report_Pledge_Btbns extends CRM_Extendedreport_For
 
       while ($dao->fetch()) {
 
-        if (! $dao->civicrm_pledge_contact_id) {
+        if (!$dao->civicrm_pledge_contact_id) {
           continue;
         }
 
@@ -295,7 +303,7 @@ class CRM_Extendedreport_Form_Report_Pledge_Btbns extends CRM_Extendedreport_For
         }
 
         if (empty($dao->civicrm_contribution_receive_date)) {
-          if (!empty($dao->civicrm_contribution_receive_date) &&  $dao->civicrm_contribution_receive_date == $previous_year) {
+          if (!empty($dao->civicrm_contribution_receive_date) && $dao->civicrm_contribution_receive_date == $previous_year) {
             $rows[$dao->civicrm_pledge_contact_id][$dao->civicrm_pledge_start_date] = $dao->civicrm_pledge_amount;
           }
         }
@@ -306,7 +314,7 @@ class CRM_Extendedreport_Form_Report_Pledge_Btbns extends CRM_Extendedreport_For
       $dao->free();
     }
 
-    $this->formatDisplay($rows, false);
+    $this->formatDisplay($rows, FALSE);
 
     // assign variables to templates
     $this->doTemplateAssignment($rows);
@@ -314,6 +322,10 @@ class CRM_Extendedreport_Form_Report_Pledge_Btbns extends CRM_Extendedreport_For
     // do print / pdf / instance stuff if needed
     $this->endPostProcess($rows);
   }
+
+  /**
+   * @param $rows
+   */
   function buildChart(&$rows) {
     $graphRows = array();
     $display = array();
@@ -344,6 +356,10 @@ class CRM_Extendedreport_Form_Report_Pledge_Btbns extends CRM_Extendedreport_For
       $this->assign('chartType', $this->_params['charts']);
     }
   }
+
+  /**
+   * @param $rows
+   */
   function alterDisplay(&$rows) {
     foreach ($rows as $rowNum => $row) {
       //Convert Display name into link

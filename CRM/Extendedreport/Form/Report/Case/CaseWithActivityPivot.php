@@ -1,5 +1,8 @@
 <?php
 
+/**
+ * Class CRM_Extendedreport_Form_Report_Case_CaseWithActivityPivot
+ */
 class CRM_Extendedreport_Form_Report_Case_CaseWithActivityPivot extends CRM_Extendedreport_Form_Report_ExtendedReport {
   protected $_baseTable = 'civicrm_case';
   protected $skipACL = FALSE;
@@ -26,6 +29,9 @@ class CRM_Extendedreport_Form_Report_Case_CaseWithActivityPivot extends CRM_Exte
   protected $_potentialCriteria = array(
   );
 
+  /**
+   *
+   */
   function __construct() {
     $this->_customGroupExtended['civicrm_case'] = array(
       'extends' => array('Case'),
@@ -97,6 +103,9 @@ class CRM_Extendedreport_Form_Report_Case_CaseWithActivityPivot extends CRM_Exte
     $this->_caseActivityTable = $tempTable;
   }
 
+  /**
+   * @return array
+   */
   function fromClauses( ) {
     return array(
       'contact_from_case',

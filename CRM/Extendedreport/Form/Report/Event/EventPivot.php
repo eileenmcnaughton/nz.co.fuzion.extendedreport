@@ -1,5 +1,8 @@
 <?php
 
+/**
+ * Class CRM_Extendedreport_Form_Report_Event_EventPivot
+ */
 class CRM_Extendedreport_Form_Report_Event_EventPivot extends CRM_Extendedreport_Form_Report_ExtendedReport {
   protected $_baseTable = 'civicrm_participant';
   protected $skipACL = true;
@@ -13,6 +16,9 @@ class CRM_Extendedreport_Form_Report_Event_EventPivot extends CRM_Extendedreport
     'sid',
   );
 
+  /**
+   *
+   */
   function __construct() {
     $this->_customGroupExtended['civicrm_event'] = array(
       'extends' => array('Event'),
@@ -45,6 +51,9 @@ class CRM_Extendedreport_Form_Report_Event_EventPivot extends CRM_Extendedreport
     parent::__construct();
   }
 
+  /**
+   * @return array
+   */
   function fromClauses( ) {
     return array(
       'event_from_participant',

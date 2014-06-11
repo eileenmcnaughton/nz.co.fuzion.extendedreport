@@ -136,6 +136,9 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   protected $_skipACLContactDeletedClause = FALSE;
   protected $whereClauses = array();
 
+  /**
+   *
+   */
   function __construct() {
     parent::__construct();
     $this->addSelectableCustomFields();
@@ -511,6 +514,9 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     }
   }
 
+  /**
+   * @param $fieldName
+   */
   function addAggregateTotal($fieldName) {
     $fieldAlias = "{$fieldName}_total";
     $this->_columnHeaders[$fieldAlias] = array('title' => ts('Total'), 'type' => CRM_Utils_Type::T_INT);
@@ -728,6 +734,9 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   /*
 * Define any from clauses in use (child classes to override)
 */
+  /**
+   * @return array
+   */
   function fromClauses() {
     return array();
   }
@@ -1322,6 +1331,9 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    * 4.2 backport of this function including 4.3 tweak whereby compileContent is a separate function
    * Should be able to be removed once 4.3 version is in use
    */
+  /**
+   * @param null $rows
+   */
   function endPostProcess(&$rows = NULL) {
     if ( $this->_storeResultSet ) {
       $this->_resultSet = $rows;
@@ -1427,6 +1439,9 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   /*
    * get name of template file
    */
+  /**
+   * @return string
+   */
   function getTemplateFileName(){
     $defaultTpl = parent::getTemplateFileName();
 
@@ -1449,6 +1464,9 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    *
    *  4.3 introduced function - overriding on 4.2
    */
+  /**
+   * @return string
+   */
   function compileContent(){
     $templateFile = $this->getTemplateFileName();
     return $this->_formValues['report_header'] . CRM_Core_Form::$_template->fetch($templateFile) . $this->_formValues['report_footer'];
@@ -1458,6 +1476,15 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    * We are overriding this so that we can add time if required
    * Note that in 4.4 we could call the parent function setting $displayTime as appropriate
    * - not sure when this became an option - ie what version
+   */
+  /**
+   * @param $name
+   * @param string $from
+   * @param string $to
+   * @param string $label
+   * @param string $dateFormat
+   * @param bool $required
+   * @param bool $displayTime
    */
   function addDateRange( $name, $from = '_from', $to = '_to', $label = 'From:', $dateFormat = 'searchDate', $required = FALSE, $displayTime = FALSE) {
     if($this->_timeDateFilters){
@@ -1471,8 +1498,9 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
 
   /**
    * over-ridden to handle orderbys
-   * @param unknown_type $addFields
-   * @param unknown_type $permCustomGroupIds
+   *
+   * @param bool|\unknown_type $addFields
+   * @param array|\unknown_type $permCustomGroupIds
    */
   function addCustomDataToColumns($addFields = TRUE, $permCustomGroupIds = array()) {
     if (empty($this->_customGroupExtends)) {
@@ -2015,7 +2043,13 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
 
   /**
    * Map extends = 'Entity' to a connection to the relevant table
-   * @param field
+   *
+   * @param $field
+   * @param $spec
+   *
+   * @return string
+   * @return string
+   * @internal param $field
    */
    private function mapFieldExtends($field, $spec) {
      $extendable = array(
@@ -2114,15 +2148,20 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
   protected function addNullToFilterOptions($table, $fieldName, $label = '--does not exist--') {
     $this->_columns[$table]['filters'][$fieldName]['options'] = array('' => $label) + $this->_columns[$table]['filters'][$fieldName]['options'];
   }
-/**
- * Add row as the header for a pivot table. If it is to be the header it must be selected
- * and be the group by.
- * @param table
- * @param tableAlias
- * @param fieldName actual DB name of field
- * @param fieldAlias
- * @param title
- */
+
+  /**
+   * Add row as the header for a pivot table. If it is to be the header it must be selected
+   * and be the group by.
+   * @param $tableAlias
+   * @param actual $fieldName
+   * @param $fieldAlias
+   * @param string $title
+   * @internal param $table
+   * @internal param $tableAlias
+   * @internal param \actual $fieldName DB name of field
+   * @internal param $fieldAlias
+   * @internal param $title
+   */
  private function addRowHeader($tableAlias, $fieldName, $fieldAlias, $title = '') {
     if(empty($tableAlias)) {
       $this->_select = 'SELECT 1 ';// add a fake value just to save lots of code to calculate whether a comma is required later
@@ -2141,6 +2180,9 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
   }
 
 
+  /**
+   * @param $rows
+   */
   function alterDisplay(&$rows) {
     parent::alterDisplay($rows);
 
@@ -2201,6 +2243,9 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
   /*
    * Was hoping to avoid over-riding this - but it doesn't pass enough data to formatCustomValues by default
    * Am using it in a pretty hacky way to also cover the select box custom fields
+   */
+  /**
+   * @param $rows
    */
   function alterCustomDataDisplay(&$rows) {
 
@@ -2505,6 +2550,9 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     }
   }
 
+  /**
+   * @param $rows
+   */
   function assignSubTotalLines(&$rows){
     foreach ($rows as $index => & $row) {
       $orderFields = array_intersect_key(array_flip($this->_groupBysArray), $row);
@@ -2512,6 +2560,9 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
   }
   /*
    * Function is over-ridden to support multiple add to groups
+   */
+  /**
+   * @param $groupID
    */
   function add2group($groupID) {
     if (is_numeric($groupID) && isset($this->_aliases['civicrm_contact'])) {
@@ -2535,7 +2586,10 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
 
   /**
    * check if a table exists
+   *
    * @param string $tableName Name of table
+   *
+   * @return bool
    */
   function tableExists($tableName) {
     $sql = "SHOW TABLES LIKE '{$tableName}'";
@@ -2641,6 +2695,10 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     }
     return $columns;
   }
+
+  /**
+   * @return array
+   */
   function getLineItemColumns() {
     return array(
       'civicrm_line_item' =>
@@ -2694,6 +2752,9 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     );
   }
 
+  /**
+   * @return array
+   */
   function getPriceFieldValueColumns() {
     return array(
       'civicrm_price_field_value' =>
@@ -2735,6 +2796,9 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     );
   }
 
+  /**
+   * @return array
+   */
   function getPriceFieldColumns() {
     return array(
       'civicrm_price_field' =>
@@ -2774,6 +2838,11 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     );
   }
 
+  /**
+   * @param array $options
+   *
+   * @return array
+   */
   function getParticipantColumns($options = array()) {
     static $_events = array();
     if (!isset($_events['all'])) {
@@ -2849,6 +2918,9 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     );
   }
 
+  /**
+   * @return array
+   */
   function getMembershipColumns() {
     return array(
       'civicrm_membership' => array(
@@ -2923,6 +2995,9 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     );
   }
 
+  /**
+   * @return array
+   */
   function getMembershipTypeColumns() {
     require_once 'CRM/Member/PseudoConstant.php';
     return array(
@@ -2961,6 +3036,11 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     return $events;
   }
 
+  /**
+   * @param array $options
+   *
+   * @return array
+   */
   function getEventColumns($options = array()) {
     return array(
       'civicrm_event' => array(
@@ -3121,7 +3201,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
 
   /**
    *
-   * @param unknown_type $options
+   * @param array|\unknown_type $options
    * @return Ambigous <multitype:multitype:NULL  , multitype:multitype:string  multitype:NULL  multitype:string NULL  , multitype:multitype:string  multitype:NULL string  multitype:number string boolean multitype:string  NULL  multitype:NULL  multitype:string NULL  >
    */
   function getContributionColumns($options = array()) {
@@ -3476,6 +3556,9 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     return $contactFields;
   }
 
+  /**
+   * @return array
+   */
   function getCaseColumns() {
     $config = CRM_Core_Config::singleton();
     if (!in_array('CiviCase', $config->enableComponents)) {
@@ -3565,6 +3648,13 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
   /*
    *
    */
+  /**
+   * Get phone columns to add to array
+   * @param array $options
+   *  - prefix Prefix to add to table (in case of more than one instance of the table)
+   *  - prefix_label Label to give columns from this phone table instance
+   * @return array phone columns definition
+   */
   function getPhoneColumns($options = array()){
     $defaultOptions = array(
       'prefix' => '',
@@ -3600,6 +3690,11 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    * Get email columns
    * @param array $options column options
    */
+  /**
+   * @param array $options
+   *
+   * @return array
+   */
   function getEmailColumns($options = array()){
     $defaultOptions = array(
       'prefix' => '',
@@ -3625,6 +3720,11 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     return $fields;
   }
 
+  /**
+   * @param array $options
+   *
+   * @return array
+   */
   function getRelationshipColumns($options = array()){
     $defaultOptions = array(
       'prefix' => '',
@@ -3706,6 +3806,13 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
 * - defaults - (is this working?) values to pre-populate
 * @return array address fields for construct clause
 */
+  /**
+   * Get address columns to add to array
+   * @param array $options
+   *  - prefix Prefix to add to table (in case of more than one instance of the table)
+   *  - prefix_label Label to give columns from this address table instance
+   * @return array address columns definition
+   */
   function getAddressColumns($options = array()) {
     $defaultOptions = array(
       'prefix' => '',
@@ -3940,7 +4047,12 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     }
     return $addressFields;
   }
-  function getTagColumns($options = array()){
+
+  /**
+   * @param array $options
+   *
+   * @return array
+   */function getTagColumns($options = array()){
     $defaultOptions = array(
       'prefix' => '',
       'prefix_label' => '',
@@ -3978,6 +4090,11 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    * Function to get Activity Columns
   * @param array $options column options
   */
+  /**
+   * @param $options
+   *
+   * @return array
+   */
   function getLatestActivityColumns($options){
     $defaultOptions = array(
       'prefix' => '',
@@ -4019,6 +4136,11 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
   /*
    * Function to get Activity Columns
    * @param array $options column options
+   */
+  /**
+   * @param array $options
+   *
+   * @return array
    */
   function getActivityColumns($options = array()){
     $defaultOptions = array(
@@ -4159,6 +4281,9 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
   /*
 * Get Information about advertised Joins
 */
+  /**
+   * @return array
+   */
   function getAvailableJoins() {
     return array(
       'priceFieldValue_from_lineItem' => array(
@@ -4395,6 +4520,12 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
 * @param array $extra extra join parameters
 * @return bool true or false to denote whether extra filters can be appended to join
 */
+  /**
+   * @param string $prefix
+   * @param array $extra
+   *
+   * @return bool
+   */
   function joinAddressFromContact( $prefix = '', $extra = array()) {
 
     $this->_from .= " LEFT JOIN civicrm_address {$this->_aliases[$prefix . 'civicrm_address']}
@@ -4420,6 +4551,9 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
   * Add join from contact table to email. Prefix will be added to both tables
   * as it's assumed you are using it to get address of a secondary contact
 */
+  /**
+   * @param string $prefix
+   */
   function joinEmailFromContact( $prefix = '') {
     $this->_from .= " LEFT JOIN civicrm_email {$this->_aliases[$prefix . 'civicrm_email']}
    ON {$this->_aliases[$prefix . 'civicrm_email']}.contact_id = {$this->_aliases[$prefix . 'civicrm_contact']}.id
@@ -4438,6 +4572,9 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
 
   /*
    *
+   */
+  /**
+   * @param string $prefix
    */
   function joinEntityTagFromContact($prefix = '') {
     if(!$this->isTableSelected($prefix . 'civicrm_tag')){
@@ -4852,6 +4989,9 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
 {$this->_aliases['civicrm_event']}.is_template = 0)";
   }
 
+  /**
+   * @param $prefix
+   */
   function joinEventSummaryFromEvent($prefix) {
     $temporary = $this->_temporary;
     $tempTable = 'civicrm_report_temp_contsumm'. $prefix . date('d_H_I') . rand(1, 10000);
@@ -5014,6 +5154,15 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
   /*
    * Retrieve text for contribution type from pseudoconstant
   */
+  /**
+   * @param $value
+   * @param $row
+   * @param $selectedfield
+   * @param $criteriaFieldName
+   * @param $specs
+   *
+   * @return string
+   */
   function alterCrmEditable($value, &$row, $selectedfield, $criteriaFieldName, $specs) {
     $id_field = $specs['id_table'] . '_' . $specs['id_field'];
     if(empty($id_field) || empty($value[$id_field])){
@@ -5034,6 +5183,12 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
   /*
 * Retrieve text for contribution type from pseudoconstant
 */
+  /**
+   * @param $value
+   * @param $row
+   *
+   * @return string
+   */
   function alterNickName($value, &$row) {
     if(empty($row['civicrm_contact_id'])){
       return;
@@ -5046,6 +5201,12 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
   /*
    * Retrieve text for contribution type from pseudoconstant
   */
+  /**
+   * @param $value
+   * @param $row
+   *
+   * @return string
+   */
   function alterFinancialType($value, &$row) {
     $fn = $this->financialTypePseudoConstant;
     return is_string(CRM_Contribute_PseudoConstant::$fn($value, FALSE)) ? CRM_Contribute_PseudoConstant::$fn($value, FALSE) : '';
@@ -5054,12 +5215,24 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
   /*
 * Retrieve text for contribution status from pseudoconstant
 */
+  /**
+   * @param $value
+   * @param $row
+   *
+   * @return array
+   */
   function alterContributionStatus($value, &$row) {
     return CRM_Contribute_PseudoConstant::contributionStatus($value);
   }
   /*
 * Retrieve text for payment instrument from pseudoconstant
 */
+  /**
+   * @param $value
+   * @param $row
+   *
+   * @return array
+   */
   function alterEventType($value, &$row) {
     return CRM_Event_PseudoConstant::eventType($value);
   }
@@ -5097,14 +5270,34 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
   }
 
 
+  /**
+   * @param $value
+   * @param $row
+   *
+   * @return array|string
+   */
   function alterMembershipTypeID($value, &$row) {
     return is_string(CRM_Member_PseudoConstant::membershipType($value, FALSE)) ? CRM_Member_PseudoConstant::membershipType($value, FALSE) : '';
   }
 
+  /**
+   * @param $value
+   * @param $row
+   *
+   * @return array|string
+   */
   function alterMembershipStatusID($value, &$row) {
     return is_string(CRM_Member_PseudoConstant::membershipStatus($value, FALSE)) ? CRM_Member_PseudoConstant::membershipStatus($value, FALSE) : '';
   }
 
+  /**
+   * @param $value
+   * @param $row
+   * @param $selectedfield
+   * @param $criteriaFieldName
+   *
+   * @return array
+   */
   function alterCountryID($value, &$row, $selectedfield, $criteriaFieldName) {
     $url = CRM_Utils_System::url(CRM_Utils_System::currentPath(), "reset=1&force=1&{$criteriaFieldName}_op=in&{$criteriaFieldName}_value={$value}", $this->_absoluteUrl);
     $row[$selectedfield . '_link'] = $url;
@@ -5117,6 +5310,14 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
     }
   }
 
+  /**
+   * @param $value
+   * @param $row
+   * @param $selectedfield
+   * @param $criteriaFieldName
+   *
+   * @return array
+   */
   function alterCountyID($value, &$row,$selectedfield, $criteriaFieldName) {
     $url = CRM_Utils_System::url(CRM_Utils_System::currentPath(), "reset=1&force=1&{$criteriaFieldName}_op=in&{$criteriaFieldName}_value={$value}", $this->_absoluteUrl);
     $row[$selectedfield . '_link'] = $url;
@@ -5129,11 +5330,27 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
     }
   }
 
+  /**
+   * @param $value
+   * @param $row
+   * @param $selectedfield
+   * @param $criteriaFieldName
+   *
+   * @return mixed
+   */
   function alterGenderID($value, &$row,$selectedfield, $criteriaFieldName) {
     $values = CRM_Contact_BAO_Contact::buildOptions('gender_id');
     return $values[$value];
   }
 
+  /**
+   * @param $value
+   * @param $row
+   * @param $selectedfield
+   * @param $criteriaFieldName
+   *
+   * @return array
+   */
   function alterStateProvinceID($value, &$row, $selectedfield, $criteriaFieldName) {
     $url = CRM_Utils_System::url(CRM_Utils_System::currentPath(), "reset=1&force=1&{$criteriaFieldName}_op=in&{$criteriaFieldName}_value={$value}", $this->_absoluteUrl);
     $row[$selectedfield . '_link'] = $url;

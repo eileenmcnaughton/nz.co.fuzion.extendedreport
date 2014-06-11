@@ -1,10 +1,18 @@
 <?php
+
+/**
+ * Class CRM_Extendedreport_Form_Report_RelationshipExtended
+ */
 class CRM_Extendedreport_Form_Report_RelationshipExtended extends CRM_Extendedreport_Form_Report_ExtendedReport {
   protected $_summary = null;
   protected $_emailField_a = false;
   protected $_emailField_b = false;
   protected $_baseTable = 'civicrm_relationship';
   protected $_primaryContactPrefix = 'contact_a_';
+
+  /**
+   *
+   */
   function __construct() {
     $this->_tagFilter = True;
 
@@ -162,6 +170,12 @@ class CRM_Extendedreport_Form_Report_RelationshipExtended extends CRM_Extendedre
 
     $this->selectableCustomDataFrom();
   }
+
+  /**
+   * @param $rows
+   *
+   * @return mixed
+   */
   function statistics(&$rows) {
     $statistics = parent::statistics($rows);
 
@@ -224,6 +238,10 @@ class CRM_Extendedreport_Form_Report_RelationshipExtended extends CRM_Extendedre
     $this->doTemplateAssignment($rows);
     $this->endPostProcess($rows);
   }
+
+  /**
+   * @param $rows
+   */
   function alterDisplay(&$rows) {
     parent::alterDisplay($rows);
     // custom code to alter rows

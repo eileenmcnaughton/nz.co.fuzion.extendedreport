@@ -47,7 +47,10 @@ class CRM_Extendedreport_Form_Report_Price_Lineitem extends CRM_Extendedreport_F
 
     protected $_aclTable = 'civicrm_contact';
 
-    function __construct($child = 0 ) {
+  /**
+   * @param int $child
+   */
+  function __construct($child = 0 ) {
       if(empty($child)){
         // hack because we are currently using this as base for other report
         // plan is to move functions into Form.php instead & won't be required
@@ -77,7 +80,10 @@ class CRM_Extendedreport_Form_Report_Price_Lineitem extends CRM_Extendedreport_F
     * select from clauses to use (from those advertised using
     * $this->getAvailableJoins())
     */
-    function fromClauses( ) {
+  /**
+   * @return array
+   */
+  function fromClauses( ) {
       return array(
         'priceFieldValue_from_lineItem',
         'priceField_from_lineItem',
@@ -97,7 +103,12 @@ class CRM_Extendedreport_Form_Report_Price_Lineitem extends CRM_Extendedreport_F
        parent::orderBy();
     }
 
-    function statistics( &$rows ) {
+  /**
+   * @param $rows
+   *
+   * @return mixed
+   */
+  function statistics( &$rows ) {
         return parent::statistics( $rows );
     }
 
@@ -105,7 +116,10 @@ class CRM_Extendedreport_Form_Report_Price_Lineitem extends CRM_Extendedreport_F
       parent::postProcess( );
     }
 
-    function alterDisplay( &$rows ) {
+  /**
+   * @param $rows
+   */
+  function alterDisplay( &$rows ) {
        parent::alterDisplay($rows);
 
     }

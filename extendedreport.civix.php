@@ -95,6 +95,9 @@ function _extendedreport_civix_civicrm_upgrade($op, CRM_Queue_Queue $queue = NUL
   }
 }
 
+/**
+ * @return null
+ */
 function _extendedreport_civix_upgrader() {
   if (!file_exists(__DIR__.'/CRM/Extendedreport/Upgrader.php')) {
     return NULL;

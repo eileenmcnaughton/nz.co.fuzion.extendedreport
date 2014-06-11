@@ -1,9 +1,16 @@
 <?php
 
+/**
+ * Class CRM_Extendedreport_Form_Report_Contact_Basiccontact
+ */
 class CRM_Extendedreport_Form_Report_Contact_Basiccontact extends CRM_Extendedreport_Form_Report_ExtendedReport {
   protected $_baseTable = 'civicrm_contact';
   protected $skipACL = false;
   protected $_joinFilters = array('address_from_contact' => array('civicrm_address' =>  'is_primary = 1 '));
+
+  /**
+   *
+   */
   function __construct() {
     $this->_columns = $this->getContactColumns(array(
       'fields' => true,
@@ -26,6 +33,9 @@ class CRM_Extendedreport_Form_Report_Contact_Basiccontact extends CRM_Extendedre
     parent::__construct();
   }
 
+  /**
+   * @return array
+   */
   function fromClauses( ) {
     return array(
       'address_from_contact',

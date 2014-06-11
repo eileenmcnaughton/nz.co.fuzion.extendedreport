@@ -1,9 +1,15 @@
 <?php
 
 
-
+/**
+ * Class CRM_Extendedreport_Form_Report_Price_Contributionbased
+ */
 class CRM_Extendedreport_Form_Report_Price_Contributionbased extends CRM_Extendedreport_Form_Report_ExtendedReport {
   protected $_baseTable = 'civicrm_contribution';
+
+  /**
+   *
+   */
   function __construct() {
     $this->_columns = $this->getContactColumns()
     + $this->getContributionColumns()
@@ -14,6 +20,10 @@ class CRM_Extendedreport_Form_Report_Price_Contributionbased extends CRM_Extende
 
     parent::__construct();
   }
+
+  /**
+   * @return array
+   */
   function fromClauses() {
     return array(
         'lineItem_from_contribution',
