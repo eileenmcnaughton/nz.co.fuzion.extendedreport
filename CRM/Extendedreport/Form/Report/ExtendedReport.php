@@ -48,7 +48,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
 
   /**
    * Fields available to be added as Rows in pivot style report
-   * @property _aggregateHeaderFields array
+   * @property _aggregateRowFields array
    */
   protected $_aggregateRowFields = array();
 
@@ -3786,21 +3786,18 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
             'title' => ts($options['prefix_label'] . 'Street Number'),
             'type' => 1,
             'default' => CRM_Utils_Array::value('street_number', $options['defaults'], FALSE),
-            'name' => 'street_number',
           ),
           $options['prefix'] . 'street_name' => array(
             'name' => 'street_name',
             'title' => ts($options['prefix_label'] . 'Street Name'),
             'type' => 1,
             'default' => CRM_Utils_Array::value('street_name', $options['defaults'], FALSE),
-            'name' => 'street_name',
           ),
           $options['prefix'] . 'street_unit' => array(
             'name' => 'street_unit',
             'title' => ts($options['prefix_label'] . 'Street Unit'),
             'type' => 1,
             'default' => CRM_Utils_Array::value('street_unit', $options['defaults'], FALSE),
-            'name' => 'street_unit',
           ),
           $options['prefix'] . 'city' => array(
             'title' => ts($options['prefix_label'] . 'City'),
