@@ -288,7 +288,6 @@ class CRM_Extendedreport_Form_Report_Pledge_Btbns extends CRM_Extendedreport_For
           continue;
         }
 
-        $row = array();
         foreach ($this->_columnHeaders as $key => $value) {
           if (property_exists($dao, $key)) {
             $rows[$dao->civicrm_pledge_contact_id][$key] = $dao->$key;
@@ -317,7 +316,6 @@ class CRM_Extendedreport_Form_Report_Pledge_Btbns extends CRM_Extendedreport_For
   }
   function buildChart(&$rows) {
     $graphRows = array();
-    $count = 0;
     $display = array();
 
     $current_year = $this->_params['yid_value'];

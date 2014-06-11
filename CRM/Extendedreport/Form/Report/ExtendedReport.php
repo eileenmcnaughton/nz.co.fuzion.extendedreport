@@ -1286,7 +1286,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
         $this->_aclWhere = NULL;
       }
       else {
-        $this->_aclWhere == str_replace("AND {$tableAlias}.is_deleted = 0", '', $this->_aclWhere);
+        $this->_aclWhere = str_replace("AND {$tableAlias}.is_deleted = 0", '', $this->_aclWhere);
       }
     }
   }
@@ -3737,7 +3737,6 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
             'title' => ts($options['prefix_label'] . 'Street Number'),
             'type' => 1,
             'default' => CRM_Utils_Array::value('street_number', $options['defaults'], FALSE),
-            'name' => 'street_number',
             'crm_editable' => array(
               'id_table' => 'civicrm_address',
               'id_field' => 'id',
@@ -3749,7 +3748,6 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
             'title' => ts($options['prefix_label'] . 'Street Name'),
             'type' => 1,
             'default' => CRM_Utils_Array::value('street_name', $options['defaults'], FALSE),
-            'name' => 'street_name',
             'crm_editable' => array(
               'id_table' => 'civicrm_address',
               'id_field' => 'id',
