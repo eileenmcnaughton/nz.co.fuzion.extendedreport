@@ -892,7 +892,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     $this->assign('filters', $filters);
   }
   /**
-   * We have over-riden this to provide the option of setting single date fields with defaults
+   * We have over-ridden this to provide the option of setting single date fields with defaults
    * and the option of setting 'to', 'from' defaults on date fields
    * @param boolean $freeze
    * @return Ambigous <string, multitype:, unknown>
@@ -5019,7 +5019,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
   function alterCrmEditable($value, &$row, $selectedfield, $criteriaFieldName, $specs) {
     $id_field = $specs['id_table'] . '_' . $specs['id_field'];
     if(empty($id_field) || empty($value[$id_field])){
-      return;
+      return $value;
     }
     $entityID = $row[$id_field];
     $entity = $specs['entity'];
