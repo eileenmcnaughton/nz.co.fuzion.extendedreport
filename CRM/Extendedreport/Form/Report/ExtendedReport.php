@@ -2856,46 +2856,56 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    */
   function getPriceFieldValueColumns() {
     return array(
-      'civicrm_price_field_value' =>
-        array(
-          'dao' => $this->getPriceFieldValueBAO(),
-          'fields' => array(
-            'price_field_value_label' =>
-              array(
-                'title' => ts('Price Field Value Label'),
-                'name' => 'label',
-              ),
+      'civicrm_price_field_value' => array(
+        'dao' => $this->getPriceFieldValueBAO(),
+        'fields' => array(
+          'price_field_value_label' =>
+            array(
+              'title' => ts('Price Field Value Label'),
+              'name' => 'label',
+            ),
+          'price_field_value_max_value' => array(
+            'title' => 'Price Option Maximum',
+            'name' => 'max_value',
           ),
-          'filters' =>
+          'price_field_value_financial_type_id' => array(
+            'title' => 'Price Option Financial Type',
+            'name' => 'financial_type_id',
+            'type' => CRM_Utils_Type::T_INT,
+            'alter_display' => 'alterFinancialType',
+          ),
+        ),
+        'filters' => array(
+          'price_field_value_label' =>
             array(
-              'price_field_value_label' =>
-                array(
-                  'title' => ts('Price Fields Value Label'),
-                  'type' => CRM_Utils_Type::T_STRING,
-                  'operator' => 'like',
-                  'name' => 'label',
-                ),
+              'title' => ts('Price Fields Value Label'),
+              'type' => CRM_Utils_Type::T_STRING,
+              'operator' => 'like',
+              'name' => 'label',
             ),
-          'order_bys' =>
-            array(
-              'label' =>
-                array(
-                  'title' => ts('Price Field Value Label'),
-                ),
-            ),
-          'group_bys' =>
+          'price_field_value_financial_type_id' => array(
+            'title' => 'Price Option Financial Type',
+            'name' => 'financial_type_id',
+            'type' => CRM_Utils_Type::T_INT,
+            'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+          )
+        ),
+        'order_bys' => array(
+          'label' => array(
+            'title' => ts('Price Field Value Label'),
+          ),
+        ),
+        'group_bys' => array(
           //note that we have a requirement to group by label such that all 'Promo book' lines
           // are grouped together across price sets but there may be a separate need to group
           // by id so that entries in one price set are distinct from others. Not quite sure what
           // to call the distinction for end users benefit
-            array(
-              'price_field_value_label' =>
-                array(
-                  'title' => ts('Price Field Value Label'),
-                  'name' => 'label',
-                ),
-            ),
+          'price_field_value_label' => array(
+            'title' => ts('Price Field Value Label'),
+            'name' => 'label',
+          ),
         ),
+      ),
     );
   }
 
