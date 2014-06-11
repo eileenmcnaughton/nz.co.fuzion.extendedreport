@@ -20,26 +20,25 @@ class CRM_Extendedreport_Form_Report_ActivityPivot extends CRM_Extendedreport_Fo
     $this->_customGroupExtended['civicrm_activity'] = array(
       'extends' => array('Activity'),
       'filters' => TRUE,
-      'title'  => ts('Activity'),
+      'title' => ts('Activity'),
     );
 
     $this->_columns = $this->getColumns('Activity', array(
-      'fields' => false,)
-    )
- //   + $this->getColumns('Contact', array())
+        'fields' => FALSE,
+      )
+    )//   + $this->getColumns('Contact', array())
     ;
-//    $this->_columns['civicrm_contact']['fields']['id']['required'] = true;
-//    $this->_columns['civicrm_contact']['fields']['gender_id']['no_display'] = true;
-//    $this->_columns['civicrm_contact']['fields']['gender_id']['title'] = 'Gender';
+    //    $this->_columns['civicrm_contact']['fields']['id']['required'] = true;
+    //    $this->_columns['civicrm_contact']['fields']['gender_id']['no_display'] = true;
+    //    $this->_columns['civicrm_contact']['fields']['gender_id']['title'] = 'Gender';
 
-    $this->_aggregateRowFields  = array(
+    $this->_aggregateRowFields = array(
       'activity_civireport:activity_type_id' => 'Activity Type',
       'activity_civireport:result' => 'Activity Result',
       'activity_civireport:subject' => 'Activity Subject',
-//      'civicrm_contact_civireport:gender_id' => 'Gender',
+      //      'civicrm_contact_civireport:gender_id' => 'Gender',
     );
-    $this->_aggregateColumnHeaderFields  = array(
-//      'civicrm_contact_civireport:gender_id' => 'Gender',
+    $this->_aggregateColumnHeaderFields = array(//      'civicrm_contact_civireport:gender_id' => 'Gender',
     );
     parent::__construct();
   }
@@ -47,7 +46,7 @@ class CRM_Extendedreport_Form_Report_ActivityPivot extends CRM_Extendedreport_Fo
   /**
    * @return array
    */
-  function fromClauses( ) {
+  function fromClauses() {
     return array();
   }
 }

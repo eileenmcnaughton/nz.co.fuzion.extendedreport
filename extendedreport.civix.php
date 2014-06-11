@@ -7,22 +7,25 @@
  */
 function _extendedreport_civix_civicrm_config(&$config = NULL) {
   static $configured = FALSE;
-  if ($configured) return;
+  if ($configured) {
+    return;
+  }
   $configured = TRUE;
 
   $template =& CRM_Core_Smarty::singleton();
 
-  $extRoot = dirname( __FILE__ ) . DIRECTORY_SEPARATOR;
+  $extRoot = dirname(__FILE__) . DIRECTORY_SEPARATOR;
   $extDir = $extRoot . 'templates';
 
-  if ( is_array( $template->template_dir ) ) {
-      array_unshift( $template->template_dir, $extDir );
-  } else {
-      $template->template_dir = array( $extDir, $template->template_dir );
+  if (is_array($template->template_dir)) {
+    array_unshift($template->template_dir, $extDir);
+  }
+  else {
+    $template->template_dir = array($extDir, $template->template_dir);
   }
 
-  $include_path = $extRoot . PATH_SEPARATOR . get_include_path( );
-  set_include_path( $include_path );
+  $include_path = $extRoot . PATH_SEPARATOR . get_include_path();
+  set_include_path($include_path);
 }
 
 /**
@@ -99,9 +102,10 @@ function _extendedreport_civix_civicrm_upgrade($op, CRM_Queue_Queue $queue = NUL
  * @return null
  */
 function _extendedreport_civix_upgrader() {
-  if (!file_exists(__DIR__.'/CRM/Extendedreport/Upgrader.php')) {
+  if (!file_exists(__DIR__ . '/CRM/Extendedreport/Upgrader.php')) {
     return NULL;
-  } else {
+  }
+  else {
     return CRM_Extendedreport_Upgrader_Base::instance();
   }
 }
@@ -111,6 +115,7 @@ function _extendedreport_civix_upgrader() {
  *
  * @param $dir string, base dir
  * @param $pattern string, glob pattern, eg "*.txt"
+ *
  * @return array(string)
  */
 function _extendedreport_civix_find_files($dir, $pattern) {
@@ -127,7 +132,8 @@ function _extendedreport_civix_find_files($dir, $pattern) {
       while (FALSE !== ($entry = readdir($dh))) {
         $path = $subdir . DIRECTORY_SEPARATOR . $entry;
         if ($entry == '.' || $entry == '..') {
-        } elseif (is_dir($path)) {
+        }
+        elseif (is_dir($path)) {
           $todos[] = $path;
         }
       }
@@ -136,6 +142,7 @@ function _extendedreport_civix_find_files($dir, $pattern) {
   }
   return $result;
 }
+
 /**
  * (Delegated) Implementation of hook_civicrm_managed
  *

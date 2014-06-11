@@ -5,8 +5,8 @@
  */
 class CRM_Extendedreport_Form_Report_Contact_Extendedcontact extends CRM_Extendedreport_Form_Report_ExtendedReport {
   protected $_baseTable = 'civicrm_contact';
-  protected $skipACL = true;
-  protected $_customGroupAggregates = true;
+  protected $skipACL = TRUE;
+  protected $_customGroupAggregates = TRUE;
 
 
   /**
@@ -14,10 +14,11 @@ class CRM_Extendedreport_Form_Report_Contact_Extendedcontact extends CRM_Extende
    */
   function __construct() {
     $this->_columns = $this->getContactColumns(array(
-      'fields' => false,
-      'order_by' => false)
+        'fields' => FALSE,
+        'order_by' => FALSE
+      )
     );
-    $this->_columns['civicrm_contact']['fields']['id']['required'] = true;
+    $this->_columns['civicrm_contact']['fields']['id']['required'] = TRUE;
     parent::__construct();
   }
 }

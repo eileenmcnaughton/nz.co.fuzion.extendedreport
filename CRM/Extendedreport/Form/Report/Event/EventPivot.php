@@ -5,8 +5,8 @@
  */
 class CRM_Extendedreport_Form_Report_Event_EventPivot extends CRM_Extendedreport_Form_Report_ExtendedReport {
   protected $_baseTable = 'civicrm_participant';
-  protected $skipACL = true;
-  protected $_customGroupAggregates = true;
+  protected $skipACL = TRUE;
+  protected $_customGroupAggregates = TRUE;
   protected $_aggregatesIncludeNULL = TRUE;
   protected $_aggregatesAddTotal = TRUE;
   protected $_rollup = 'WITH ROLLUP';
@@ -23,24 +23,25 @@ class CRM_Extendedreport_Form_Report_Event_EventPivot extends CRM_Extendedreport
     $this->_customGroupExtended['civicrm_event'] = array(
       'extends' => array('Event'),
       'filters' => TRUE,
-      'title'  => ts('Event'),
+      'title' => ts('Event'),
     );
     $this->_customGroupExtended['civicrm_participant'] = array(
       'extends' => array('Participant'),
       'filters' => TRUE,
-      'title'  => ts('Participant'),
+      'title' => ts('Participant'),
     );
 
     $this->_columns = $this->getColumns('Event', array(
-      'fields' => false,)
-    )
-    + $this->getColumns('Participant', array('fields' => false,))
-    + $this->getColumns('Contact', array('fields' => false,));
-    $this->_columns['civicrm_event']['fields']['id']['required'] = true;
+          'fields' => FALSE,
+        )
+      )
+      + $this->getColumns('Participant', array('fields' => FALSE,))
+      + $this->getColumns('Contact', array('fields' => FALSE,));
+    $this->_columns['civicrm_event']['fields']['id']['required'] = TRUE;
     $this->_columns['civicrm_event']['fields']['id']['alter_display'] = 'alterEventID';
     $this->_columns['civicrm_event']['fields']['id']['title'] = 'Event';
 
-    $this->_aggregateRowFields  = array(
+    $this->_aggregateRowFields = array(
       'event_civireport:id' => 'Event',
     );
 
@@ -54,7 +55,7 @@ class CRM_Extendedreport_Form_Report_Event_EventPivot extends CRM_Extendedreport
   /**
    * @return array
    */
-  function fromClauses( ) {
+  function fromClauses() {
     return array(
       'event_from_participant',
       'contact_from_participant',

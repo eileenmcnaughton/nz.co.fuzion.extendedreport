@@ -4,14 +4,14 @@
  * Class CRM_Extendedreport_Form_Report_ActivityExtended
  */
 class CRM_Extendedreport_Form_Report_ActivityExtended extends CRM_Extendedreport_Form_Report_ExtendedReport {
-//todo move def to getActivityColumns
+  //todo move def to getActivityColumns
   /**
    * @var array
    */
   protected $_customGroupExtended = array(
     'civicrm_activity' => array(
       'extends' => array('Activity'),
-      'title'  => 'Activity',
+      'title' => 'Activity',
       'filters' => TRUE,
     ),
   );
@@ -45,11 +45,24 @@ class CRM_Extendedreport_Form_Report_ActivityExtended extends CRM_Extendedreport
    * @todo allow filtering on other contacts
    */
   function __construct() {
-    $this->_columns = $this->getContactColumns(array('prefix' => '', 'prefix_label' => 'Source Contact ::', 'filters' => TRUE))
-    + $this->getContactColumns(array('prefix' => 'target_', 'group_by' => TRUE, 'prefix_label' => 'Target Contact ::', 'filters' => FALSE))
-    + $this->getContactColumns(array('prefix' => 'assignee_', 'prefix_label' => 'Assignee Contact ::', 'filters' => FALSE))
+    $this->_columns = $this->getContactColumns(array(
+          'prefix' => '',
+          'prefix_label' => 'Source Contact ::',
+          'filters' => TRUE
+        ))
+      + $this->getContactColumns(array(
+          'prefix' => 'target_',
+          'group_by' => TRUE,
+          'prefix_label' => 'Target Contact ::',
+          'filters' => FALSE
+        ))
+      + $this->getContactColumns(array(
+          'prefix' => 'assignee_',
+          'prefix_label' => 'Assignee Contact ::',
+          'filters' => FALSE
+        ))
 
-    + $this->getActivityColumns();
+      + $this->getActivityColumns();
     parent::__construct();
   }
 
@@ -64,16 +77,16 @@ class CRM_Extendedreport_Form_Report_ActivityExtended extends CRM_Extendedreport
     $this->joinActivityAssigneeFromActivity();
     $this->joinActivitySourceFromActivity();
     $this->_from .= " {$this->_aclFrom} ";
-   if ($this->isTableSelected('civicrm_case')) {
-     $this->_from .= "
+    if ($this->isTableSelected('civicrm_case')) {
+      $this->_from .= "
        LEFT JOIN civicrm_case_activity case_activity_civireport
          ON case_activity_civireport.activity_id = {$this->_aliases['civicrm_activity']}.id
        LEFT JOIN civicrm_case
          ON case_activity_civireport.case_id = civicrm_case.id ";
     }
 
-   if ($this->isTableSelected('civicrm_email')) {
-     $this->_from .= "
+    if ($this->isTableSelected('civicrm_email')) {
+      $this->_from .= "
        LEFT JOIN civicrm_email civicrm_email_source
          ON {$this->_aliases['civicrm_activity']}.source_contact_id = civicrm_email_source.contact_id
          AND civicrm_email_source.is_primary = 1

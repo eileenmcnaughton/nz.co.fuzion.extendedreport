@@ -33,85 +33,86 @@
  * $Id$
  *
  */
-
 class CRM_Extendedreport_Form_Report_Price_Lineitemparticipant extends CRM_Extendedreport_Form_Report_ExtendedReport {
-    protected $_addressField = false;
+  protected $_addressField = FALSE;
 
-    protected $_emailField   = false;
+  protected $_emailField = FALSE;
 
-    protected $_summary      = null;
+  protected $_summary = NULL;
 
-    protected $_customGroupExtends = array( 'Participant', 'Individual' , 'Contact');
+  protected $_customGroupExtends = array('Participant', 'Individual', 'Contact');
 
-    protected $_baseTable = 'civicrm_line_item';
+  protected $_baseTable = 'civicrm_line_item';
 
-    protected $_aclTable = 'civicrm_contact';
+  protected $_aclTable = 'civicrm_contact';
 
   /**
    *
    */
   function __construct() {
-       $this->_columns = $this->getContactColumns()
-        + $this->getEventColumns()
-        + $this->getParticipantColumns()
-        + $this->getContributionColumns()
-        + $this->getPriceFieldColumns()
-        + $this->getPriceFieldValueColumns()
-        + $this->getLineItemColumns();
-        parent::__construct( );
-    }
+    $this->_columns = $this->getContactColumns()
+      + $this->getEventColumns()
+      + $this->getParticipantColumns()
+      + $this->getContributionColumns()
+      + $this->getPriceFieldColumns()
+      + $this->getPriceFieldValueColumns()
+      + $this->getLineItemColumns();
+    parent::__construct();
+  }
 
-    function preProcess( ) {
-        parent::preProcess( );
-    }
+  function preProcess() {
+    parent::preProcess();
+  }
 
-    function select( ) {
-        parent::select( ); }
+  function select() {
+    parent::select();
+  }
 
-       /*
-    * select from clauses to use (from those advertised using
-    * $this->getAvailableJoins())
-    */
+  /*
+* select from clauses to use (from those advertised using
+* $this->getAvailableJoins())
+*/
   /**
    * @return array
    */
-  function fromClauses( ) {
-      return array(
-        'priceFieldValue_from_lineItem',
-        'priceField_from_lineItem',
-        'participant_from_lineItem',
-        'contribution_from_participant',
-        'contact_from_participant',
-        'event_from_participant'
-      );
-    }
-    function groupBy( ) {
-       parent::groupBy();
+  function fromClauses() {
+    return array(
+      'priceFieldValue_from_lineItem',
+      'priceField_from_lineItem',
+      'participant_from_lineItem',
+      'contribution_from_participant',
+      'contact_from_participant',
+      'event_from_participant'
+    );
+  }
 
-    }
+  function groupBy() {
+    parent::groupBy();
 
-    function orderBy( ) {
-       parent::orderBy();
-    }
+  }
+
+  function orderBy() {
+    parent::orderBy();
+  }
 
   /**
    * @param $rows
    *
    * @return mixed
    */
-  function statistics( &$rows ) {
-        return parent::statistics( $rows );
-    }
+  function statistics(&$rows) {
+    return parent::statistics($rows);
+  }
 
-    function postProcess( ) {
-      parent::postProcess( );
-    }
+  function postProcess() {
+    parent::postProcess();
+  }
 
   /**
    * @param $rows
    */
-  function alterDisplay( &$rows ) {
-       parent::alterDisplay($rows);
+  function alterDisplay(&$rows) {
+    parent::alterDisplay($rows);
 
-    }
+  }
 }
