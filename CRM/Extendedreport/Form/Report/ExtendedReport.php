@@ -3384,6 +3384,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
             'statistics' => array('sum' => ts('Total Amount')),
             'type' => CRM_Utils_Type::T_MONEY,
           ),
+          'check_number' => NULL,
         );
     }
     $fields['civicrm_contribution']['filters'] =
