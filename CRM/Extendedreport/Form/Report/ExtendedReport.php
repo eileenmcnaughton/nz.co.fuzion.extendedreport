@@ -812,7 +812,9 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
         if (array_key_exists('group_bys', $table)) {
           foreach ($table['group_bys'] as $fieldName => $field) {
             if (CRM_Utils_Array::value($fieldName, $this->_params['group_bys'])) {
-              $this->_groupByArray[] = $field['dbAlias'];
+              if (!in_array($field['dbAlias'], $this->_groupByArray)) {
+                $this->_groupByArray[$tableName . '_' . $fieldName] = $field['dbAlias'];
+              }
             }
           }
         }
