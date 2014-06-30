@@ -47,20 +47,15 @@ class CRM_Extendedreport_Form_Report_Price_Lineitem extends CRM_Extendedreport_F
   protected $_aclTable = 'civicrm_contact';
 
   /**
-   * @param int $child
    */
-  function __construct($child = 0) {
-    if (empty($child)) {
-      // hack because we are currently using this as base for other report
-      // plan is to move functions into Form.php instead & won't be required
-      $this->_columns = $this->getColumns('Contact')
-        + $this->getColumns('Event')
-        + $this->getColumns('Participant')
-        + $this->getColumns('Contribution', array('group_by' => TRUE))
-        + $this->getColumns('PriceField')
-        + $this->getColumns('PriceFieldValue')
-        + $this->getColumns('LineItem');
-    }
+  function __construct() {
+    $this->_columns = $this->getColumns('Contact')
+      + $this->getColumns('Event')
+      + $this->getColumns('Participant')
+      + $this->getColumns('Contribution', array('order_by' => TRUE))
+      + $this->getColumns('PriceField', array('order_by' => TRUE))
+      + $this->getColumns('PriceFieldValue' , array('order_by' => TRUE))
+      + $this->getColumns('LineItem', array('order_by' => TRUE));
     parent::__construct();
   }
 
