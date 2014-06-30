@@ -2812,6 +2812,33 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
   }
 
   /**
+   * @param array $specs
+   * @param string $tableName
+   * @param string $tableAlias
+   * @param string $daoName
+   *
+   * @return array
+   */
+  function buildColumns($specs, $tableName, $tableAlias = '', $daoName = NULL) {
+    $types = array('fields', 'filters', 'group_bys', 'order_bys');
+    $columns = array($tableName => array_fill_keys($types, array()));
+    if (!empty($daoName)) {
+      $columns[$tableName]['dao'] = $daoName;
+    }
+
+    foreach ($specs as $specName => $spec) {
+      $this->_fieldSpecs[$specName] = $spec;
+      foreach ($types as $type) {
+        if (!empty($spec['is_' . $type])) {
+          $columns[$tableName][$type][$specName] = $spec;
+        }
+      }
+    }
+
+    return $columns;
+  }
+
+  /**
    * @return array
    */
   function getLineItemColumns() {
