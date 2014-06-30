@@ -2303,39 +2303,40 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
       return;
     }
     $selectedFields = array_keys($firstRow);
-    $alterfunctions = $altermap = array();
-    foreach ($this->_columns as $tablename => $table) {
+    $alterFunctions = $alterMap = array();
+
+    foreach ($this->_columns as $tableName => $table) {
       if (array_key_exists('fields', $table)) {
         foreach ($table['fields'] as $field => $specs) {
-          if (in_array($tablename . '_' . $field, $selectedFields)) {
+          if (in_array($tableName . '_' . $field, $selectedFields)) {
             if (array_key_exists('alter_display', $specs)) {
-              $alterfunctions[$tablename . '_' . $field] = $specs['alter_display'];
-              $altermap[$tablename . '_' . $field] = $field;
-              $alterspecs[$tablename . '_' . $field] = NULL;
+              $alterFunctions[$tableName . '_' . $field] = $specs['alter_display'];
+              $alterMap[$tableName . '_' . $field] = $field;
+              $alterSpecs[$tableName . '_' . $field] = NULL;
             }
             if ($this->_editableFields && array_key_exists('crm_editable', $specs)) {
               //id key array is what the array would look like if the ONLY group by field is our id field
               // in which case it should be editable - in any other group by scenario it shouldn't be
               $idKeyArray = array($this->_aliases[$specs['crm_editable']['id_table']] . "." . $specs['crm_editable']['id_field']);
               if (empty($this->_groupByArray) || $this->_groupByArray == $idKeyArray) {
-                $alterfunctions[$tablename . '_' . $field] = 'alterCrmEditable';
-                $altermap[$tablename . '_' . $field] = $field;
-                $alterspecs[$tablename . '_' . $field] = $specs['crm_editable'];
+                $alterFunctions[$tableName . '_' . $field] = 'alterCrmEditable';
+                $alterMap[$tableName . '_' . $field] = $field;
+                $alterSpecs[$tableName . '_' . $field] = $specs['crm_editable'];
               }
             }
           }
         }
       }
     }
-    if (empty($alterfunctions)) {
+    if (empty($alterFunctions)) {
       // - no manipulation to be done
       return;
     }
 
     foreach ($rows as $index => & $row) {
-      foreach ($row as $selectedfield => $value) {
-        if (array_key_exists($selectedfield, $alterfunctions)) {
-          $rows[$index][$selectedfield] = $this->$alterfunctions[$selectedfield]($value, $row, $selectedfield, $altermap[$selectedfield], $alterspecs[$selectedfield]);
+      foreach ($row as $selectedField => $value) {
+        if (array_key_exists($selectedField, $alterFunctions)) {
+          $rows[$index][$selectedField] = $this->$alterFunctions[$selectedField]($value, $row, $selectedField, $alterMap[$selectedField], $alterSpecs[$selectedField]);
         }
       }
     }
