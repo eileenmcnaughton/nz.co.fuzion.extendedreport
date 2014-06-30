@@ -946,7 +946,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    *
    * @param boolean $freeze
    *
-   * @return Ambigous <string, multitype:, unknown>
+   * @return array
    */
   function setDefaultValues($freeze = TRUE) {
     $freezeGroup = array();
@@ -3380,7 +3380,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    *
    * @param array|\unknown_type $options
    *
-   * @return Ambigous <multitype:multitype:NULL  , multitype:multitype:string  multitype:NULL  multitype:string NULL  , multitype:multitype:string  multitype:NULL string  multitype:number string boolean multitype:string  NULL  multitype:NULL  multitype:string NULL  >
+   * @return array
    */
   function getContributionColumns($options = array()) {
     $defaultOptions = array(
@@ -3520,7 +3520,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    *
    * @param array $options
    *
-   * @return Ambigous <multitype:multitype:NULL  , multitype:multitype:string  multitype:NULL  multitype:string NULL  , multitype:multitype:string  multitype:NULL string  multitype:number string boolean multitype:string  NULL  multitype:NULL  multitype:string NULL  >
+   * @return array
    */
   function getContributionSummaryColumns($options = array()) {
     $defaultOptions = array(
