@@ -3442,7 +3442,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     $fields['civicrm_contribution']['filters'] =
       array(
         'receive_date' => array(
-          'operatorType' => CRM_Report_Form::OP_DATE
+          'operatorType' => CRM_Report_Form::OP_DATETIME
         ),
         'contribution_status_id' =>
           array(
