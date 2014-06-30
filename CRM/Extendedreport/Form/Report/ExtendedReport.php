@@ -14,6 +14,15 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   protected $_customGroupExtends = array();
   protected $_baseTable = 'civicrm_contact';
   protected $_editableFields = TRUE;
+  protected $_rollup = ' WITH ROLLUP ';
+  protected $_fieldSpecs = array();
+
+  protected $_customFields = array();
+
+  /**
+   * @var string
+   */
+  protected $_from;
 
   /**
    * Flag to indicate if result-set is to be stored in a class variable which could be retrieved using getResultSet() method.
@@ -135,6 +144,8 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    */
   protected $_skipACLContactDeletedClause = FALSE;
   protected $whereClauses = array();
+
+  protected $_groupByArray = array();
 
   /**
    *
@@ -764,7 +775,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     return array();
   }
 
-  /*
+  /**
    * We're overriding the parent class so we can populate a 'group_by' array for other functions use
    * e.g. editable fields are turned off when groupby is used
    */
@@ -1231,7 +1242,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    * Add an extra row with percentages for a single row result to the chart (this is where
    * there is no grandTotal row
    *
-   * @param array rows
+   * @param array $rows
    */
   private function addAggregatePercentRow($rows) {
     if (!empty($this->_aggregatesAddPercentage) && count($rows) == 1 && $this->_aggregatesAddTotal) {
@@ -1277,6 +1288,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     if (isset($this->_aliases[$this->_primaryContactPrefix . 'civicrm_contact'])) {
       $this->_aliases['civicrm_contact'] = $this->_aliases[$this->_primaryContactPrefix . 'civicrm_contact'];
     }
+
     $this->processReportMode();
   }
 
@@ -2149,6 +2161,13 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
   /**
    * here we can define select clauses for any particular row. At this stage we are going
    * to csv tags
+   *
+   * @param string $tableName
+   * @param string $tableKey
+   * @param string $fieldName
+   * @param array $field
+   *
+   * @return bool|string
    */
   function selectClause(&$tableName, $tableKey, &$fieldName, &$field) {
     if ($fieldName == 'phone') {
@@ -2563,8 +2582,8 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    * We are experiencing CRM_Utils_Get to be broken on handling date defaults but 'fixing' doesn't seem to
    * work well on core reports - running fn from here
    *
-   * @param unknown_type $fieldGrp
-   * @param unknown_type $defaults
+   * @param array $fieldGrp
+   * @param array $defaults
    */
   function processFilter(&$fieldGrp, &$defaults) {
     // process only filters for now
