@@ -2176,6 +2176,7 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
       $alias = "{$tableName}_{$fieldName}";
       $this->_columnHeaders["{$tableName}_{$fieldName}"]['title'] = CRM_Utils_Array::value('title', $field);
       $this->_columnHeaders["{$tableName}_{$fieldName}"]['type'] = CRM_Utils_Array::value('type', $field);
+      $this->_columnHeaders["{$tableName}_{$fieldName}"]['dbAlias'] = CRM_Utils_Array::value('dbAlias', $field);
       $this->_selectAliases[] = $alias;
       $this->_columnHeaders['civicrm_tag_tag_name'];
       return " GROUP_CONCAT(CONCAT({$field['dbAlias']},':', phone_civireport.location_type_id, ':', phone_civireport.phone_type_id) ) as $alias";
@@ -2267,7 +2268,9 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
       return;
     }
     $this->_select = "SELECT {$tableAlias}.{$fieldName} as $fieldAlias ";
-    $this->_groupByArray[] = $fieldAlias;
+    if (!in_array($fieldAlias, $this->_groupByArray)) {
+      $this->_groupByArray[] = $fieldAlias;
+    }
     $this->_groupBy = "GROUP BY $fieldAlias " . $this->_rollup;
     $this->_columnHeaders[$fieldAlias] = array('title' => $title,);
     $key = array_search($fieldAlias, $this->_noDisplay);
