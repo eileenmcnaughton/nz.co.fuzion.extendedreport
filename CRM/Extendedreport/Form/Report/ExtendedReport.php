@@ -2953,58 +2953,32 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    * @return array
    */
   function getPriceFieldValueColumns() {
-    return array(
-      'civicrm_price_field_value' => array(
-        'dao' => $this->getPriceFieldValueBAO(),
-        'fields' => array(
-          'price_field_value_label' =>
-            array(
-              'title' => ts('Price Field Value Label'),
-              'name' => 'label',
-            ),
-          'price_field_value_max_value' => array(
-            'title' => 'Price Option Maximum',
-            'name' => 'max_value',
-          ),
-          'price_field_value_financial_type_id' => array(
-            'title' => 'Price Option Financial Type',
-            'name' => 'financial_type_id',
-            'type' => CRM_Utils_Type::T_INT,
-            'alter_display' => 'alterFinancialType',
-          ),
-        ),
-        'filters' => array(
-          'price_field_value_label' =>
-            array(
-              'title' => ts('Price Fields Value Label'),
-              'type' => CRM_Utils_Type::T_STRING,
-              'operator' => 'like',
-              'name' => 'label',
-            ),
-          'price_field_value_financial_type_id' => array(
-            'title' => 'Price Option Financial Type',
-            'name' => 'financial_type_id',
-            'type' => CRM_Utils_Type::T_INT,
-            'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-          )
-        ),
-        'order_bys' => array(
-          'label' => array(
-            'title' => ts('Price Field Value Label'),
-          ),
-        ),
-        'group_bys' => array(
-          //note that we have a requirement to group by label such that all 'Promo book' lines
-          // are grouped together across price sets but there may be a separate need to group
-          // by id so that entries in one price set are distinct from others. Not quite sure what
-          // to call the distinction for end users benefit
-          'price_field_value_label' => array(
-            'title' => ts('Price Field Value Label'),
-            'name' => 'label',
-          ),
-        ),
+    $specs = array(
+      'price_field_value_label' => array(
+        'title' => ts('Price Field Value Label'),
+        'name' => 'label',
+        'type' => CRM_Utils_Type::T_STRING,
+        'name' => 'label',
+        'is_filters' => TRUE,
+        'is_order_bys' => TRUE,
+        'is_fields' => TRUE,
+        'is_group_bys' => TRUE,
+      ),
+      'price_field_value_max_value' => array(
+        'title' => 'Price Option Maximum',
+        'name' => 'max_value',
+        'is_field' => TRUE,
+      ),
+      'price_field_value_financial_type_id' => array(
+        'title' => 'Price Option Financial Type',
+        'name' => 'financial_type_id',
+        'type' => CRM_Utils_Type::T_INT,
+        'alter_display' => 'alterFinancialType',
+        'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+        'is_field' => TRUE,
       ),
     );
+    return $this->buildColumns($specs, 'civicrm_price_field_value', '', $this->getPriceFieldValueBAO());
   }
 
   /**
@@ -3424,141 +3398,89 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
 
   /**
    *
-   * @param array|\unknown_type $options
+   * @param array
    *
    * @return array
    */
-  function getContributionColumns($options = array()) {
-    $defaultOptions = array(
-      'prefix' => '',
-      'prefix_label' => '',
-      'fields' => TRUE,
-      'group_by' => FALSE,
-      'order_by' => TRUE,
-      'filters' => TRUE,
-      'defaults' => array(),
-    );
+  function getContributionColumns() {
     $this->setFinancialType();
-    $options = array_merge($defaultOptions, $options);
     $pseudoMethod = $this->financialTypePseudoConstant;
-    $fields = array(
-      'civicrm_contribution' => array(
-        'dao' => 'CRM_Contribute_DAO_Contribution',
-        'grouping' => 'contribution-fields',
-      )
+
+    $specs = array(
+      'contribution_id' => array(
+        'title' => ts('Contribution ID'),
+        'name' => 'id',
+        'is_filters' => TRUE,
+        'is_order_bys' => TRUE,
+        'is_fields' => TRUE,
+        'is_group_bys' => TRUE,
+      ),
+      'contribution_' . $this->financialTypeField => array(
+        'title' => ts($this->financialTypeLabel),
+        'type' => CRM_Utils_Type::T_INT,
+        'alter_display' => 'alterFinancialType',
+        'name' => $this->financialTypeField,
+        'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+        'options' => CRM_Contribute_PseudoConstant::$pseudoMethod(),
+        'type' => CRM_Utils_Type::T_INT,
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+        'is_order_bys' => TRUE,
+        'is_group_by' => TRUE,
+      ),
+      'payment_instrument_id' => array(
+        'title' => ts('Payment Instrument'),
+        'type' => CRM_Utils_Type::T_INT,
+        'alter_display' => 'alterPaymentType',
+        'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+        'options' => CRM_Contribute_PseudoConstant::paymentInstrument(),
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+        'is_order_by' => TRUE,
+        'is_group_by' => TRUE,
+      ),
+      'contribution_status_id' => array(
+        'title' => ts('Contribution Status'),
+        'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+        'options' => CRM_Contribute_PseudoConstant::contributionStatus(),
+        'type' => CRM_Utils_Type::T_INT,
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+      ),
+      'contribution_campaign_id' => array(
+        'title' => ts('Campaign'),
+        'type' => CRM_Utils_Type::T_INT,
+        'name' => 'campaign_id',
+        'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+        'options' => CRM_Campaign_BAO_Campaign::getCampaigns(),
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+      ),
+      'contribution_source' => array(
+        'title' => 'Contribution Source',
+        'name' => 'source',
+        'is_fields' => TRUE,
+      ),
+      'trxn_id' => array('is_fields' => TRUE),
+      'receive_date' => array(
+        'type' => CRM_Utils_Type::T_DATE + CRM_Utils_Type::T_TIME,
+        'operatorType' => CRM_Report_Form::OP_DATETIME,
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+      ),
+      'receipt_date' => array('is_fields' => TRUE),
+      'fee_amount' => array('is_fields' => TRUE),
+      'net_amount' => array('is_fields' => TRUE),
+      'total_amount' => array(
+        'title' => ts('Contribution Amount'),
+        'statistics' => array('sum' => ts('Total Amount')),
+        'type' => CRM_Utils_Type::T_MONEY,
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+      ),
+      'check_number' => array('is_fields' => TRUE),
     );
-
-    if ($options['fields']) {
-      $fields['civicrm_contribution']['fields'] =
-        array(
-          'contribution_id' => array(
-            'title' => ts('Contribution ID'),
-            'name' => 'id',
-          ),
-          $this->financialTypeField => array(
-            'title' => ts($this->financialTypeLabel),
-            'type' => CRM_Utils_Type::T_INT,
-            'alter_display' => 'alterFinancialType',
-          ),
-          'payment_instrument_id' => array(
-            'title' => ts('Payment Instrument'),
-            'type' => CRM_Utils_Type::T_INT,
-            'alter_display' => 'alterPaymentType',
-          ),
-          'campaign_id' => array(
-            'title' => ts('Campaign'),
-            'type' => CRM_Utils_Type::T_INT,
-            //@todo write this column
-            //   'alter_display' => 'alterCampaign',
-          ),
-          'source' => array('title' => 'Contribution Source'),
-          'trxn_id' => NULL,
-          'receive_date' => array('default' => TRUE),
-          'receipt_date' => NULL,
-          'fee_amount' => NULL,
-          'net_amount' => NULL,
-          'total_amount' => array(
-            'title' => ts('Amount'),
-            'statistics' => array('sum' => ts('Total Amount')),
-            'type' => CRM_Utils_Type::T_MONEY,
-          ),
-          'check_number' => NULL,
-        );
-    }
-    $fields['civicrm_contribution']['filters'] =
-      array(
-        'receive_date' => array(
-          'operatorType' => CRM_Report_Form::OP_DATETIME
-        ),
-        'contribution_status_id' =>
-          array(
-            'title' => ts('Contribution Status'),
-            'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-            'options' => CRM_Contribute_PseudoConstant::contributionStatus(),
-            'type' => CRM_Utils_Type::T_INT,
-          ),
-        $this->financialTypeField => array(
-          'title' => ts($this->financialTypeLabel),
-          'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-          'options' => CRM_Contribute_PseudoConstant::$pseudoMethod(),
-          'type' => CRM_Utils_Type::T_INT,
-        ),
-        'payment_instrument_id' => array(
-          'title' => ts('Payment Type'),
-          'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-          'options' => CRM_Contribute_PseudoConstant::paymentInstrument(),
-          'type' => CRM_Utils_Type::T_INT,
-        ),
-        'total_amount' => array(
-          'title' => ts('Contribution Amount'),
-          'type' => CRM_Utils_Type::T_MONEY,
-        ),
-        'campaign_id' => array(
-          'title' => ts('Campaign'),
-          'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-          'type' => CRM_Utils_Type::T_INT,
-          'options' => CRM_Campaign_BAO_Campaign::getCampaigns(),
-        ),
-        /*          'contribution_is_test' =>  array(
-                    'type' => CRM_Report_Form::OP_INT,
-                    'operatorType' => CRM_Report_Form::OP_SELECT,
-                    'title' => ts("Contribution Mode"),
-                    'default' => 0,
-                    'name' => 'is_test',
-                    'hidden' => TRUE,
-                    'options' => array('0' => 'Live', '1' => 'Test'),
-                  ),
-                  */
-
-      );
-    if ($options['order_by']) {
-      $fields['civicrm_contribution']['order_bys'] =
-        array(
-          'payment_instrument_id' =>
-            array(
-              'title' => ts('Payment Instrument'),
-            ),
-          $this->financialTypeField => array(
-            'title' => ts($this->financialTypeLabel),
-          )
-        );
-    }
-    if ($options['group_by']) {
-      $fields['civicrm_contribution']['group_bys'] =
-        array(
-          $this->financialTypeField =>
-            array('title' => ts($this->financialTypeLabel)),
-          'payment_instrument_id' =>
-            array('title' => ts('Payment Instrument')),
-          'contribution_id' =>
-            array(
-              'title' => ts('Individual Contribution'),
-              'name' => 'id',
-            ),
-          'source' => array('title' => 'Contribution Source'),
-        );
-    }
-    return $fields;
+    return $this->buildColumns($specs, 'civicrm_contribution', '', 'CRM_Contribute_DAO_Contribution');
   }
 
   /**
@@ -4342,7 +4264,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'country_id' => TRUE
       ),
     );
-    $options = array_merge($defaultOptions, $options);
+
     $activityFields = array(
       'civicrm_activity' => array(
         'grouping' => 'activity-fields',
