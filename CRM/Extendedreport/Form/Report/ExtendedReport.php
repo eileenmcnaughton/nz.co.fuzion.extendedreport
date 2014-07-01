@@ -63,20 +63,20 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
 
   /**
    * Include NULL values in aggregate (pivot) fields
-   * @property _aggregatesIncludeNULL boolean
+   * @var _aggregatesIncludeNULL boolean
    */
   protected $_aggregatesIncludeNULL = TRUE;
 
 
   /**
    * Allow the aggregate column to be unset which will just give totalss
-   * @property _aggregatesIncludeNULL boolean
+   * @var _aggregatesColumnsOptions boolean
    */
   protected $_aggregatesColumnsOptions = TRUE;
 
   /**
    * Add a total column to aggregate (pivot) fields
-   * @property _aggregatesAddTotal boolean
+   * @var _aggregatesAddTotal boolean
    */
   protected $_aggregatesAddTotal = TRUE;
   /**
