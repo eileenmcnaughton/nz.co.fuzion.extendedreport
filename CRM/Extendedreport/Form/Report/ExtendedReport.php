@@ -792,6 +792,11 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
           $this->_groupBy .= ", " . $section['dbAlias'];
         }
       }
+      if (!empty($this->_statFields) &&
+        (count($this->_groupBy) <= 1) || !$this->_having
+      ) {
+        $this->_rollup = " WITH ROLLUP";
+      }
       $this->_groupBy .= ' ' . $this->_rollup;
     }
   }
@@ -2302,6 +2307,10 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
     if (empty($firstRow)) {
       return;
     }
+    if ($this->_rollup) {
+      //we don't have a way to unset rows later down so we'll start here
+      $this->alterRollupRows($rows);
+    }
     $selectedFields = array_keys($firstRow);
     $alterFunctions = $alterMap = array();
 
@@ -2341,7 +2350,44 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
       }
     }
   }
-  /*
+
+  /**
+   * @param $rows
+   */
+  function alterRollupRows(&$rows){
+    $statLayers = count($this->_groupByArray);
+    $groupBys = array_reverse(array_fill_keys(array_keys($this->_groupByArray), NULL));
+    $altered = array();
+    //I don't know that this precaution is required?          $this->fixSubTotalDisplay($rows[$rowNum], $this->_statFields);
+    if (count($this->_statFields) == 0) {
+      return;
+    }
+    if ($statLayers == 1) {
+      //we don't want to show the summary rows as they are a distraction - we will unset every second one
+      foreach (array_keys($rows)  as $rowNumber) {
+        if ($rowNumber % 2 != 0) {
+          unset ($rows[$rowNumber]);
+        }
+      }
+    }
+    else {
+      foreach ($rows  as $rowNumber => $row) {
+        foreach ($groupBys as $field => $groupBy) {
+          if ($rowNumber < $statLayers) {
+            $groupBys[$field] = $row[$field];
+            continue;
+          }
+          if (is_null($row[$field]) && empty($altered[$rowNumber])) {
+            $altered[$rowNumber] = TRUE;
+            $rows[$rowNumber][$field] = 'Subtotal';
+          }
+          $groupBys[$field] = $row[$field];
+        }
+      }
+    }
+  }
+
+  /**
    * Was hoping to avoid over-riding this - but it doesn't pass enough data to formatCustomValues by default
    * Am using it in a pretty hacky way to also cover the select box custom fields
    */
