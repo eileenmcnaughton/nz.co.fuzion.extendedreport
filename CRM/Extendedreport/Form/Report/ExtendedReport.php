@@ -3062,8 +3062,9 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
             'name' => 'id',
             'title' => 'Participant ID',
           ),
-          'event_id' => array(
+          'participant_event_id' => array(
             'title' => ts('Event ID'),
+            'name' => 'id',
             'type' => CRM_Utils_Type::T_STRING,
             'alter_display' => 'alterEventID',
           ),
@@ -3252,7 +3253,8 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       'civicrm_event' => array(
         'dao' => 'CRM_Event_DAO_Event',
         'fields' => array(
-          'id' => array(
+          'event_id' => array(
+            'name' => 'id',
             'title' => ts('Event ID'),
           ),
           'title' => array(
