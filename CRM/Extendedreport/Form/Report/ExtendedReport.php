@@ -2896,64 +2896,72 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    * @return array
    */
   function getLineItemColumns() {
-    return array(
-      'civicrm_line_item' =>
-        array(
-          'dao' => 'CRM_Price_BAO_LineItem',
-          'fields' =>
-            array(
-              'qty' =>
-                array(
-                  'title' => ts('Quantity'),
-                  'type' => CRM_Utils_Type::T_INT,
-                  'statistics' =>
-                    array('sum' => ts('Total Quantity Selected')),
-                ),
-              'unit_price' =>
-                array(
-                  'title' => ts('Unit Price'),
-                ),
-              'line_total' =>
-                array(
-                  'title' => ts('Line Total'),
-                  'type' => CRM_Utils_Type::T_MONEY,
-                  'statistics' =>
-                    array('sum' => ts('Total of Line Items')),
-                ),
-            ),
-          'participant_count' =>
-            array(
-              'title' => ts('Participant Count'),
-              'statistics' =>
-                array('sum' => ts('Total Participants')),
-            ),
-          'filters' =>
-            array(
-              'qty' =>
-                array(
-                  'title' => ts('Quantity'),
-                  'type' => CRM_Utils_Type::T_INT,
-                  'operator' => CRM_Report_Form::OP_INT,
-                ),
-            ),
-          'group_bys' =>
-            array(
-              'price_field_id' =>
-                array(
-                  'title' => ts('Price Field'),
-                ),
-              'price_field_value_id' =>
-                array(
-                  'title' => ts('Price Field Option'),
-                ),
-              'line_item_id' =>
-                array(
-                  'title' => ts('Individual Line Item'),
-                  'name' => 'id',
-                ),
-            ),
+    $specs = array(
+      'line_item_id' => array(
+        'title' => ts('Individual Line Item'),
+        'name' => 'id',
+        'is_order_bys' => TRUE,
+        'is_group_bys' => TRUE,
+      ),
+      'line_item_qty' => array(
+        'title' => ts('Quantity'),
+        'name' => 'qty',
+        'type' => CRM_Utils_Type::T_INT,
+        'operator' => CRM_Report_Form::OP_INT,
+        'statistics' => array(
+          'sum' => ts('Total Quantity Selected')
         ),
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+        'is_order_bys' => TRUE,
+      ),
+      'line_item_unit_price' => array(
+        'title' => ts('Unit Price'),
+        'name' => 'unit_price',
+        'is_fields' => TRUE,
+      ),
+      'line_item_line_total' => array(
+        'title' => ts('Line Total'),
+        'name' => 'line_total',
+        'type' => CRM_Utils_Type::T_MONEY,
+        'statistics' => array(
+          'sum' => ts('Total of Line Items')
+        ),
+        'is_fields' => TRUE,
+      ),
+      'line_item_participant_count' => array(
+        'name' => 'participant_count',
+        'title' => ts('Participant Count'),
+        'statistics' => array(
+          'sum' => ts('Total Participants')
+        ),
+        'is_fields' => TRUE,
+      ),
+      'line_item_price_field_id' => array(
+        'title' => ts('Price Field'),
+        'name' => 'price_field_id',
+        'is_order_bys' => TRUE,
+        'is_group_bys' => TRUE,
+      ),
+      'line_item_price_field_value_id' => array(
+        'title' => ts('Price Field Option'),
+        'name' => 'price_field_value_id',
+        'is_order_bys' => TRUE,
+        'is_group_bys' => TRUE,
+      ),
+
     );
+    if ($this->financialTypeField == 'financial_type_id') {
+      $specs['line_item_financial_type_id'] = array(
+        'title' => ts('Line Item Financial TYpe'),
+        'type' => CRM_Utils_Type::T_INT,
+        'name' => 'financial_type_id',
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+        'is_order_bys' => TRUE,
+      );
+    }
+    return $this->buildColumns($specs, 'civicrm_line_item', '', 'CRM_Price_BAO_LineItem');
   }
 
   /**
