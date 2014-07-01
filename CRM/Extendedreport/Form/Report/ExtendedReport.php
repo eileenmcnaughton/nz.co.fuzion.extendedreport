@@ -1281,8 +1281,15 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     // in dashboard mode for report
     if (!CRM_Utils_Array::value('fields', $this->_params) && !$this->_noFields) {
       $this->_params = $this->_formValues;
-    }
 
+    }
+    $this->_params['fields'] = array_merge((array) $this->_params['group_bys'], $this->_params['fields']);
+    if (!empty($this->_params['order_bys'])) {
+      unset($this->_params['group_bys']);
+      foreach ($this->_params['order_bys'] as $orderByName => $orderBy) {
+
+      }
+    }
     $this->_formValues = $this->_params;
     if (CRM_Core_Permission::check('administer Reports') &&
       isset($this->_id) &&
