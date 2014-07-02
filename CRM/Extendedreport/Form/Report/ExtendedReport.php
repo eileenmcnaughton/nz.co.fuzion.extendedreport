@@ -2948,9 +2948,9 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    *
    * @return array
    */
-  function buildColumns($specs, $tableName, $tableAlias = NULL, $daoName = NULL) {
+  function buildColumns($specs, $tableName, $daoName = NULL, $tableAlias = NULL) {
     if (!$tableAlias) {
-      $tableAlias = str_replace('civicrm_', '', $tableName);
+      $tableAlias = str_replace('civicrm_', '_', $tableName);
     }
     $types = array('filters', 'group_bys', 'order_bys');
     $columns = array($tableName => array_fill_keys($types, array()));
@@ -2968,7 +2968,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       }
       foreach ($types as $type) {
         if (!empty($spec['is_' . $type])) {
-          $columns[$tableName][$type][$specName] = $spec;
+          $columns[$tableName][$type][$tableAlias . $specName] = $spec;
         }
       }
     }
@@ -3038,7 +3038,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'is_group_bys' => TRUE,
       );
     }
-    return $this->buildColumns($specs, 'civicrm_line_item', '', 'CRM_Price_BAO_LineItem');
+    return $this->buildColumns($specs, 'civicrm_line_item', 'CRM_Price_BAO_LineItem');
   }
 
   /**
@@ -3066,7 +3066,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'is_field' => TRUE,
       ),
     );
-    return $this->buildColumns($specs, 'civicrm_price_field_value', '', $this->getPriceFieldValueBAO());
+    return $this->buildColumns($specs, 'civicrm_price_field_value', $this->getPriceFieldValueBAO());
   }
 
   /**
@@ -3566,7 +3566,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       ),
       'check_number' => array('is_fields' => TRUE),
     );
-    return $this->buildColumns($specs, 'civicrm_contribution', NULL, 'CRM_Contribute_DAO_Contribution');
+    return $this->buildColumns($specs, 'civicrm_contribution', 'CRM_Contribute_DAO_Contribution');
   }
 
   /**
