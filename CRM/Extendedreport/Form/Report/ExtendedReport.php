@@ -1346,7 +1346,9 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       $this->_params = $this->_formValues;
 
     }
-    $this->_params['fields'] = array_merge((array) $this->_params['group_bys'], $this->_params['fields']);
+    if (!empty($this->_params['group_bys'])) {
+      $this->_params['fields'] = array_merge((array)$this->_params['group_bys'], $this->_params['fields']);
+    }
     if (!empty($this->_params['order_bys'])) {
       unset($this->_params['group_bys']);
       foreach ($this->_params['order_bys'] as $orderByName => $orderBy) {
