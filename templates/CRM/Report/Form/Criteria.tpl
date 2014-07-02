@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -25,7 +25,7 @@
 *}
 {* Report form criteria section *}
 {if $colGroups}
-  <div id="col-groups" class="civireport-criteria">
+  <div id="col-groups" class="civireport-criteria" >
     {if $componentName eq 'Grant'}
       <h3>{ts}Include these Statistics{/ts}</h3>
     {else}
@@ -49,8 +49,7 @@
           {assign var="count" value=`$count+1`}
           <td width="25%">{$form.fields.$field.html}</td>
           {if $count is div by 4}
-        </tr>
-        <tr class="crm-report crm-report-criteria-field crm-report-criteria-field_{$dnc}">
+        </tr><tr class="crm-report crm-report-criteria-field crm-report-criteria-field_{$dnc}">
           {/if}
           {/foreach}
           {if $count is not div by 4}
@@ -67,7 +66,7 @@
 {/if}
 
 {if $groupByElements}
-  <div id="group-by-elements" class="civireport-criteria">
+  <div id="group-by-elements" class="civireport-criteria" >
     <h3>Group by Columns</h3>
     {assign  var="count" value="0"}
     <table class="report-layout">
@@ -82,8 +81,7 @@
           {/if}
         </td>
         {if $count is div by 4}
-      </tr>
-      <tr class="crm-report crm-report-criteria-groupby">
+      </tr><tr class="crm-report crm-report-criteria-groupby">
         {/if}
         {/foreach}
         {if $count is not div by 4}
@@ -144,8 +142,9 @@
     </tr>
   </table>
 {/if}
+
 {if $orderByOptions}
-  <div id="order-by-elements" class="civireport-criteria">
+  <div id="order-by-elements" class="civireport-criteria" >
     <h3>Order by Columns</h3>
 
     <table id="optionField">
@@ -178,26 +177,26 @@
                 alt="{ts}show field or section{/ts}"/>{ts}another column{/ts}</a>
     </div>
     <script type="text/javascript">
-      var showRows = new Array({$showBlocks});
+      var showRows   = new Array({$showBlocks});
       var hideBlocks = new Array({$hideBlocks});
       var rowcounter = 0;
       {literal}
       if (navigator.appName == "Microsoft Internet Explorer") {
-        for (var count = 0; count < hideBlocks.length; count++) {
+        for ( var count = 0; count < hideBlocks.length; count++ ) {
           var r = document.getElementById(hideBlocks[count]);
           r.style.display = 'none';
         }
       }
 
       // hide and display the appropriate blocks as directed by the php code
-      on_load_init_blocks(showRows, hideBlocks, '');
+      on_load_init_blocks( showRows, hideBlocks, '' );
 
       function hideRow(i) {
         showHideRow(i);
         // clear values on hidden field, so they're not saved
-        cj('select#order_by_column_' + i).val('');
-        cj('select#order_by_order_' + i).val('ASC');
-        cj('input#order_by_section_' + i).attr('checked', false);
+        cj('select#order_by_column_'+ i).val('');
+        cj('select#order_by_order_'+ i).val('ASC');
+        cj('input#order_by_section_'+ i).attr('checked', false);
       }
 
       {/literal}
@@ -206,9 +205,10 @@
 {/if}
 
 {if $form.options.html || $form.options.html}
-  <div id="other-options" class="civireport-criteria">
+  <div id="other-options" class="civireport-criteria" >
     <h3>Other Options</h3>
     <table class="report-layout">
+      {assign var="optionCount" value=0}
       <tr class="crm-report crm-report-criteria-groupby">
         <td>{$form.options.html}</td>
         {if $form.blank_column_end}
@@ -220,7 +220,7 @@
 {/if}
 
 {if $filters}
-<div id="set-filters" class="civireport-criteria">
+<div id="set-filters" class="civireport-criteria" >
   <h3>Set Filters</h3>
   <table class="report-layout">
     {assign var="counter" value=1}
@@ -287,10 +287,10 @@
 
             {/foreach}
             {if $closed eq 0 }</table>{/if}
-        </div>
-    {/if}
+  </div>
+  {/if}
 
-    {literal}
+  {literal}
   <script type="text/javascript">
             {/literal}
                 {foreach from=$filters item=table key=tableName}
@@ -307,20 +307,20 @@
                 {/foreach}
             {/foreach}
 
-            {literal}
-    function showHideMaxMinVal(field, val) {
-      var fldVal = field + "_value_cell";
+        {literal}
+    function showHideMaxMinVal( field, val ) {
+      var fldVal    = field + "_value_cell";
       var fldMinMax = field + "_min_max_cell";
-      if (val == "bw" || val == "nbw") {
-        cj('#' + fldVal).hide();
-        cj('#' + fldMinMax).show();
-      } else if (val == "nll" || val == "nnll") {
-        cj('#' + fldVal).hide();
+      if ( val == "bw" || val == "nbw" ) {
+        cj('#' + fldVal ).hide();
+        cj('#' + fldMinMax ).show();
+      } else if (val =="nll" || val == "nnll") {
+        cj('#' + fldVal).hide() ;
         cj('#' + field + '_value').val('');
-        cj('#' + fldMinMax).hide();
+        cj('#' + fldMinMax ).hide();
       } else {
-        cj('#' + fldVal).show();
-        cj('#' + fldMinMax).hide();
+        cj('#' + fldVal ).show();
+        cj('#' + fldMinMax ).hide();
       }
     }
 
@@ -337,4 +337,4 @@
   </script>
 {/literal}
 
-    <div>{$form.buttons.html}</div>
+<div>{$form.buttons.html}</div>
