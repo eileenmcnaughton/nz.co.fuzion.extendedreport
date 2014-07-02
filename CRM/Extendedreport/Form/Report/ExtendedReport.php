@@ -1369,7 +1369,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       $this->_params['fields'] = array_merge((array)$this->_params['group_bys'], $this->_params['fields']);
     }
     if (!empty($this->_params['order_bys'])) {
-      unset($this->_params['group_bys']);
+      //unset($this->_params['group_bys']);
       foreach ($this->_params['order_bys'] as $orderByName => $orderBy) {
 
       }
@@ -2998,7 +2998,19 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    * @return array
    */
   function getLineItemColumns() {
-    $specs = array(
+    $specs = array();
+    if ($this->financialTypeField == 'financial_type_id') {
+      $specs['financial_type_id'] = array(
+        'title' => ts('Line Item Financial TYpe'),
+        'type' => CRM_Utils_Type::T_INT,
+        'alter_display' => 'alterFinancialType',
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+        'is_order_bys' => TRUE,
+        'is_group_bys' => TRUE,
+      );
+    }
+    $specs = array_merge($specs, array(
       'id' => array(
         'title' => ts('Individual Line Item'),
         'is_order_bys' => TRUE,
@@ -3044,18 +3056,8 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         ),
         'is_fields' => TRUE,
       ),
-    );
-    if ($this->financialTypeField == 'financial_type_id') {
-      $specs['financial_type_id'] = array(
-        'title' => ts('Line Item Financial TYpe'),
-        'type' => CRM_Utils_Type::T_INT,
-        'alter_display' => 'alterFinancialType',
-        'is_fields' => TRUE,
-        'is_filters' => TRUE,
-        'is_order_bys' => TRUE,
-        'is_group_bys' => TRUE,
-      );
-    }
+    ));
+
     return $this->buildColumns($specs, 'civicrm_line_item', 'CRM_Price_BAO_LineItem');
   }
 
@@ -3523,7 +3525,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'is_group_bys' => TRUE,
       ),
       $this->financialTypeField => array(
-        'title' => ts($this->financialTypeLabel),
+        'title' => ts($this->financialTypeLabel  . ' (Contribution)'),
         'type' => CRM_Utils_Type::T_INT,
         'alter_display' => 'alterFinancialType',
         'operatorType' => CRM_Report_Form::OP_MULTISELECT,
@@ -3531,7 +3533,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'is_fields' => TRUE,
         'is_filters' => TRUE,
         'is_order_bys' => TRUE,
-        'is_group_by' => TRUE,
+        'is_group_bys' => TRUE,
       ),
       'payment_instrument_id' => array(
         'title' => ts('Payment Instrument'),
@@ -3541,17 +3543,18 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'options' => CRM_Contribute_PseudoConstant::paymentInstrument(),
         'is_fields' => TRUE,
         'is_filters' => TRUE,
-        'is_order_by' => TRUE,
-        'is_group_by' => TRUE,
+        'is_order_bys' => TRUE,
+        'is_group_bys' => TRUE,
       ),
       'contribution_status_id' => array(
         'title' => ts('Contribution Status'),
         'operatorType' => CRM_Report_Form::OP_MULTISELECT,
         'options' => CRM_Contribute_PseudoConstant::contributionStatus(),
+        'alter_display' => 'alterContributionStatus',
         'type' => CRM_Utils_Type::T_INT,
         'is_fields' => TRUE,
         'is_filters' => TRUE,
-        'alter_display' => 'alterContributionStatus',
+        'is_group_bys' => TRUE,
       ),
       'campaign_id' => array(
         'title' => ts('Campaign'),
