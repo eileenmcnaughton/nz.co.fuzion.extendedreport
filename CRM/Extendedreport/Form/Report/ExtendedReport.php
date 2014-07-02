@@ -859,8 +859,8 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
             $fieldName
           );
         }
-
-        $filters[$table][$fieldName] = $field;
+        $tableAlias = $this->_columns[$table]['grouping_name'];
+        $filters[$tableAlias][$fieldName] = $field;
 
         switch (CRM_Utils_Array::value('operatorType', $field)) {
           case CRM_Report_Form::OP_MONTH:
@@ -944,6 +944,69 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     }
     $this->assign('filters', $filters);
   }
+
+
+  /**
+   * Assign columns to template - we have taken the 4.5 version of this and modified it slightly
+   * - this function suffers from the recurrent report problem - it takes the 'fields' array as the master - but 'fields' is often not set
+   * if it is a filters only - so fields is overloaded. Perhaps always setting fields & using no_display better is the answer
+   *
+   * The other problem is that the 'add filters' function needs to know what key has been used in colGroups (at least for custom fields)
+   * At the moment any change of the key doesn't flow down
+   *
+   */
+  function addColumns() {
+    $options = array();
+    $colGroups = NULL;
+    foreach ($this->_columns as $tableName => $table) {
+      //altered to look at fields & filters
+      $relevantFields = CRM_Utils_Array::value('filters', $table, array());
+      if (array_key_exists('fields', $table)) {
+        $relevantFields = array_merge($table['fields'], $relevantFields);
+      }
+
+      if (!empty($relevantFields)) {
+        foreach ($relevantFields as $fieldName => $field) {
+          $groupTitle = '';
+          $groupingName = $tableName;
+          if (empty($field['no_display'])) {
+            foreach ( array('table', 'field') as $var) {
+              if (!empty(${$var}['grouping'])) {
+                if (!is_array(${$var}['grouping'])) {
+                  $groupingName = ${$var}['grouping'];
+                }
+                else {
+                  $groupingName = array_keys(${$var}['grouping']);
+                  $groupingName = $tableName[0];
+                  $groupTitle = array_values(${$var}['grouping']);
+                  $groupTitle = $groupTitle[0];
+                }
+              }
+            }
+
+            if (!$groupTitle && isset($table['group_title'])) {
+              $groupTitle = $table['group_title'];
+            }
+
+            $colGroups[$groupingName]['fields'][$fieldName] = CRM_Utils_Array::value('title', $field);
+            if ($groupTitle && empty( $colGroups[$groupingName]['group_title'])) {
+              $colGroups[$groupingName]['group_title'] = $groupTitle;
+            }
+
+            $options[$fieldName] = CRM_Utils_Array::value('title', $field);
+          }
+          //altered to set column name
+          $this->_columns[$tableName]['grouping_name'] = $groupingName;
+        }
+      }
+    }
+
+    $this->addCheckBox("fields", ts('Select Columns'), $options, NULL,
+      NULL, NULL, NULL, $this->_fourColumnAttribute, TRUE
+    );
+    $this->assign('colGroups', $colGroups);
+  }
+
 
   /**
    * We have over-ridden this to provide the option of setting single date fields with defaults
