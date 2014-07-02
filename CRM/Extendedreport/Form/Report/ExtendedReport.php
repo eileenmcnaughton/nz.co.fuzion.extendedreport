@@ -2986,6 +2986,23 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'is_order_bys' => TRUE,
         'is_group_bys' => TRUE,
       ),
+      'participant_count' => array(
+        'title' => ts('Participant Count'),
+        'statistics' => array(
+          'sum' => ts('Total Participants')
+        ),
+        'is_fields' => TRUE,
+      ),
+      'price_field_id' => array(
+        'title' => ts('Price Field (line item)'),
+        'is_order_bys' => TRUE,
+        'is_group_bys' => TRUE,
+      ),
+      'price_field_value_id' => array(
+        'title' => ts('Price Field Option (line item)'),
+        'is_order_bys' => TRUE,
+        'is_group_bys' => TRUE,
+      ),
       'qty' => array(
         'title' => ts('Quantity'),
         'type' => CRM_Utils_Type::T_INT,
@@ -3009,24 +3026,6 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         ),
         'is_fields' => TRUE,
       ),
-      'participant_count' => array(
-        'title' => ts('Participant Count'),
-        'statistics' => array(
-          'sum' => ts('Total Participants')
-        ),
-        'is_fields' => TRUE,
-      ),
-      'price_field_id' => array(
-        'title' => ts('Price Field (line item)'),
-        'is_order_bys' => TRUE,
-        'is_group_bys' => TRUE,
-      ),
-      'price_field_value_id' => array(
-        'title' => ts('Price Field Option (line item)'),
-        'is_order_bys' => TRUE,
-        'is_group_bys' => TRUE,
-      ),
-
     );
     if ($this->financialTypeField == 'financial_type_id') {
       $specs['financial_type_id'] = array(
