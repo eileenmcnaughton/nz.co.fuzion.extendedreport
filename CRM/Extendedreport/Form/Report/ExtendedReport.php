@@ -1254,6 +1254,23 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     return parent::statistics($rows);
   }
 
+  /**
+   * re-order column headers based on 'fields' order
+   */
+  function reOrderColumnHeaders() {
+    $fieldMap = array();
+    foreach ($this->_columns as $tableName => $table) {
+      if (is_array($table['fields']) && !empty($this->_params['fields'])) {
+        foreach ($table['fields'] as $fieldName =>$fieldSpec) {
+          if (!empty($this->_params['fields'][$fieldName])) {
+            $fieldMap[$fieldName] = $tableName . '_' . $fieldName;
+          }
+        }
+      }
+    }
+    $fieldMap = array_merge($this->_params['fields'], $fieldMap);
+    $this->_columnHeaders = array_merge(array_intersect_key(array_flip($fieldMap), $this->_columnHeaders), $this->_columnHeaders);
+  }
   /*
    * mostly overriding this for ease of adding in debug
    */
@@ -1266,6 +1283,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
 
       $this->beginPostProcess();
       $sql = $this->buildQuery();
+      $this->reOrderColumnHeaders();
       // build array of result based on column headers. This method also allows
       // modifying column headers before using it to build result set i.e $rows.
       $rows = array();
