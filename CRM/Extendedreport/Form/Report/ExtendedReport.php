@@ -3032,6 +3032,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       $specs['financial_type_id'] = array(
         'title' => ts('Line Item Financial TYpe'),
         'type' => CRM_Utils_Type::T_INT,
+        'alter_display' => 'alterFinancialType',
         'is_fields' => TRUE,
         'is_filters' => TRUE,
         'is_order_bys' => TRUE,
