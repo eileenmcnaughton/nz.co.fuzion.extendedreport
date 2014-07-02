@@ -2968,7 +2968,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    */
   function buildColumns($specs, $tableName, $daoName = NULL, $tableAlias = NULL) {
     if (!$tableAlias) {
-      $tableAlias = str_replace('civicrm_', '_', $tableName);
+      $tableAlias = str_replace('civicrm_', '', $tableName);
     }
     $types = array('filters', 'group_bys', 'order_bys');
     $columns = array($tableName => array_fill_keys($types, array()));
@@ -2980,13 +2980,14 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       if(empty($spec['name'])) {
         $spec['name'] = $specName;
       }
-      $columns[$tableName]['fields'][$tableAlias . $specName] = $spec;
+      $fieldAlias = $tableAlias . '_' . $specName;
+      $columns[$tableName]['fields'][$fieldAlias] = $spec;
       if (empty($spec['is_fields'])) {
-        $columns[$tableName]['fields'][$tableAlias . $specName]['no_display'] = TRUE;
+        $columns[$tableName]['fields'][$fieldAlias]['no_display'] = TRUE;
       }
       foreach ($types as $type) {
         if (!empty($spec['is_' . $type])) {
-          $columns[$tableName][$type][$tableAlias . $specName] = $spec;
+          $columns[$tableName][$type][$fieldAlias] = $spec;
         }
       }
     }
