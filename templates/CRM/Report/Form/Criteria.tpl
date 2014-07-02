@@ -35,12 +35,10 @@
       {assign  var="count" value="0"}
       {* Wrap custom field sets in collapsed accordion pane. *}
       {if $grpFields.group_title}
-        <div class="crm-accordion-wrapper crm-accordion crm-accordion-closed">
+        <div class="crm-accordion-wrapper crm-accordion collapsed">
         <div class="crm-accordion-header">
-          <div class="icon crm-accordion-pointer"></div>
           {$grpFields.group_title}
-        </div>
-        <!-- /.crm-accordion-header -->
+        </div><!-- /.crm-accordion-header -->
         <div class="crm-accordion-body">
       {/if}
       <table class="criteria-group">
@@ -233,12 +231,10 @@
   </table>
   {assign var="counter" value=0}
   {/if}
-  <div class="crm-accordion-wrapper crm-accordion crm-accordion-closed">
+  <div class="crm-accordion-wrapper crm-accordion collapsed">
     <div class="crm-accordion-header">
-      <div class="icon crm-accordion-pointer"></div>
       {$colGroups.$tableName.group_title}
-    </div>
-    <!-- /.crm-accordion-header -->
+    </div><!-- /.crm-accordion-header -->
     <div class="crm-accordion-body">
       <table class="report-layout">
         {/if}
@@ -276,10 +272,8 @@
         {/foreach}
         {if $colGroups.$tableName.group_title}
       </table>
-    </div>
-    <!-- /.crm-accordion-body -->
-  </div>
-  <!-- /.crm-accordion-wrapper -->
+    </div><!-- /.crm-accordion-body -->
+  </div><!-- /.crm-accordion-wrapper -->
   {assign var=closed     value=1"} {*-- ie table tags are closed-- *}
                 {else}
                      {assign var=closed     value=0"} {*-- ie table tags are not closed-- *}
