@@ -426,7 +426,8 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       }
     }
     parent::select();
-    if (empty($this->_select)) {
+
+    if (empty($this->_select) || strtolower(trim($this->_select)) == 'select') {
       $this->_select = " SELECT 1 ";
     }
   }
@@ -2931,6 +2932,15 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
   }
 
   /**
+   * Build the columns
+   * The normal report class needs you to remember to do a few things that are often erratic
+   * 1) use a unique key for any field that might not be unique (e.g. start date, label)
+   * - this class will always prepend an alias to the key & set the 'name' if you don't set it yourself.
+   * - note that it assumes the value being passed in is the actual table fieldname
+   *
+   * 2) set the field & set it to no display if you don't want the field but you might want to use the field in other
+   * contexts - the code looks up the fields array for data - so it both defines the field spec & the fields you want to show
+   *
    * @param array $specs
    * @param string $tableName
    * @param string $tableAlias
@@ -2938,15 +2948,24 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    *
    * @return array
    */
-  function buildColumns($specs, $tableName, $tableAlias = '', $daoName = NULL) {
-    $types = array('fields', 'filters', 'group_bys', 'order_bys');
+  function buildColumns($specs, $tableName, $tableAlias = NULL, $daoName = NULL) {
+    if (!$tableAlias) {
+      $tableAlias = str_replace('civicrm_', '', $tableName);
+    }
+    $types = array('filters', 'group_bys', 'order_bys');
     $columns = array($tableName => array_fill_keys($types, array()));
     if (!empty($daoName)) {
       $columns[$tableName]['dao'] = $daoName;
     }
 
     foreach ($specs as $specName => $spec) {
-      $this->_fieldSpecs[$specName] = $spec;
+      if(empty($spec['name'])) {
+        $spec['name'] = $specName;
+      }
+      $columns[$tableName]['fields'][$tableAlias . $specName] = $spec;
+      if (empty($spec['is_field'])) {
+        $columns[$tableName]['fields'][$tableAlias . $specName]['no_display'] = TRUE;
+      }
       foreach ($types as $type) {
         if (!empty($spec['is_' . $type])) {
           $columns[$tableName][$type][$specName] = $spec;
@@ -2962,15 +2981,13 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    */
   function getLineItemColumns() {
     $specs = array(
-      'line_item_id' => array(
+      'id' => array(
         'title' => ts('Individual Line Item'),
-        'name' => 'id',
         'is_order_bys' => TRUE,
         'is_group_bys' => TRUE,
       ),
-      'line_item_qty' => array(
+      'qty' => array(
         'title' => ts('Quantity'),
-        'name' => 'qty',
         'type' => CRM_Utils_Type::T_INT,
         'operator' => CRM_Report_Form::OP_INT,
         'statistics' => array(
@@ -2980,50 +2997,45 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'is_filters' => TRUE,
         'is_order_bys' => TRUE,
       ),
-      'line_item_unit_price' => array(
+      'unit_price' => array(
         'title' => ts('Unit Price'),
-        'name' => 'unit_price',
         'is_fields' => TRUE,
       ),
-      'line_item_line_total' => array(
+      'line_total' => array(
         'title' => ts('Line Total'),
-        'name' => 'line_total',
         'type' => CRM_Utils_Type::T_MONEY,
         'statistics' => array(
           'sum' => ts('Total of Line Items')
         ),
         'is_fields' => TRUE,
       ),
-      'line_item_participant_count' => array(
-        'name' => 'participant_count',
+      'participant_count' => array(
         'title' => ts('Participant Count'),
         'statistics' => array(
           'sum' => ts('Total Participants')
         ),
         'is_fields' => TRUE,
       ),
-      'line_item_price_field_id' => array(
-        'title' => ts('Price Field'),
-        'name' => 'price_field_id',
+      'price_field_id' => array(
+        'title' => ts('Price Field (line item)'),
         'is_order_bys' => TRUE,
         'is_group_bys' => TRUE,
       ),
-      'line_item_price_field_value_id' => array(
-        'title' => ts('Price Field Option'),
-        'name' => 'price_field_value_id',
+      'price_field_value_id' => array(
+        'title' => ts('Price Field Option (line item)'),
         'is_order_bys' => TRUE,
         'is_group_bys' => TRUE,
       ),
 
     );
     if ($this->financialTypeField == 'financial_type_id') {
-      $specs['line_item_financial_type_id'] = array(
+      $specs['financial_type_id'] = array(
         'title' => ts('Line Item Financial TYpe'),
         'type' => CRM_Utils_Type::T_INT,
-        'name' => 'financial_type_id',
         'is_fields' => TRUE,
         'is_filters' => TRUE,
         'is_order_bys' => TRUE,
+        'is_group_bys' => TRUE,
       );
     }
     return $this->buildColumns($specs, 'civicrm_line_item', '', 'CRM_Price_BAO_LineItem');
@@ -3034,24 +3046,20 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    */
   function getPriceFieldValueColumns() {
     $specs = array(
-      'price_field_value_label' => array(
+      'label' => array(
         'title' => ts('Price Field Value Label'),
-        'name' => 'label',
         'type' => CRM_Utils_Type::T_STRING,
-        'name' => 'label',
         'is_filters' => TRUE,
         'is_order_bys' => TRUE,
         'is_fields' => TRUE,
         'is_group_bys' => TRUE,
       ),
-      'price_field_value_max_value' => array(
+      'max_value' => array(
         'title' => 'Price Option Maximum',
-        'name' => 'max_value',
         'is_field' => TRUE,
       ),
-      'price_field_value_financial_type_id' => array(
+      'financial_type_id' => array(
         'title' => 'Price Option Financial Type',
-        'name' => 'financial_type_id',
         'type' => CRM_Utils_Type::T_INT,
         'alter_display' => 'alterFinancialType',
         'operatorType' => CRM_Report_Form::OP_MULTISELECT,
@@ -3489,22 +3497,19 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     $pseudoMethod = $this->financialTypePseudoConstant;
 
     $specs = array(
-      'contribution_id' => array(
+      'id' => array(
         'title' => ts('Contribution ID'),
-        'name' => 'id',
         'is_filters' => TRUE,
         'is_order_bys' => TRUE,
         'is_fields' => TRUE,
         'is_group_bys' => TRUE,
       ),
-      'contribution_' . $this->financialTypeField => array(
+      $this->financialTypeField => array(
         'title' => ts($this->financialTypeLabel),
         'type' => CRM_Utils_Type::T_INT,
         'alter_display' => 'alterFinancialType',
-        'name' => $this->financialTypeField,
         'operatorType' => CRM_Report_Form::OP_MULTISELECT,
         'options' => CRM_Contribute_PseudoConstant::$pseudoMethod(),
-        'type' => CRM_Utils_Type::T_INT,
         'is_fields' => TRUE,
         'is_filters' => TRUE,
         'is_order_bys' => TRUE,
@@ -3528,19 +3533,18 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'type' => CRM_Utils_Type::T_INT,
         'is_fields' => TRUE,
         'is_filters' => TRUE,
+        'alter_display' => 'alterContributionStatus',
       ),
-      'contribution_campaign_id' => array(
+      'campaign_id' => array(
         'title' => ts('Campaign'),
         'type' => CRM_Utils_Type::T_INT,
-        'name' => 'campaign_id',
         'operatorType' => CRM_Report_Form::OP_MULTISELECT,
         'options' => CRM_Campaign_BAO_Campaign::getCampaigns(),
         'is_fields' => TRUE,
         'is_filters' => TRUE,
       ),
-      'contribution_source' => array(
+      'source' => array(
         'title' => 'Contribution Source',
-        'name' => 'source',
         'is_fields' => TRUE,
       ),
       'trxn_id' => array('is_fields' => TRUE),
@@ -3562,7 +3566,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       ),
       'check_number' => array('is_fields' => TRUE),
     );
-    return $this->buildColumns($specs, 'civicrm_contribution', '', 'CRM_Contribute_DAO_Contribution');
+    return $this->buildColumns($specs, 'civicrm_contribution', NULL, 'CRM_Contribute_DAO_Contribution');
   }
 
   /**
