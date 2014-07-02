@@ -2963,7 +2963,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         $spec['name'] = $specName;
       }
       $columns[$tableName]['fields'][$tableAlias . $specName] = $spec;
-      if (empty($spec['is_field'])) {
+      if (empty($spec['is_fields'])) {
         $columns[$tableName]['fields'][$tableAlias . $specName]['no_display'] = TRUE;
       }
       foreach ($types as $type) {
