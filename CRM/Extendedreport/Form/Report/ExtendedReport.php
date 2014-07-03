@@ -793,8 +793,8 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
           $this->_groupBy .= ", " . $section['dbAlias'];
         }
       }
-      if (!empty($this->_statFields) &&
-        (count($this->_groupBy) <= 1) || !$this->_having
+      if (!empty($this->_statFields) && empty($this->_orderByArray) &&
+        (count($this->_groupBy) <= 1 || !$this->_having)
       ) {
         $this->_rollup = " WITH ROLLUP";
       }
@@ -1368,12 +1368,13 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     if (!empty($this->_params['group_bys'])) {
       $this->_params['fields'] = array_merge((array)$this->_params['group_bys'], $this->_params['fields']);
     }
-    if (!empty($this->_params['order_bys'])) {
+    /*if (!empty($this->_params['order_bys'])) {
       //unset($this->_params['group_bys']);
       foreach ($this->_params['order_bys'] as $orderByName => $orderBy) {
 
       }
     }
+    */
     $this->_formValues = $this->_params;
     if (CRM_Core_Permission::check('administer Reports') &&
       isset($this->_id) &&
@@ -2398,10 +2399,7 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
     if (empty($firstRow)) {
       return;
     }
-    if ($this->_rollup) {
-      //we don't have a way to unset rows later down so we'll start here
-      $this->alterRollupRows($rows);
-    }
+
     $selectedFields = array_keys($firstRow);
     $alterFunctions = $alterMap = array();
 
@@ -2440,6 +2438,10 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
         }
       }
     }
+    if ($this->_rollup) {
+      //we want to be able to unset rows so here
+      $this->alterRollupRows($rows);
+    }
   }
 
   /**
@@ -2448,29 +2450,47 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
   function alterRollupRows(&$rows){
     $statLayers = count($this->_groupByArray);
     $groupBys = array_reverse(array_fill_keys(array_keys($this->_groupByArray), NULL));
+    $groupByLabels = array_keys($groupBys);
     $altered = array();
+    $fieldsToUnSetForSubtotalLines = array();
+    //on this first round we'll get a list of keys that are not groupbys or stats
+    foreach (array_keys($rows[0]) as $rowField) {
+      if(!array_key_exists($rowField, $groupBys) && substr($rowField, -4) != '_sum' && !substr($rowField, -7) != '_count') {
+        $fieldsToUnSetForSubtotalLines[] = $rowField;
+      }
+    }
     //I don't know that this precaution is required?          $this->fixSubTotalDisplay($rows[$rowNum], $this->_statFields);
     if (count($this->_statFields) == 0) {
       return;
     }
     if ($statLayers == 1) {
-      //we don't want to show the summary rows as they are a distraction - we will unset every second one
+      return;
+      /*we don't want to show the summary rows as they are a distraction - we will unset every second one
       foreach (array_keys($rows)  as $rowNumber) {
         if ($rowNumber % 2 != 0) {
           unset ($rows[$rowNumber]);
         }
       }
+      */
     }
     else {
       foreach ($rows  as $rowNumber => $row) {
         foreach ($groupBys as $field => $groupBy) {
           if ($rowNumber < $statLayers) {
             $groupBys[$field] = $row[$field];
-            continue;
+              continue;
           }
-          if (is_null($row[$field]) && empty($altered[$rowNumber])) {
-            $altered[$rowNumber] = TRUE;
-            $rows[$rowNumber][$field] = 'Subtotal';
+          if (empty($row[$field]) && empty($altered[$rowNumber])) {
+            $groupedValue = $groupByLabels[array_search($field, $groupBy) + 1];
+            if ($rows[$rowNumber + 1][$groupedValue] != $rows[$rowNumber][$groupedValue]) {
+              //we set altered because we are started from the lowest grouping & working up & if both have changed only want to act on the lowest
+              //(I think)
+              $altered[$rowNumber] = TRUE;
+              $rows[$rowNumber][$groupedValue] = "<span class= 'report-label'> {$rows[$rowNumber][$groupedValue]} (Subtotal)</span> ";
+              foreach ($fieldsToUnSetForSubtotalLines as $unsetField) {
+                $rows[$rowNumber][$unsetField] = '';
+              }
+            }
           }
           $groupBys[$field] = $row[$field];
         }
