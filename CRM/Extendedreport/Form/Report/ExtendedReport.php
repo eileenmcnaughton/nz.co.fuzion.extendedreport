@@ -14,7 +14,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   protected $_customGroupExtends = array();
   protected $_baseTable = 'civicrm_contact';
   protected $_editableFields = TRUE;
-  protected $_rollup = ' WITH ROLLUP ';
+  protected $_rollup = '';
   protected $_fieldSpecs = array();
 
   protected $_customFields = array();
