@@ -33,7 +33,7 @@
  *
  * Like contribution detail but with more custom fields
  */
-class CRM_Report_Form_Contribute_DetailExtended extends CRM_Report_Form {
+class CRM_Extendedreport_Form_Report_Contribute_DetailExtended extends CRM_Report_Form {
   protected $_addressField = FALSE;
 
   protected $_emailField = FALSE;

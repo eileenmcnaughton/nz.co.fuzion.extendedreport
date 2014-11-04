@@ -13,7 +13,7 @@ return array(
           'version' => 3,
           'label' => 'Extended Report - Contributions= Detail with extra fields',
           'description' => 'Extended Report - Contributions= Detail with extra fields',
-          'class_name' => 'CRM_Report_Form_Contribute_DetailExtended',
+          'class_name' => 'CRM_Extendedreport_Form_Report_Contribute_DetailExtended',
           'report_url' => 'contribution/detailextended',
           'component' => 'CiviContribute',
         ),
