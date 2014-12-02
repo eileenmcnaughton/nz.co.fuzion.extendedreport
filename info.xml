@@ -30,8 +30,4 @@
     <civix>
         <namespace>CRM/Extendedreport</namespace>
     </civix>
-    <typeInfo>
-        <reportUrl>price/contributionbased</reportUrl>
-        <component>CiviContribute</component>
-    </typeInfo>
 </extension>
