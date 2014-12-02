@@ -3256,15 +3256,16 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'dao' => 'CRM_Member_DAO_Membership',
         'grouping' => 'member-fields',
         'fields' => array(
-
           'membership_type_id' => array(
             'title' => 'Membership Type',
             'alter_display' => 'alterMembershipTypeID',
-
+            'options' => $this->_getOptions('membership', 'membership_type_id', $action = 'get'),
           ),
-          'status_id' => array(
+          'membership_status_id' => array(
+            'name' => 'status_id',
             'title' => 'Membership Status',
             'alter_display' => 'alterMembershipStatusID',
+            'options' => $this->_getOptions('membership', 'status_id', $action = 'get'),
           ),
           'join_date' => NULL,
           'start_date' => array(
@@ -3274,7 +3275,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
             'title' => ts('Current Membership Cycle End Date'),
             'include_null' => TRUE,
           ),
-          'id' => array(
+          'membership_id' => array(
             'title' => 'Membership ID / Count',
             'name' => 'id',
             'statistics' =>
@@ -3316,6 +3317,13 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
             'title' => 'Membership Status',
             'type' => CRM_Utils_Type::T_INT,
             'options' => CRM_Member_PseudoConstant::membershipStatus(),
+            'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+          ),
+          'membership_type_id' => array(
+            'name' => 'membership_type_id',
+            'title' => 'Membership Type',
+            'type' => CRM_Utils_Type::T_INT,
+            'options' => $this->_getOptions('membership', 'membership_type_id', $action = 'get'),
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
           ),
         ),
