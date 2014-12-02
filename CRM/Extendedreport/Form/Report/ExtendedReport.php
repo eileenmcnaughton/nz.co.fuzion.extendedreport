@@ -494,6 +494,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       $this->addAggregateTotal($fieldName);
       return;
     }
+
     if ($spec['data_type'] == 'Boolean') {
       $options = array(
         'values' => array(
@@ -515,7 +516,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       $options = civicrm_api('option_value', 'get', array(
           'version' => 3,
           'options' => array('limit' => 50,),
-          'option_group_id' => $spec['option_group_id']
+          'option_group_id' => $spec['option_group_id'],
         ));
     }
     foreach ($options['values'] as $option) {
@@ -3115,8 +3116,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    */
   function getPriceFieldColumns() {
     return array(
-      'civicrm_price_field' =>
-        array(
+      'civicrm_price_field' => array(
           'dao' => $this->getPriceFieldBAO(),
           'fields' =>
             array(
@@ -3126,8 +3126,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
                   'name' => 'label',
                 ),
             ),
-          'filters' =>
-            array(
+          'filters' => array(
               'price_field_label' =>
                 array(
                   'title' => ts('Price Field Label'),
@@ -3320,7 +3319,6 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    * @return array
    */
   function getMembershipTypeColumns() {
-    require_once 'CRM/Member/PseudoConstant.php';
     return array(
       'civicrm_membership_type' => array(
         'dao' => 'CRM_Member_DAO_MembershipType',
