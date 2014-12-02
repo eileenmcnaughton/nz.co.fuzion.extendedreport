@@ -519,6 +519,11 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
           'option_group_id' => $spec['option_group_id'],
         ));
     }
+
+    if (!empty($this->_params[$fieldName . '_value']) && CRM_Utils_Array::value($fieldName . '_op', $this->_params) == 'in') {
+      $options['values'] = array_intersect_key($options['values'], array_flip($this->_params[$fieldName . '_value']));
+    }
+
     foreach ($options['values'] as $option) {
       $fieldAlias = str_replace(array(
           '-',
@@ -960,13 +965,16 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   function addColumns() {
     $options = array();
     $colGroups = NULL;
+
     foreach ($this->_columns as $tableName => $table) {
       //altered to look at fields & filters
       $relevantFields = CRM_Utils_Array::value('filters', $table, array());
-      if (array_key_exists('fields', $table)) {
-        $relevantFields = array_merge($table['fields'], $relevantFields);
+      foreach (array_keys($relevantFields) as $filterField) {
+        $relevantFields[$filterField]['no_display'] = TRUE;
       }
-
+      if (array_key_exists('fields', $table)) {
+        $relevantFields = array_merge_recursive($relevantFields, $table['fields']);
+      }
       if (!empty($relevantFields)) {
         foreach ($relevantFields as $fieldName => $field) {
           $groupTitle = '';
