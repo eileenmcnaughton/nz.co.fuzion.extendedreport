@@ -1269,7 +1269,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   function reOrderColumnHeaders() {
     $fieldMap = array();
     foreach ($this->_columns as $tableName => $table) {
-      if (is_array($table['fields']) && !empty($this->_params['fields'])) {
+      if (!empty($table['fields']) && is_array($table['fields']) && !empty($this->_params['fields'])) {
         foreach ($table['fields'] as $fieldName =>$fieldSpec) {
           if (!empty($this->_params['fields'][$fieldName])) {
             $fieldMap[$fieldName] = $tableName . '_' . $fieldName;
