@@ -968,13 +968,15 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
 
     foreach ($this->_columns as $tableName => $table) {
       //altered to look at fields & filters
-      $relevantFields = CRM_Utils_Array::value('filters', $table, array());
-      foreach (array_keys($relevantFields) as $filterField) {
-        $relevantFields[$filterField]['no_display'] = TRUE;
+      $filters = CRM_Utils_Array::value('filters', $table, array());
+      $fields = CRM_Utils_Array::value('fields', $table, array());
+      $relevantFields = array_merge($filters, $fields);
+      foreach (array_keys($filters) as $filterField) {
+        if (!isset($fields[$filterField])) {
+          $relevantFields[$filterField]['no_display'] = TRUE;
+        }
       }
-      if (array_key_exists('fields', $table)) {
-        $relevantFields = array_merge_recursive($relevantFields, $table['fields']);
-      }
+
       if (!empty($relevantFields)) {
         foreach ($relevantFields as $fieldName => $field) {
           $groupTitle = '';
@@ -986,7 +988,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
                   $groupingName = ${$var}['grouping'];
                 }
                 else {
-                  $groupingName = array_keys(${$var}['grouping']);
                   $groupingName = $tableName[0];
                   $groupTitle = array_values(${$var}['grouping']);
                   $groupTitle = $groupTitle[0];
@@ -2411,7 +2412,6 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
 
     $selectedFields = array_keys($firstRow);
     $alterFunctions = $alterMap = array();
-
     foreach ($this->_columns as $tableName => $table) {
       if (array_key_exists('fields', $table)) {
         foreach ($table['fields'] as $field => $specs) {
@@ -3029,6 +3029,8 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    */
   function getLineItemColumns() {
     $specs = array();
+    $this->setFinancialType();
+    $pseudoMethod = $this->financialTypePseudoConstant;
     if ($this->financialTypeField == 'financial_type_id') {
       $specs['financial_type_id'] = array(
         'title' => ts('Line Item Financial TYpe'),
@@ -3038,6 +3040,8 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'is_filters' => TRUE,
         'is_order_bys' => TRUE,
         'is_group_bys' => TRUE,
+        'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+        'options' => CRM_Contribute_PseudoConstant::$pseudoMethod(),
       );
     }
     $specs = array_merge($specs, array(
@@ -3114,6 +3118,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'alter_display' => 'alterFinancialType',
         'operatorType' => CRM_Report_Form::OP_MULTISELECT,
         'is_field' => TRUE,
+        'options' => CRM_Contribute_PseudoConstant::$pseudoMethod(),
       ),
     );
     return $this->buildColumns($specs, 'civicrm_price_field_value', $this->getPriceFieldValueBAO());
