@@ -67,76 +67,60 @@ class CRM_Extendedreport_Form_Report_Pledge_Lybuns extends CRM_Extendedreport_Fo
 
     $this->_columns =
       array(
-        'civicrm_contact' =>
-          array(
+        'civicrm_contact' =>          array(
             'dao' => 'CRM_Contact_DAO_Contact',
             'grouping' => 'contact-field',
-            'fields' =>
-              array(
-                'display_name' =>
-                  array(
+            'fields' =>              array(
+                'display_name' =>                  array(
                     'title' => ts('Donor Name'),
                     'default' => TRUE,
                     'required' => TRUE
                   ),
               ),
-            'filters' =>
-              array(
-                'sort_name' =>
-                  array(
+            'filters' =>              array(
+                'sort_name' =>                  array(
                     'title' => ts('Donor Name'),
                     'operator' => 'like',
                   ),
               ),
           ),
-        'civicrm_email' =>
-          array(
+        'civicrm_email' =>          array(
             'dao' => 'CRM_Core_DAO_Email',
             'grouping' => 'contact-field',
-            'fields' =>
-              array(
-                'email' =>
-                  array(
+            'fields' =>              array(
+                'email' =>                  array(
                     'title' => ts('Email'),
                     'default' => TRUE,
                   ),
               ),
           ),
-        'civicrm_phone' =>
-          array(
+        'civicrm_phone' =>          array(
             'dao' => 'CRM_Core_DAO_Phone',
             'grouping' => 'contact-field',
-            'fields' =>
-              array(
-                'phone' =>
-                  array(
+            'fields' =>              array(
+                'phone' =>                  array(
                     'title' => ts('Phone No'),
                     'default' => TRUE,
                   ),
               ),
           ),
-        'civicrm_pledge' =>
-          array(
+        'civicrm_pledge' =>          array(
             'dao' => 'CRM_Pledge_DAO_Pledge',
-            'fields' =>
-              array(
-                'contact_id' =>
-                  array(
+            'fields' =>              array(
+                'contact_id' =>                  array(
                     'title' => ts('contactId'),
                     'no_display' => TRUE,
                     'required' => TRUE,
                     'no_repeat' => TRUE,
                   ),
-                'amount' =>
-                  array(
+                'amount' =>                  array(
                     'title' => ts('Total Amount'),
                     'no_display' => TRUE,
                     'required' => TRUE,
                     'no_repeat' => TRUE,
 
                   ),
-                'start_date' =>
-                  array(
+                'start_date' =>                  array(
                     'title' => ts('Year'),
                     'no_display' => TRUE,
                     'required' => TRUE,
@@ -145,10 +129,8 @@ class CRM_Extendedreport_Form_Report_Pledge_Lybuns extends CRM_Extendedreport_Fo
                   ),
 
               ),
-            'filters' =>
-              array(
-                'yid' =>
-                  array(
+            'filters' =>              array(
+                'yid' =>                  array(
                     'name' => 'start_date',
                     'title' => ts('This Year'),
                     'operatorType' => CRM_Report_Form::OP_SELECT,
@@ -160,22 +142,18 @@ class CRM_Extendedreport_Form_Report_Pledge_Lybuns extends CRM_Extendedreport_Fo
  WHERE   YEAR(pledge.start_date) >=  \$value AND pledge.is_test = 0) AND pledge_civireport.contact_id IN (SELECT distinct pledge.contact_id FROM civicrm_pledge pledge
  WHERE   YEAR(pledge.start_date) =  (\$value-1) AND pledge.is_test = 0) "
                   ),
-                'status_id' =>
-                  array(
+                'status_id' =>                  array(
                     'operatorType' => CRM_Report_Form::OP_MULTISELECT,
                     'options' => CRM_Contribute_PseudoConstant::contributionStatus(),
                     'default' => array('1')
                   ),
               ),
           ),
-        'civicrm_group' =>
-          array(
+        'civicrm_group' =>          array(
             'dao' => 'CRM_Contact_DAO_GroupContact',
             'alias' => 'cgroup',
-            'filters' =>
-              array(
-                'gid' =>
-                  array(
+            'filters' =>              array(
+                'gid' =>                  array(
                     'name' => 'group_id',
                     'title' => ts('Group'),
                     'operatorType' => CRM_Report_Form::OP_MULTISELECT,

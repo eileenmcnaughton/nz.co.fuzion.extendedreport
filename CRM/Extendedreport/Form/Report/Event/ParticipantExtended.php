@@ -32,13 +32,10 @@ class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Exten
     }
 
     $this->_columns = array(
-        'civicrm_contact' =>
-          array(
+        'civicrm_contact' =>          array(
             'dao' => 'CRM_Contact_DAO_Contact',
-            'fields' =>
-              array(
-                'sort_name_linked' =>
-                  array(
+            'fields' =>              array(
+                'sort_name_linked' =>                  array(
                     'title' => ts('Participant Name'),
                     'required' => TRUE,
                     'no_repeat' => TRUE,
@@ -50,17 +47,14 @@ class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Exten
                 'last_name' => array(
                   'title' => ts('Last Name'),
                 ),
-                'id' =>
-                  array(
+                'id' =>                  array(
                     'no_display' => TRUE,
                     'required' => TRUE,
                   ),
-                'gender_id' =>
-                  array(
+                'gender_id' =>                  array(
                     'title' => ts('Gender'),
                   ),
-                'birth_date' =>
-                  array(
+                'birth_date' =>                  array(
                     'title' => ts('Birth Date'),
                   ),
                 'age' => array(
@@ -71,46 +65,37 @@ class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Exten
                   'title' => ts('Age at Event'),
                   'dbAlias' => 'TIMESTAMPDIFF(YEAR, contact_civireport.birth_date, event_civireport.start_date)',
                 ),
-                'employer_id' =>
-                  array(
+                'employer_id' =>                  array(
                     'title' => ts('Organization'),
                   ),
               ),
             'grouping' => 'contact-fields',
-            'order_bys' =>
-              array(
-                'sort_name' =>
-                  array(
+            'order_bys' =>              array(
+                'sort_name' =>                  array(
                     'title' => ts('Last Name, First Name'),
                     'default' => '1',
                     'default_weight' => '0',
                     'default_order' => 'ASC',
                   ),
-                'gender_id' =>
-                  array(
+                'gender_id' =>                  array(
                     'name' => 'gender_id',
                     'title' => ts('Gender'),
                   ),
-                'birth_date' =>
-                  array(
+                'birth_date' =>                  array(
                     'name' => 'birth_date',
                     'title' => ts('Birth Date'),
                   ),
-                'age_at_event' =>
-                  array(
+                'age_at_event' =>                  array(
                     'name' => 'age_at_event',
                     'title' => ts('Age at Event'),
                   ),
               ),
-            'filters' =>
-              array(
-                'sort_name' =>
-                  array(
+            'filters' =>              array(
+                'sort_name' =>                  array(
                     'title' => ts('Participant Name'),
                     'operator' => 'like',
                   ),
-                'gender_id' =>
-                  array(
+                'gender_id' =>                  array(
                     'title' => ts('Gender'),
                     'operatorType' => CRM_Report_Form::OP_MULTISELECT,
                     'options' => CRM_Core_PseudoConstant::get('CRM_Contact_DAO_Contact', 'gender_id'),
@@ -122,51 +107,40 @@ class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Exten
                 ),
               ),
           ),
-        'civicrm_email' =>
-          array(
+        'civicrm_email' =>          array(
             'dao' => 'CRM_Core_DAO_Email',
-            'fields' =>
-              array(
-                'email' =>
-                  array(
+            'fields' =>              array(
+                'email' =>                  array(
                     'title' => ts('Email'),
                     'no_repeat' => TRUE,
                   ),
               ),
             'grouping' => 'contact-fields',
-            'filters' =>
-              array(
-                'email' =>
-                  array(
+            'filters' =>              array(
+                'email' =>                  array(
                     'title' => ts('Participant E-mail'),
                     'operator' => 'like',
                   ),
               ),
           ),
-        'civicrm_address' =>
-          array(
+        'civicrm_address' =>          array(
             'dao' => 'CRM_Core_DAO_Address',
-            'fields' =>
-              array(
+            'fields' =>              array(
                 'street_address' => NULL,
                 'city' => NULL,
                 'postal_code' => NULL,
-                'state_province_id' =>
-                  array(
+                'state_province_id' =>                  array(
                     'title' => ts('State/Province'),
                   ),
-                'country_id' =>
-                  array(
+                'country_id' =>                  array(
                     'title' => ts('Country'),
                   ),
               ),
             'grouping' => 'contact-fields',
           ),
-        'civicrm_participant' =>
-          array(
+        'civicrm_participant' =>          array(
             'dao' => 'CRM_Event_DAO_Participant',
-            'fields' =>
-              array(
+            'fields' =>              array(
                 'participant_id' => array('title' => 'Participant ID'),
                 'participant_record' => array(
                   'name' => 'id',
@@ -194,8 +168,7 @@ class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Exten
                 'participant_register_date' => array('title' => ts('Registration Date')),
               ),
             'grouping' => 'event-fields',
-            'filters' =>
-              array(
+            'filters' =>              array(
                 'event_id' => array(
                   'name' => 'event_id',
                   'title' => ts('Event'),
@@ -218,8 +191,7 @@ class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Exten
                   'title' => 'Registration Date',
                   'operatorType' => CRM_Report_Form::OP_DATE,
                 ),
-                'fee_currency' =>
-                  array(
+                'fee_currency' =>                  array(
                     'title' => ts('Fee Currency'),
                     'operatorType' => CRM_Report_Form::OP_MULTISELECT,
                     'options' => CRM_Core_OptionGroup::values('currencies_enabled'),
@@ -228,25 +200,21 @@ class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Exten
                   ),
 
               ),
-            'order_bys' =>
-              array(
-                'event_id' =>
-                  array('title' => ts('Event'), 'default_weight' => '1', 'default_order' => 'ASC'),
+            'order_bys' =>              array(
+                'event_id' =>                  array('title' => ts('Event'), 'default_weight' => '1', 'default_order' => 'ASC'),
               ),
           ),
       )
       + $this->getPhoneColumns()
       + array(
-        'civicrm_event' =>
-          array(
+        'civicrm_event' =>          array(
             'dao' => 'CRM_Event_DAO_Event',
             'fields' => array(
               'event_type_id' => array('title' => ts('Event Type')),
               'event_start_date' => array('title' => ts('Event Start Date')),
             ),
             'grouping' => 'event-fields',
-            'filters' =>
-              array(
+            'filters' =>              array(
                 'eid' => array(
                   'name' => 'event_type_id',
                   'title' => ts('Event Type'),
@@ -258,10 +226,8 @@ class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Exten
                   'operatorType' => CRM_Report_Form::OP_DATE,
                 ),
               ),
-            'order_bys' =>
-              array(
-                'event_type_id' =>
-                  array('title' => ts('Event Type'), 'default_weight' => '2', 'default_order' => 'ASC'),
+            'order_bys' =>              array(
+                'event_type_id' =>                  array('title' => ts('Event Type'), 'default_weight' => '2', 'default_order' => 'ASC'),
               ),
           ),
         'civicrm_contribution' => array(

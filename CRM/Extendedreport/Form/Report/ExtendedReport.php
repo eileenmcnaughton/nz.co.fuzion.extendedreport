@@ -3126,35 +3126,28 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     return array(
       'civicrm_price_field' => array(
           'dao' => $this->getPriceFieldBAO(),
-          'fields' =>
-            array(
-              'price_field_label' =>
-                array(
+          'fields' =>            array(
+              'price_field_label' =>                array(
                   'title' => ts('Price Field Label'),
                   'name' => 'label',
                 ),
             ),
           'filters' => array(
-              'price_field_label' =>
-                array(
+              'price_field_label' =>                array(
                   'title' => ts('Price Field Label'),
                   'type' => CRM_Utils_Type::T_STRING,
                   'operator' => 'like',
                   'name' => 'label',
                 ),
             ),
-          'order_bys' =>
-            array(
-              'price_field_label' =>
-                array(
+          'order_bys' =>            array(
+              'price_field_label' =>                array(
                   'title' => ts('Price Field Label'),
                   'name' => 'label',
                 ),
             ),
-          'group_bys' =>
-            array(
-              'price_field_label' =>
-                array(
+          'group_bys' =>            array(
+              'price_field_label' =>                array(
                   'title' => ts('Price Field Label'),
                   'name' => 'label',
                 ),
@@ -3233,15 +3226,11 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
             'operatorType' => CRM_Report_Form::OP_DATE,
           ),
         ),
-        'order_bys' =>
-          array(
-            'event_id' =>
-              array('title' => ts('Event'), 'default_weight' => '1', 'default_order' => 'ASC'),
+        'order_bys' =>          array(
+            'event_id' =>              array('title' => ts('Event'), 'default_weight' => '1', 'default_order' => 'ASC'),
           ),
-        'group_bys' =>
-          array(
-            'event_id' =>
-              array('title' => ts('Event')),
+        'group_bys' =>          array(
+            'event_id' =>              array('title' => ts('Event')),
           ),
       ),
     );
@@ -3278,8 +3267,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
           'membership_id' => array(
             'title' => 'Membership ID / Count',
             'name' => 'id',
-            'statistics' =>
-              array('count' => ts('Number of Memberships')),
+            'statistics' =>              array('count' => ts('Number of Memberships')),
           ),
         ),
         'group_bys' => array(
@@ -4415,15 +4403,13 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       )
     );
     $activityFields['civicrm_activity']['fields'] = array(
-      'activity_type_id' =>
-        array(
+      'activity_type_id' =>        array(
           'title' => ts('Latest Activity Type'),
           'default' => FALSE,
           'type' => CRM_Utils_Type::T_STRING,
           'alter_display' => 'alterActivityType',
         ),
-      'activity_date_time' =>
-        array(
+      'activity_date_time' =>        array(
           'title' => ts('Latest Activity Date'),
           'default' => FALSE,
         ),
@@ -4463,13 +4449,11 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       )
     );
     $activityFields['civicrm_activity']['fields'] = array(
-      'id' =>
-        array(
+      'id' =>        array(
           'no_display' => TRUE,
           'required' => TRUE,
         ),
-      'source_record_id' =>
-        array(
+      'source_record_id' =>        array(
           'no_display' => TRUE,
           'required' => FALSE,
         ),
@@ -4572,8 +4556,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'activity_date_time' => array(
           'title' => ts('Activity Date')
         ),
-        'activity_type_id' =>
-          array('title' => ts('Activity Type')),
+        'activity_type_id' =>          array('title' => ts('Activity Type')),
 
 
       );

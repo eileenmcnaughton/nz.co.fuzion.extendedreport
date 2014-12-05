@@ -4,18 +4,16 @@
 // database as appropriate. For more details, see "hook_civicrm_managed" at:
 // http://wiki.civicrm.org/confluence/display/CRMDOC42/Hook+Reference
 return array(
-  0 =>
-    array(
-      'name' => 'Extended Report - Contributions with Price Set data',
-      'entity' => 'ReportTemplate',
-      'params' =>
-        array(
-          'version' => 3,
-          'label' => 'Extended Report - Contributions with Price Set data',
-          'description' => 'Extended Report - Line item Report (based on contributions)',
-          'class_name' => 'CRM_Extendedreport_Form_Report_Price_Contributionbased',
-          'report_url' => 'price/contributionbased',
-          'component' => 'CiviContribute',
-        ),
+  0 => array(
+    'name' => 'Extended Report - Contributions with Price Set data',
+    'entity' => 'ReportTemplate',
+    'params' => array(
+      'version' => 3,
+      'label' => 'Extended Report - Contributions with Price Set data',
+      'description' => 'Extended Report - Line item Report (based on contributions)',
+      'class_name' => 'CRM_Extendedreport_Form_Report_Price_Contributionbased',
+      'report_url' => 'price/contributionbased',
+      'component' => 'CiviContribute',
     ),
+  ),
 );

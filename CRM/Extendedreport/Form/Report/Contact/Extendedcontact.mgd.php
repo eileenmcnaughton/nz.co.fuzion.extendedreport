@@ -1,15 +1,13 @@
 <?php
-// This file declares a managed database record of type "ReportTemplate".
+/*// This file declares a managed database record of type "ReportTemplate".
 // The record will be automatically inserted, updated, or deleted from the
 // database as appropriate. For more details, see "hook_civicrm_managed" at:
 // http://wiki.civicrm.org/confluence/display/CRMDOC42/Hook+Reference
 return array(
-  0 =>
-    array(
+  0 =>    array(
       'name' => 'Extended Report - Pivot data contact report',
       'entity' => 'ReportTemplate',
-      'params' =>
-        array(
+      'params' =>        array(
           'version' => 3,
           'label' => 'Extended Report - Pivot data contact report',
           'description' => 'Extended Report - Pivot data Contact Report',
@@ -18,4 +16,4 @@ return array(
           'component' => '',
         ),
     ),
-);
+);*/
