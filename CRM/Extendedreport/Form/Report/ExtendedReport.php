@@ -3132,6 +3132,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    * @return array
    */
   function getPriceFieldValueColumns() {
+    $pseudoMethod = $this->financialTypePseudoConstant;
     $specs = array(
       'label' => array(
         'title' => ts('Price Field Value Label'),
