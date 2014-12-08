@@ -5637,15 +5637,15 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
   /**
    * @param $value
    * @param $row
-   * @param $selectedfield
+   * @param $selectedField
    * @param $criteriaFieldName
    *
    * @return array
    */
-  function alterCountryID($value, &$row, $selectedfield, $criteriaFieldName) {
+  function alterCountryID($value, &$row, $selectedField, $criteriaFieldName) {
     $url = CRM_Utils_System::url(CRM_Utils_System::currentPath(), "reset=1&force=1&{$criteriaFieldName}_op=in&{$criteriaFieldName}_value={$value}", $this->_absoluteUrl);
-    $row[$selectedfield . '_link'] = $url;
-    $row[$selectedfield . '_hover'] = ts("%1 for this country.", array(
+    $row[$selectedField . '_link'] = $url;
+    $row[$selectedField . '_hover'] = ts("%1 for this country.", array(
       1 => $value,
     ));
     $countries = CRM_Core_PseudoConstant::country($value, FALSE);
