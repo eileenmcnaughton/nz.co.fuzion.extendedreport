@@ -2969,12 +2969,14 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
   }
 
   /**
-   * Function to add columns because I wasn't enjoying adding filters to each fn
+   * Function to add columns because I wasn't enjoying adding filters to each fn.
    *
    * @param string $type
    * @param array $options
+   * @param array $defaults
+   * @return
    */
-  function getColumns($type, $options = array()) {
+  function getColumns($type, $options = array(), $defaults = array()) {
     $defaultOptions = array(
       'prefix' => '',
       'prefix_label' => '',
@@ -3000,7 +3002,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     if (!$options['fields']) {
       foreach ($columns as $tables => &$table) {
         if (isset($table['fields'])) {
-          //we still retrieve them all but unset any defaults & set no_display
+          // We still retrieve them all but unset any defaults & set no_display.
           foreach ($table['fields'] as &$field) {
             $field['no_display'] = TRUE;
             $field['required'] = FALSE;

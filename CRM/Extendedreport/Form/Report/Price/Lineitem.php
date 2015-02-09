@@ -31,7 +31,6 @@
  * @package CRM
  * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
- *
  */
 class CRM_Extendedreport_Form_Report_Price_Lineitem extends CRM_Extendedreport_Form_Report_ExtendedReport {
   protected $_addressField = FALSE;
@@ -47,8 +46,9 @@ class CRM_Extendedreport_Form_Report_Price_Lineitem extends CRM_Extendedreport_F
   protected $_aclTable = 'civicrm_contact';
 
   /**
+   * Class constructor.
    */
-  function __construct() {
+  public function __construct() {
     $this->_columns = $this->getColumns('Contact')
       + $this->getColumns('Event')
       + $this->getColumns('Participant')
@@ -66,14 +66,15 @@ class CRM_Extendedreport_Form_Report_Price_Lineitem extends CRM_Extendedreport_F
   function select() {
     parent::select();
   }
-  /*
-   * select from clauses to use (from those advertised using
-   * $this->getAvailableJoins())
-   */
+
   /**
+   * Select from clauses to use.
+   *
+   * (from those advertised using $this->getAvailableJoins()).
+   *
    * @return array
    */
-  function fromClauses() {
+  public function fromClauses() {
     return array(
       'priceFieldValue_from_lineItem',
       'priceField_from_lineItem',
@@ -108,9 +109,11 @@ class CRM_Extendedreport_Form_Report_Price_Lineitem extends CRM_Extendedreport_F
   }
 
   /**
+   * Alter rows display.
+   *
    * @param $rows
    */
-  function alterDisplay(&$rows) {
+  public function alterDisplay(&$rows) {
     parent::alterDisplay($rows);
 
   }
