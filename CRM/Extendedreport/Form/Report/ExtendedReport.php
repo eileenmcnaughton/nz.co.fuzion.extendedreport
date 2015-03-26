@@ -218,21 +218,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   }
 
   /**
-   * Get the name of the PriceFieldValueBAO correct for the civi version
-   * @return string BAO name
-   */
-  function getPriceFieldBAO() {
-    $codeVersion = explode('.', CRM_Utils_System::version());
-    // if db.ver < code.ver, time to upgrade
-    if (version_compare($codeVersion[0] . '.' . $codeVersion[1], 4.4) >= 0) {
-      return 'CRM_Price_BAO_PriceField';
-    }
-    else {
-      return 'CRM_Price_BAO_Field';
-    }
-  }
-
-  /**
    * Pre process function.
    *
    * Called prior to build form.
@@ -906,7 +891,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     }
 
     $this->_orderByArray = $orderBys;
-
     $this->assign('sections', $this->_sections);
   }
 
@@ -3432,40 +3416,24 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
   }
 
   /**
+   * Get column specs for civicrm_price_fields.
+   *
    * @return array
    */
   function getPriceFieldColumns() {
-    return array(
-      'civicrm_price_field' => array(
-        'dao' => $this->getPriceFieldBAO(),
-        'fields' => array(
-          'price_field_label' => array(
-            'title' => ts('Price Field Label'),
-            'name' => 'label',
-          ),
-        ),
-        'filters' => array(
-          'price_field_label' => array(
-            'title' => ts('Price Field Label'),
-            'type' => CRM_Utils_Type::T_STRING,
-            'operator' => 'like',
-            'name' => 'label',
-          ),
-        ),
-        'order_bys' => array(
-          'price_field_label' => array(
-            'title' => ts('Price Field Label'),
-            'name' => 'label',
-          ),
-        ),
-        'group_bys' => array(
-          'price_field_label' => array(
-            'title' => ts('Price Field Label'),
-            'name' => 'label',
-          ),
-        ),
+    $specs = array(
+      'price_field_label' => array(
+        'title' => ts('Price Field Label'),
+        'name' => 'label',
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+        'is_order_bys' => TRUE,
+        'is_group_bys' => TRUE,
+        'type' => CRM_Utils_Type::T_STRING,
+        'operator' => 'like',
       ),
     );
+    return $this->buildColumns($specs, 'civicrm_price_field', 'CRM_Price_BAO_PriceField');
   }
 
   /**
