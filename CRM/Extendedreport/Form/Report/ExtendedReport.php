@@ -3056,7 +3056,6 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         }
       }
     }
-
     return $columns;
   }
 
@@ -3731,6 +3730,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'name' => 'civicrm_contact',
         'alias' => $options['prefix'] . 'civicrm_contact',
         'grouping' => $options['prefix'] . 'contact-fields',
+
       )
     );
     $contactFields[$options['prefix'] . 'civicrm_contact']['fields'] = array();
@@ -3745,41 +3745,52 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
           'title' => ts($options['prefix_label'] . 'Contact ID'),
           'alter_display' => 'alterContactID',
           'type' => CRM_Utils_Type::T_INT,
+          'is_order_bys' => TRUE,
+          'is_group_bys' => TRUE,
+          'is_fields' => TRUE,
         ),
         $options['prefix'] . 'external_identifier' => array(
           'name' => 'external_identifier',
           'title' => ts($options['prefix_label'] . 'External ID'),
           'type' => CRM_Utils_Type::T_INT,
+          'is_fields' => TRUE,
         )
       );
       $individualFields = array(
         $options['prefix'] . 'first_name' => array(
           'name' => 'first_name',
           'title' => ts($options['prefix_label'] . 'First Name'),
+          'is_fields' => TRUE,
         ),
         $options['prefix'] . 'middle_name' => array(
           'name' => 'middle_name',
           'title' => ts($options['prefix_label'] . 'Middle Name'),
+          'is_fields' => TRUE,
         ),
         $options['prefix'] . 'last_name' => array(
           'name' => 'last_name',
           'title' => ts($options['prefix_label'] . 'Last Name'),
+          'is_fields' => TRUE,
         ),
         $options['prefix'] . 'nick_name' => array(
           'name' => 'nick_name',
           'title' => ts($options['prefix_label'] . 'Nick Name'),
+          'is_fields' => TRUE,
         ),
         $options['prefix'] . 'gender_id' => array(
           'name' => 'gender_id',
           'title' => ts($options['prefix_label'] . 'Gender ID'),
           'options' => CRM_Contact_BAO_Contact::buildOptions('gender_id'),
+          'is_fields' => TRUE,
         ),
         'birth_date' => array(
           'title' => ts('Birth Date'),
+          'is_fields' => TRUE,
         ),
         'age' => array(
           'title' => ts('Age'),
           'dbAlias' => 'TIMESTAMPDIFF(YEAR, contact_civireport.birth_date, CURDATE())',
+          'is_fields' => TRUE,
         ),
       );
       if (!$orgOnly) {
@@ -3884,7 +3895,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       );
     }
     $weight = $weight + 1;
-    return $contactFields;
+    return $this->buildColumns($contactFields[$options['prefix'] . 'civicrm_contact']['fields'], 'civicrm_contact', 'CRM_Contact_DAO_Contact');
   }
 
   /**

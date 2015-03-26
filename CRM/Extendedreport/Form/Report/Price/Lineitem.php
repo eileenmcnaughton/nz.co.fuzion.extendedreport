@@ -27,10 +27,7 @@
 */
 
 /**
- *
- * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
- * $Id$
+ * Class CRM_Extendedreport_Form_Report_Price_Lineitem.
  */
 class CRM_Extendedreport_Form_Report_Price_Lineitem extends CRM_Extendedreport_Form_Report_ExtendedReport {
   protected $_addressField = FALSE;
@@ -49,7 +46,8 @@ class CRM_Extendedreport_Form_Report_Price_Lineitem extends CRM_Extendedreport_F
    * Class constructor.
    */
   public function __construct() {
-    $this->_columns = $this->getColumns('Contact')
+    $this->_columns
+      = $this->getColumns('Contact', array('order_by' => TRUE))
       + $this->getColumns('Event')
       + $this->getColumns('Participant')
       + $this->getColumns('Contribution', array('order_by' => TRUE))
