@@ -1036,17 +1036,19 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
 
 
   /**
-   * We have over-ridden this to provide the option of setting single date fields with defaults
-   * and the option of setting 'to', 'from' defaults on date fields
+   * Set default values.
+   *
+   * We have over-ridden this to provide the option of setting single date fields with defaults.
    *
    * @param boolean $freeze
    *
    * @return array
    */
-  function setDefaultValues($freeze = TRUE) {
+  public function setDefaultValues($freeze = TRUE) {
     $freezeGroup = array();
+
     // FIXME: generalizing form field naming conventions would reduce
-    // lots of lines below.
+    // Lots of lines below.
     foreach ($this->_columns as $tableName => $table) {
       if (array_key_exists('fields', $table)) {
         foreach ($table['fields'] as $fieldName => $field) {
@@ -1074,7 +1076,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       if (array_key_exists('group_bys', $table)) {
         foreach ($table['group_bys'] as $fieldName => $field) {
           if (isset($field['default'])) {
-            if (CRM_Utils_Array::value('frequency', $field)) {
+            if (!empty($field['frequency'])) {
               $this->_defaults['group_bys_freq'][$fieldName] = 'MONTH';
             }
             $this->_defaults['group_bys'][$fieldName] = $field['default'];
@@ -1085,6 +1087,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
         foreach ($table['filters'] as $fieldName => $field) {
           if (isset($field['default'])) {
             if (CRM_Utils_Array::value('type', $field) & CRM_Utils_Type::T_DATE
+              // This is the overriden part.
               && !(CRM_Utils_Array::value('operatorType', $field) == self::OP_SINGLEDATE)
             ) {
               if (is_array($field['default'])) {
@@ -1102,10 +1105,20 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
           }
           //assign default value as "in" for multiselect
           //operator, To freeze the select element
-          if (CRM_Utils_Array::value('operatorType', $field) == CRM_Report_Form::OP_MULTISELECT) {
+          if (CRM_Utils_Array::value('operatorType', $field) ==
+            CRM_Report_Form::OP_MULTISELECT
+          ) {
             $this->_defaults["{$fieldName}_op"] = 'in';
           }
-          elseif (CRM_Utils_Array::value('operatorType', $field) == CRM_Report_Form::OP_MULTISELECT_SEPARATOR) {
+          if (CRM_Utils_Array::value('operatorType', $field) ==
+            // This is the OP_ENTITY_REF value. The constant is not registered in 4.4.
+            256
+          ) {
+            $this->_defaults["{$fieldName}_op"] = 'in';
+          }
+          elseif (CRM_Utils_Array::value('operatorType', $field) ==
+            CRM_Report_Form::OP_MULTISELECT_SEPARATOR
+          ) {
             $this->_defaults["{$fieldName}_op"] = 'mhas';
           }
           elseif ($op = CRM_Utils_Array::value('default_op', $field)) {
@@ -1115,18 +1128,17 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       }
 
       if (
-        array_key_exists('order_bys', $table) &&
-        is_array($table['order_bys'])
+        empty($this->_formValues['order_bys']) &&
+        (array_key_exists('order_bys', $table) &&
+          is_array($table['order_bys']))
       ) {
         if (!array_key_exists('order_bys', $this->_defaults)) {
           $this->_defaults['order_bys'] = array();
         }
         foreach ($table['order_bys'] as $fieldName => $field) {
-          if (
-            CRM_Utils_Array::value('default', $field) ||
-            CRM_Utils_Array::value('default_order', $field) ||
+          if (!empty($field['default']) || !empty($field['default_order']) ||
             CRM_Utils_Array::value('default_is_section', $field) ||
-            CRM_Utils_Array::value('default_weight', $field)
+            !empty($field['default_weight'])
           ) {
             $order_by = array(
               'column' => $fieldName,
@@ -1134,7 +1146,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
               'section' => CRM_Utils_Array::value('default_is_section', $field, 0),
             );
 
-            if (CRM_Utils_Array::value('default_weight', $field)) {
+            if (!empty($field['default_weight'])) {
               $this->_defaults['order_bys'][(int) $field['default_weight']] = $order_by;
             }
             else {
