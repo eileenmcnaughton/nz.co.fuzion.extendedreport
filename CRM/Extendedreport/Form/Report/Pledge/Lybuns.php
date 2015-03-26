@@ -120,14 +120,15 @@ class CRM_Extendedreport_Form_Report_Pledge_Lybuns extends CRM_Extendedreport_Fo
         ),
         'filters' => array(
           'yid' => array(
-              'name' => 'start_date',
-              'title' => ts('This Year'),
-              'operatorType' => CRM_Report_Form::OP_SELECT,
-              // 'type'    => CRM_Utils_Type::T_INT + CRM_Utils_Type::T_BOOLEAN,
-              'options' => $optionYear,
-              'default' => date('Y'),
+            'name' => 'start_date',
+            'title' => ts('This Year'),
+            'operatorType' => CRM_Report_Form::OP_SELECT,
+            // 'type'    => CRM_Utils_Type::T_INT + CRM_Utils_Type::T_BOOLEAN,
+            'options' => $optionYear,
+            'default' => date('Y'),
           ),
           'status_id' => array(
+            'title' => ts('Pledge status'),
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
             'options' => CRM_Contribute_PseudoConstant::contributionStatus(),
             'default' => array('1')
@@ -154,11 +155,11 @@ class CRM_Extendedreport_Form_Report_Pledge_Lybuns extends CRM_Extendedreport_Fo
 
   }
 
-  function preProcess() {
+  public function preProcess() {
     parent::preProcess();
   }
 
-  function select() {
+  public function select() {
 
     $this->_columnHeaders = $select = array();
     $current_year = $this->_params['yid_value'];
@@ -320,9 +321,9 @@ class CRM_Extendedreport_Form_Report_Pledge_Lybuns extends CRM_Extendedreport_Fo
 
       }
       else {
-        $sql = "{$this->_select} {$this->_from} WHERE {$this->_aliases['civicrm_contact']}.id IN (" . implode(',', $contactIds) . ") AND {$this->_aliases['civicrm_pledge']}.is_test = 0 {$this->_statusClause} {$this->_groupBy} ";
+        $this->_where .= " AND {$this->_aliases['civicrm_contact']}.id IN (" . implode(',', $contactIds) . ")";
+        $sql = "{$this->_select} {$this->_from} {$this->_where} AND {$this->_aliases['civicrm_pledge']}.is_test = 0  {$this->_groupBy} ";
       }
-
       $dao = CRM_Core_DAO::executeQuery($sql);
       $current_year = $this->_params['yid_value'];
       $previous_year = $current_year - 1;
