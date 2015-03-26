@@ -1148,41 +1148,26 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   }
 
   /**
-   * Assign columns to template - we have taken the 4.5 version of this and modified it slightly
-   * - this function suffers from the recurrent report problem - it takes the 'fields' array as the master - but 'fields' is often not set
-   * if it is a filters only - so fields is overloaded. Perhaps always setting fields & using no_display better is the answer
+   * Backport of 4.6.
    *
-   * The other problem is that the 'add filters' function needs to know what key has been used in colGroups (at least for custom fields)
-   * At the moment any change of the key doesn't flow down
-   *
+   * Add columns to report.
    */
-  function addColumns() {
+  public function addColumns() {
     $options = array();
     $colGroups = NULL;
-
     foreach ($this->_columns as $tableName => $table) {
-      //altered to look at fields & filters
-      $filters = CRM_Utils_Array::value('filters', $table, array());
-      $fields = CRM_Utils_Array::value('fields', $table, array());
-      $relevantFields = array_merge($filters, $fields);
-      foreach (array_keys($filters) as $filterField) {
-        if (!isset($fields[$filterField])) {
-          $relevantFields[$filterField]['no_display'] = TRUE;
-        }
-      }
-
-      if (!empty($relevantFields)) {
-        foreach ($relevantFields as $fieldName => $field) {
+      if (array_key_exists('fields', $table)) {
+        foreach ($table['fields'] as $fieldName => $field) {
           $groupTitle = '';
-          $groupingName = $tableName;
           if (empty($field['no_display'])) {
             foreach (array('table', 'field') as $var) {
               if (!empty(${$var}['grouping'])) {
                 if (!is_array(${$var}['grouping'])) {
-                  $groupingName = ${$var}['grouping'];
+                  $tableName = ${$var}['grouping'];
                 }
                 else {
-                  $groupingName = $tableName[0];
+                  $tableName = array_keys(${$var}['grouping']);
+                  $tableName = $tableName[0];
                   $groupTitle = array_values(${$var}['grouping']);
                   $groupTitle = $groupTitle[0];
                 }
@@ -1191,17 +1176,18 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
 
             if (!$groupTitle && isset($table['group_title'])) {
               $groupTitle = $table['group_title'];
+              // Having a group_title is secret code for being a custom group
+              // which cryptically translates to needing an accordian.
+              // here we make that explicit.
+              $colGroups[$tableName]['use_accordian_for_field_selection'] = TRUE;
             }
 
-            $colGroups[$groupingName]['fields'][$fieldName] = CRM_Utils_Array::value('title', $field);
-            if ($groupTitle && empty($colGroups[$groupingName]['group_title'])) {
-              $colGroups[$groupingName]['group_title'] = $groupTitle;
+            $colGroups[$tableName]['fields'][$fieldName] = CRM_Utils_Array::value('title', $field);
+            if ($groupTitle && empty($colGroups[$tableName]['group_title'])) {
+              $colGroups[$tableName]['group_title'] = $groupTitle;
             }
-
             $options[$fieldName] = CRM_Utils_Array::value('title', $field);
           }
-          //altered to set column name
-          $this->_columns[$tableName]['grouping_name'] = $groupingName;
         }
       }
     }
@@ -1209,7 +1195,154 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     $this->addCheckBox("fields", ts('Select Columns'), $options, NULL,
       NULL, NULL, NULL, $this->_fourColumnAttribute, TRUE
     );
+    if (!empty($colGroups)) {
+      $this->tabs['FieldSelection'] = array(
+        'title' => ts('Columns'),
+        'tpl' => 'FieldSelection',
+        'div_label' => 'col-groups',
+      );
+
+      // Note this assignment is only really required in buildForm. It is being 'over-called'
+      // to reduce risk of being missed due to overridden functions.
+      $this->assignTabs();
+    }
+
     $this->assign('colGroups', $colGroups);
+  }
+
+  /**
+   * Backport of 4.6
+   *
+   * Add options defined in $this->_options to the report.
+   */
+  public function addOptions() {
+    if (!empty($this->_options)) {
+      // FIXME: For now lets build all elements as checkboxes.
+      // Once we clear with the format we can build elements based on type
+
+      $options = array();
+      foreach ($this->_options as $fieldName => $field) {
+        if ($field['type'] == 'select') {
+          $this->addElement('select', "{$fieldName}", $field['title'], $field['options']);
+        }
+        elseif ($field['type'] == 'checkbox') {
+          $options[$field['title']] = $fieldName;
+          $this->addCheckBox($fieldName, NULL,
+            $options, NULL,
+            NULL, NULL, NULL, $this->_fourColumnAttribute
+          );
+        }
+      }
+    }
+    if (!empty($this->_options)) {
+      $this->tabs['ReportOptions'] = array(
+        'title' => ts('Display Options'),
+        'tpl' => 'ReportOptions',
+        'div_label' => 'other-options',
+      );
+    }
+    $this->assign('otherOptions', $this->_options);
+    $this->assignTabs();
+  }
+
+  /**
+   * Backport of 4.6
+   *
+   * Add group by options to the report.
+   */
+  public function addGroupBys() {
+    $options = $freqElements = array();
+
+    foreach ($this->_columns as $tableName => $table) {
+      if (array_key_exists('group_bys', $table)) {
+        foreach ($table['group_bys'] as $fieldName => $field) {
+          if (!empty($field)) {
+            $options[$field['title']] = $fieldName;
+            if (!empty($field['frequency'])) {
+              $freqElements[$field['title']] = $fieldName;
+            }
+          }
+        }
+      }
+    }
+    $this->addCheckBox("group_bys", ts('Group by columns'), $options, NULL,
+      NULL, NULL, NULL, $this->_fourColumnAttribute
+    );
+    $this->assign('groupByElements', $options);
+    if (!empty($options)) {
+      $this->tabs['GroupBy'] = array(
+        'title' => ts('Grouping'),
+        'tpl' => 'GroupBy',
+        'div_label' => 'group-by-elements',
+      );
+    }
+
+    foreach ($freqElements as $name) {
+      $this->addElement('select', "group_bys_freq[$name]",
+        ts('Frequency'), $this->_groupByDateFreq
+      );
+    }
+    $this->assignTabs();
+  }
+
+  /**
+   * Backport of 4.6.
+   *
+   * Add data for order by tab.
+   */
+  public function addOrderBys() {
+    $options = array();
+    foreach ($this->_columns as $tableName => $table) {
+
+      // Report developer may define any column to order by; include these as order-by options.
+      if (array_key_exists('order_bys', $table)) {
+        foreach ($table['order_bys'] as $fieldName => $field) {
+          if (!empty($field)) {
+            $options[$fieldName] = $field['title'];
+          }
+        }
+      }
+
+      // Add searchable custom fields as order-by options, if so requested
+      // (These are already indexed, so allowing to order on them is cheap.)
+
+      if ($this->_autoIncludeIndexedFieldsAsOrderBys &&
+        array_key_exists('extends', $table) && !empty($table['extends'])
+      ) {
+        foreach ($table['fields'] as $fieldName => $field) {
+          if (empty($field['no_display'])) {
+            $options[$fieldName] = $field['title'];
+          }
+        }
+      }
+    }
+
+    asort($options);
+
+    $this->assign('orderByOptions', $options);
+    if (!empty($options)) {
+      $this->tabs['OrderBy'] = array(
+        'title' => ts('Sorting'),
+        'tpl' => 'OrderBy',
+        'div_label' => 'order-by-elements',
+      );
+    }
+
+    if (!empty($options)) {
+      $options = array(
+          '-' => ' - none - ',
+        ) + $options;
+      for ($i = 1; $i <= 5; $i++) {
+        $this->addElement('select', "order_bys[{$i}][column]", ts('Order by Column'), $options);
+        $this->addElement('select', "order_bys[{$i}][order]", ts('Order by Order'), array(
+          'ASC' => 'Ascending',
+          'DESC' => 'Descending',
+        ));
+        $this->addElement('checkbox', "order_bys[{$i}][section]", ts('Order by Section'), FALSE, array('id' => "order_by_section_$i"));
+        $this->addElement('checkbox', "order_bys[{$i}][pageBreak]", ts('Page Break'), FALSE, array('id' => "order_by_pagebreak_$i"));
+      }
+    }
+    $this->assignTabs();
   }
 
 
