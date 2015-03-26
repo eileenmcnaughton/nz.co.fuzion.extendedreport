@@ -267,7 +267,15 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
 
       $doNotCopy = array('required');
 
-      $fieldGroups = array('fields', 'filters', 'group_bys', 'order_bys');
+      // Extended reports customisation starts ==
+      // We don't want all the schema data copied onto group_bys or order_bys.
+      // Ideally we ONLY want it in metadata & other fields can
+      // 'dip into that' as required. But a lot to untangle before then....
+      // allowing it on group_bys & order_bys can lead to required fields defaulting
+      // to being a group by.
+      $fieldGroups = array('fields', 'filters', 'metadata');
+      // Extended reports customisation ends ==
+
       foreach ($fieldGroups as $fieldGrp) {
         if (CRM_Utils_Array::value($fieldGrp, $table) && is_array($table[$fieldGrp])) {
           foreach ($table[$fieldGrp] as $fieldName => $field) {
@@ -3052,7 +3060,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     if (!empty($daoName)) {
       $columns[$tableName]['dao'] = $daoName;
     }
-
+    $columns[$tableName]['metadata'] = $specs;
     foreach ($specs as $specName => $spec) {
       if (empty($spec['name'])) {
         $spec['name'] = $specName;
