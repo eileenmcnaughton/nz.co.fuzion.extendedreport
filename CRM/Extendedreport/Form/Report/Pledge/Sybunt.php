@@ -123,9 +123,6 @@ class CRM_Extendedreport_Form_Report_Pledge_Sybunt extends CRM_Extendedreport_Fo
             'operatorType' => CRM_Report_Form::OP_SELECT,
             'options' => $optionYear,
             'default' => date('Y'),
-            'clause' => "pledge_civireport.contact_id NOT IN
-(SELECT distinct cont.id FROM civicrm_contact cont, civicrm_pledge pledge
- WHERE  cont.id = pledge.contact_id AND YEAR (pledge.start_date) = \$value AND pledge.is_test = 0 )"
           ),
           'status_id' => array(
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
@@ -226,49 +223,29 @@ class CRM_Extendedreport_Form_Report_Pledge_Sybunt extends CRM_Extendedreport_Fo
                             {$this->_aliases['civicrm_phone']}.is_primary = 1 ";
   }
 
-  function where() {
-    $this->_where = "";
-    $this->_statusClause = "";
-    foreach ($this->_columns as $tableName => $table) {
-      if (array_key_exists('filters', $table)) {
-        foreach ($table['filters'] as $fieldName => $field) {
-          $clause = NULL;
-          if (CRM_Utils_Array::value('type', $field) & CRM_Utils_Type::T_DATE) {
-            $relative = CRM_Utils_Array::value("{$fieldName}_relative", $this->_params);
-            $from = CRM_Utils_Array::value("{$fieldName}_from", $this->_params);
-            $to = CRM_Utils_Array::value("{$fieldName}_to", $this->_params);
-
-            if ($relative || $from || $to) {
-              $clause = $this->dateClause($field['name'], $relative, $from, $to, $field['type']);
-            }
-          }
-          else {
-            $op = CRM_Utils_Array::value("{$fieldName}_op", $this->_params);
-            if ($op) {
-              $clause = $this->whereClause($field, $op, CRM_Utils_Array::value("{$fieldName}_value", $this->_params), CRM_Utils_Array::value("{$fieldName}_min", $this->_params), CRM_Utils_Array::value("{$fieldName}_max", $this->_params));
-              if ($fieldName == 'contribution_status_id' && !empty($clause)) {
-                $this->_statusClause = " AND " . $clause;
-              }
-            }
-          }
-
-          if (!empty($clause)) {
-            $clauses[] = $clause;
-          }
-        }
-      }
+  /**
+   * Specific where clause override.
+   *
+   * @param array $field
+   * @param string $op
+   * @param mixed $value
+   * @param float $min
+   * @param float $max
+   *
+   * @return string
+   */
+  public function whereClause(&$field, $op, $value, $min, $max) {
+    if ($field['name'] == 'start_date') {
+      $value = CRM_Utils_Type::escape($value, 'Int');
+      return "
+        pledge_civireport.contact_id NOT IN (
+          SELECT distinct pledge.contact_id
+          FROM civicrm_pledge pledge
+          WHERE YEAR(pledge.start_date) = $value
+          AND pledge.is_test = 0
+        )";
     }
-
-
-    if (empty($clauses)) {
-      $this->_where = "WHERE {$this->_aliases['civicrm_pledge']}.is_test = 0 ";
-    }
-    else {
-      $this->_where = "WHERE {$this->_aliases['civicrm_pledge']}.is_test = 0 AND " . implode(' AND ', $clauses);
-    }
-    if ($this->_aclWhere) {
-      $this->_where .= " AND {$this->_aclWhere} ";
-    }
+    parent::whereClause($field, $op, $value, $min, $max);
   }
 
   function groupBy() {
