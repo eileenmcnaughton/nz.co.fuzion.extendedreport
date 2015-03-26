@@ -26,19 +26,11 @@
  +--------------------------------------------------------------------+
 */
 
-/**
- *
- * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
- * $Id$
- *
- */
-
 require_once 'CRM/Report/Form.php';
 require_once 'CRM/Contribute/PseudoConstant.php';
 
 /**
- * Class CRM_Extendedreport_Form_Report_Pledge_Lybuns
+ * Class CRM_Extendedreport_Form_Report_Pledge_Lybuns.
  */
 class CRM_Extendedreport_Form_Report_Pledge_Lybuns extends CRM_Extendedreport_Form_Report_ExtendedReport {
 
@@ -53,9 +45,9 @@ class CRM_Extendedreport_Form_Report_Pledge_Lybuns extends CRM_Extendedreport_Fo
   protected $lifeTime_where = NULL;
 
   /**
-   *
+   * Class constructor.
    */
-  function __construct() {
+  public function __construct() {
     $yearsInPast = 8;
     $yearsInFuture = 2;
     $date = CRM_Core_SelectValues::date('custom', NULL, $yearsInPast, $yearsInFuture);
@@ -65,105 +57,101 @@ class CRM_Extendedreport_Form_Report_Pledge_Lybuns extends CRM_Extendedreport_Fo
       $date['minYear']++;
     }
 
-    $this->_columns =
-      array(
-        'civicrm_contact' =>          array(
-            'dao' => 'CRM_Contact_DAO_Contact',
-            'grouping' => 'contact-field',
-            'fields' =>              array(
-                'display_name' =>                  array(
-                    'title' => ts('Donor Name'),
-                    'default' => TRUE,
-                    'required' => TRUE
-                  ),
-              ),
-            'filters' =>              array(
-                'sort_name' =>                  array(
-                    'title' => ts('Donor Name'),
-                    'operator' => 'like',
-                  ),
-              ),
+    $this->_columns = array(
+      'civicrm_contact' => array(
+        'dao' => 'CRM_Contact_DAO_Contact',
+        'grouping' => 'contact-field',
+        'fields' => array(
+          'display_name' => array(
+            'title' => ts('Donor Name'),
+            'default' => TRUE,
+            'required' => TRUE,
           ),
-        'civicrm_email' =>          array(
-            'dao' => 'CRM_Core_DAO_Email',
-            'grouping' => 'contact-field',
-            'fields' =>              array(
-                'email' =>                  array(
-                    'title' => ts('Email'),
-                    'default' => TRUE,
-                  ),
-              ),
+        ),
+        'filters' => array(
+          'sort_name' => array(
+            'title' => ts('Donor Name'),
+            'operator' => 'like',
           ),
-        'civicrm_phone' =>          array(
-            'dao' => 'CRM_Core_DAO_Phone',
-            'grouping' => 'contact-field',
-            'fields' =>              array(
-                'phone' =>                  array(
-                    'title' => ts('Phone No'),
-                    'default' => TRUE,
-                  ),
-              ),
+        ),
+      ),
+      'civicrm_email' => array(
+        'dao' => 'CRM_Core_DAO_Email',
+        'grouping' => 'contact-field',
+        'fields' => array(
+          'email' => array(
+            'title' => ts('Email'),
+            'default' => TRUE,
           ),
-        'civicrm_pledge' =>          array(
-            'dao' => 'CRM_Pledge_DAO_Pledge',
-            'fields' =>              array(
-                'contact_id' =>                  array(
-                    'title' => ts('contactId'),
-                    'no_display' => TRUE,
-                    'required' => TRUE,
-                    'no_repeat' => TRUE,
-                  ),
-                'amount' =>                  array(
-                    'title' => ts('Total Amount'),
-                    'no_display' => TRUE,
-                    'required' => TRUE,
-                    'no_repeat' => TRUE,
+        ),
+      ),
+      'civicrm_phone' => array(
+        'dao' => 'CRM_Core_DAO_Phone',
+        'grouping' => 'contact-field',
+        'fields' => array(
+          'phone' => array(
+            'title' => ts('Phone No'),
+            'default' => TRUE,
+          ),
+        ),
+      ),
+      'civicrm_pledge' => array(
+        'dao' => 'CRM_Pledge_DAO_Pledge',
+        'fields' => array(
+          'contact_id' => array(
+            'title' => ts('contactId'),
+            'no_display' => TRUE,
+            'required' => TRUE,
+            'no_repeat' => TRUE,
+          ),
+          'amount' => array(
+            'title' => ts('Total Amount'),
+            'no_display' => TRUE,
+            'required' => TRUE,
+            'no_repeat' => TRUE,
 
-                  ),
-                'start_date' =>                  array(
-                    'title' => ts('Year'),
-                    'no_display' => TRUE,
-                    'required' => TRUE,
-                    'no_repeat' => TRUE,
-
-                  ),
-
-              ),
-            'filters' =>              array(
-                'yid' =>                  array(
-                    'name' => 'start_date',
-                    'title' => ts('This Year'),
-                    'operatorType' => CRM_Report_Form::OP_SELECT,
-                    // 'type'    => CRM_Utils_Type::T_INT + CRM_Utils_Type::T_BOOLEAN,
-                    'options' => $optionYear,
-                    'default' => date('Y'),
-                    'clause' => "pledge_civireport.contact_id NOT IN
+          ),
+          'start_date' => array(
+            'title' => ts('Year'),
+            'no_display' => TRUE,
+            'required' => TRUE,
+            'no_repeat' => TRUE,
+          ),
+        ),
+        'filters' => array(
+          'yid' => array(
+              'name' => 'start_date',
+              'title' => ts('This Year'),
+              'operatorType' => CRM_Report_Form::OP_SELECT,
+              // 'type'    => CRM_Utils_Type::T_INT + CRM_Utils_Type::T_BOOLEAN,
+              'options' => $optionYear,
+              'default' => date('Y'),
+              'clause' => "pledge_civireport.contact_id NOT IN
 (SELECT distinct pledge.contact_id FROM civicrm_pledge pledge
- WHERE   YEAR(pledge.start_date) >=  \$value AND pledge.is_test = 0) AND pledge_civireport.contact_id IN (SELECT distinct pledge.contact_id FROM civicrm_pledge pledge
- WHERE   YEAR(pledge.start_date) =  (\$value-1) AND pledge.is_test = 0) "
-                  ),
-                'status_id' =>                  array(
-                    'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-                    'options' => CRM_Contribute_PseudoConstant::contributionStatus(),
-                    'default' => array('1')
-                  ),
-              ),
+WHERE   YEAR(pledge.start_date) >=  \$value AND pledge.is_test = 0) AND pledge_civireport.contact_id IN (SELECT distinct pledge.contact_id FROM civicrm_pledge pledge
+WHERE   YEAR(pledge.start_date) =  (\$value-1) AND pledge.is_test = 0) "
           ),
-        'civicrm_group' =>          array(
-            'dao' => 'CRM_Contact_DAO_GroupContact',
-            'alias' => 'cgroup',
-            'filters' =>              array(
-                'gid' =>                  array(
-                    'name' => 'group_id',
-                    'title' => ts('Group'),
-                    'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-                    'group' => TRUE,
-                    'options' => CRM_Core_PseudoConstant::group()
-                  ),
-              ),
+          'status_id' => array(
+            'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+            'options' => CRM_Contribute_PseudoConstant::contributionStatus(),
+            'default' => array('1')
           ),
-
-      );
+        ),
+      ),
+      'civicrm_group' => array(
+        'dao' => 'CRM_Contact_DAO_GroupContact',
+        'alias' => 'cgroup',
+        'filters' => array(
+          'gid' => array(
+            'name' => 'group_id',
+            'title' => ts('Group'),
+            'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+            'group' => TRUE,
+            'options' => CRM_Core_PseudoConstant::group()
+          ),
+        ),
+      ),
+    );
 
     $this->_tagFilter = TRUE;
     parent::__construct();
