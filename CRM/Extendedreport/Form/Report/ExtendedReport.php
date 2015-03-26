@@ -233,9 +233,16 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   }
 
   /**
-   * Backported purely to provide CRM-12687 which is in 4.4
+   * Pre process function.
+   *
+   * Called prior to build form.
+   *
+   * Backported to provide CRM-12687 which is in 4.4 and to prevent inappropriate
+   * defaults being set for group by in core function
+   *
+   * https://github.com/eileenmcnaughton/nz.co.fuzion.extendedreport/issues/12
    */
-  function preProcess() {
+  public function preProcess() {
     $this->preProcessCommon();
 
     if (!$this->_id) {
@@ -245,7 +252,8 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     foreach ($this->_columns as $tableName => $table) {
       // set alias
       if (!isset($table['alias'])) {
-        $this->_columns[$tableName]['alias'] = substr($tableName, 8) . '_civireport';
+        $this->_columns[$tableName]['alias'] = substr($tableName, 8) .
+          '_civireport';
       }
       else {
         $this->_columns[$tableName]['alias'] = $table['alias'] . '_civireport';
@@ -254,7 +262,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       $this->_aliases[$tableName] = $this->_columns[$tableName]['alias'];
 
       $daoOrBaoName = NULL;
-      $expFields = array();
       // higher preference to bao object
       if (array_key_exists('bao', $table)) {
         $daoOrBaoName = $table['bao'];
@@ -263,6 +270,9 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       elseif (array_key_exists('dao', $table)) {
         $daoOrBaoName = $table['dao'];
         $expFields = $daoOrBaoName::export();
+      }
+      else {
+        $expFields = array();
       }
 
       $doNotCopy = array('required');
@@ -277,7 +287,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       // Extended reports customisation ends ==
 
       foreach ($fieldGroups as $fieldGrp) {
-        if (CRM_Utils_Array::value($fieldGrp, $table) && is_array($table[$fieldGrp])) {
+        if (!empty($table[$fieldGrp]) && is_array($table[$fieldGrp])) {
           foreach ($table[$fieldGrp] as $fieldName => $field) {
             // $name is the field name used to reference the BAO/DAO export fields array
             $name = isset($field['name']) ? $field['name'] : $fieldName;
@@ -306,16 +316,16 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
             }
 
             // fill other vars
-            if (CRM_Utils_Array::value('no_repeat', $field)) {
+            if (!empty($field['no_repeat'])) {
               $this->_noRepeats[] = "{$tableName}_{$fieldName}";
             }
-            if (CRM_Utils_Array::value('no_display', $field)) {
+            if (!empty($field['no_display'])) {
               $this->_noDisplay[] = "{$tableName}_{$fieldName}";
             }
 
             // set alias = table-name, unless already set
-            $alias = isset($field['alias']) ? $field['alias'] : (isset($this->_columns[$tableName]['alias']) ?
-              $this->_columns[$tableName]['alias'] : $tableName
+            $alias = isset($field['alias']) ? $field['alias'] : (
+            isset($this->_columns[$tableName]['alias']) ? $this->_columns[$tableName]['alias'] : $tableName
             );
             $this->_columns[$tableName][$fieldGrp][$fieldName]['alias'] = $alias;
 
@@ -326,7 +336,9 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
 
             // set dbAlias = alias.name, unless already set
             if (!isset($this->_columns[$tableName][$fieldGrp][$fieldName]['dbAlias'])) {
-              $this->_columns[$tableName][$fieldGrp][$fieldName]['dbAlias'] = $alias . '.' . $this->_columns[$tableName][$fieldGrp][$fieldName]['name'];
+              $this->_columns[$tableName][$fieldGrp][$fieldName]['dbAlias']
+                = $alias . '.' .
+                $this->_columns[$tableName][$fieldGrp][$fieldName]['name'];
             }
 
             // a few auto fills for filters
@@ -338,23 +350,27 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
                   case CRM_Utils_Type::T_FLOAT:
                     $this->_columns[$tableName][$fieldGrp][$fieldName]['operatorType'] = CRM_Report_Form::OP_FLOAT;
                     break;
+
                   case CRM_Utils_Type::T_INT:
                     $this->_columns[$tableName][$fieldGrp][$fieldName]['operatorType'] = CRM_Report_Form::OP_INT;
                     break;
+
                   case CRM_Utils_Type::T_DATE:
                     $this->_columns[$tableName][$fieldGrp][$fieldName]['operatorType'] = CRM_Report_Form::OP_DATE;
                     break;
+
                   case CRM_Utils_Type::T_BOOLEAN:
                     $this->_columns[$tableName][$fieldGrp][$fieldName]['operatorType'] = CRM_Report_Form::OP_SELECT;
                     if (!array_key_exists('options', $this->_columns[$tableName][$fieldGrp][$fieldName])) {
-                      $this->_columns[$tableName][$fieldGrp][$fieldName]['options'] =
-                        array(
-                          '' => ts('Any'),
-                          '0' => ts('No'),
-                          '1' => ts('Yes')
-                        );
+                      $this->_columns[$tableName][$fieldGrp][$fieldName]['options']
+                        = array(
+                        '' => ts('Any'),
+                        '0' => ts('No'),
+                        '1' => ts('Yes'),
+                      );
                     }
                     break;
+
                   default:
                     if ($daoOrBaoName &&
                       (array_key_exists('pseudoconstant', $this->_columns[$tableName][$fieldGrp][$fieldName])
@@ -403,7 +419,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       $this->postProcess();
     }
   }
-
 
   function select() {
     if ($this->_preConstrain && !$this->_preConstrained) {
