@@ -974,24 +974,45 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     }
   }
 
-  function addFilters() {
-    $options = $filters = array();
+  /**
+   * Add filters to report.
+   *
+   * Backported 4.6 function.
+   *
+   * Case self::OP_SINGLEDATE added for reports which deal with 'before date x'
+   * versus after date x. e.g Sybunt, fundraising reports.
+   */
+  public function addFilters() {
+    $filters = $filterGroups = array();
     $count = 1;
+
     foreach ($this->_filters as $table => $attributes) {
+      if (isset($this->_columns[$table]['group_title'])) {
+        // The presence of 'group_title' is secret code for 'is_a_custom_table'
+        // which magically means to 'display in an accordian'
+        // here we make this explicit.
+        $filterGroups[$table] = array(
+          'group_title' => $this->_columns[$table]['group_title'],
+          'use_accordian_for_field_selection' => TRUE,
+
+        );
+      }
       foreach ($attributes as $fieldName => $field) {
         // get ready with option value pair
         $operations = CRM_Utils_Array::value('operations', $field);
         if (empty($operations)) {
-          $operations = $this->getOperators(CRM_Utils_Array::value('operatorType', $field),
-            $fieldName
-          );
+          $operations = $this->getOperationPair(
+            CRM_Utils_Array::value('operatorType', $field),
+            $fieldName);
         }
-        $tableAlias = $this->_columns[$table]['grouping_name'];
-        $filters[$tableAlias][$fieldName] = $field;
+
+        $filters[$table][$fieldName] = $field;
 
         switch (CRM_Utils_Array::value('operatorType', $field)) {
           case CRM_Report_Form::OP_MONTH:
-            if (!array_key_exists('options', $field) || !is_array($field['options']) || empty($field['options'])) {
+            if (!array_key_exists('options', $field) ||
+              !is_array($field['options']) || empty($field['options'])
+            ) {
               // If there's no option list for this filter, define one.
               $field['options'] = array(
                 1 => ts('January'),
@@ -1014,36 +1035,56 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
           case CRM_Report_Form::OP_MULTISELECT:
           case CRM_Report_Form::OP_MULTISELECT_SEPARATOR:
             // assume a multi-select field
-            if (!empty($field['options'])) {
+            if (!empty($field['options']) ||
+              $fieldName == 'state_province_id' || $fieldName == 'county_id'
+            ) {
               $element = $this->addElement('select', "{$fieldName}_op", ts('Operator:'), $operations);
               if (count($operations) <= 1) {
                 $element->freeze();
               }
-              $select = $this->addElement('select', "{$fieldName}_value", NULL,
-                $field['options'], array(
-                  'size' => 4,
+              if ($fieldName == 'state_province_id' ||
+                $fieldName == 'county_id'
+              ) {
+                $this->addChainSelect($fieldName . '_value', array(
+                  'multiple' => TRUE,
+                  'label' => NULL,
+                  'class' => 'huge',
+                ));
+              }
+              else {
+                $this->addElement('select', "{$fieldName}_value", NULL, $field['options'], array(
                   'style' => 'min-width:250px',
-                )
-              );
-              $select->setMultiple(TRUE);
+                  'class' => 'crm-select2 huge',
+                  'multiple' => TRUE,
+                  'placeholder' => ts('- select -'),
+                ));
+              }
             }
             break;
 
           case CRM_Report_Form::OP_SELECT:
             // assume a select field
             $this->addElement('select', "{$fieldName}_op", ts('Operator:'), $operations);
-            $this->addElement('select', "{$fieldName}_value", NULL, $field['options']);
+            if (!empty($field['options'])) {
+              $this->addElement('select', "{$fieldName}_value", NULL, $field['options']);
+            }
+            break;
+
+          case 256:
+            $this->addElement('select', "{$fieldName}_op", ts('Operator:'), $operations);
+            $this->setEntityRefDefaults($field, $table);
+            $this->addEntityRef("{$fieldName}_value", NULL, $field['attributes']);
             break;
 
           case CRM_Report_Form::OP_DATE:
             // build datetime fields
-            CRM_Core_Form_Date::buildDateRange($this, $fieldName, $count);
+            CRM_Core_Form_Date::buildDateRange($this, $fieldName, $count, '_from', '_to', 'From:', FALSE, $operations);
             $count++;
             break;
 
-          case self::OP_DATETIME:
+          case CRM_Report_Form::OP_DATETIME:
             // build datetime fields
-            CRM_Core_Form_Date::buildDateRange($this, $fieldName, $count, '_from', '_to', 'From:', FALSE, TRUE, 'searchDate', TRUE);
+            CRM_Core_Form_Date::buildDateRange($this, $fieldName, $count, '_from', '_to', 'From:', FALSE, $operations, 'searchDate', TRUE);
             $count++;
             break;
           case self::OP_SINGLEDATE:
@@ -1064,14 +1105,47 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
               array('onchange' => "return showHideMaxMinVal( '$fieldName', this.value );")
             );
             // we need text box for value input
-            $this->add('text', "{$fieldName}_value", NULL);
+            $this->add('text', "{$fieldName}_value", NULL, array('class' => 'huge'));
             break;
         }
       }
     }
+    if (!empty($filters)) {
+      $this->tabs['Filters'] = array(
+        'title' => ts('Filters'),
+        'tpl' => 'Filters',
+        'div_label' => 'set-filters',
+      );
+    }
     $this->assign('filters', $filters);
+    $this->assign('filterGroups', $filterGroups);
   }
 
+  /**
+   * Function to assign the tabs to the template in the correct order.
+   *
+   * Backported 4.6 function. No change.
+   *
+   * We want the tabs to wind up in this order (if not overridden).
+   *
+   *   - Field Selection
+   *   - Group Bys
+   *   - Order Bys
+   *   - Other Options
+   *   - Filters
+   */
+  protected function assignTabs() {
+    $order = array(
+      'FieldSelection',
+      'GroupBy',
+      'OrderBy',
+      'ReportOptions',
+      'Filters',
+    );
+    $order = array_intersect_key(array_fill_keys($order, 1), $this->tabs);
+    $order = array_merge($order, $this->tabs);
+    $this->assign('tabs', $order);
+  }
 
   /**
    * Assign columns to template - we have taken the 4.5 version of this and modified it slightly
@@ -1295,8 +1369,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   }
 
   /**
-   * We can't override getOperationPair because it is static in 4.3 & not static in 4.2 so
-   * use this function to effect an over-ride rename
    *  Note: $fieldName param allows inheriting class to build operationPairs
    * specific to a field.
    *
@@ -1305,68 +1377,15 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    *
    * @return array
    */
-  function getOperators($type = "string", $fieldName = NULL) {
-    // FIXME: At some point we should move these key-val pairs
-    // to option_group and option_value table.
-
-    switch ($type) {
-      case CRM_Report_Form::OP_INT:
-      case CRM_Report_Form::OP_FLOAT:
-        return array(
-          'lte' => ts('Is less than or equal to'),
-          'gte' => ts('Is greater than or equal to'),
-          'bw' => ts('Is between'),
-          'eq' => ts('Is equal to'),
-          'lt' => ts('Is less than'),
-          'gt' => ts('Is greater than'),
-          'neq' => ts('Is not equal to'),
-          'nbw' => ts('Is not between'),
-          'nll' => ts('Is empty (Null)'),
-          'nnll' => ts('Is not empty (Null)'),
-        );
-        break;
-
-      case CRM_Report_Form::OP_SELECT:
-        return array('eq' => ts('Is equal to'));
-
-      case CRM_Report_Form::OP_MONTH:
-      case CRM_Report_Form::OP_MULTISELECT:
-        return array(
-          'in' => ts('Is one of'),
-          'notin' => ts('Is not one of'),
-        );
-        break;
-
-      case CRM_Report_Form::OP_DATE:
-        return array(
-          'nll' => ts('Is empty (Null)'),
-          'nnll' => ts('Is not empty (Null)'),
-        );
-        break;
-      case self::OP_SINGLEDATE:
-        return array(
-          'to' => ts('Until Date'),
-          'from' => ts('From Date'),
-        );
-        break;
-      case CRM_Report_Form::OP_MULTISELECT_SEPARATOR:
-        // use this operator for the values, concatenated with separator. For e.g if
-        // multiple options for a column is stored as ^A{val1}^A{val2}^A
-        return array('mhas' => ts('Is one of'));
-
-      default:
-        // type is string
-        return array(
-          'has' => ts('Contains'),
-          'sw' => ts('Starts with'),
-          'ew' => ts('Ends with'),
-          'nhas' => ts('Does not contain'),
-          'eq' => ts('Is equal to'),
-          'neq' => ts('Is not equal to'),
-          'nll' => ts('Is empty (Null)'),
-          'nnll' => ts('Is not empty (Null)'),
-        );
+  function getOperationPair($type = "string", $fieldName = NULL) {
+    if ($type == self::OP_SINGLEDATE) {
+      return array(
+        'to' => ts('Until Date'),
+        'from' => ts('From Date'),
+      );
     }
+    return parent::getOperationPair($type, $fieldName);
+
   }
 
   /**
