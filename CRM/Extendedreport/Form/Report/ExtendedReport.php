@@ -851,26 +851,107 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     parent::orderBy();
   }
 
-  /*
-   * Store group bys into array - so we can check elsewhere (e.g editable fields) what is grouped
+  /**
+   * Overriden to draw source info from 'metadata' and not rely on it being in 'fields'.
+   *
+   * In some cases other functions want to know which fields are selected for ordering by
+   * Separating this into a separate function allows it to be called separately from constructing
+   * the order by clause
+   */
+  function storeOrderByArray() {
+    $orderBys        = array();
+
+    if (CRM_Utils_Array::value('order_bys', $this->_params) &&
+      is_array($this->_params['order_bys']) &&
+      !empty($this->_params['order_bys'])
+    ) {
+
+      // Proces order_bys in user-specified order
+      foreach ($this->_params['order_bys'] as $orderByFieldName => $orderBy) {
+        $orderByField = array();
+        foreach ($this->_columns as $tableName => $table) {
+          if (empty($table['metadata'])) {
+            $this->setMetaDataForTable($tableName);
+          }
+          if (array_key_exists('order_bys', $table)) {
+            // For DAO columns defined in $this->_columns
+            $fields = $table['order_bys'];
+          }
+          elseif (array_key_exists('extends', $table)) {
+            // For custom fields referenced in $this->_customGroupExtends
+            $fields = $table['metadata'];
+          }
+
+
+          if (!empty($fields) && is_array($fields)) {
+            foreach ($fields as $fieldName => $field) {
+              if ($fieldName == $orderBy['column']) {
+                $orderByField = array_merge($field, $orderBy);
+                $orderByField['tplField'] = "{$tableName}_{$fieldName}";
+                break 2;
+              }
+            }
+          }
+        }
+
+        if (!empty($orderByField)) {
+          $this->_orderByFields[] = $orderByField;
+          $orderBys[] = "{$table['metadata'][$orderBy['column']]['dbAlias']} {$orderBy['order']}";
+          // Record any section headers for assignment to the template
+          if (CRM_Utils_Array::value('section', $orderBy)) {
+            $this->_sections[$orderByField['tplField']] = $orderByField;
+          }
+        }
+      }
+    }
+
+    $this->_orderByArray = $orderBys;
+
+    $this->assign('sections', $this->_sections);
+  }
+
+  /**
+   * We are switching to saving metadata in ... metadata.
+   *
+   * Make sure this is set.
+   *
+   * The reason for this is endless bugginess when filters, groupbys etc rely on metadata
+   * coming from fields.
+   *
+   * @param $tableName
+   */
+  function setMetadataForTable($tableName) {
+    $this->_columns[$tableName]['metadata'] = CRM_Utils_Array::value('fields', $this->_columns[$tableName], array());
+  }
+
+  /**
+   * Store group bys into array - so we can check elsewhere (e.g editable fields) what is grouped.
+   *
+   * Overriden to draw source info from 'metadata' and not rely on it being in 'fields'.
    */
   function storeGroupByArray() {
+
     if (CRM_Utils_Array::value('group_bys', $this->_params) &&
       is_array($this->_params['group_bys']) &&
       !empty($this->_params['group_bys'])
     ) {
       foreach ($this->_columns as $tableName => $table) {
+        if (empty($table['metadata'])) {
+          $this->setMetaDataForTable($tableName);
+        }
         if (array_key_exists('group_bys', $table)) {
           foreach ($table['group_bys'] as $fieldName => $field) {
+            $metadata = $this->_columns[$tableName]['metadata'][$fieldName];
             if (CRM_Utils_Array::value($fieldName, $this->_params['group_bys'])) {
-              if (!in_array($field['dbAlias'], $this->_groupByArray)) {
-                $this->_groupByArray[$tableName . '_' . $fieldName] = $field['dbAlias'];
+              if (!in_array($metadata['dbAlias'], $this->_groupByArray)) {
+                $this->_groupByArray[$tableName . '_' . $fieldName] = $metadata['dbAlias'];
               }
             }
           }
         }
       }
     }
+
     // if a stat field has been selected then do a group by - this is not in parent
     if (!empty($this->_statFields) && !$this->_noGroupBY && empty($this->_groupByArray)) {
       $this->_groupByArray[] = $this->_aliases[$this->_baseTable] . ".id";
@@ -3075,22 +3156,25 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     if (!empty($daoName)) {
       $columns[$tableName]['dao'] = $daoName;
     }
-    $columns[$tableName]['metadata'] = $specs;
+
     foreach ($specs as $specName => $spec) {
       if (empty($spec['name'])) {
         $spec['name'] = $specName;
       }
       $fieldAlias = $tableAlias . '_' . $specName;
+      $columns[$tableName]['metadata'][$fieldAlias] = $spec;
       $columns[$tableName]['fields'][$fieldAlias] = $spec;
       if (empty($spec['is_fields'])) {
         $columns[$tableName]['fields'][$fieldAlias]['no_display'] = TRUE;
       }
+
       foreach ($types as $type) {
         if (!empty($spec['is_' . $type])) {
           $columns[$tableName][$type][$fieldAlias] = $spec;
         }
       }
     }
+
     return $columns;
   }
 
@@ -3242,78 +3326,68 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     if (!isset($_events['all'])) {
       CRM_Core_PseudoConstant::populate($_events['all'], 'CRM_Event_DAO_Event', FALSE, 'title', 'is_active', "is_template IS NULL OR is_template = 0", 'title');
     }
-    return array(
-      'civicrm_participant' => array(
-        'bao' => 'CRM_Event_BAO_Participant',
-        'grouping' => 'event-fields',
-        'fields' => array(
-          'participant_id' => array('title' => 'Participant ID'),
-          'participant_record' => array(
-            'name' => 'id',
-            'title' => 'Participant ID',
-          ),
-          'participant_event_id' => array(
-            'title' => ts('Event ID'),
-            'name' => 'id',
-            'type' => CRM_Utils_Type::T_STRING,
-            'alter_display' => 'alterEventID',
-          ),
-          'status_id' => array(
-            'title' => ts('Event Participant Status'),
-            'alter_display' => 'alterParticipantStatus',
-            'options' => $this->_getOptions('participant', 'status_id', $action = 'get'),
-          ),
-          'role_id' => array(
-            'title' => ts('Role'),
-            'alter_display' => 'alterParticipantRole',
-          ),
-          'participant_fee_level' => NULL,
-          'participant_fee_amount' => NULL,
-          'participant_register_date' => array('title' => ts('Registration Date')),
-        ),
-        'filters' => array(
-          'event_id' => array(
-            'name' => 'event_id',
-            'title' => ts('Event'),
-            'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-            'options' => $_events['all'],
-          ),
-          'sid' => array(
-            'name' => 'status_id',
-            'title' => ts('Participant Status'),
-            'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-            'options' => CRM_Event_PseudoConstant::participantStatus(NULL, NULL, 'label'),
-            'type' => CRM_Utils_Type::T_INT,
-          ),
-          'rid' => array(
-            'name' => 'role_id',
-            'title' => ts('Participant Role'),
-            'operatorType' => CRM_Report_Form::OP_MULTISELECT_SEPARATOR,
-            'options' => CRM_Event_PseudoConstant::participantRole(),
-          ),
-          'participant_fee_level' => array(
-            'name' => 'fee_level',
-            'type' => CRM_Utils_Type::T_STRING,
-            'operator' => 'like',
-            'title' => ts('Participant Fee Level'),
-          ),
-          'participant_register_date' => array(
-            'title' => ' Registration Date',
-            'operatorType' => CRM_Report_Form::OP_DATE,
-          ),
-        ),
-        'order_bys' => array(
-          'event_id' => array(
-            'title' => ts('Event'),
-            'default_weight' => '1',
-            'default_order' => 'ASC'
-          ),
-        ),
-        'group_bys' => array(
-          'event_id' => array('title' => ts('Event')),
-        ),
+    $specs = array(
+      'participant_id' => array(
+        'title' => 'Participant ID',
+        'is_fields' => TRUE,
+      ),
+      'participant_record' => array(
+        'name' => 'id',
+        'title' => 'Participant ID',
+        'is_fields' => TRUE,
+      ),
+      'participant_event_id' => array(
+        'title' => ts('Event ID'),
+        'name' => 'id',
+        'type' => CRM_Utils_Type::T_STRING,
+        'alter_display' => 'alterEventID',
+        'is_filters' => TRUE,
+        'is_fields' => TRUE,
+        'is_order_bys' => TRUE,
+        'is_group_bys' => TRUE,
+        'default_weight' => '1',
+        'default_order' => 'ASC',
+        'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+        'options' => $_events['all'],
+      ),
+      'participant_status_id' => array(
+        'name' => 'status_id',
+        'title' => ts('Event Participant Status'),
+        'alter_display' => 'alterParticipantStatus',
+        'options' => $this->_getOptions('participant', 'status_id', $action = 'get'),
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+        'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+        'options' => CRM_Event_PseudoConstant::participantStatus(NULL, NULL, 'label'),
+        'type' => CRM_Utils_Type::T_INT,
+      ),
+      'participant_role_id' => array(
+        'name' => 'role_id',
+        'title' => ts('Participant Role'),
+        'operatorType' => CRM_Report_Form::OP_MULTISELECT_SEPARATOR,
+        'options' => CRM_Event_PseudoConstant::participantRole(),
+        'alter_display' => 'alterParticipantRole',
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+      ),
+      'participant_fee_level' => array(
+        'name' => 'fee_level',
+        'type' => CRM_Utils_Type::T_STRING,
+        'operator' => 'like',
+        'title' => ts('Participant Fee Level'),
+        'is_fields' => TRUE,
+      ),
+      'participant_fee_amount' => NULL,
+
+      'participant_register_date' => array(
+        'title' => ' Registration Date',
+        'operatorType' => CRM_Report_Form::OP_DATE,
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
       ),
     );
+
+    return $this->buildColumns($specs, 'civicrm_participant', 'CRM_Event_BAO_Participant');
   }
 
   /**
@@ -3445,98 +3519,90 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    * @return array
    */
   function getEventColumns($options = array()) {
-    return array(
-      'civicrm_event' => array(
-        'dao' => 'CRM_Event_DAO_Event',
-        'fields' => array(
-          'event_id' => array(
-            'name' => 'id',
-            'title' => ts('Event ID'),
-          ),
-          'title' => array(
-            'title' => ts('Event Title'),
-            'crm_editable' => array(
-              'id_table' => 'civicrm_event',
-              'id_field' => 'id',
-              'entity' => 'event',
-            ),
-            'type' => CRM_Utils_Type::T_STRING,
-          ),
-          'event_type_id' => array(
-            'title' => ts('Event Type'),
-            'alter_display' => 'alterEventType',
-          ),
-          'fee_label' => array('title' => ts('Fee Label')),
-          'event_start_date' => array(
-            'title' => ts('Event Start Date'),
-          ),
-          'event_end_date' => array('title' => ts('Event End Date')),
-          'max_participants' => array(
-            'title' => ts('Capacity'),
-            'type' => CRM_Utils_Type::T_INT,
-            'crm_editable' => array(
-              'id_table' => 'civicrm_event',
-              'id_field' => 'id',
-              'entity' => 'event'
-            ),
-          ),
-          'is_active' => array(
-            'title' => ts('Is Active'),
-            'type' => CRM_Utils_Type::T_INT,
-            'crm_editable' => array(
-              'id_table' => 'civicrm_event',
-              'id_field' => 'id',
-              'entity' => 'event',
-              'options' => array('0' => 'No', '1' => 'Yes'),
-            ),
-          ),
-          'is_public' => array(
-            'title' => ts('Is Publicly Visible'),
-            'type' => CRM_Utils_Type::T_INT,
-            'crm_editable' => array(
-              'id_table' => 'civicrm_event',
-              'id_field' => 'id',
-              'entity' => 'event'
-            ),
-          ),
+    $specs = array(
+      'event_id' => array(
+        'name' => 'id',
+        'is_fields' => TRUE,
+        'title' => ts('Event ID'),
+      ),
+      'title' => array(
+        'title' => ts('Event Title'),
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+        'crm_editable' => array(
+          'id_table' => 'civicrm_event',
+          'id_field' => 'id',
+          'entity' => 'event',
         ),
-        'grouping' => 'event-fields',
-        'filters' => array(
-          'event_type_id' => array(
-            'name' => 'event_type_id',
-            'title' => ts('Event Type'),
-            'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-            'options' => CRM_Core_OptionGroup::values('event_type'),
-          ),
-          'event_title' => array(
-            'name' => 'title',
-            'title' => ts('Event Title'),
-            'operatorType' => CRM_Report_Form::OP_STRING,
-            'type' => CRM_Utils_Type::T_STRING,
-          ),
-          'event_start_date' => array(
-            'title' => ts('Event start date'),
-            'default_weight' => '1',
-            'default_order' => 'ASC',
-            'type' => CRM_Utils_Type::T_DATE,
-            'operatorType' => CRM_Report_Form::OP_DATE,
-            'name' => 'start_date',
-          )
+        'type' => CRM_Utils_Type::T_STRING,
+        'name' => 'title',
+        'operatorType' => CRM_Report_Form::OP_STRING,
+      ),
+      'event_type_id' => array(
+        'title' => ts('Event Type'),
+        'alter_display' => 'alterEventType',
+        'name' => 'event_type_id',
+        'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+        'options' => CRM_Core_OptionGroup::values('event_type'),
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+        'is_order_bys' => TRUE,
+        'is_group_bys' => TRUE,
+        'default_weight' => '2',
+        'default_order' => 'ASC',
+
+      ),
+      'fee_label' => array(
+        'title' => ts('Fee Label'),
+        'is_fields' => TRUE,
+      ),
+      'event_start_date' => array(
+        'title' => ts('Event Start Date'),
+        'default_weight' => '1',
+        'default_order' => 'ASC',
+        'type' => CRM_Utils_Type::T_DATE,
+        'operatorType' => CRM_Report_Form::OP_DATE,
+        'name' => 'start_date',
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+      ),
+      'event_end_date' => array(
+        'title' => ts('Event End Date'),
+        'is_fields' => TRUE,
+      ),
+      'max_participants' => array(
+        'title' => ts('Capacity'),
+        'type' => CRM_Utils_Type::T_INT,
+        'is_fields' => TRUE,
+        'crm_editable' => array(
+          'id_table' => 'civicrm_event',
+          'id_field' => 'id',
+          'entity' => 'event'
         ),
-        'order_bys' => array(
-          'event_type_id' => array(
-            'title' => ts('Event Type'),
-            'default_weight' => '2',
-            'default_order' => 'ASC',
-          ),
+      ),
+      'is_active' => array(
+        'title' => ts('Is Active'),
+        'is_fields' => TRUE,
+        'type' => CRM_Utils_Type::T_INT,
+        'crm_editable' => array(
+          'id_table' => 'civicrm_event',
+          'id_field' => 'id',
+          'entity' => 'event',
+          'options' => array('0' => 'No', '1' => 'Yes'),
         ),
-        'group_bys' => array(
-          'event_type_id' => array(
-            'title' => ts('Event Type'),
-          ),
+      ),
+      'is_public' => array(
+        'title' => ts('Is Publicly Visible'),
+        'type' => CRM_Utils_Type::T_INT,
+        'is_fields' => TRUE,
+        'crm_editable' => array(
+          'id_table' => 'civicrm_event',
+          'id_field' => 'id',
+          'entity' => 'event'
         ),
-      )
+      ),
     );
+    return $this->buildColumns($specs, 'civicrm_event', 'CRM_Event_DAO_Event');
   }
 
   /**
@@ -3775,7 +3841,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
           'name' => 'display_name',
           'title' => ts($options['prefix_label'] . 'Contact Name'),
         ),
-        $options['prefix'] . 'id' => array(
+        $options['prefix'] . 'contact_id' => array(
           'name' => 'id',
           'title' => ts($options['prefix_label'] . 'Contact ID'),
           'alter_display' => 'alterContactID',
@@ -3835,7 +3901,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
 
     if (!empty($options['filters'])) {
       $contactFields[$options['prefix'] . 'civicrm_contact']['filters'] = array(
-        $options['prefix'] . 'id' => array(
+        $options['prefix'] . 'contact_id' => array(
           'title' => ts($options['prefix_label'] . 'Contact ID'),
           'type' => CRM_Report_Form::OP_INT,
           'name' => 'id',
@@ -5617,12 +5683,16 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
 * Retrieve text for payment instrument from pseudoconstant
 */
   /**
-   * @param $value
-   * @param $row
+   * @param int|null $value
+   * @param array $row
    *
-   * @return array
+   * @return string
+   *   Event label.
    */
   function alterEventType($value, &$row) {
+    if (empty($value)) {
+      return '';
+    }
     return CRM_Event_PseudoConstant::eventType($value);
   }
 
@@ -5634,7 +5704,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    * @param string $selectedfield
    * @param string $criteriaFieldName
    *
-   * @return Ambigous <string, multitype:, NULL>
+   * @return string
    */
   function alterEventID($value, &$row, $selectedfield, $criteriaFieldName) {
     if (isset($this->_drilldownReport)) {
