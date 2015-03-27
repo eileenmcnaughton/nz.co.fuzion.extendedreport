@@ -223,7 +223,8 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    * Called prior to build form.
    *
    * Backported to provide CRM-12687 which is in 4.4 and to prevent inappropriate
-   * defaults being set for group by in core function
+   * defaults being set for group by in core function. Further wrangling
+   * (not in core) for uniquename matching against core metadata.
    *
    * https://github.com/eileenmcnaughton/nz.co.fuzion.extendedreport/issues/12
    */
@@ -247,7 +248,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
 
       $this->_aliases[$tableName] = $this->_columns[$tableName]['alias'];
 
-      $daoOrBaoName = NULL;
       // higher preference to bao object
       if (array_key_exists('bao', $table)) {
         $daoOrBaoName = $table['bao'];
@@ -259,8 +259,19 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       }
       else {
         $expFields = array();
+        $daoOrBaoName = NULL;
       }
 
+      foreach ($expFields as $fieldName => $field) {
+        // Double index any unique fields to ensure we find a match
+        // later on. For example the metadata keys
+        // contribution_campaign_id rather than campaign_id
+        // this is not super predictable so we ensure that they are keyed by
+        // both possibilities
+        if (!empty($field['name']) && $field['name'] != $fieldName) {
+          $expFields[$field['name']] = $field;
+        }
+      }
       $doNotCopy = array('required');
 
       // Extended reports customisation starts ==
@@ -3290,7 +3301,8 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
   }
 
   /**
-   * Build the columns
+   * Build the columns.
+   *
    * The normal report class needs you to remember to do a few things that are often erratic
    * 1) use a unique key for any field that might not be unique (e.g. start date, label)
    * - this class will always prepend an alias to the key & set the 'name' if you don't set it yourself.
@@ -3313,7 +3325,12 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     $types = array('filters', 'group_bys', 'order_bys');
     $columns = array($tableName => array_fill_keys($types, array()));
     if (!empty($daoName)) {
-      $columns[$tableName]['dao'] = $daoName;
+      if (stristr($daoName, 'BAO')) {
+        $columns[$tableName]['bao'] = $daoName;
+      }
+      else {
+        $columns[$tableName]['dao'] = $daoName;
+      }
     }
 
     foreach ($specs as $specName => $spec) {
@@ -3899,7 +3916,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       ),
       'check_number' => array('is_fields' => TRUE),
     );
-    return $this->buildColumns($specs, 'civicrm_contribution', 'CRM_Contribute_DAO_Contribution');
+    return $this->buildColumns($specs, 'civicrm_contribution', 'CRM_Contribute_BAO_Contribution');
   }
 
   /**
