@@ -24,11 +24,11 @@ class CRM_Extendedreport_Form_Report_Member_MembershipPivot extends CRM_Extended
     );
     $this->_columns = $this->getColumns('membership', array(
         'fields' => FALSE,
-        'order_by' => FALSE
+        'order_by' => FALSE,
       )
     ) + $this->getColumns('contact', array(
         'fields' => FALSE,
-        'order_by' => FALSE
+        'order_by' => FALSE,
       )
     );
     $this->_columns['civicrm_membership']['fields']['id']['required'] = TRUE;
