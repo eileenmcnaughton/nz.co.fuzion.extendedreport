@@ -228,6 +228,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    * https://github.com/eileenmcnaughton/nz.co.fuzion.extendedreport/issues/12
    */
   public function preProcess() {
+    $this->assign('civicrm_major_version', str_replace('.', '', substr(CRM_Utils_System::version(), 0, 3)));
     $this->preProcessCommon();
 
     if (!$this->_id) {
@@ -1562,7 +1563,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       if (!empty($this->_aclTable) && CRM_Utils_Array::value($this->_aclTable, $this->_aliases)) {
         $this->buildACLClause($this->_aliases[$this->_aclTable]);
       }
-      $this->assign('civicrm_major_version', str_replace('.', '', substr(CRM_Utils_System::version(), 0, 3)));
       $this->beginPostProcess();
       $sql = $this->buildQuery();
       $this->reOrderColumnHeaders();
