@@ -1121,6 +1121,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    */
   protected function assignTabs() {
     $order = array(
+      'Aggregate',
       'FieldSelection',
       'GroupBy',
       'OrderBy',
@@ -2289,6 +2290,13 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
         'pseudofield' => TRUE,
         'default' => TRUE,
       );
+      $this->tabs['Aggregate'] = array(
+        'title' => ts('Pivot table'),
+        'tpl' => 'Aggregate',
+        'div_label' => 'set-aggregate',
+      );
+
+      $this->assignTabs();
     }
 
     else {
