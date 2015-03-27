@@ -1,7 +1,10 @@
 <?php
 
 /**
- * Class CRM_Extendedreport_Form_Report_Contact_Extendedcontact
+ * Class CRM_Extendedreport_Form_Report_Contact_Extendedcontact.
+ *
+ * This class generates a pivot report - due to _customGroupAggregates being set
+ * to true based on the civicrm_contact table.
  */
 class CRM_Extendedreport_Form_Report_Contact_Extendedcontact extends CRM_Extendedreport_Form_Report_ExtendedReport {
   protected $_baseTable = 'civicrm_contact';
@@ -10,9 +13,9 @@ class CRM_Extendedreport_Form_Report_Contact_Extendedcontact extends CRM_Extende
 
 
   /**
-   *
+   * Class constructor.
    */
-  function __construct() {
+  public function __construct() {
     $this->_columns = $this->getContactColumns(array(
         'fields' => FALSE,
         'order_by' => FALSE

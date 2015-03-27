@@ -1553,8 +1553,8 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     $this->_columnHeaders = array_merge(array_intersect_key(array_flip($fieldMap), $this->_columnHeaders), $this->_columnHeaders);
   }
 
-  /*
-   * mostly overriding this for ease of adding in debug
+  /**
+   * Mostly overriding this for ease of adding in debug.
    */
   function postProcess() {
 
