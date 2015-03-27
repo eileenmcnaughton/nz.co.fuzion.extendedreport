@@ -14,9 +14,9 @@ class CRM_Extendedreport_Form_Report_Member_MembershipPivot extends CRM_Extended
   protected $_potentialCriteria = array();
 
   /**
-   *
+   * Class constructor.
    */
-  function __construct() {
+  public function __construct() {
     $this->_customGroupExtended['civicrm_membership'] = array(
       'extends' => array('Membership'),
       'filters' => TRUE,

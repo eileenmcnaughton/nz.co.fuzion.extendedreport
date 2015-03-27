@@ -15,9 +15,9 @@ class CRM_Extendedreport_Form_Report_Case_ActivityPivot extends CRM_Extendedrepo
   protected $_potentialCriteria = array();
 
   /**
-   *
+   * Class constructor.
    */
-  function __construct() {
+  public function __construct() {
     $this->_customGroupExtended['civicrm_case'] = array(
       'extends' => array('Case'),
       'filters' => TRUE,

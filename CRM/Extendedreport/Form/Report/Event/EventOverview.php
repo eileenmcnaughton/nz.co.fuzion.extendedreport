@@ -11,9 +11,9 @@ class CRM_Extendedreport_Form_Report_Event_EventOverview extends CRM_Extendedrep
   protected $_autoIncludeIndexedFieldsAsOrderBys = TRUE;
 
   /**
-   *
+   * Class constructor.
    */
-  function __construct() {
+  public function __construct() {
     $this->_columns = $this->getColumns('Event', array())
       + $this->getEventSummaryColumns();
     parent::__construct();

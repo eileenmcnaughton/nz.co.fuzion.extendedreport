@@ -11,9 +11,9 @@ class CRM_Extendedreport_Form_Report_RelationshipExtended extends CRM_Extendedre
   protected $_primaryContactPrefix = 'contact_a_';
 
   /**
-   *
+   * Class constructor.
    */
-  function __construct() {
+  public function __construct() {
     $this->_tagFilter = TRUE;
 
     $this->_columns = $this->getContactColumns(array(

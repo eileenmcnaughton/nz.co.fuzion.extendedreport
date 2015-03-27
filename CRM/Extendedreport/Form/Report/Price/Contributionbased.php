@@ -8,10 +8,11 @@ class CRM_Extendedreport_Form_Report_Price_Contributionbased extends CRM_Extende
   protected $_baseTable = 'civicrm_contribution';
 
   /**
-   *
+   * Class constructor.
    */
-  function __construct() {
-    $this->_columns = $this->getColumns('Contact')
+  public function __construct() {
+    $this->_columns
+      = $this->getColumns('Contact')
       + $this->getColumns('Contribution')
       + $this->getColumns('PriceField')
       + $this->getColumns('PriceFieldValue')

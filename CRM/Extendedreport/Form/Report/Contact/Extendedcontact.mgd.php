@@ -6,16 +6,16 @@
  * http://wiki.civicrm.org/confluence/display/CRMDOC42/Hook+Reference
 */
 return array(
-  0 =>    array(
-      'name' => 'Extended Report - Pivot data contact report',
-      'entity' => 'ReportTemplate',
-      'params' =>        array(
-          'version' => 3,
-          'label' => 'Extended Report - Pivot data contact report',
-          'description' => 'Extended Report - Pivot data Contact Report',
-          'class_name' => 'CRM_Extendedreport_Form_Report_Contact_Extendedcontact',
-          'report_url' => 'contact/contactextended',
-          'component' => '',
-        ),
+  0 => array(
+    'name' => 'Extended Report - Pivot data contact report',
+    'entity' => 'ReportTemplate',
+    'params' => array(
+      'version' => 3,
+      'label' => 'Extended Report - Pivot data contact report',
+      'description' => 'Extended Report - Pivot data Contact Report',
+      'class_name' => 'CRM_Extendedreport_Form_Report_Contact_Extendedcontact',
+      'report_url' => 'contact/contactextended',
+      'component' => '',
     ),
+  ),
 );
