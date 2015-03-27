@@ -32,55 +32,10 @@
   {include file="CRM/Report/Form/Tabs/GroupBy44.tpl"}
 {/if}
 {if $form.custom_tables}
-  <div id='crm-custom_tables'>
-    <table>
-      <tr>
-        <td>
-
-          <div id='crm-custom_fields'>
-            <label>{ts}Custom Fields(s){/ts}</label>
-            {$form.custom_fields.html}
-            {literal}
-              <script type="text/javascript">
-                cj("select#custom_fields").crmasmSelect({
-                  addItemTarget: 'bottom',
-                  animate: false,
-                  highlight: true,
-                  sortable: true,
-                  respectParents: true
-                });
-              </script>
-            {/literal}
-          </div>
-        </td>
-
-        <td>
-          {if $form.templates}
-            <div id='crm-templates'>
-              <label>{ts}Select Print template{/ts}</label>
-              {$form.templates.html}
-            </div>
-          {/if}
-        </td>
-      </tr>
-    </table>
-  </div>
+  {include file="CRM/Report/Form/Tabs/FieldSelection44.tpl"}
 {/if}
 {if $form.aggregate_column_headers}
-  <table>
-    <tr>
-      <td>
-        <div id='crm-custom_fields'>
-          <label>{ts}Select Row Fields{/ts}</label>
-          {$form.aggregate_row_headers.html}
-        </div>
-      </td>
-      <td>
-        <label>{ts}Select Column Header{/ts}</label>
-        {$form.aggregate_column_headers.html}
-      </td>
-    </tr>
-  </table>
+  {include file="CRM/Report/Form/Tabs/Aggregate.tpl"}
 {/if}
 
 {if $orderByOptions}
