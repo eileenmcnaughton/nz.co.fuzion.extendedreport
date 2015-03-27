@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.6                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2014                                |
  +--------------------------------------------------------------------+
@@ -25,7 +25,12 @@
 *}
 {* Report form criteria section *}
 {if $colGroups}
-  <div id="report-tab-col-groups" class="civireport-criteria">
+  <div id="col-groups" class="civireport-criteria" >
+    {if $componentName eq 'Grant'}
+      <h3>{ts}Include these Statistics{/ts}</h3>
+    {else}
+      <h3>Display Columns</h3>
+    {/if}
     {foreach from=$colGroups item=grpFields key=dnc}
       {assign  var="count" value="0"}
       {* Wrap custom field sets in collapsed accordion pane. *}
@@ -155,26 +160,14 @@
       }
 
       // hide and display the appropriate blocks as directed by the php code
-      on_load_init_blocks( showRows, hideBlocks, '');
-
-      cj('input[id^="order_by_section_"]').click(disPageBreak).each(disPageBreak);
-
-      function disPageBreak() {
-        if (!cj(this).prop('checked')) {
-          cj(this).parent('td').next('td').children('input[id^="order_by_pagebreak_"]').prop({checked: false, disabled: true});
-        }
-        else {
-          cj(this).parent('td').next('td').children('input[id^="order_by_pagebreak_"]').prop({disabled: false});
-        }
-      }
+      on_load_init_blocks( showRows, hideBlocks, '' );
 
       function hideRow(i) {
         showHideRow(i);
         // clear values on hidden field, so they're not saved
         cj('select#order_by_column_'+ i).val('');
         cj('select#order_by_order_'+ i).val('ASC');
-        cj('input#order_by_section_'+ i).prop('checked', false);
-        cj('input#order_by_pagebreak_'+ i).prop('checked', false);
+        cj('input#order_by_section_'+ i).attr('checked', false);
       }
 
       {/literal}
@@ -298,16 +291,17 @@
       }
     }
 
-    CRM.$(function($) {
-      $('.crm-report-criteria-groupby input:checkbox').click(function() {
-        $('#fields_' + this.id.substr(10)).prop('checked', this.checked);
+    cj(document).ready(function(){
+      cj('.crm-report-criteria-groupby input:checkbox').click(function() {
+        cj('#fields_' + this.id.substr(10)).prop('checked', this.checked);
       });
       {/literal}{if $displayToggleGroupByFields}{literal}
-      $('.crm-report-criteria-field input:checkbox').click(function() {
-        $('#group_bys_' + this.id.substr(7)).prop('checked', this.checked);
+      cj('.crm-report-criteria-field input:checkbox').click(function() {
+        cj('#group_bys_' + this.id.substr(7)).prop('checked', this.checked);
       });
       {/literal}{/if}{literal}
     });
   </script>
 {/literal}
 
+    <div>{$form.buttons.html}</div>
