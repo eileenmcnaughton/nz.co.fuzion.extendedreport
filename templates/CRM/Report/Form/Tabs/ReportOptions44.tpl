@@ -23,8 +23,9 @@
 | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
 +--------------------------------------------------------------------+
 *}
-{if $otherOptions}
+
   <div id="report-tab-other-options" class="civireport-criteria">
+    <h3>Other Options</h3>
     <table class="report-layout">
       {assign var="optionCount" value=0}
       <tr class="crm-report crm-report-criteria-field">
@@ -41,4 +42,3 @@
       </tr>
     </table>
   </div>
-{/if}
