@@ -481,7 +481,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
         // another field like event - so here we have no custom field .. must be a non custom field...
         $tableAlias = $fieldDetails[0];
         $tableName = array_search($tableAlias, $this->_aliases);
-        $spec = $this->_columns[$tableName]['fields'][$field];
+        $spec = $this->_columns[$tableName]['metadata'][$field];
         $fieldName = !empty($spec['name']) ? $spec['name'] : $field;
         $this->addColumnAggregateSelect($fieldName, $fieldDetails[0], $spec);
       }
@@ -508,7 +508,8 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       return;
     }
 
-    if ($spec['data_type'] == 'Boolean') {
+    // Data type is set for custom fields but not core fields.
+    if (CRM_Utils_Array::value('data_type', $spec) == 'Boolean') {
       $options = array(
         'values' => array(
           0 => array('label' => 'No', 'value' => 0),
@@ -549,7 +550,9 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
         ')',
         '('
       ), '_', "{$fieldName}_" . strtolower(str_replace(' ', '', $option['value'])));
-      if (in_array($spec['htmlType'], array('CheckBox', 'MultiSelect'))) {
+
+      // htmlType is set for custom data and tells us the field will be stored using hex(01) separators.
+      if (!empty($spec['htmlType']) && in_array($spec['htmlType'], array('CheckBox', 'MultiSelect'))) {
         $this->_select .= " , SUM( CASE WHEN {$tableAlias}.{$fieldName} LIKE '%" . CRM_Core_DAO::VALUE_SEPARATOR . $option['value'] . CRM_Core_DAO::VALUE_SEPARATOR . "%' THEN 1 ELSE 0 END ) AS $fieldAlias ";
       }
       else {
@@ -857,7 +860,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
         $orderByField = array();
         foreach ($this->_columns as $tableName => $table) {
           if (empty($table['metadata'])) {
-            $this->setMetaDataForTable($tableName);
+            $table = $this->setMetaDataForTable($tableName);
           }
           if (array_key_exists('order_bys', $table)) {
             // For DAO columns defined in $this->_columns
@@ -903,10 +906,22 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    * The reason for this is endless bugginess when filters, groupbys etc rely on metadata
    * coming from fields.
    *
-   * @param $tableName
+   * @param string $tableName
+   *
+   * @return array
+   *   The table spec with the metadata key added.
    */
   function setMetadataForTable($tableName) {
-    $this->_columns[$tableName]['metadata'] = CRM_Utils_Array::value('fields', $this->_columns[$tableName], array());
+    if (CRM_Utils_Array::value('fields', $this->_columns[$tableName])) {
+      $this->_columns[$tableName]['metadata'] = $this->_columns[$tableName]['fields'];
+    }
+    elseif (CRM_Utils_Array::value('filters', $this->_columns[$tableName])) {
+      $this->_columns[$tableName]['metadata'] = $this->_columns[$tableName]['filters'];
+    }
+    else {
+      $this->_columns[$tableName]['metadata'] = array();
+    }
+    return $this->_columns[$tableName];
   }
 
   /**

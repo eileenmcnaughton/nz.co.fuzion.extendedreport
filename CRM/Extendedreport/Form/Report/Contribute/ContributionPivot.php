@@ -25,13 +25,21 @@ class CRM_Extendedreport_Form_Report_Contribute_ContributionPivot extends CRM_Ex
 
     $this->_columns = $this->getColumns('Contribution', array(
         'fields' => FALSE,
-      )
-    );
+    )) +
+    $this->_columns = $this->getColumns('Contact', array(
+      'fields' => FALSE,
+    )) + $this->_columns = $this->getColumns('Address', array(
+       'fields' => FALSE,
+    ));
 
     $this->_aggregateRowFields = array(
-      'contribution_civireport:financial_type_id' => 'Financial Type',
+      'contribution_civireport:contribution_financial_type_id' => 'Financial Type',
+      'civicrm_address_civireport:county_id' => 'County',
     );
-    $this->_aggregateColumnHeaderFields = array();
+    $this->_aggregateColumnHeaderFields = array(
+      'contribution_civireport:contribution_financial_type_id' => 'Financial Type',
+      'civicrm_address_civireport:county_id' => 'County',
+    );
     parent::__construct();
   }
 
@@ -41,6 +49,9 @@ class CRM_Extendedreport_Form_Report_Contribute_ContributionPivot extends CRM_Ex
    * @return array
    */
   public function fromClauses() {
-    return array();
+    return array(
+      'contact_from_contribution',
+      'address_from_contact',
+    );
   }
 }
