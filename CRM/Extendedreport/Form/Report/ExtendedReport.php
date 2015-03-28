@@ -471,7 +471,8 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     $selectedTables = array();
     $rowColumns = $this->extractCustomFields($rowFields, $selectedTables, 'row_header');
     if (empty($rowColumns)) {
-      foreach ($rowFields as $field => $fieldDetails) { //only one but we don't know the name
+      foreach ($rowFields as $field => $fieldDetails) {
+      //only one but we don't know the name
         //we wrote this as purely a custom field against custom field. In process of refactoring to allow
         // another field like event - so here we have no custom field .. must be a non custom field...
         $tableAlias = $fieldDetails[0];
