@@ -457,7 +457,11 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   }
 
   /**
-   * Function to do a simple cross-tab
+   * Function to do a simple cross-tab.
+   *
+   * Generally a rowHeader and a columnHeader will be defined.
+   * Column Header is optional - in which case a single total column
+   * will show.
    */
   function aggregateSelect() {
     $columnHeader = $this->_params['aggregate_column_headers'];
@@ -465,8 +469,14 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
 
     $fieldArr = explode(":", $rowHeader);
     $rowFields[$fieldArr[1]][] = $fieldArr[0];
-    $fieldArr = explode(":", $columnHeader);
-    $columnFields[$fieldArr[1]][] = $fieldArr[0];
+
+    if (!empty($columnHeader)) {
+      $fieldArr = explode(":", $columnHeader);
+      $columnFields[$fieldArr[1]][] = $fieldArr[0];
+    }
+    else {
+      $columnFields = array(0 => '');
+    }
 
     $selectedTables = array();
     $rowColumns = $this->extractCustomFields($rowFields, $selectedTables, 'row_header');
@@ -491,6 +501,12 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       foreach ($columnFields as $field => $fieldDetails) { //only one but we don't know the name
         //we wrote this as purely a custom field against custom field. In process of refactoring to allow
         // another field like event - so here we have no custom field .. must be a non custom field...
+        if (empty($fieldDetails)) {
+          // This could happen if no column is specified - which is valid - resulting in
+          // just one total column.
+          $this->addColumnAggregateSelect('', '', array());
+          continue;
+        }
         $tableAlias = $fieldDetails[0];
         $tableName = array_search($tableAlias, $this->_aliases);
         $spec = $this->_columns[$tableName]['metadata'][$field];
@@ -2645,6 +2661,13 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
   /**
    * Function extracts the custom fields array where it is preceded by a table prefix
    * This allows us to include custom fields from multiple contacts (for example) in one report
+   *
+   * @param $customFields
+   * @param $selectedTables
+   * @param string $context
+   *
+   * @return array
+   * @throws \Exception
    */
   function extractCustomFields(&$customFields, &$selectedTables, $context = 'select') {
     $myColumns = array();
