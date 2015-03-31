@@ -247,20 +247,25 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       }
 
       $this->_aliases[$tableName] = $this->_columns[$tableName]['alias'];
-
+      $expFields = array();
+      $daoOrBaoName = NULL;
       // higher preference to bao object
       if (array_key_exists('bao', $table)) {
         $daoOrBaoName = $table['bao'];
-        $expFields = $daoOrBaoName::exportableFields();
       }
       elseif (array_key_exists('dao', $table)) {
         $daoOrBaoName = $table['dao'];
-        $expFields = $daoOrBaoName::export();
       }
-      else {
-        $expFields = array();
-        $daoOrBaoName = NULL;
+
+      if ($daoOrBaoName) {
+        if (method_exists($daoOrBaoName, 'exportableFields')) {
+          $expFields = $daoOrBaoName::exportableFields();
+        }
+        else {
+          $expFields = $daoOrBaoName::export();
+        }
       }
+
 
       foreach ($expFields as $fieldName => $field) {
         // Double index any unique fields to ensure we find a match
