@@ -76,7 +76,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
 
   /**
    * Add a total column to aggregate (pivot) fields
-   * @var _aggregatesAddTotal boolean
+   * @var bool _aggregatesAddTotal
    */
   protected $_aggregatesAddTotal = TRUE;
   /**
@@ -191,7 +191,9 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   }
 
   /**
-   * wrapper for getOptions / pseudoconstant to get contact type options
+   * Wrapper for getOptions / pseudoconstant to get contact type options.
+   *
+   * @return array
    */
   function getLocationTypeOptions() {
     if (method_exists('CRM_Core_PseudoConstant', 'locationType')) {
@@ -830,6 +832,17 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    * over-ridden to include clause if specified, also to allow for unset meaning null
    * e.g membership_end_date > now
    * also, parent was giving incorrect results without the single quotes
+   *
+   * @param string $fieldName
+   * @param $relative
+   * @param string $from
+   * @param string $to
+   * @param null $field
+   * @param null $fromTime
+   * @param null $toTime
+   * @param bool $includeUnset
+   *
+   * @return null|string
    */
   function dateClause($fieldName,
                       $relative, $from, $to, $field = NULL, $fromTime = NULL, $toTime = NULL, $includeUnset = FALSE
@@ -1643,7 +1656,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    * Wrapper for retrieving otpions for a field
    *
    * @param string $entity
-   * @param unknown $field
+   * @param string $field
    * @param string $action
    */
   protected function _getOptions($entity, $field, $action = 'get') {
@@ -2471,6 +2484,12 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
 
   /**
    * Extract the relevant filters from the DAO query
+   *
+   * @param $field
+   * @param $fieldName
+   * @param $filter
+   *
+   * @return
    */
   function extractFieldsAndFilters($field, $fieldName, &$filter) {
     $htmlType = CRM_Utils_Array::value('html_type', $field);
@@ -2784,16 +2803,10 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
    * Add row as the header for a pivot table. If it is to be the header it must be selected
    * and be the group by.
    *
-   * @param $tableAlias
-   * @param actual $fieldName
-   * @param $fieldAlias
+   * @param string $tableAlias
+   * @param string $fieldName
+   * @param string $fieldAlias
    * @param string $title
-   *
-   * @internal param $table
-   * @internal param $tableAlias
-   * @internal param \actual $fieldName DB name of field
-   * @internal param $fieldAlias
-   * @internal param $title
    */
   private function addRowHeader($tableAlias, $fieldName, $fieldAlias, $title = '') {
     if (empty($tableAlias)) {
@@ -3039,6 +3052,13 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    * We are overriding this function to apply crm-editable where appropriate
    * It would be more efficient if we knew the entity being extended (which the parent function
    * does know) but we want to avoid extending any functions we don't have to
+   *
+   * @param $value
+   * @param $customField
+   * @param $fieldValueMap
+   * @param array $row
+   *
+   * @return float|string|void
    */
   function formatCustomValues($value, $customField, $fieldValueMap, $row = array()) {
     if (!empty($this->_customGroupExtends) && count($this->_customGroupExtends) == 1) {
@@ -3889,7 +3909,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    *
    * @param array $options
    *
-   * @return Ambigous <multitype:multitype:NULL  , multitype:multitype:string  multitype:NULL  multitype:string NULL  , multitype:multitype:string  multitype:NULL string  multitype:number string boolean multitype:string  NULL  multitype:NULL  multitype:string NULL  >
+   * @return array
    */
   function getEventSummaryColumns($options = array()) {
     $defaultOptions = array(
@@ -5294,6 +5314,8 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
   /**
    * Add join from contact table to phone. Prefix will be added to both tables
    * as it's assumed you are using it to get address of a secondary contact
+   *
+   * @param string $prefix
    */
   function joinPhoneFromContact($prefix = '') {
     $this->_from .= " LEFT JOIN civicrm_phone {$this->_aliases[$prefix . 'civicrm_phone']}
@@ -6009,12 +6031,10 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    *
    * @param string $value
    * @param array $row
-   * @param string $selectedfield
+   * @param string $selectedField
    * @param string $criteriaFieldName
-   *
-   * @return Ambigous <string, multitype:, NULL>
    */
-  function alterCaseID($value, &$row, $selectedfield, $criteriaFieldName) {
+  function alterCaseID($value, &$row, $selectedField, $criteriaFieldName) {
   }
 
 
@@ -6201,6 +6221,10 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
 
   /**
    * We are going to convert phones to an array
+   *
+   * @param $value
+   *
+   * @return array|string
    */
   function alterPhoneGroup($value) {
 
