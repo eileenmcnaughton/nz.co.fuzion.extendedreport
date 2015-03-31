@@ -4134,7 +4134,13 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
           'title' => ts($options['prefix_label'] . 'External ID'),
           'type' => CRM_Utils_Type::T_INT,
           'is_fields' => TRUE,
-        )
+        ),
+        $options['prefix'] . 'display_name' => array(
+          'name' => 'display_name',
+          'title' => ts($options['prefix_label'] . 'Name'),
+          'is_fields' => TRUE,
+          'is_filters' => TRUE,
+        ),
       );
       $individualFields = array(
         $options['prefix'] . 'first_name' => array(
