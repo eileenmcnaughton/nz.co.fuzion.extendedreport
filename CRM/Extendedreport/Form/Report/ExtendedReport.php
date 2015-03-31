@@ -51,26 +51,26 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
 
   /**
    * Fields available to be added as Column headers in pivot style report
-   * @property _aggregateHeaderFields array
+   * @var array
    */
   protected $_aggregateColumnHeaderFields = array();
 
   /**
    * Fields available to be added as Rows in pivot style report
-   * @property _aggregateRowFields array
+   * @var array
    */
   protected $_aggregateRowFields = array();
 
   /**
    * Include NULL values in aggregate (pivot) fields
-   * @var _aggregatesIncludeNULL boolean
+   * @var boolean
    */
   protected $_aggregatesIncludeNULL = TRUE;
 
 
   /**
    * Allow the aggregate column to be unset which will just give totalss
-   * @var _aggregatesColumnsOptions boolean
+   * @var boolean
    */
   protected $_aggregatesColumnsOptions = TRUE;
 
@@ -130,7 +130,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    * have an activity of type x but we only want activities of type x)
    * (See case with Activity Pivot)
    *
-   * @var unknown
+   * @var string
    */
   protected $_caseActivityTable = 'civicrm_case_activity';
 
@@ -932,7 +932,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       !empty($this->_params['order_bys'])
     ) {
 
-      // Proces order_bys in user-specified order
+      // Process order_bys in user-specified order
       foreach ($this->_params['order_bys'] as $orderByFieldName => $orderBy) {
         $orderByField = array();
         foreach ($this->_columns as $tableName => $table) {
@@ -952,7 +952,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
           if (!empty($fields) && is_array($fields)) {
             foreach ($fields as $fieldName => $field) {
               if ($fieldName == $orderBy['column']) {
-                $orderByField = array_merge($field, $orderBy);
+                $orderByField = array_merge($table['metadata'][$fieldName], $field, $orderBy);
                 $orderByField['tplField'] = "{$tableName}_{$fieldName}";
                 break 2;
               }
@@ -2071,10 +2071,10 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   }
 
   /**
-   * over-ridden to handle orderbys
+   * Over-ridden to handle order_bys.
    *
-   * @param bool|\unknown_type $addFields
-   * @param array|\unknown_type $permCustomGroupIds
+   * @param bool $addFields
+   * @param array $permCustomGroupIds
    */
   function addCustomDataToColumns($addFields = TRUE, $permCustomGroupIds = array()) {
     if (empty($this->_customGroupExtends)) {
