@@ -424,10 +424,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     }
 
     if ($this->_customGroupAggregates) {
-      if (empty($this->_params)) {
-        $this->_params = $this->controller->exportValues($this->_name);
-      }
-      $this->aggregateSelect();
       return;
     }
     $this->storeGroupByArray();
@@ -464,6 +460,9 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    * will show.
    */
   function aggregateSelect() {
+    if (empty($this->_customGroupAggregates)) {
+      return;
+    }
     $columnHeader = $this->_params['aggregate_column_headers'];
     $rowHeader = $this->_params['aggregate_row_headers'];
 
@@ -569,6 +568,19 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       $options['values'] = array_intersect_key($options['values'], array_flip($this->_params[$fieldName . '_value']));
     }
 
+    $filterSpec = array(
+      'field' => array('name' => $fieldName),
+      'table' => array('alias' => $tableAlias)
+    );
+
+    if ($this->getFilterFieldValue($filterSpec)) {
+      // for now we will literally just handle IN
+      if ($filterSpec['field']['op'] == 'in') {
+        $options['values'] = array_intersect_key($options['values'], array_flip($filterSpec['field']['value']));
+        $this->_aggregatesIncludeNULL = FALSE;
+      }
+
+    }
     foreach ($options['values'] as $option) {
       $fieldAlias = str_replace(array(
         '-',
@@ -603,6 +615,38 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     }
     if ($this->_aggregatesAddTotal) {
       $this->addAggregateTotal($fieldName);
+    }
+  }
+
+  /**
+   * Function exists to take what we know about the field & determine if the
+   * report has been filtered by it.
+   *
+   * This is because there are multiple naming conventions in play.
+   *
+   * The name in $this->_params is
+   *
+   * contribution_financial_type_id_value
+   *
+   * where contribution_financial_type_id is the key of the field within the
+   * the 'fields' array of one of the tables.
+   *
+   * We are currently only dealing with the situation where we have the field's
+   * real name and the tables alias.
+   *
+   * @param array $spec
+   *   Array containing the name descriptors we have.
+   *   If a value is found it will be added to the spec.
+   */
+  function getFilterFieldValue(&$spec) {
+    $tableName = array_search($spec['table']['alias'], $this->_aliases);
+    $fields = $this->_columns[$tableName]['fields'];
+    foreach ($fields as $fieldName => $fieldSpec) {
+      if ($fieldSpec['name'] == $spec['field']['name']) {
+        $spec['field']['value'] = $this->_params[$fieldName . '_value'];
+        $spec['field']['op'] = $this->_params[$fieldName . '_op'];
+        return $this->_params[$fieldName . '_value'];
+      }
     }
   }
 
@@ -1765,10 +1809,15 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    */
 
   function buildQuery($applyLimit = TRUE) {
+    if (empty($this->_params)) {
+      $this->_params = $this->controller->exportValues($this->_name);
+    }
     $this->select();
     $this->from();
-    $this->customDataFrom();
     $this->where();
+    $this->aggregateSelect();
+    $this->customDataFrom();
+
     if ($this->_preConstrain && !$this->_preConstrained) {
       $this->generateTempTable();
       $this->_preConstrained = TRUE;
@@ -1776,6 +1825,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       $this->from();
       $this->customDataFrom();
       $this->constrainedWhere();
+      $this->aggregateSelect();
     }
     $this->orderBy();
     $this->groupBy();
