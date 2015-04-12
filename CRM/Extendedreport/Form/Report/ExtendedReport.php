@@ -935,6 +935,9 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     }
   }
 
+  /**
+   * Define order by clause.
+   */
   function orderBy() {
     parent::orderBy();
   }
@@ -5747,7 +5750,9 @@ ON {$this->_aliases['civicrm_membership']}.contact_id = {$this->_aliases['civicr
 ON {$this->_aliases['civicrm_contribution']}.contact_id = {$this->_aliases['civicrm_contact']}.id";
   }
 
-
+  /**
+   * Define join from participant table to event table.
+   */
   function joinEventFromParticipant() {
     $this->_from .= " LEFT JOIN civicrm_event {$this->_aliases['civicrm_event']}
 ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participant']}.event_id ) AND
