@@ -1728,6 +1728,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       // modifying column headers before using it to build result set i.e $rows.
       $rows = array();
       $this->buildRows($sql, $rows);
+      $this->addDeveloperTab($sql);
       $this->addAggregatePercentRow($rows);
 
       // format result set.
@@ -1764,6 +1765,34 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       }
 
     }
+  }
+
+  /**
+   * The intent is to add a tab for developers to view the sql.
+   *
+   * Currently using dpm.
+   *
+   * @param string $sql
+   */
+  protected function addDeveloperTab($sql) {
+    if (!CRM_Core_Permission::check('access CiviCRM report developer')) {
+      return;
+    }
+    $this->tabs['Developer'] = array(
+      'title' => ts('Developer'),
+      'tpl' => 'Developer',
+      'div_label' => 'set-developer',
+    );
+
+    $this->assignTabs();
+    foreach (array('LEFT JOIN') as $term) {
+      $sql = str_replace($term, '<br>&nbsp&nbsp' . $term, $sql);
+    }
+    foreach (array('FROM', 'WHERE', 'GROUP BY', 'ORDER BY', 'LIMIT') as $term) {
+      $sql = str_replace($term, '<br><br>' . $term, $sql);
+    }
+
+    $this->assign('sql', $sql);
   }
 
   /**

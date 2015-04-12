@@ -47,7 +47,7 @@ function extendedreport_civicrm_disable() {
 }
 
 /**
- * Implementation of hook_civicrm_upgrade
+ * Implements hook_civicrm_upgrade().
  *
  * @param $op string, the type of operation being performed; 'check' or 'enqueue'
  * @param $queue CRM_Queue_Queue, (for 'enqueue') the modifiable list of pending up upgrade tasks
@@ -60,11 +60,22 @@ function extendedreport_civicrm_upgrade($op, CRM_Queue_Queue $queue = NULL) {
 }
 
 /**
- * Implementation of hook_civicrm_managed
+ * Implements hook_civicrm_managed().
  *
  * Generate a list of entities to create/deactivate/delete when this module
  * is installed, disabled, uninstalled.
  */
 function extendedreport_civicrm_managed(&$entities) {
   return _extendedreport_civix_civicrm_managed($entities);
+}
+
+/**
+ * Implements hook_civicrm_permission().
+ */
+function extendedreport_civicrm_permission(&$permissions) {
+  $prefix = ts('CiviCRM Extended report') . ': ';
+  $permissions['access CiviCRM report developer'] = array(
+    $prefix . ts('access CiviCRM report developer'),
+    ts('View developer tab in extended reports'),
+  );
 }
