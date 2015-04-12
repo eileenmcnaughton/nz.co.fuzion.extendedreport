@@ -6,7 +6,8 @@
 class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Extendedreport_Form_Report_ExtendedReport {
 
   protected $_summary = NULL;
-
+  protected $_baseTable = 'civicrm_participant';
+  protected $skipACL = FALSE;
   protected $_contribField = FALSE;
   protected $_lineitemField = FALSE;
   protected $_groupFilter = TRUE;
@@ -376,26 +377,25 @@ GROUP BY  cv.label
   }
 
   /**
+   * Declare from clauses used in the from clause for this report.
+   *
+   * @return array
+   */
+  public function fromClauses() {
+    return array(
+      'event_from_participant',
+      'contact_from_participant',
+      'phone_from_contact',
+      'address_from_contact',
+      'email_from_contact',
+    );
+  }
+
+  /**
    * Generate report FROM clause.
    */
   public function from() {
-    $this->_from = "
-        FROM civicrm_participant {$this->_aliases['civicrm_participant']}
-             LEFT JOIN civicrm_event {$this->_aliases['civicrm_event']}
-                    ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participant']}.event_id ) AND
-                       ({$this->_aliases['civicrm_event']}.is_template IS NULL OR
-                        {$this->_aliases['civicrm_event']}.is_template = 0)
-             LEFT JOIN civicrm_contact {$this->_aliases['civicrm_contact']}
-                    ON ({$this->_aliases['civicrm_participant']}.contact_id  = {$this->_aliases['civicrm_contact']}.id  )
-             {$this->_aclFrom}
-             LEFT JOIN civicrm_address {$this->_aliases['civicrm_address']}
-                    ON {$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_address']}.contact_id AND
-                       {$this->_aliases['civicrm_address']}.is_primary = 1
-             LEFT JOIN  civicrm_email {$this->_aliases['civicrm_email']}
-                    ON ({$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_email']}.contact_id AND
-                       {$this->_aliases['civicrm_email']}.is_primary = 1)
-      ";
-    $this->joinPhoneFromContact();
+    parent::from();
     if ($this->isTableSelected('civicrm_contribution')) {
       $this->_from .= "
              LEFT JOIN civicrm_participant_payment pp
