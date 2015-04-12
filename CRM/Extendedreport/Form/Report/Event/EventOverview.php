@@ -20,9 +20,11 @@ class CRM_Extendedreport_Form_Report_Event_EventOverview extends CRM_Extendedrep
   }
 
   /**
+   * Get from clauses.
+   *
    * @return array
    */
-  function fromClauses() {
+  public function fromClauses() {
     return array(
       'eventsummary_from_event',
     );

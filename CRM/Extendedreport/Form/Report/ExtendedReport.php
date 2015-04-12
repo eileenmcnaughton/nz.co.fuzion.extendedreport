@@ -20,6 +20,15 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   protected $_customFields = array();
 
   /**
+   * Denotes whether a temporary table should be defined as temporary.
+   *
+   * This can be set to empty when debugging.
+   *
+   * @var string
+   */
+  protected $temporary = ' TEMPORARY ';
+
+  /**
    * @var string
    */
   protected $_from;
