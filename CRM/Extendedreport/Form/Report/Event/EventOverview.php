@@ -9,6 +9,7 @@ class CRM_Extendedreport_Form_Report_Event_EventOverview extends CRM_Extendedrep
   protected $_customGroupExtends = array('Event');
   protected $_customGroupGroupBy = TRUE;
   protected $_autoIncludeIndexedFieldsAsOrderBys = TRUE;
+  protected $_add2groupSupported = FALSE;
 
   /**
    * Class constructor.

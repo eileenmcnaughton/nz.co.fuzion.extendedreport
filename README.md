@@ -17,7 +17,7 @@ These reports have been funded by various groups & it a given report doesn't wor
 || Extended Report - Participants ||
 || Extended Report - Participant Line Items ||
 || Extended Report - Editable event Grid ||
-|| Extended Report - Event Overview ||
+|| Extended Report - Event Overview ||Report gives a financial overview, with breakdown by paid and pending||
 || Extended Report - Event Pivot Chart ||
 || Extended Report - Bookkeeping with extra fields ||
 || Extended Report - Contributions Detail with extra fields ||
