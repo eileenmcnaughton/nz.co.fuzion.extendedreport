@@ -53,9 +53,11 @@ class CRM_Extendedreport_Form_Report_Event_EventPivot extends CRM_Extendedreport
   }
 
   /**
+   * Declare from clauses used in the from clause for this report.
+   *
    * @return array
    */
-  function fromClauses() {
+  public function fromClauses() {
     return array(
       'event_from_participant',
       'contact_from_participant',

@@ -40,7 +40,7 @@ class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Exten
       'civicrm_contact' => array(
         'dao' => 'CRM_Contact_DAO_Contact',
         'fields' => array(
-          'sort_name_linked' => array(
+          'sort_name' => array(
             'title' => ts('Participant Name'),
             'required' => TRUE,
             'no_repeat' => TRUE,
@@ -550,7 +550,7 @@ GROUP BY  cv.label
       }
 
       // Convert display name to link
-      if (($displayName = CRM_Utils_Array::value('civicrm_contact_sort_name_linked', $row)) &&
+      if (($displayName = CRM_Utils_Array::value('civicrm_contact_sort_name', $row)) &&
         ($cid = CRM_Utils_Array::value('civicrm_contact_id', $row)) &&
         ($id = CRM_Utils_Array::value('civicrm_participant_participant_record', $row))
       ) {
@@ -566,9 +566,9 @@ GROUP BY  cv.label
         $contactTitle = ts('View Contact Details');
         $participantTitle = ts('View Participant Record');
 
-        $rows[$rowNum]['civicrm_contact_sort_name_linked'] = "<a title='$contactTitle' href=$url>$displayName</a>";
+        $rows[$rowNum]['civicrm_contact_sort_name'] = "<a title='$contactTitle' href=$url>$displayName</a>";
         if ($this->_outputMode !== 'csv' && $this->_outputMode !== 'pdf') {
-          $rows[$rowNum]['civicrm_contact_sort_name_linked'] .= "<span style='float: right;'><a title='$participantTitle' href=$viewUrl> " . ts('View') . "</a></span>";
+          $rows[$rowNum]['civicrm_contact_sort_name'] .= "<span style='float: right;'><a title='$participantTitle' href=$viewUrl> " . ts('View') . "</a></span>";
         }
         $entryFound = TRUE;
       }
