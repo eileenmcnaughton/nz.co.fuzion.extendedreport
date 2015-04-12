@@ -2720,7 +2720,7 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
 
 
   /**
-   * here we can define select clauses for any particular row. At this stage we are going
+   * Here we can define select clauses for any particular row. At this stage we are going
    * to csv tags
    *
    * @param string $tableName
@@ -2737,7 +2737,6 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
       $this->_columnHeaders["{$tableName}_{$fieldName}"]['type'] = CRM_Utils_Array::value('type', $field);
       $this->_columnHeaders["{$tableName}_{$fieldName}"]['dbAlias'] = CRM_Utils_Array::value('dbAlias', $field);
       $this->_selectAliases[] = $alias;
-      $this->_columnHeaders['civicrm_tag_tag_name'];
       return " GROUP_CONCAT(CONCAT({$field['dbAlias']},':', phone_civireport.location_type_id, ':', phone_civireport.phone_type_id) ) as $alias";
     }
 
