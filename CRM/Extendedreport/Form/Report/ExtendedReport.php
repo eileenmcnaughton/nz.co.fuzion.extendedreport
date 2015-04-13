@@ -656,7 +656,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    */
   function getFilterFieldValue(&$spec) {
     $tableName = array_search($spec['table']['alias'], $this->_aliases);
-    $fields = $this->_columns[$tableName]['fields'];
+    $fields = (array) $this->_columns[$tableName]['fields'];
     foreach ($fields as $fieldName => $fieldSpec) {
       if ($fieldSpec['name'] == $spec['field']['name']) {
         $spec['field']['value'] = $this->_params[$fieldName . '_value'];

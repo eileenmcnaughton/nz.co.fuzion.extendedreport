@@ -3,7 +3,9 @@
 // AUTO-GENERATED FILE -- Civix may overwrite any changes made to this file
 
 /**
- * (Delegated) Implementation of hook_civicrm_config
+ * (Delegated) Implements hook_civicrm_config().
+ *
+ * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_config
  */
 function _extendedreport_civix_civicrm_config(&$config = NULL) {
   static $configured = FALSE;
@@ -29,18 +31,21 @@ function _extendedreport_civix_civicrm_config(&$config = NULL) {
 }
 
 /**
- * (Delegated) Implementation of hook_civicrm_xmlMenu
+ * (Delegated) Implements hook_civicrm_xmlMenu().
  *
  * @param $files array(string)
+ * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_xmlMenu
  */
 function _extendedreport_civix_civicrm_xmlMenu(&$files) {
-  foreach (glob(__DIR__ . '/xml/Menu/*.xml') as $file) {
+  foreach (_extendedreport_civix_glob(__DIR__ . '/xml/Menu/*.xml') as $file) {
     $files[] = $file;
   }
 }
 
 /**
- * Implementation of hook_civicrm_install
+ * Implements hook_civicrm_install().
+ *
+ * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_install
  */
 function _extendedreport_civix_civicrm_install() {
   _extendedreport_civix_civicrm_config();
@@ -50,7 +55,9 @@ function _extendedreport_civix_civicrm_install() {
 }
 
 /**
- * Implementation of hook_civicrm_uninstall
+ * Implements hook_civicrm_uninstall().
+ *
+ * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_uninstall
  */
 function _extendedreport_civix_civicrm_uninstall() {
   _extendedreport_civix_civicrm_config();
@@ -60,7 +67,9 @@ function _extendedreport_civix_civicrm_uninstall() {
 }
 
 /**
- * (Delegated) Implementation of hook_civicrm_enable
+ * (Delegated) Implements hook_civicrm_enable().
+ *
+ * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_enable
  */
 function _extendedreport_civix_civicrm_enable() {
   _extendedreport_civix_civicrm_config();
