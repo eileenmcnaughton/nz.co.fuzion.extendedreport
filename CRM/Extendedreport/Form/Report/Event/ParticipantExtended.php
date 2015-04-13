@@ -12,6 +12,7 @@ class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Exten
   protected $_lineitemField = FALSE;
   protected $_groupFilter = TRUE;
   protected $_tagFilter = TRUE;
+  protected $_relationship_tab = TRUE;
 
   protected $_customGroupExtends = array(
     'Participant',
@@ -38,7 +39,7 @@ class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Exten
     }
 
     $this->_columns = array(
-      'civicrm_contact' => array(
+      'civicrm_contact' => array_merge($this->getColumns('Contact'), array(
         'dao' => 'CRM_Contact_DAO_Contact',
         'fields' => array(
           'sort_name' => array(
@@ -112,7 +113,7 @@ class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Exten
             'type' => CRM_Utils_Type::T_DATE,
           ),
         ),
-      ),
+      )),
       'civicrm_email' => array(
         'dao' => 'CRM_Core_DAO_Email',
         'fields' => array(
@@ -314,7 +315,28 @@ class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Exten
           ),
         ),
       ),
-    );
+    )
+    + $this->getColumns('Relationship', array(
+        'fields' => FALSE,
+        'filters' => FALSE,
+        'join_filters' => TRUE,
+        'group_by' => FALSE,
+    ))
+    + $this->getColumns('Contact', array(
+        'fields' => TRUE,
+        'join_fields' => TRUE,
+        'filters' => FALSE,
+        'prefix' => 'related_',
+        'prefix_label' => 'Related Contact ',
+    ))
+
+    + $this->getColumns('Phone', array(
+      'fields' => TRUE,
+      'join_fields' => TRUE,
+      'filters' => FALSE,
+      'prefix' => 'related_',
+      'prefix_label' => 'Related Contact ',
+    ));
 
     $this->_options = array(
       'blank_column_begin' => array(
@@ -388,6 +410,7 @@ GROUP BY  cv.label
       'phone_from_contact',
       'address_from_contact',
       'email_from_contact',
+      'related_contact_from_participant',
     );
   }
 
