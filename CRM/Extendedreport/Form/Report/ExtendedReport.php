@@ -1436,6 +1436,9 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   public function addOrderBys() {
     $options = array();
     foreach ($this->_columns as $tableName => $table) {
+      if (empty($table['metadata'])) {
+        $table = $this->setMetaDataForTable($tableName);
+      }
 
       // Report developer may define any column to order by; include these as order-by options.
       if (array_key_exists('order_bys', $table)) {
@@ -1452,7 +1455,8 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       if ($this->_autoIncludeIndexedFieldsAsOrderBys &&
         array_key_exists('extends', $table) && !empty($table['extends'])
       ) {
-        foreach ($table['fields'] as $fieldName => $field) {
+
+        foreach ($table['metadata'] as $fieldName => $field) {
           if (empty($field['no_display'])) {
             $options[$fieldName] = $field['title'];
           }
@@ -4510,6 +4514,8 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
   }
 
   /**
+   * Get columns for relationship fields.
+   *
    * @param array $options
    *
    * @return array
