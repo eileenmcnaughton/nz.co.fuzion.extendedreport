@@ -9,30 +9,34 @@ class CRM_Extendedreport_Form_Report_Contact_Basiccontact extends CRM_Extendedre
   protected $_joinFilters = array('address_from_contact' => array('civicrm_address' => 'is_primary = 1 '));
 
   /**
-   *
+   * Class constructor.
    */
-  function __construct() {
-    $this->_columns = $this->getContactColumns(array(
+  public function __construct() {
+    $this->_templates = array(
+      'default' => 'default template',
+      'PhoneBank' => 'Phone Bank template - Phone.tpl',
+    );
+    $this->_columns = $this->getColumns('Contact', array(
           'fields' => TRUE,
-          'order_by' => FALSE
+          'order_by' => FALSE,
         )
-      )
-      + $this->getAddressColumns(array(
+      ) +
+      $this->getColumns('Address', array(
           'fields' => TRUE,
-          'order_by' => FALSE
+          'order_by' => FALSE,
         )
-      )
-      + $this->getEmailColumns(array(
+      ) +
+      $this->getColumns('Email', array(
           'fields' => TRUE,
-          'order_by' => FALSE
+          'order_by' => FALSE,
         )
-      )
-      + $this->getLatestActivityColumns(array(
+      ) +
+      $this->getColumns('LatestActivity', array(
           'filters' => FALSE,
-          'fields' => array('activity_type' => array('title' => 'Latest Activity'))
-        ))
-      + $this->getTagColumns()
-      + $this->getPhoneColumns();
+          'fields' => array('activity_type' => array('title' => 'Latest Activity')),
+      )) +
+      $this->getColumns('Tag') +
+      $this->getColumns('Phone');
     $this->_columns['civicrm_contact']['fields']['id']['required'] = TRUE;
     $this->addTemplateSelector();
     $this->_groupFilter = TRUE;

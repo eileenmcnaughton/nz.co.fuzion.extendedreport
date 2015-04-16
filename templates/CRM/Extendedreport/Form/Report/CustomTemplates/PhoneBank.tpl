@@ -12,7 +12,7 @@
                   <strong>Name</strong>
                 </td>
                 <td>
-                  {$row.civicrm_contact_first_name}{if $row.civicrm_contact_nick_name}   '{$row.civicrm_contact_nick_name}' {/if} {$row.civicrm_contact_last_name}
+                  {$row.contact_contact_first_name}{if $row.contact_contact_nick_name}   '{$row.contact_contact_nick_name}' {/if} {$row.contact_contact_last_name}
                 </td>
               </tr>
               <tr>
@@ -20,7 +20,7 @@
                   City
                 </td>
                 <td>
-                  {$row.civicrm_address_city}
+                  {$row.civicrm_address_address_city}
                 </td>
               </tr>
               <tr>
@@ -28,7 +28,7 @@
                   Email
                 </td>
                 <td>
-                  {$row.civicrm_email_email}
+                  {$row.civicrm_email_email_email}
                 </td>
               </tr>
               <tr>
@@ -92,7 +92,7 @@
                 </th>
               </tr>
               <tr>
-                {foreach from=$row.civicrm_phone_phone key=phonekey item=phone}
+                {foreach from=$row.civicrm_phone_phone_phone key=phonekey item=phone}
               <tr>
                 <td>{$phonekey} : {$phone}</td>
                 <td></td>
