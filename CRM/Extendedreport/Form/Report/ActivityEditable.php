@@ -39,10 +39,9 @@ class CRM_Extendedreport_Form_Report_ActivityEditable extends CRM_Extendedreport
   protected $_aclTable = 'target_civicrm_contact';
 
   /**
-   * constructor
-   * @todo allow filtering on other contacts
+   * Class constructor.
    */
-  function __construct() {
+  public function __construct() {
     $this->_columns = $this->getColumns('Activity')
       + $this->getColumns('Contact', array('prefix' => 'target_',));
     $this->_columns['civicrm_activity']['fields']['id'] = array(
@@ -53,8 +52,7 @@ class CRM_Extendedreport_Form_Report_ActivityEditable extends CRM_Extendedreport
   }
 
   /**
-   * Generate From clause
-   * @todo Should remove all this to parent class
+   * Generate From clause.
    */
   function fromClauses() {
     return array(

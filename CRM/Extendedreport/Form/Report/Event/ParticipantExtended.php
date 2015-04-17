@@ -215,9 +215,8 @@ class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Exten
           ),
         ),
       ),
-    )
-    + $this->getColumns('Phone')
-    + array(
+    ) +
+    $this->getColumns('Phone') + array(
       'civicrm_event' => array(
         'dao' => 'CRM_Event_DAO_Event',
         'fields' => array(

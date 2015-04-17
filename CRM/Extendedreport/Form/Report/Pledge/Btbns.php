@@ -1,54 +1,24 @@
 <?php
 
-/*
- +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
- +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
- +--------------------------------------------------------------------+
- | This file is a part of CiviCRM.                                    |
- |                                                                    |
- | CiviCRM is free software; you can copy, modify, and distribute it  |
- | under the terms of the GNU Affero General Public License           |
- | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.   |
- |                                                                    |
- | CiviCRM is distributed in the hope that it will be useful, but     |
- | WITHOUT ANY WARRANTY; without even the implied warranty of         |
- | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
- | See the GNU Affero General Public License for more details.        |
- |                                                                    |
- | You should have received a copy of the GNU Affero General Public   |
- | License and the CiviCRM Licensing Exception along                  |
- | with this program; if not, contact CiviCRM LLC                     |
- | at info[AT]civicrm[DOT]org. If you have questions about the        |
- | GNU Affero General Public License or the licensing of CiviCRM,     |
- | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
- +--------------------------------------------------------------------+
-*/
-
 /**
- *
- * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
- * $Id$
- *
+ * Class CRM_Extendedreport_Form_Report_Pledge_Btbns
  */
 class CRM_Extendedreport_Form_Report_Pledge_Btbns extends CRM_Extendedreport_Form_Report_ExtendedReport {
   protected $_charts = array(
     '' => 'Tabular',
     'barChart' => 'Bar Chart',
-    'pieChart' => 'Pie Chart'
+    'pieChart' => 'Pie Chart',
   );
   protected $_customGroupExtends = array(
-    'Pledge'
+    'Pledge',
   );
   protected $lifeTime_from = NULL;
   protected $lifeTime_where = NULL;
 
   /**
-   *
+   * Class constructor.
    */
-  function __construct() {
+  public function __construct() {
     $yearsInPast = 8;
     $yearsInFuture = 2;
     $date = CRM_Core_SelectValues::date('custom', NULL, $yearsInPast, $yearsInFuture);
@@ -66,15 +36,15 @@ class CRM_Extendedreport_Form_Report_Pledge_Btbns extends CRM_Extendedreport_For
           'display_name' => array(
             'title' => ts('Donor Name'),
             'default' => TRUE,
-            'required' => TRUE
-          )
+            'required' => TRUE,
+          ),
         ),
         'filters' => array(
           'sort_name' => array(
             'title' => ts('Donor Name'),
-            'operator' => 'like'
-          )
-        )
+            'operator' => 'like',
+          ),
+        ),
       ),
       'civicrm_email' => array(
         'dao' => 'CRM_Core_DAO_Email',
@@ -82,9 +52,9 @@ class CRM_Extendedreport_Form_Report_Pledge_Btbns extends CRM_Extendedreport_For
         'fields' => array(
           'email' => array(
             'title' => ts('Email'),
-            'default' => TRUE
-          )
-        )
+            'default' => TRUE,
+          ),
+        ),
       ),
       'civicrm_phone' => array(
         'dao' => 'CRM_Core_DAO_Phone',
@@ -92,9 +62,9 @@ class CRM_Extendedreport_Form_Report_Pledge_Btbns extends CRM_Extendedreport_For
         'fields' => array(
           'phone' => array(
             'title' => ts('Phone No'),
-            'default' => TRUE
-          )
-        )
+            'default' => TRUE,
+          ),
+        ),
       ),
       'civicrm_pledge' => array(
         'dao' => 'CRM_Pledge_DAO_Pledge',
@@ -110,17 +80,14 @@ class CRM_Extendedreport_Form_Report_Pledge_Btbns extends CRM_Extendedreport_For
             'required' => TRUE,
             'no_repeat' => TRUE,
             'type' => CRM_Utils_Type::T_MONEY,
-          )
-        ,
+          ),
           'start_date' => array(
             'title' => ts('Start Date (within range)'),
             'required' => TRUE,
             'no_repeat' => TRUE,
             'type' => CRM_Utils_Type::T_DATE,
-          )
-
-        )
-      ,
+          ),
+        ),
         'filters' => array(
           'yid' => array(
             'name' => 'start_date',
@@ -162,10 +129,6 @@ class CRM_Extendedreport_Form_Report_Pledge_Btbns extends CRM_Extendedreport_For
 
     $this->_tagFilter = TRUE;
     parent::__construct();
-  }
-
-  function preProcess() {
-    parent::preProcess();
   }
 
   function select() {

@@ -45,7 +45,7 @@ class CRM_Extendedreport_Form_Report_Member_MembershipPivot extends CRM_Extended
   /**
    * @return array
    */
-  function fromClauses() {
+  public function fromClauses() {
     return array(
       'contact_from_membership',
     );

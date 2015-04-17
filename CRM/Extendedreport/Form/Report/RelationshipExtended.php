@@ -22,15 +22,15 @@ class CRM_Extendedreport_Form_Report_RelationshipExtended extends CRM_Extendedre
       ))
       + $this->getColumns('Contact', array(
         'prefix' => 'contact_b_',
-        'prefix_label' => 'Contact B ::'
+        'prefix_label' => 'Contact B ::',
       ))
       + $this->getColumns('Email', array(
         'prefix' => 'contact_a_',
-        'prefix_label' => 'Contact A ::'
+        'prefix_label' => 'Contact A ::',
       ))
       + $this->getColumns('Email', array(
         'prefix' => 'contact_b_',
-        'prefix_label' => 'Contact B ::'
+        'prefix_label' => 'Contact B ::',
       ))
       + $this->getColumns('Phone', array(
         'prefix' => 'contact_a_',
@@ -67,9 +67,9 @@ class CRM_Extendedreport_Form_Report_RelationshipExtended extends CRM_Extendedre
               'operatorType' => CRM_Report_Form::OP_MULTISELECT,
               'options' => $this->getContactTypeOptions(),
               'type' => CRM_Utils_Type::T_STRING
-            )
+            ),
           ),
-          'grouping' => 'relation-fields'
+          'grouping' => 'relation-fields',
         ),
         'civicrm_group' => array(
           'dao' => 'CRM_Contact_DAO_Group',
@@ -81,9 +81,9 @@ class CRM_Extendedreport_Form_Report_RelationshipExtended extends CRM_Extendedre
               'operatorType' => CRM_Report_Form::OP_MULTISELECT,
               'group' => TRUE,
               'options' => CRM_Core_PseudoConstant::group()
-            )
-          )
-        )
+            ),
+          ),
+        ),
       )
       + $this->getColumns('Case')
       + $this->getColumns('Address', array(
