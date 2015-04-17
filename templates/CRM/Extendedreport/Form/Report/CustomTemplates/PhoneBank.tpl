@@ -40,9 +40,9 @@
                     </tr>
                     <tr>
                       <td>
-                        {$row.civicrm_activity_activity_type_id}
+                        {$row.civicrm_activity_activity_activity_type_id}
                       </td>
-                      <td>{$row.civicrm_activity_activity_date_time|date_format}</td>
+                      <td>{$row.civicrm_activity_activity_activity_date_time|date_format}</td>
                     </tr>
                   </table>
                 </td>
@@ -114,7 +114,7 @@
         </tr>
 
       </table>
-      Printed {$reportDate} Contact ID : {$row.civicrm_contact_id}
+      Printed {$reportDate} Contact ID : {$row.civicrm_contact_contact_contact_id}
       {foreach from=$statistics.filters key=filterkey item=filter}
         Report Criteria:  {$filter.title} {$filter.value}
       {/foreach}
