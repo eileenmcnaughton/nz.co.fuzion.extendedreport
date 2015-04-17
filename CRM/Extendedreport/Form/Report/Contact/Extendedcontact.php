@@ -16,7 +16,7 @@ class CRM_Extendedreport_Form_Report_Contact_Extendedcontact extends CRM_Extende
    * Class constructor.
    */
   public function __construct() {
-    $this->_columns = $this->getContactColumns(array(
+    $this->_columns = $this->getColumns('Contact', array(
         'fields' => FALSE,
         'order_by' => FALSE,
       )

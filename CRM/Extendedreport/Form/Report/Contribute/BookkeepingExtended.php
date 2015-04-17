@@ -31,13 +31,12 @@
  * @package CRM
  * @copyright CiviCRM LLC (c) 2004-2014
  * $Id$
- *
  */
 class CRM_Extendedreport_Form_Report_Contribute_BookkeepingExtended extends CRM_Extendedreport_Form_Report_ExtendedReport {
   /**
-   *
+   * Class constructor.
    */
-  function __construct() {
+  public function __construct() {
     $this->_columns = $this->getColumns('Contact')
     + $this->getColumns('Address')
     + $this->getColumns('Phone', array('subquery' => FALSE,))

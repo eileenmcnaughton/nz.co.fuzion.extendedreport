@@ -45,24 +45,24 @@ class CRM_Extendedreport_Form_Report_ActivityExtended extends CRM_Extendedreport
    * @todo allow filtering on other contacts
    */
   function __construct() {
-    $this->_columns = $this->getContactColumns(array(
+    $this->_columns = $this->getColumns('Contact', array(
           'prefix' => '',
           'prefix_label' => 'Source Contact ::',
-          'filters' => TRUE
+          'filters' => TRUE,
         ))
-      + $this->getContactColumns(array(
+      + $this->getColumns('Contact', array(
           'prefix' => 'target_',
           'group_by' => TRUE,
           'prefix_label' => 'Target Contact ::',
-          'filters' => FALSE
+          'filters' => FALSE,
         ))
-      + $this->getContactColumns(array(
+      + $this->getColumns('Contact', array(
           'prefix' => 'assignee_',
           'prefix_label' => 'Assignee Contact ::',
-          'filters' => FALSE
+          'filters' => FALSE,
         ))
 
-      + $this->getActivityColumns();
+      + $this->getColumns('Activity');
     parent::__construct();
   }
 

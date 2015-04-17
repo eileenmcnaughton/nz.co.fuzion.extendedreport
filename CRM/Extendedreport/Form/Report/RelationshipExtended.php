@@ -16,28 +16,28 @@ class CRM_Extendedreport_Form_Report_RelationshipExtended extends CRM_Extendedre
   public function __construct() {
     $this->_tagFilter = TRUE;
 
-    $this->_columns = $this->getContactColumns(array(
+    $this->_columns = $this->getColumns('Contact', array(
         'prefix' => 'contact_a_',
         'prefix_label' => 'Contact A ::'
       ))
-      + $this->getContactColumns(array(
+      + $this->getColumns('Contact', array(
         'prefix' => 'contact_b_',
         'prefix_label' => 'Contact B ::'
       ))
-      + $this->getEmailColumns(array(
+      + $this->getColumns('Email', array(
         'prefix' => 'contact_a_',
         'prefix_label' => 'Contact A ::'
       ))
-      + $this->getEmailColumns(array(
+      + $this->getColumns('Email', array(
         'prefix' => 'contact_b_',
         'prefix_label' => 'Contact B ::'
       ))
-      + $this->getPhoneColumns(array(
+      + $this->getColumns('Phone', array(
         'prefix' => 'contact_a_',
         'prefix_label' => 'Contact A ::',
         'subquery' => FALSE,
       ))
-      + $this->getPhoneColumns(array(
+      + $this->getColumns('Phone', array(
         'prefix' => 'contact_b_',
         'prefix_label' => 'Contact B ::',
         'subquery' => FALSE,
@@ -85,15 +85,15 @@ class CRM_Extendedreport_Form_Report_RelationshipExtended extends CRM_Extendedre
           )
         )
       )
-      + $this->getCaseColumns()
-      + $this->getAddressColumns(array(
+      + $this->getColumns('Case')
+      + $this->getColumns('Address', array(
           'prefix' => 'contact_a_',
-          'prefix_label' => 'Contact A ::'
+          'prefix_label' => 'Contact A ::',
         )
       )
-      + $this->getAddressColumns(array(
+      + $this->getColumns('Address', array(
           'prefix' => 'contact_b_',
-          'prefix_label' => 'Contact B ::'
+          'prefix_label' => 'Contact B ::',
         )
       );
     parent::__construct();

@@ -43,7 +43,7 @@ class CRM_Extendedreport_Form_Report_ActivityEditable extends CRM_Extendedreport
    * @todo allow filtering on other contacts
    */
   function __construct() {
-    $this->_columns = $this->getActivityColumns()
+    $this->_columns = $this->getColumns('Activity')
       + $this->getColumns('Contact', array('prefix' => 'target_',));
     $this->_columns['civicrm_activity']['fields']['id'] = array(
       'title' => 'id',

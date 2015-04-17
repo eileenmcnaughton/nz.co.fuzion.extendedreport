@@ -47,15 +47,15 @@ class CRM_Extendedreport_Form_Report_Price_Lineitemmembership extends CRM_Extend
   protected $_aclTable = 'civicrm_contact';
 
   /**
-   *
+   * Class constructor.
    */
-  function __construct() {
-    $this->_columns = $this->getContactColumns()
-      + $this->getMembershipColumns()
-      + $this->getContributionColumns()
-      + $this->getPriceFieldColumns()
-      + $this->getPriceFieldValueColumns()
-      + $this->getLineItemColumns();
+  public function __construct() {
+    $this->_columns = $this->getColumns('Contact')
+      + $this->getColumns('Membership')
+      + $this->getColumns('Contribution')
+      + $this->getColumns('PriceField')
+      + $this->getColumns('PriceFieldValue')
+      + $this->getColumns('LineItem');
 
     parent::__construct();
   }

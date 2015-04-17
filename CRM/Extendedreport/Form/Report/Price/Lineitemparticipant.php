@@ -49,14 +49,14 @@ class CRM_Extendedreport_Form_Report_Price_Lineitemparticipant extends CRM_Exten
   /**
    *
    */
-  function __construct() {
-    $this->_columns = $this->getContactColumns()
-      + $this->getEventColumns()
-      + $this->getParticipantColumns()
-      + $this->getContributionColumns()
-      + $this->getPriceFieldColumns()
-      + $this->getPriceFieldValueColumns()
-      + $this->getLineItemColumns();
+  public function __construct() {
+    $this->_columns = $this->getColumns('Contact')
+      + $this->getColumns('Event')
+      + $this->getColumns('Participant')
+      + $this->getColumns('Contribution')
+      + $this->getColumns('PriceField')
+      + $this->getColumns('PriceFieldValue')
+      + $this->getColumns('LineItem');
     parent::__construct();
   }
 

@@ -133,17 +133,17 @@ class CRM_Extendedreport_Form_Report_Pledge_Btbns extends CRM_Extendedreport_For
             )
             AND pledge_civireport.contact_id NOT IN
             (SELECT distinct pledge.contact_id FROM civicrm_pledge pledge
-             WHERE pledge.start_date >=  ('\$to') AND pledge.is_test = 0) "
+             WHERE pledge.start_date >=  ('\$to') AND pledge.is_test = 0) ",
           ),
           'status_id' => array(
             'title' => 'Pledge Status',
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
             'options' => CRM_Contribute_PseudoConstant::contributionStatus(),
             'default' => array(
-              '1'
-            )
-          )
-        )
+              '1',
+            ),
+          ),
+        ),
       ),
       'civicrm_group' => array(
         'dao' => 'CRM_Contact_DAO_GroupContact',

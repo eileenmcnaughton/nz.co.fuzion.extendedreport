@@ -111,7 +111,7 @@ class CRM_Extendedreport_Form_Report_Contribute_DetailExtended extends CRM_Repor
               'title' => ts('Last Name, First Name'),
               'default' => '1',
               'default_weight' => '0',
-              'default_order' => 'ASC'
+              'default_order' => 'ASC',
             ),
           ),
           'grouping' => 'contact-fields',

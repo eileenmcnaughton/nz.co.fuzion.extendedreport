@@ -16,7 +16,7 @@ class CRM_Extendedreport_Form_Report_Event_EventOverview extends CRM_Extendedrep
    */
   public function __construct() {
     $this->_columns = $this->getColumns('Event', array())
-      + $this->getEventSummaryColumns();
+      + $this->getColumns('EventSummary');
     parent::__construct();
   }
 

@@ -13,7 +13,7 @@ class CRM_Extendedreport_Form_Report_Event_Editableevents extends CRM_Extendedre
    * Class constructor.
    */
   public function __construct() {
-    $this->_columns = $this->getEventColumns();
+    $this->_columns = $this->getColumns('Event');
     $this->_columns['civicrm_event']['fields']['id'] = array(
       'title' => 'id',
       'required' => TRUE,
