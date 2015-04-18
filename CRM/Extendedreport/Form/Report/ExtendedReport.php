@@ -4663,9 +4663,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       'group_by' => FALSE,
       'order_by' => TRUE,
       'filters' => TRUE,
-      'defaults' => array(
-        'country_id' => TRUE
-      ),
+      'defaults' => array(),
     );
 
     $options = array_merge($defaultOptions, $options);
