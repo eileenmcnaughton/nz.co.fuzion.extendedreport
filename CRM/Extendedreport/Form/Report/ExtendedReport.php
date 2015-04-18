@@ -4170,9 +4170,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       'filters' => TRUE,
       'fields' => TRUE,
       'custom_fields' => array('Individual', 'Contact', 'Organization'),
-      'defaults' => array(
-        'country_id' => TRUE
-      ),
+      'defaults' => array(),
       'contact_type' => NULL,
     );
     $options = array_merge($defaultOptions, $options);
