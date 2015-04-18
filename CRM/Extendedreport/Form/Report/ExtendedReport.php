@@ -549,7 +549,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
         $tableAlias = $fieldDetails[0];
         $tableName = array_search($tableAlias, $this->_aliases);
         $fieldAlias = str_replace('-', '_', $tableName . '_' . $field);
-        $this->addRowHeader($tableAlias, $field, $fieldAlias, $this->getPropertyForField($field, 'title', $tableName));
+        $this->addRowHeader($tableAlias, $this->getPropertyForField($field, 'name', $tableName), $fieldAlias, $this->getPropertyForField($field, 'title', $tableName));
       }
 
     }
@@ -614,7 +614,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
         }
       }
     }
-    throw new Exception('lets add some more handling!');
+    throw new Exception('No metadata found for ' . $fieldName . ' in table ' . $tableName);
   }
 
   /**

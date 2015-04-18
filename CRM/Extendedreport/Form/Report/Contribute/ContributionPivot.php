@@ -34,8 +34,8 @@ class CRM_Extendedreport_Form_Report_Contribute_ContributionPivot extends CRM_Ex
 
     $this->_aggregateRowFields = array(
       'contribution_civireport:contribution_campaign_id' => 'Campaign',
-      'civicrm_address_civireport:county_id' => 'County',
-      'civicrm_address_civireport:city' => 'City',
+      'address_civireport:address_county_id' => 'County',
+      'address_civireport:address_city' => 'City',
       'contribution_civireport:contribution_financial_type_id' => 'Financial Type',
     );
     $this->_aggregateColumnHeaderFields = array(
