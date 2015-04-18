@@ -690,5 +690,6 @@ GROUP BY  cv.label
         break;
       }
     }
+    parent::alterDisplay($rows);
   }
 }
