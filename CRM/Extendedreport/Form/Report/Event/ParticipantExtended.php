@@ -320,16 +320,19 @@ class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Exten
         'filters' => FALSE,
         'join_filters' => TRUE,
         'group_by' => FALSE,
-    ))
-    + $this->getColumns('Contact', array(
+    )) +
+    $this->getColumns('Contact', array(
         'fields' => TRUE,
         'join_fields' => TRUE,
         'filters' => FALSE,
         'prefix' => 'related_',
         'prefix_label' => 'Related Contact ',
-    ))
-
-    + $this->getColumns('Phone', array(
+    )) +
+    $this->getColumns('Email', array(
+      'prefix' => 'related_',
+      'prefix_label' => 'Related Contact ',
+    )) +
+    $this->getColumns('Phone', array(
       'fields' => TRUE,
       'join_fields' => TRUE,
       'filters' => FALSE,
