@@ -2705,7 +2705,7 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
       'aggregate_row_headers',
     );
     foreach ($otherFields as $fieldName) {
-      if (stristr($this->_params[$fieldName], ':custom_')) {
+      if (isset($this->_params[$fieldName]) && stristr($this->_params[$fieldName], ':custom_')) {
         $customFields[] = $this->_params[$fieldName];
       }
     }
@@ -5525,7 +5525,10 @@ AND {$this->_aliases['civicrm_line_item']}.entity_table = 'civicrm_participant')
         ON {$this->_aliases['civicrm_relationship']}.contact_id_b = {$this->_aliases['related_civicrm_contact']}.id";
       $this->_from .= " LEFT JOIN civicrm_phone {$this->_aliases['related_civicrm_phone']}
         ON {$this->_aliases['related_civicrm_phone']}.contact_id = {$this->_aliases['related_civicrm_contact']}.id
-        AND {$this->_aliases['related_civicrm_phone']}.is_primary = 1
+        AND {$this->_aliases['related_civicrm_phone']}.is_primary = 1";
+      $this->_from .= " LEFT JOIN civicrm_email {$this->_aliases['related_civicrm_email']}
+        ON {$this->_aliases['related_civicrm_email']}.contact_id = {$this->_aliases['related_civicrm_contact']}.id
+        AND {$this->_aliases['related_civicrm_email']}.is_primary = 1
         ";
 
     }
