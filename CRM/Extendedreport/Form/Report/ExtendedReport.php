@@ -2793,7 +2793,7 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
    * @return bool|string
    */
   function selectClause(&$tableName, $tableKey, &$fieldName, &$field) {
-    if ($fieldName == 'phone') {
+    if ($fieldName == 'phone_phone') {
       $alias = "{$tableName}_{$fieldName}";
       $this->_columnHeaders["{$tableName}_{$fieldName}"]['title'] = CRM_Utils_Array::value('title', $field);
       $this->_columnHeaders["{$tableName}_{$fieldName}"]['type'] = CRM_Utils_Array::value('type', $field);
@@ -4467,21 +4467,18 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
 
     $options = array_merge($defaultOptions, $options);
 
-    $fields = array(
-      $options['prefix'] . 'civicrm_phone' => array(
-        'fields' => array(
-          $options['prefix'] . 'phone' => array(
-            'title' => ts($options['prefix_label'] . 'Phone'),
-            'name' => 'phone',
-            'is_fields' => TRUE,
-          ),
-        ),
+    $spec = array(
+      $options['prefix'] . 'phone' => array(
+        'title' => ts($options['prefix_label'] . 'Phone'),
+        'name' => 'phone',
+        'is_fields' => TRUE,
       ),
     );
+
     if ($options['subquery']) {
-      $fields[$options['prefix'] . 'civicrm_phone']['fields'][$options['prefix'] . 'phone']['alter_display'] = 'alterPhoneGroup';
+      $spec[$options['prefix'] . 'phone']['alter_display'] = 'alterPhoneGroup';
     }
-    return $this->buildColumns($fields[$options['prefix'] . 'civicrm_phone']['fields'], $options['prefix'] . 'civicrm_phone', 'CRM_Core_DAO_Phone');
+    return $this->buildColumns($spec, $options['prefix'] . 'civicrm_phone', 'CRM_Core_DAO_Phone');
   }
 
   /*
