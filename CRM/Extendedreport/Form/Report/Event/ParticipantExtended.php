@@ -592,8 +592,9 @@ GROUP BY  cv.label
         $participantTitle = ts('View Participant Record');
 
         $rows[$rowNum]['civicrm_contact_sort_name'] = "<a title='$contactTitle' href=$url>$displayName</a>";
-        if ($this->_outputMode !== 'csv' && $this->_outputMode !== 'pdf') {
-          $rows[$rowNum]['civicrm_contact_sort_name'] .= "<span style='float: right;'><a title='$participantTitle' href=$viewUrl> " . ts('View') . "</a></span>";
+        if ($this->_outputMode !== 'csv' && $this->_outputMode !== 'pdf' && $this->_outputMode !== 'print') {
+          $rows[$rowNum]['civicrm_contact_sort_name'] .= "<span style='float: right;'>
+          <a title='$participantTitle' href=$viewUrl> " . ts('View') . "</a></span>";
         }
         $entryFound = TRUE;
       }
