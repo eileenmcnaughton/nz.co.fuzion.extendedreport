@@ -6274,7 +6274,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
         continue;
       }
       $keys = explode(':', $phone);
-      $return[$locationTypes[$keys[1]]] = $keys[0];
+      $return[] = $locationTypes[$keys[1]] . ' : ' . $keys[0];
       if (!empty($keys[2])) {
         $phoneTypeString = ' (' . $phoneTypes[$keys[2]] . ') ';
       }
@@ -6282,7 +6282,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
     }
 
     if (in_array($this->_outputMode, array('print'))) {
-      return $return;
+      return implode($return, '<br>');
     }
 
     $html .= "</table>";
