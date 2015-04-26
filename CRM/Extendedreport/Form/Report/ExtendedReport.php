@@ -18,6 +18,13 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   protected $_fieldSpecs = array();
 
   /**
+  * CiviCRM major version - e.g. 4.6
+  *
+  * @var string
+  */
+  protected $majorVersion = '';
+
+  /**
    * Available templates.
    *
    * @var array
@@ -288,7 +295,8 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    * https://github.com/eileenmcnaughton/nz.co.fuzion.extendedreport/issues/12
    */
   public function preProcess() {
-    $this->assign('civicrm_major_version', str_replace('.', '', substr(CRM_Utils_System::version(), 0, 3)));
+    $this->setVersion();
+    $this->assign('civicrm_major_version', $this->majorVersion);
     $this->preProcessCommon();
 
     if (!$this->_id) {
@@ -477,6 +485,13 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       $this->_formValues = $this->_defaults;
       $this->postProcess();
     }
+  }
+
+  /**
+  * Set the code major version.
+  */
+  function setVersion () {
+    $this->majorVersion = str_replace('.', '', substr(CRM_Utils_System::version(), 0, 3));
   }
 
   function select() {

@@ -74,8 +74,29 @@ function extendedreport_civicrm_managed(&$entities) {
  */
 function extendedreport_civicrm_permission(&$permissions) {
   $prefix = ts('CiviCRM Extended report') . ': ';
-  $permissions['access CiviCRM report developer'] = array(
-    $prefix . ts('access CiviCRM report developer'),
-    ts('View developer tab in extended reports'),
-  );
+  if (extendedreport_version_at_least('4.6')) {
+    $permissions['access CiviCRM report developer'] = array(
+      $prefix . ts('access CiviCRM report developer'),
+      ts('View developer tab in extended reports'),
+    );
+  }
+  else {
+    $permissions['access CiviCRM report developer'] =
+      $prefix . ts('access CiviCRM report developer');
+  }
+}
+
+/**
+ * Check version is at least as high as the one passed.
+ *
+ * @param string $version
+ *
+ * @return bool
+ */
+function extendedreport_version_at_least($version) {
+  $codeVersion = explode('.', CRM_Utils_System::version());
+  if (version_compare($codeVersion[0] . '.' . $codeVersion[1], $version) >= 0) {
+    return TRUE;
+  }
+  return FALSE;
 }

@@ -31,7 +31,7 @@
  * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
- * Like contribution detail but with more custom fields
+ * Like contribution detail but with more custom fields.
  */
 class CRM_Extendedreport_Form_Report_Contribute_DetailExtended extends CRM_Report_Form {
   protected $_addressField = FALSE;
@@ -51,10 +51,13 @@ class CRM_Extendedreport_Form_Report_Contribute_DetailExtended extends CRM_Repor
     'Individual',
     'Contact',
     'Organization',
-    'Household'
+    'Household',
   );
 
-  function __construct() {
+  /**
+   * Class constructor.
+   */
+  public function __construct() {
     // Check if CiviCampaign is a) enabled and b) has active campaigns
 
     $config = CRM_Core_Config::singleton();
