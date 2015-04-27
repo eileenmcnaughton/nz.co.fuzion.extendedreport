@@ -488,12 +488,15 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   }
 
   /**
-  * Set the code major version.
-  */
+   * Set the code major version.
+   */
   function setVersion () {
     $this->majorVersion = str_replace('.', '', substr(CRM_Utils_System::version(), 0, 3));
   }
 
+  /**
+   * Select function.
+   */
   function select() {
     if ($this->_preConstrain && !$this->_preConstrained) {
       $this->_select = " SELECT DISTINCT {$this->_aliases[$this->_baseTable]}.id";
@@ -2959,6 +2962,7 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
                 $alterFunctions[$tableName . '_' . $field] = 'alterCrmEditable';
                 $alterMap[$tableName . '_' . $field] = $field;
                 $alterSpecs[$tableName . '_' . $field] = $specs['crm_editable'];
+                $alterSpecs[$tableName . '_' . $field]['field_name'] = $specs['name'];
               }
             }
           }
@@ -5969,28 +5973,26 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
   /**
    * @param $value
    * @param $row
-   * @param $selectedfield
+   * @param string $selectedField
    * @param $criteriaFieldName
    * @param $specs
    *
    * @return string
    */
-  function alterCrmEditable($value, &$row, $selectedfield, $criteriaFieldName, $specs) {
+  function alterCrmEditable($value, &$row, $selectedField, $criteriaFieldName, $specs) {
     $id_field = $specs['id_table'] . '_' . $specs['id_field'];
-    if (empty($id_field) || empty($value[$id_field])) {
-      return $value;
-    }
     $entityID = $row[$id_field];
     $entity = $specs['entity'];
-    $extra = '';
+    $extra = $class = '';
     if (!empty($specs['options'])) {
       $specs['options']['selected'] = $value;
       $extra = "data-type='select' data-options='" . json_encode($specs['options']) . "'";
       $value = $specs['options'][$value];
+      $class = 'editable_select';
     }
     //nodeName == "INPUT" && this.type=="checkbox"
-    return "<div id={$entity}-{$entityID} class='crm-entity'>
-    <span class='crm-editable crmf-{$criteriaFieldName} editable_select crm-editable-enabled' data-action='create' $extra>" . $value . "</span></div>";
+    return "<div id={$entity}-{$entityID} data-id='{$entityID}' data-entity='{$entity}' class='crm-entity'>
+    <span class='crm-editable crmf-{$specs['field_name']} $class crm-editable-enabled' data-action='create' $extra>" . $value . "</span></div>";
   }
 
   /*

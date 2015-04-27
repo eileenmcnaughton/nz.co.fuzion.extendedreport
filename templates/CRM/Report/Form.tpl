@@ -17,7 +17,7 @@
 *}
 
 {if $outputMode neq 'print'}
-  {if $civicrm_major_version}
+  {if $civicrm_major_version < 46}
     {include file="CRM/common/crmeditable.tpl"}
   {/if}
 {/if}
