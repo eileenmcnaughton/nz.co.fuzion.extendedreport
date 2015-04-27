@@ -4950,7 +4950,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
 
     $options = array_merge($defaultOptions, $options);
 
-    $activityFields['civicrm_activity']['fields'] = array(
+    $spec = array(
       'id' => array(
         'no_display' => TRUE,
         'required' => TRUE,
@@ -4961,7 +4961,6 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       ),
       'activity_type_id' => array(
         'title' => ts('Activity Type'),
-        'default' => TRUE,
         'alter_display' => 'alterActivityType',
         'is_fields' => TRUE,
         'is_filters' => TRUE,
@@ -4973,7 +4972,6 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       ),
       'activity_subject' => array(
         'title' => ts('Subject'),
-        'default' => TRUE,
         'name' => 'subject',
         'is_fields' => TRUE,
         'is_filters' => TRUE,
@@ -4996,7 +4994,6 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       ),
       'activity_status_id' => array(
         'title' => ts('Activity Status'),
-        'default' => TRUE,
         'name' => 'status_id',
         'type' => CRM_Utils_Type::T_STRING,
         'alter_display' => 'alterActivityStatus',
@@ -5042,7 +5039,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       ),
 
     );
-    return $this->buildColumns($activityFields['civicrm_activity']['fields'], $options['prefix'] . 'civicrm_activity', 'CRM_Activity_DAO_Activity');
+    return $this->buildColumns($spec, $options['prefix'] . 'civicrm_activity', 'CRM_Activity_DAO_Activity');
   }
 
   /**
