@@ -4975,6 +4975,11 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'name' => 'subject',
         'is_fields' => TRUE,
         'is_filters' => TRUE,
+        'crm_editable' => array(
+          'id_table' => 'civicrm_activity',
+          'id_field' => 'id',
+          'entity' => 'activity',
+        ),
 
       ),
       'source_contact_id' => array(
@@ -5005,7 +5010,6 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
           'id_table' => 'civicrm_activity',
           'id_field' => 'id',
           'entity' => 'activity',
-          'options' => $this->_getOptions('activity', 'activity_status_id'),
         ),
       ),
       'duration' => array(
@@ -5021,12 +5025,23 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'is_fields' => TRUE,
         'is_filters' => TRUE,
         'type' => CRM_Utils_Type::T_TEXT,
+        'crm_editable' => array(
+          'id_table' => 'civicrm_activity',
+          'id_field' => 'id',
+          'entity' => 'activity',
+        ),
+
       ),
       'result' => array(
         'title' => ts('Activity Result'),
         'is_fields' => TRUE,
         'is_filters' => TRUE,
         'type' => CRM_Utils_Type::T_TEXT,
+        'crm_editable' => array(
+          'id_table' => 'civicrm_activity',
+          'id_field' => 'id',
+          'entity' => 'activity',
+        ),
       ),
       'activity_is_current_revision' => array(
         'type' => CRM_Report_Form::OP_INT,
@@ -5983,13 +5998,13 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
     $extra = $class = '';
     if (!empty($specs['options'])) {
       $specs['options']['selected'] = $value;
-      $extra = "data-type='select' data-options='" . json_encode($specs['options']) . "'";
+      $extra = "data-type='select'";
       $value = $specs['options'][$value];
       $class = 'editable_select';
     }
     //nodeName == "INPUT" && this.type=="checkbox"
-    return "<div id={$entity}-{$entityID} data-id='{$entityID}' data-entity='{$entity}' class='crm-entity'>
-    <span class='crm-editable crmf-{$specs['field_name']} $class crm-editable-enabled' data-action='create' $extra>" . $value . "</span></div>";
+    return "<div data-id='{$entityID}' data-entity='{$entity}' class='crm-entity'>
+    <span class='crm-editable crmf-{$specs['field_name']} $class ' data-action='create' $extra>" . $value . "</span></div>";
   }
 
   /*
