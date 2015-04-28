@@ -116,7 +116,8 @@ class CRM_Extendedreport_Form_Report_Pledge_Lybunt extends CRM_Extendedreport_Fo
             'title' => ts('Year'),
             'no_display' => TRUE,
             'required' => TRUE,
-            'no_repeat' => TRUE
+            'no_repeat' => TRUE,
+            'type' => CRM_Utils_Type::T_DATE,
           )
 
         )
@@ -126,15 +127,12 @@ class CRM_Extendedreport_Form_Report_Pledge_Lybunt extends CRM_Extendedreport_Fo
             'name' => 'start_date',
             'title' => ts('This Year'),
             'operatorType' => CRM_Report_Form::OP_SELECT,
-            // 'type'    => CRM_Utils_Type::T_INT + CRM_Utils_Type::T_BOOLEAN,
+            'type'    => CRM_Utils_Type::T_INT,
             'options' => $optionYear,
             'default' => date('Y'),
-            'clause' => "pledge_civireport.contact_id NOT IN
-(SELECT distinct pledge.contact_id FROM civicrm_pledge pledge
- WHERE   YEAR(pledge.start_date) =  \$value AND pledge.is_test = 0) AND pledge_civireport.contact_id IN (SELECT distinct pledge.contact_id FROM civicrm_pledge pledge
- WHERE   YEAR(pledge.start_date) =  (\$value-1) AND pledge.is_test = 0) "
           ),
           'status_id' => array(
+            'title' => 'status_id',
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
             'options' => CRM_Contribute_PseudoConstant::contributionStatus(),
             'default' => array(
@@ -170,7 +168,6 @@ class CRM_Extendedreport_Form_Report_Pledge_Lybunt extends CRM_Extendedreport_Fo
     $this->_columnHeaders = $select = array();
     $current_year = $this->_params['yid_value'];
     $previous_year = $current_year - 1;
-
 
     foreach ($this->_columns as $tableName => $table) {
 
@@ -355,14 +352,8 @@ class CRM_Extendedreport_Form_Report_Pledge_Lybunt extends CRM_Extendedreport_Fo
           }
         }
 
-        if ($dao->civicrm_contribution_receive_date) {
-          if ($dao->civicrm_contribution_receive_date == $previous_year) {
-            $rows[$dao->civicrm_pledge_contact_id][$dao->civicrm_pledge_start_date] = $dao->civicrm_pledge_amount;
-          }
-        }
-        else {
-          $rows[$dao->civicrm_pledge_contact_id]['civicrm_life_time_total'] = $dao->civicrm_pledge_amount;
-        }
+        $rows[$dao->civicrm_pledge_contact_id]['civicrm_life_time_total'] = $dao->civicrm_pledge_amount;
+
       }
       $dao->free();
     }
@@ -409,6 +400,28 @@ class CRM_Extendedreport_Form_Report_Pledge_Lybunt extends CRM_Extendedreport_Fo
       CRM_Utils_OpenFlashChart::reportChart($graphRows, $this->_params['charts'], $interval, $chartInfo);
       $this->assign('chartType', $this->_params['charts']);
     }
+  }
+
+  /**
+   * Overriding this is the best way to alter the where statement for an individual field.
+   *
+   * @param array $field Field specifications
+   * @param string $op Query operator (not an exact match to sql)
+   * @param mixed $value
+   * @param float $min
+   * @param float $max
+   *
+   * @return null|string
+   */
+  function whereClause(&$field, $op, $value, $min, $max) {
+    if ($field['name'] =='start_date') {
+      return(
+      "pledge_civireport.contact_id NOT IN
+(SELECT distinct cont.id FROM civicrm_contact cont, civicrm_pledge pledge
+ WHERE  cont.id = pledge.contact_id AND YEAR (pledge.start_date) = $value AND pledge.is_test = 0 )"
+      );
+    }
+    return parent::whereClause($field, $op, $value, $min, $max);
   }
 
   /**
