@@ -113,8 +113,8 @@ class CRM_Extendedreport_Form_Report_Pledge_Sybuns extends CRM_Extendedreport_Fo
             'title' => ts('Year'),
             'no_display' => TRUE,
             'required' => TRUE,
-            'no_repeat' => TRUE
-          )
+            'no_repeat' => TRUE,
+          ),
         ),
         'filters' => array(
           'yid' => array(
@@ -123,18 +123,14 @@ class CRM_Extendedreport_Form_Report_Pledge_Sybuns extends CRM_Extendedreport_Fo
             'operatorType' => CRM_Report_Form::OP_SELECT,
             'options' => $optionYear,
             'default' => date('Y'),
-            'clause' => "pledge_civireport.contact_id NOT IN
-(SELECT distinct cont.id FROM civicrm_contact cont, civicrm_pledge pledge
- WHERE  cont.id = pledge.contact_id AND YEAR (pledge.start_date) = \$value AND pledge.is_test = 0 )"
           ),
           'status_id' => array(
+            'title' => 'Status',
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
             'options' => CRM_Contribute_PseudoConstant::contributionStatus(),
-            'default' => array(
-              '1'
-            )
-          )
-        )
+            'default' => array('1'),
+          ),
+        ),
       ),
       'civicrm_group' => array(
         'dao' => 'CRM_Contact_DAO_GroupContact',
@@ -271,6 +267,28 @@ class CRM_Extendedreport_Form_Report_Pledge_Sybuns extends CRM_Extendedreport_Fo
     }
   }
 
+  /**
+   * Overriding this is the best way to alter the where statement for an individual field.
+   *
+   * @param array $field Field specifications
+   * @param string $op Query operator (not an exact match to sql)
+   * @param mixed $value
+   * @param float $min
+   * @param float $max
+   *
+   * @return null|string
+   */
+  function whereClause(&$field, $op, $value, $min, $max) {
+    if ($field['name'] =='start_date') {
+      return(
+        "pledge_civireport.contact_id NOT IN
+(SELECT distinct cont.id FROM civicrm_contact cont, civicrm_pledge pledge
+ WHERE  cont.id = pledge.contact_id AND YEAR (pledge.start_date) = $value AND pledge.is_test = 0 )"
+      );
+    }
+    return parent::whereClause($field, $op, $value, $min, $max);
+  }
+
   function groupBy() {
     $this->assign('chartSupported', TRUE);
     $this->_groupBy = "Group BY {$this->_aliases['civicrm_pledge']}.contact_id, Year({$this->_aliases['civicrm_pledge']}.start_date) WITH ROLLUP ";
@@ -336,15 +354,12 @@ class CRM_Extendedreport_Form_Report_Pledge_Sybuns extends CRM_Extendedreport_Fo
       }
 
       $current_year = $this->_params['yid_value'];
-      $previous_year = $current_year - 1;
-      $previous_pyear = $current_year - 2;
-      $previous_ppyear = $current_year - 3;
       $upTo_year = $current_year - 4;
 
       $rows = $row = array();
+      $this->addDeveloperTab($sql);
       $dao = CRM_Core_DAO::executeQuery($sql);
       $contributionSum = 0;
-      $yearcal = array();
       while ($dao->fetch()) {
         if (!$dao->civicrm_pledge_contact_id) {
           continue;
