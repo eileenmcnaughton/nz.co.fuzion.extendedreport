@@ -26,9 +26,6 @@
  +--------------------------------------------------------------------+
 */
 
-require_once 'CRM/Report/Form.php';
-require_once 'CRM/Contribute/PseudoConstant.php';
-
 /**
  * Class CRM_Extendedreport_Form_Report_Pledge_Lybuns.
  */
@@ -116,6 +113,7 @@ class CRM_Extendedreport_Form_Report_Pledge_Lybuns extends CRM_Extendedreport_Fo
             'no_display' => TRUE,
             'required' => TRUE,
             'no_repeat' => TRUE,
+            'type' => CRM_Utils_Type::T_INT,
           ),
         ),
         'filters' => array(
@@ -123,7 +121,7 @@ class CRM_Extendedreport_Form_Report_Pledge_Lybuns extends CRM_Extendedreport_Fo
             'name' => 'start_date',
             'title' => ts('This Year'),
             'operatorType' => CRM_Report_Form::OP_SELECT,
-            // 'type'    => CRM_Utils_Type::T_INT + CRM_Utils_Type::T_BOOLEAN,
+            'type'    => CRM_Utils_Type::T_INT,
             'options' => $optionYear,
             'default' => date('Y'),
           ),
