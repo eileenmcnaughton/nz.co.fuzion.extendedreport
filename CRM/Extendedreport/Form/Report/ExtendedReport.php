@@ -3573,6 +3573,9 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         $columns[$tableName]['dao'] = $daoName;
       }
     }
+    if ($tableAlias) {
+      $columns[$tableName]['alias'] = $tableAlias;
+    }
 
     foreach ($specs as $specName => $spec) {
       unset($spec['default']);
@@ -4198,11 +4201,10 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     if (CRM_Utils_Array::value('contact_type', $options) == 'Organization') {
       $orgOnly = TRUE;
     }
+    $tableAlias = $options['prefix'] . 'civicrm_contact';
     $contactFields = array(
       $options['prefix'] . 'civicrm_contact' => array(
-        'dao' => 'CRM_Contact_DAO_Contact',
         'name' => 'civicrm_contact',
-        'alias' => $options['prefix'] . 'civicrm_contact',
         'grouping' => $options['prefix'] . 'contact-fields',
 
       )
@@ -4264,12 +4266,12 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
           'is_fields' => TRUE,
         ),
         'birth_date' => array(
-          'title' => ts('Birth Date'),
+          'title' => ts($options['prefix_label'] . 'Birth Date'),
           'is_fields' => TRUE,
         ),
         'age' => array(
-          'title' => ts('Age'),
-          'dbAlias' => 'TIMESTAMPDIFF(YEAR, contact_civireport.birth_date, CURDATE())',
+          'title' => ts($options['prefix_label'] . 'Age'),
+          'dbAlias' => 'TIMESTAMPDIFF(YEAR, ' . $tableAlias . '.birth_date, CURDATE())',
           'is_fields' => TRUE,
         ),
       );
@@ -4375,7 +4377,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       );
     }
     $weight = $weight + 1;
-    return $this->buildColumns($contactFields[$options['prefix'] . 'civicrm_contact']['fields'], $options['prefix'] . 'civicrm_contact', 'CRM_Contact_DAO_Contact');
+    return $this->buildColumns($contactFields[$options['prefix'] . 'civicrm_contact']['fields'], $options['prefix'] . 'civicrm_contact', 'CRM_Contact_DAO_Contact', $tableAlias);
   }
 
   /**
@@ -6365,7 +6367,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
         '_civireport';
     }
     else {
-      $this->_columns[$tableName]['alias'] = $table['alias'] . '_civireport';
+      $this->_columns[$tableName]['alias'] = $table['alias'];
     }
     return $this->_columns[$tableName]['alias'];
   }
