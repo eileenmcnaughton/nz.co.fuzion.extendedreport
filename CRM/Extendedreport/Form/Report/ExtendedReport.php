@@ -5010,6 +5010,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
           'id_table' => 'civicrm_activity',
           'id_field' => 'id',
           'entity' => 'activity',
+          'options' => $this->_getOptions('activity', 'activity_status_id'),
         ),
       ),
       'duration' => array(
