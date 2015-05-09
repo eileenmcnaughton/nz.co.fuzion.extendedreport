@@ -9,7 +9,7 @@ return array(
     'entity' => 'ReportTemplate',
     'params' => array(
       'version' => 3,
-      'label' => 'Extended Report - Pledge LYBUNS',
+      'label' => 'Extended Report - Pledge LYBUNT',
       'description' => 'Extended Report - Pledge Last Year but not This Year',
       'class_name' => 'CRM_Extendedreport_Form_Report_Pledge_Lybunt',
       'report_url' => 'pledge/lybnt',
