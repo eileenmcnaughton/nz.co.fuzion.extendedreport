@@ -3656,6 +3656,8 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       'unit_price' => array(
         'title' => ts('Unit Price'),
         'is_fields' => TRUE,
+        'is_filters' => TRUE,
+        'type' => CRM_Utils_Type::T_INT,
       ),
       'line_total' => array(
         'title' => ts('Line Total'),
@@ -3664,6 +3666,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
           'sum' => ts('Total of Line Items')
         ),
         'is_fields' => TRUE,
+        'is_filters' => TRUE,
       ),
     ));
 
