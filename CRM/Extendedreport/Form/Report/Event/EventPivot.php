@@ -42,11 +42,11 @@ class CRM_Extendedreport_Form_Report_Event_EventPivot extends CRM_Extendedreport
     $this->_columns['civicrm_event']['fields']['id']['title'] = 'Event';
 
     $this->_aggregateRowFields = array(
-      'event_civireport:id' => 'Event',
+      'event:id' => 'Event',
     );
 
     $this->_aggregateColumnHeaderFields = array(
-      'participant_civireport:status_id' => ts('Participant Status'),
+      'participant:status_id' => ts('Participant Status'),
     );
     $this->_groupFilter = TRUE;
     parent::__construct();
