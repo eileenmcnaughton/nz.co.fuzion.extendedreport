@@ -33,15 +33,15 @@ class CRM_Extendedreport_Form_Report_ActivityPivot extends CRM_Extendedreport_Fo
     //    $this->_columns['civicrm_contact']['fields']['gender_id']['title'] = 'Gender';
 
     $this->_aggregateRowFields = array(
-      'activity_civireport:activity_activity_type_id' => 'Activity Type',
-      'activity_civireport:activity_activity_status_id' => 'Activity Status',
-      'activity_civireport:activity_result' => 'Activity Result',
-      'activity_civireport:activity_subject' => 'Activity Subject',
+      'activity:activity_activity_type_id' => 'Activity Type',
+      'activity:activity_activity_status_id' => 'Activity Status',
+      'activity:activity_result' => 'Activity Result',
+      'activity:activity_subject' => 'Activity Subject',
       //      'civicrm_contact_civireport:gender_id' => 'Gender',
     );
     $this->_aggregateColumnHeaderFields = array(
-      'activity_civireport:activity_activity_type_id' => 'Activity Type',
-      'activity_civireport:activity_activity_status_id' => 'Activity Status',
+      'activity:activity_activity_type_id' => 'Activity Type',
+      'activity:activity_activity_status_id' => 'Activity Status',
     );
     parent::__construct();
   }
