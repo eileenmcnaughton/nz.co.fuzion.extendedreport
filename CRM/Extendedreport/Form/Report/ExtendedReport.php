@@ -5997,6 +5997,10 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    */
   function alterCrmEditable($value, &$row, $selectedField, $criteriaFieldName, $specs) {
     $id_field = $specs['id_table'] . '_' . $specs['id_field'];
+    if (empty($row[$id_field])) {
+      // If the relevant id has not been set on the report the field cannot be editable.
+      return;
+    }
     $entityID = $row[$id_field];
     $entity = $specs['entity'];
     $extra = $class = '';
@@ -6275,7 +6279,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    */
   function alterActivityType($value) {
     $activityTypes = $activityType = CRM_Core_PseudoConstant::activityType(TRUE, TRUE, FALSE, 'label', TRUE);
-    return $activityTypes[$value];
+    return CRM_Utils_Array::value($value, $activityTypes);
   }
 
   /**
