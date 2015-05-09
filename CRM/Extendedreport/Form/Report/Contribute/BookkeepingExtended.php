@@ -150,21 +150,6 @@ class CRM_Extendedreport_Form_Report_Contribute_BookkeepingExtended extends CRM_
     parent::__construct();
   }
 
-  function getMembershipColumns() {
-    return array(
-      'civicrm_membership' => array(
-        'dao' => 'CRM_Member_DAO_Membership',
-        'fields' => array(
-          'id' => array(
-            'title' => ts('Membership #'),
-            'no_display' => TRUE,
-            'required' => TRUE,
-          ),
-        ),
-      )
-    );
-  }
-
   function getFinancialAccountColumns() {
     return array(
       'civicrm_financial_account' => array(

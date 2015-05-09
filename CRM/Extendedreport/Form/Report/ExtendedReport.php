@@ -2848,7 +2848,7 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
             if (!empty($metadata[$fieldName])) {
               $customFieldsToTables[$fieldName] = $tableName;
               $fieldAlias = $customFields[$fieldName][$index] . "_" . $fieldName;
-              $tableAlias = $customFields[$fieldName][$index] . "_" . $tableName . '_civireport';
+              $tableAlias = $customFields[$fieldName][$index] . "_" . $tableName;
               $title = $this->_customGroupExtended[$customFields[$fieldName][$index]]['title'] . ' ' . $metadata[$fieldName]['title'];
               $selectedTables[$tableAlias] = array(
                 'name' => $tableName,
@@ -6269,7 +6269,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    */
   function alterPaymentType($value) {
     $paymentInstruments = CRM_Contribute_PseudoConstant::paymentInstrument();
-    return $paymentInstruments[$value];
+    return CRM_Utils_Array::value($value, $paymentInstruments);
   }
 
   /**
