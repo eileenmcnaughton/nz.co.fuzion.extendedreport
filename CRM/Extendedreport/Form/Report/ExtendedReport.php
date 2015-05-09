@@ -3575,6 +3575,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     }
 
     foreach ($specs as $specName => $spec) {
+      unset($spec['default']);
       if (empty($spec['name'])) {
         $spec['name'] = $specName;
       }
