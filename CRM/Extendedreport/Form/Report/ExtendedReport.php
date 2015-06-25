@@ -3608,7 +3608,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     $pseudoMethod = $this->financialTypePseudoConstant;
     if ($this->financialTypeField == 'financial_type_id') {
       $specs['financial_type_id'] = array(
-        'title' => ts('Line Item Financial TYpe'),
+        'title' => ts('Line Item Financial Type'),
         'type' => CRM_Utils_Type::T_INT,
         'alter_display' => 'alterFinancialType',
         'is_fields' => TRUE,
