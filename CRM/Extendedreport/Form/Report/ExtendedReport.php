@@ -4205,171 +4205,93 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       $orgOnly = TRUE;
     }
     $tableAlias = $options['prefix'] . 'civicrm_contact';
-    $contactFields = array(
-      $options['prefix'] . 'civicrm_contact' => array(
-        'name' => 'civicrm_contact',
-        'grouping' => $options['prefix'] . 'contact-fields',
 
-      )
+    $spec = array(
+      $options['prefix'] . 'display_name' => array(
+        'name' => 'display_name',
+        'title' => ts($options['prefix_label'] . 'Contact Name'),
+        'is_fields' => TRUE,
+      ),
+      $options['prefix'] . 'contact_id' => array(
+        'name' => 'id',
+        'title' => ts($options['prefix_label'] . 'Contact ID'),
+        'alter_display' => 'alterContactID',
+        'type' => CRM_Utils_Type::T_INT,
+        'is_order_bys' => TRUE,
+        'is_group_bys' => TRUE,
+        'is_fields' => TRUE,
+      ),
+      $options['prefix'] . 'external_identifier' => array(
+        'name' => 'external_identifier',
+        'title' => ts($options['prefix_label'] . 'External ID'),
+        'type' => CRM_Utils_Type::T_INT,
+        'is_fields' => TRUE,
+      ),
+      $options['prefix'] . 'sort_name' => array(
+        'name' => 'sort_name',
+        'title' => ts($options['prefix_label'] . 'Contact Name (in sort format)'),
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+        'is_order_bys' => TRUE,
+      ),
+      $options['prefix'] . 'contact_type' => array(
+        'title' => ts($options['prefix_label'] . 'Contact Type'),
+        'name' => 'contact_type',
+        'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+        'options' => $this->getContactTypeOptions(),
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+      ),
     );
-    $contactFields[$options['prefix'] . 'civicrm_contact']['fields'] = array();
-    if (!empty($options['fields'])) {
-      $contactFields[$options['prefix'] . 'civicrm_contact']['fields'] = array(
-        $options['prefix'] . 'display_name' => array(
-          'name' => 'display_name',
-          'title' => ts($options['prefix_label'] . 'Contact Name'),
-        ),
-        $options['prefix'] . 'contact_id' => array(
-          'name' => 'id',
-          'title' => ts($options['prefix_label'] . 'Contact ID'),
-          'alter_display' => 'alterContactID',
-          'type' => CRM_Utils_Type::T_INT,
-          'is_order_bys' => TRUE,
-          'is_group_bys' => TRUE,
-          'is_fields' => TRUE,
-        ),
-        $options['prefix'] . 'external_identifier' => array(
-          'name' => 'external_identifier',
-          'title' => ts($options['prefix_label'] . 'External ID'),
-          'type' => CRM_Utils_Type::T_INT,
-          'is_fields' => TRUE,
-        ),
-        $options['prefix'] . 'display_name' => array(
-          'name' => 'display_name',
-          'title' => ts($options['prefix_label'] . 'Name'),
-          'is_fields' => TRUE,
-          'is_filters' => TRUE,
-        ),
-      );
-      $individualFields = array(
-        $options['prefix'] . 'first_name' => array(
-          'name' => 'first_name',
-          'title' => ts($options['prefix_label'] . 'First Name'),
-          'is_fields' => TRUE,
-        ),
-        $options['prefix'] . 'middle_name' => array(
-          'name' => 'middle_name',
-          'title' => ts($options['prefix_label'] . 'Middle Name'),
-          'is_fields' => TRUE,
-        ),
-        $options['prefix'] . 'last_name' => array(
-          'name' => 'last_name',
-          'title' => ts($options['prefix_label'] . 'Last Name'),
-          'is_fields' => TRUE,
-        ),
-        $options['prefix'] . 'nick_name' => array(
-          'name' => 'nick_name',
-          'title' => ts($options['prefix_label'] . 'Nick Name'),
-          'is_fields' => TRUE,
-        ),
-        $options['prefix'] . 'gender_id' => array(
-          'name' => 'gender_id',
-          'title' => ts($options['prefix_label'] . 'Gender ID'),
-          'options' => CRM_Contact_BAO_Contact::buildOptions('gender_id'),
-          'is_fields' => TRUE,
-        ),
-        'birth_date' => array(
-          'title' => ts($options['prefix_label'] . 'Birth Date'),
-          'is_fields' => TRUE,
-        ),
-        'age' => array(
-          'title' => ts($options['prefix_label'] . 'Age'),
-          'dbAlias' => 'TIMESTAMPDIFF(YEAR, ' . $tableAlias . '.birth_date, CURDATE())',
-          'is_fields' => TRUE,
-        ),
-      );
-      if (!$orgOnly) {
-        $contactFields[$options['prefix'] . 'civicrm_contact']['fields'] = array_merge($contactFields[$options['prefix'] . 'civicrm_contact']['fields'], $individualFields);
-      }
+    $individualFields = array(
+      $options['prefix'] . 'first_name' => array(
+        'name' => 'first_name',
+        'title' => ts($options['prefix_label'] . 'First Name'),
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+        'is_order_bys' => TRUE,
+      ),
+      $options['prefix'] . 'middle_name' => array(
+        'name' => 'middle_name',
+        'title' => ts($options['prefix_label'] . 'Middle Name'),
+        'is_fields' => TRUE,
+      ),
+      $options['prefix'] . 'last_name' => array(
+        'name' => 'last_name',
+        'title' => ts($options['prefix_label'] . 'Last Name'),
+        'default_order' => 'ASC',
+        'is_fields' => TRUE,
+      ),
+      $options['prefix'] . 'nick_name' => array(
+        'name' => 'nick_name',
+        'title' => ts($options['prefix_label'] . 'Nick Name'),
+        'is_fields' => TRUE,
+      ),
+      $options['prefix'] . 'gender_id' => array(
+        'name' => 'gender_id',
+        'title' => ts($options['prefix_label'] . 'Gender ID'),
+        'options' => CRM_Contact_BAO_Contact::buildOptions('gender_id'),
+        'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+      ),
+      'birth_date' => array(
+        'title' => ts($options['prefix_label'] . 'Birth Date'),
+        'operatorType' => CRM_Report_Form::OP_DATE,
+        'type' => CRM_Utils_Type::T_DATE,
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+      ),
+      'age' => array(
+        'title' => ts($options['prefix_label'] . 'Age'),
+        'dbAlias' => 'TIMESTAMPDIFF(YEAR, ' . $tableAlias . '.birth_date, CURDATE())',
+        'is_fields' => TRUE,
+      ),
+    );
+    if (!$orgOnly) {
+      $spec = array_merge($spec, $individualFields);
     }
 
-    if (!empty($options['filters'])) {
-      $contactFields[$options['prefix'] . 'civicrm_contact']['filters'] = array(
-        $options['prefix'] . 'contact_id' => array(
-          'title' => ts($options['prefix_label'] . 'Contact ID'),
-          'type' => CRM_Report_Form::OP_INT,
-          'name' => 'id',
-        )
-      ,
-        $options['prefix'] . 'sort_name' => array(
-          'title' => ts($options['prefix_label'] . 'Contact Name'),
-          'name' => 'sort_name',
-        ),
-        $options['prefix'] . 'contact_type' => array(
-          'title' => ts($options['prefix_label'] . 'Contact Type'),
-          'name' => 'contact_type',
-          'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-          'options' => $this->getContactTypeOptions(),
-        ),
-        'birth_date' => array(
-          'title' => 'Birth Date',
-          'operatorType' => CRM_Report_Form::OP_DATE,
-          'type' => CRM_Utils_Type::T_DATE
-        ),
-        'gender_id' => array(
-          'title' => ts('Gender'),
-          'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-          'options' => CRM_Core_PseudoConstant::get('CRM_Contact_DAO_Contact', 'gender_id'),
-        ),
-      );
-    }
-
-    if (!empty($options['order_by'])) {
-      $contactFields[$options['prefix'] . 'civicrm_contact']['order_bys'] = array(
-        $options['prefix'] . 'sort_name' => array(
-          'title' => ts($options['prefix_label'] . 'Contact Name'),
-          //this seems to re-load others once the report is saved for some reason
-          //'default' => $weight == 0 ? TRUE : FALSE,
-          'default' => $options['prefix'] ? FALSE : TRUE,
-          'default_weight' => $weight,
-          'default_order' => $options['prefix'] ? NULL : 'ASC',
-          'name' => 'sort_name',
-        ),
-        $options['prefix'] . 'first_name' => array(
-          'title' => ts($options['prefix_label'] . 'First Name'),
-          'default' => '0',
-          'default_weight' => $weight + 1,
-          'default_order' => 'ASC',
-          'name' => 'first_name',
-        ),
-        /*
-        $options['prefix'] . 'last_name' => array(
-          'title' => ts($options['prefix_label'] . 'Last Name'),
-          'default' => '0',
-          'default_weight' => $weight + 2,
-          'default_order' => 'ASC',
-          'name' => 'last_name',
-        ),
-        $options['prefix'] . 'nick_name' => array(
-          'title' => ts($options['prefix_label'] . 'Nick Name'),
-          'default' => '0',
-          'default_weight' => $weight + 3,
-          'default_order' => 'ASC',
-          'name' => 'nick_name',
-        ),
-        $options['prefix'] . 'external_identifier' => array(
-          'title' => ts($options['prefix_label'] . 'External ID'),
-          'type' => CRM_Utils_Type::T_INT,
-          'default_weight' => $weight + 4,
-          'name' => 'external_identifier',
-        ),
-        $options['prefix'] . 'source' => array(
-          'name' => 'source',
-          'title' => ts($options['prefix_label'] . 'Source'),
-          'name' => 'external_identifier',
-          'default_weight' => $weight + 5,
-        )
-        */
-      );
-    }
-    if (!empty($options['group_by'])) {
-      $contactFields[$options['prefix'] . 'civicrm_contact']['group_bys'] = array(
-        $options['prefix'] . 'sort_name' => array(
-          'title' => ts($options['prefix_label'] . 'Contact Name'),
-          'name' => 'sort_name',
-        ),
-      );
-    }
     if (!empty($options['custom_fields'])) {
       $this->_customGroupExtended[$options['prefix'] . 'civicrm_contact'] = array(
         'extends' => $options['custom_fields'],
@@ -4379,8 +4301,8 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'prefix_label' => $options['prefix_label'],
       );
     }
-    $weight = $weight + 1;
-    return $this->buildColumns($contactFields[$options['prefix'] . 'civicrm_contact']['fields'], $options['prefix'] . 'civicrm_contact', 'CRM_Contact_DAO_Contact', $tableAlias);
+
+    return $this->buildColumns($spec, $options['prefix'] . 'civicrm_contact', 'CRM_Contact_DAO_Contact', $tableAlias);
   }
 
   /**
