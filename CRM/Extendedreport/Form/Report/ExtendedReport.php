@@ -3689,14 +3689,14 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       ),
       'max_value' => array(
         'title' => 'Price Option Maximum',
-        'is_field' => TRUE,
+        'is_fields' => TRUE,
       ),
       'financial_type_id' => array(
         'title' => 'Price Option Financial Type',
         'type' => CRM_Utils_Type::T_INT,
         'alter_display' => 'alterFinancialType',
         'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-        'is_field' => TRUE,
+        'is_fields' => TRUE,
         'options' => CRM_Contribute_PseudoConstant::$pseudoMethod(),
       ),
     );
