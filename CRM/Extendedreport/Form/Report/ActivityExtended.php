@@ -41,36 +41,42 @@ class CRM_Extendedreport_Form_Report_ActivityExtended extends CRM_Extendedreport
   protected $_baseTable = 'civicrm_activity';
 
   /**
-   * constructor
+   * Class constructor.
+   *
    * @todo allow filtering on other contacts
    */
-  function __construct() {
-    $this->_columns = $this->getColumns('Contact', array(
-          'prefix' => '',
-          'prefix_label' => 'Source Contact ::',
-          'filters' => TRUE,
-        ))
-      + $this->getColumns('Contact', array(
+  public function __construct() {
+    $this->_columns = $this->getColumns(
+      'Contact',
+      array(
+        'prefix' => '',
+        'prefix_label' => 'Source Contact ::',
+        'filters' => TRUE,
+      )
+    ) + $this->getColumns(
+        'Contact',
+        array(
           'prefix' => 'target_',
           'group_by' => TRUE,
           'prefix_label' => 'Target Contact ::',
           'filters' => FALSE,
-        ))
-      + $this->getColumns('Contact', array(
+        )
+    ) + $this->getColumns(
+        'Contact', array(
           'prefix' => 'assignee_',
           'prefix_label' => 'Assignee Contact ::',
           'filters' => FALSE,
-        ))
-
-      + $this->getColumns('Activity');
+        )
+    ) + $this->getColumns('Activity');
     parent::__construct();
   }
 
   /**
-   * Generate From clause
+   * Generate From clause.
+   *
    * @todo Should remove all this to parent class
    */
-  function from() {
+  public function from() {
     $this->_from = "
     FROM civicrm_activity {$this->_aliases['civicrm_activity']}";
     $this->joinActivityTargetFromActivity();
