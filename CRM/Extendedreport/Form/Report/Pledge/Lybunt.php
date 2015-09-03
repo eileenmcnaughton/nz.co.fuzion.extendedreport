@@ -48,7 +48,7 @@ class CRM_Extendedreport_Form_Report_Pledge_Lybunt extends CRM_Extendedreport_Fo
   /**
    *
    */
-  function __construct() {
+  public function __construct() {
     $yearsInPast = 8;
     $yearsInFuture = 2;
     $date = CRM_Core_SelectValues::date('custom', NULL, $yearsInPast, $yearsInFuture);

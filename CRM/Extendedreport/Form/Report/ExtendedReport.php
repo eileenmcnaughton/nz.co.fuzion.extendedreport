@@ -214,7 +214,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   /**
    *
    */
-  function __construct() {
+  public function __construct() {
     parent::__construct();
     $this->addSelectableCustomFields();
     $this->addTemplateSelector();
@@ -4387,11 +4387,8 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
 
     );
     return $this->buildColumns($spec['civicrm_case']['fields'], $options['prefix'] . 'civicrm_case', 'CRM_Case_DAO_Case');
-
   }
-  /*
-   *
-   */
+
   /**
    * Get phone columns to add to array
    *

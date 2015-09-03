@@ -16,7 +16,7 @@ class CRM_Extendedreport_Form_Report_ActivityPivot extends CRM_Extendedreport_Fo
   /**
    *
    */
-  function __construct() {
+  public function __construct() {
     $this->_customGroupExtended['civicrm_activity'] = array(
       'extends' => array('Activity'),
       'filters' => TRUE,

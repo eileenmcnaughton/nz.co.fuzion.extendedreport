@@ -31,7 +31,7 @@ class CRM_Extendedreport_Form_Report_Case_CaseWithActivityPivot extends CRM_Exte
   /**
    *
    */
-  function __construct() {
+  public function __construct() {
     $this->_customGroupExtended['civicrm_case'] = array(
       'extends' => array('Case'),
       'filters' => TRUE,
