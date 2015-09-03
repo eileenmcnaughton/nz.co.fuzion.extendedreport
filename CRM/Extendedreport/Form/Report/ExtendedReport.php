@@ -212,7 +212,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   protected $_groupByArray = array();
 
   /**
-   *
+   * Class constructor.
    */
   public function __construct() {
     parent::__construct();
@@ -1844,9 +1844,8 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     // hack to fix params when submitted from dashboard, CRM-8532
     // fields array is missing because form building etc is skipped
     // in dashboard mode for report
-    if (!CRM_Utils_Array::value('fields', $this->_params) && !$this->_noFields) {
+    if (!CRM_Utils_Array::value('fields', $this->_params) && !$this->_noFields && !$this->_customGroupAggregates) {
       $this->_params = $this->_formValues;
-
     }
     if (!empty($this->_params['group_bys'])) {
       $this->_params['fields'] = array_merge((array) $this->_params['group_bys'], $this->_params['fields']);
