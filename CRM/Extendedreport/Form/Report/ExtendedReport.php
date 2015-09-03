@@ -4379,7 +4379,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
             'name' => 'is_deleted',
             'title' => ts('Case Deleted?'),
             'default' => FALSE,
-            'type' => CRM_Utils_Type::T_INT,
+            'type' => CRM_Utils_Type::T_BOOLEAN,
             'is_fields' => TRUE,
             'is_filters' => TRUE,
             'operatorType' => CRM_Report_Form::OP_SELECT,

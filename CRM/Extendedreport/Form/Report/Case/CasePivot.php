@@ -32,12 +32,11 @@ class CRM_Extendedreport_Form_Report_Case_CasePivot extends CRM_Extendedreport_F
       + $this->getColumns('Contact', array());
     $this->_columns['civicrm_case']['fields']['id']['required'] = TRUE;
     $this->_columns['civicrm_contact']['fields']['id']['required'] = TRUE;
-    //  $this->_columns['civicrm_case']['fields']['id']['alter_display'] = 'alterCaseID';
+    // $this->_columns['civicrm_case']['fields']['id']['alter_display'] = 'alterCaseID';
     $this->_columns['civicrm_case']['fields']['id']['title'] = 'Case';
     $this->_columns['civicrm_contact']['fields']['gender_id']['no_display'] = TRUE;
     $this->_columns['civicrm_contact']['fields']['gender_id']['title'] = 'Gender';
     $this->_columns['civicrm_contact']['fields']['gender_id']['alter_display'] = 'alterGenderID';
-    $this->_columns['civicrm_case']['fields']['case_status_id']['title'] = ts('Case Status');
     $this->_columns['civicrm_case']['fields']['case_status_id']['options'] = CRM_Case_BAO_Case::buildOptions('status_id');
     $this->_columns['civicrm_contact']['fields']['case_status_id']['no_display'] = TRUE;
     $this->_columns['civicrm_case']['fields']['case_status_id']['name'] = 'status_id';
