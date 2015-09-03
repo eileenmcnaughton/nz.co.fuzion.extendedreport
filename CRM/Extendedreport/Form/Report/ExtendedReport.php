@@ -4317,7 +4317,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     $spec = array(
       'civicrm_case' => array(
         'fields' => array(
-          'case_id' => array(
+          'id' => array(
             'title' => ts('Case ID'),
             'required' => FALSE,
             'name' => 'id',
@@ -4329,7 +4329,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
             'is_fields' => TRUE,
             'is_filters' => TRUE,
           ),
-          'case_status_id' => array(
+          'status_id' => array(
             'title' => ts('Case Status'),
             'default' => TRUE,
             'name' => 'status_id',
@@ -4349,7 +4349,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
             'name' => 'case_type_id',
             'type' => CRM_Utils_Type::T_INT,
           ),
-          'case_start_date' => array(
+          'start_date' => array(
             'title' => ts('Case Start Date'),
             'name' => 'start_date',
             'operatorType' => CRM_Report_Form::OP_DATE,
@@ -4358,7 +4358,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
             'is_fields' => TRUE,
             'is_filters' => TRUE,
           ),
-          'case_end_date' => array(
+          'end_date' => array(
             'title' => ts('Case End Date'),
             'name' => 'end_date',
             'default' => TRUE,
@@ -4367,7 +4367,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
             'operatorType' => CRM_Report_Form::OP_DATE,
             'type' => CRM_Utils_Type::T_DATE,
           ),
-          'case_duration' => array(
+          'duration' => array(
             'name' => 'duration',
             'title' => ts('Duration (Days)'),
             'default' => FALSE,
@@ -4375,7 +4375,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
             'is_filters' => TRUE,
             'type' => CRM_Utils_Type::T_INT,
           ),
-          'case_is_deleted' => array(
+          'is_deleted' => array(
             'name' => 'is_deleted',
             'title' => ts('Case Deleted?'),
             'default' => FALSE,
