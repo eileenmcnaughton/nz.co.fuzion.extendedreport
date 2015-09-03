@@ -2904,9 +2904,11 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
 
     $selectedFields = array_keys($firstRow);
     $alterFunctions = $alterMap = array();
+    $pivotRowField = $this->getPivotRowFieldName();
+
     foreach ($this->_columns as $tableName => $table) {
-      if (array_key_exists('fields', $table)) {
-        foreach ($table['fields'] as $field => $specs) {
+      if (array_key_exists('metadata', $table)) {
+        foreach ($table['metadata'] as $field => $specs) {
           if (in_array($tableName . '_' . $field, $selectedFields)) {
             if (array_key_exists('alter_display', $specs)) {
               $alterFunctions[$tableName . '_' . $field] = $specs['alter_display'];
@@ -2925,9 +2927,15 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
               }
             }
           }
+          if (substr($pivotRowField, 0, 7) == 'custom_' && $field == $pivotRowField) {
+            $alterFunctions[$this->getPivotRowTableAlias() . '_' . $pivotRowField] = 'alterFromOptions';
+            $alterMap[$this->getPivotRowTableAlias() . '_' . $pivotRowField] = $field;
+            $alterSpecs[$this->getPivotRowTableAlias() . '_' . $pivotRowField] = $specs;
+          }
         }
       }
     }
+
     if (empty($alterFunctions)) {
       // - no manipulation to be done
       return;
@@ -3000,11 +3008,26 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
     }
   }
 
+
+  /**
+   * Use the options for the field to map the display value.
+   *
+   * @param string $value
+   * @param array $row
+   * @param string $selectedField
+   * @param $criteriaFieldName
+   * @param array $specs
+   *
+   * @return string
+   */
+  function alterFromOptions($value, &$row, $selectedField, $criteriaFieldName, $specs) {
+    return CRM_Utils_Array::value($value, $specs['options']);
+  }
+
   /**
    * Was hoping to avoid over-riding this - but it doesn't pass enough data to formatCustomValues by default
    * Am using it in a pretty hacky way to also cover the select box custom fields
-   */
-  /**
+   *
    * @param $rows
    */
   function alterCustomDataDisplay(&$rows) {
@@ -3721,7 +3744,6 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'name' => 'status_id',
         'title' => ts('Event Participant Status'),
         'alter_display' => 'alterParticipantStatus',
-        'options' => $this->_getOptions('participant', 'status_id', $action = 'get'),
         'is_fields' => TRUE,
         'is_filters' => TRUE,
         'operatorType' => CRM_Report_Form::OP_MULTISELECT,
@@ -5877,11 +5899,11 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    * Retrieve text for contribution type from pseudoconstant
   */
   /**
-   * @param $value
-   * @param $row
+   * @param string $value
+   * @param array $row
    * @param string $selectedField
    * @param $criteriaFieldName
-   * @param $specs
+   * @param array $specs
    *
    * @return string
    */
@@ -6484,6 +6506,30 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
     );
 
     $this->assignTabs();
+  }
+
+  /**
+   * Get the name of the field selected for the pivot table row.
+   *
+   * @return string
+   */
+  protected function getPivotRowFieldName() {
+    if (!empty($this->_params['aggregate_row_headers'])) {
+      $aggregateField = explode(':', $this->_params['aggregate_row_headers']);
+      return $aggregateField[1];
+    }
+  }
+
+  /**
+   * Get the name of the field selected for the pivot table row.
+   *
+   * @return string
+   */
+  protected function getPivotRowTableAlias() {
+    if (!empty($this->_params['aggregate_row_headers'])) {
+      $aggregateField = explode(':', $this->_params['aggregate_row_headers']);
+      return $aggregateField[0];
+    }
   }
 
 }
