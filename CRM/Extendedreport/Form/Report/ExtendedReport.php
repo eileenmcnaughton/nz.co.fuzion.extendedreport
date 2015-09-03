@@ -1696,7 +1696,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
         }
       }
     }
-    $fieldMap = array_merge($this->_params['fields'], $fieldMap);
+    $fieldMap = array_merge(CRM_Utils_Array::value('fields', $this->_params, array()), $fieldMap);
     $this->_columnHeaders = array_merge(array_intersect_key(array_flip($fieldMap), $this->_columnHeaders), $this->_columnHeaders);
   }
 
@@ -1840,12 +1840,14 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     ) {
       $this->assign('updateReportButton', TRUE);
     }
+
     if (isset($this->_aliases[$this->_primaryContactPrefix . 'civicrm_contact'])) {
       $this->_aliases['civicrm_contact'] = $this->_aliases[$this->_primaryContactPrefix . 'civicrm_contact'];
     }
 
     $this->storeParametersOnForm();
     $this->processReportMode();
+    parent::beginPostProcess();
   }
 
   /**
@@ -3030,7 +3032,7 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
     }
 
     $customFieldIds = array();
-    if (!is_array($this->_params['fields'])) {
+    if (!isset($this->_params['fields']) || !is_array($this->_params['fields'])) {
       $this->_params['fields'] = array();
     }
     foreach ($this->_params['fields'] as $fieldAlias => $value) {
