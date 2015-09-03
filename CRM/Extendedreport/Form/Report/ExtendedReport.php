@@ -4337,6 +4337,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
             'is_filters' => TRUE,
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
             'options' => CRM_Case_BAO_Case::buildOptions('case_status_id'),
+            'type' => CRM_Utils_Type::T_INT,
           ),
           'case_type_id' => array(
             'title' => ts('Case Type'),
@@ -4346,6 +4347,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
             'options' => CRM_Case_BAO_Case::buildOptions('case_type_id'),
             'name' => 'case_type_id',
+            'type' => CRM_Utils_Type::T_INT,
           ),
           'case_start_date' => array(
             'title' => ts('Case Start Date'),
@@ -4371,6 +4373,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
             'default' => FALSE,
             'is_fields' => TRUE,
             'is_filters' => TRUE,
+            'type' => CRM_Utils_Type::T_INT,
           ),
           'case_is_deleted' => array(
             'name' => 'is_deleted',
