@@ -4278,6 +4278,10 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
   }
 
   /**
+   * Get columns for Case.
+   *
+   * @param $options
+   *
    * @return array
    */
   function getCaseColumns($options) {
@@ -4361,7 +4365,8 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         ),
 
     );
-    return $this->buildColumns($spec['civicrm_case']['fields'], $options['prefix'] . 'civicrm_case', 'CRM_Case_DAO_Case');
+    // Case is a special word in mysql so pass an alias to prevent it from using case.
+    return $this->buildColumns($spec['civicrm_case']['fields'], $options['prefix'] . 'civicrm_case', 'CRM_Case_DAO_Case', 'case_civireport');
   }
 
   /**
