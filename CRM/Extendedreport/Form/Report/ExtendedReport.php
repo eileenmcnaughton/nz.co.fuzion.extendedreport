@@ -2408,7 +2408,9 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
       'extends' => array('IN' => $extends),
       'options' => array('sort' => 'weight', 'limit' => 500)
     ));
+
     if (!$customGroups['count']) {
+      $this->addAggregateSelectorsToForm(array(), array());
       return;
     }
     $customGroups = $customGroups['values'];
@@ -2420,6 +2422,7 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
       'options' => array('sort' => 'weight', 'limit' => 500),
     ));
     if (!$customFields['count']) {
+      $this->addAggregateSelectorsToForm(array(), array());
       return;
     }
     $customFields = $customFields['values'];
@@ -2504,27 +2507,7 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
     }
     asort($customFieldsFlat);
     if ($this->_customGroupAggregates) {
-      $columnHeaderFields = array_intersect_key($customFieldsFlat, array_flip($validColumnHeaderFields));
-      $this->_aggregateColumnHeaderFields = array('' => ts('--Select--')) + $this->_aggregateColumnHeaderFields + $columnHeaderFields;
-      $this->_aggregateRowFields = array('' => ts('--Select--')) + $this->_aggregateRowFields + $customFieldsFlat;
-      $this->add('select', 'aggregate_column_headers', ts('Aggregate Report Column Headers'), $this->_aggregateColumnHeaderFields, FALSE,
-        array('id' => 'aggregate_column_headers', 'title' => ts('- select -'))
-      );
-      $this->add('select', 'aggregate_row_headers', ts('Row Fields'), $this->_aggregateRowFields, FALSE,
-        array('id' => 'aggregate_row_headers', 'title' => ts('- select -'))
-      );
-      $this->_columns[$this->_baseTable]['fields']['include_null'] = array(
-        'title' => 'Show column for unknown',
-        'pseudofield' => TRUE,
-        'default' => TRUE,
-      );
-      $this->tabs['Aggregate'] = array(
-        'title' => ts('Pivot table'),
-        'tpl' => 'Aggregate',
-        'div_label' => 'set-aggregate',
-      );
-
-      $this->assignTabs();
+      $this->addAggregateSelectorsToForm($customFieldsFlat, $validColumnHeaderFields);
     }
 
     else {
@@ -4880,7 +4863,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'name' => 'activity_type_id',
         'type' => CRM_Utils_Type::T_INT,
       ),
-      'activity_subject' => array(
+      'subject' => array(
         'title' => ts('Subject'),
         'name' => 'subject',
         'is_fields' => TRUE,
@@ -4907,7 +4890,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'is_filters' => TRUE,
         'is_order_bys' => TRUE,
       ),
-      'activity_status_id' => array(
+      'status_id' => array(
         'title' => ts('Activity Status'),
         'name' => 'status_id',
         'type' => CRM_Utils_Type::T_STRING,
@@ -4954,7 +4937,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
           'entity' => 'activity',
         ),
       ),
-      'activity_is_current_revision' => array(
+      'is_current_revision' => array(
         'type' => CRM_Report_Form::OP_INT,
         'operatorType' => CRM_Report_Form::OP_SELECT,
         'title' => ts("Current Revision"),
@@ -6471,6 +6454,36 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
     else {
       return array();
     }
+  }
+
+  /**
+   * Add the fields to select the aggregate fields to the report.
+   *
+   * @param array $customFieldsFlat
+   * @param array $validColumnHeaderFields
+   */
+  protected function addAggregateSelectorsToForm($customFieldsFlat, $validColumnHeaderFields) {
+    $columnHeaderFields = array_intersect_key($customFieldsFlat, array_flip($validColumnHeaderFields));
+    $this->_aggregateColumnHeaderFields = array('' => ts('--Select--')) + $this->_aggregateColumnHeaderFields + $columnHeaderFields;
+    $this->_aggregateRowFields = array('' => ts('--Select--')) + $this->_aggregateRowFields + $customFieldsFlat;
+    $this->add('select', 'aggregate_column_headers', ts('Aggregate Report Column Headers'), $this->_aggregateColumnHeaderFields, FALSE,
+      array('id' => 'aggregate_column_headers', 'title' => ts('- select -'))
+    );
+    $this->add('select', 'aggregate_row_headers', ts('Row Fields'), $this->_aggregateRowFields, FALSE,
+      array('id' => 'aggregate_row_headers', 'title' => ts('- select -'))
+    );
+    $this->_columns[$this->_baseTable]['fields']['include_null'] = array(
+      'title' => 'Show column for unknown',
+      'pseudofield' => TRUE,
+      'default' => TRUE,
+    );
+    $this->tabs['Aggregate'] = array(
+      'title' => ts('Pivot table'),
+      'tpl' => 'Aggregate',
+      'div_label' => 'set-aggregate',
+    );
+
+    $this->assignTabs();
   }
 
 }
