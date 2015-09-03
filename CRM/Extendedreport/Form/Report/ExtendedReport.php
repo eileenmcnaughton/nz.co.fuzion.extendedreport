@@ -544,26 +544,30 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       return;
     }
 
-    $rowHeader = $this->_params['aggregate_row_headers'];
-    $fieldArr = explode(":", $rowHeader);
-    $rowFields[$fieldArr[1]][] = $fieldArr[0];
-    $columnFields = $this->getColumnFields();
-
+    $columnFields = $this->getFieldBreakdownForAggregates('column');
+    $rowFields = $this->getFieldBreakdownForAggregates('row');
     $selectedTables = array();
     $rowColumns = $this->extractCustomFields($rowFields, $selectedTables, 'row_header');
+
     if (empty($rowColumns)) {
-      foreach ($rowFields as $field => $fieldDetails) {
-        //only one but we don't know the name
-        //we wrote this as purely a custom field against custom field. In process of refactoring to allow
-        // another field like event - so here we have no custom field .. must be a non custom field...
-        $tableAlias = $fieldDetails[0];
-        $tableName = array_search($tableAlias, $this->_aliases);
-        $fieldAlias = str_replace('-', '_', $tableName . '_' . $field);
-        $this->addRowHeader($tableAlias, $this->getPropertyForField($field, 'name', $tableName), $fieldAlias, $this->getPropertyForField($field, 'title', $tableName));
+      if (empty($rowFields)) {
+        $this->addRowHeader(FALSE, FALSE, FALSE);
+      }
+      else {
+        foreach ($rowFields as $field => $fieldDetails) {
+          //only one but we don't know the name
+          //we wrote this as purely a custom field against custom field. In process of refactoring to allow
+          // another field like event - so here we have no custom field .. must be a non custom field...
+          $tableAlias = $fieldDetails[0];
+          $tableName = array_search($tableAlias, $this->_aliases);
+          $fieldAlias = str_replace('-', '_', $tableName . '_' . $field);
+          $this->addRowHeader($tableAlias, $this->getPropertyForField($field, 'name', $tableName), $fieldAlias, $this->getPropertyForField($field, 'title', $tableName));
+        }
       }
 
     }
     else {
+      $rowHeader = $this->_params['aggregate_row_headers'];
       $rowHeaderFieldName = $rowColumns[$rowHeader]['name'];
       $this->_columnHeaders[$rowHeaderFieldName] = $rowColumns[$rowHeader][$rowHeaderFieldName];
     }
@@ -1797,7 +1801,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
         //   reset($row);
         $stats = array();
         foreach ($row as $key => $column) {
-          $stats[$key] = sprintf("%.1f%%", $column / $total * 100);
+          $stats[$key] = $total ? sprintf("%.1f%%", $column / $total * 100) : '0.00%';
         }
         $this->assign('grandStat', $stats);
       }
@@ -2506,7 +2510,7 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
       $this->add('select', 'aggregate_column_headers', ts('Aggregate Report Column Headers'), $this->_aggregateColumnHeaderFields, FALSE,
         array('id' => 'aggregate_column_headers', 'title' => ts('- select -'))
       );
-      $this->add('select', 'aggregate_row_headers', ts('Aggregate Report Rows'), $this->_aggregateRowFields, FALSE,
+      $this->add('select', 'aggregate_row_headers', ts('Row Fields'), $this->_aggregateRowFields, FALSE,
         array('id' => 'aggregate_row_headers', 'title' => ts('- select -'))
       );
       $this->_columns[$this->_baseTable]['fields']['include_null'] = array(
@@ -4241,9 +4245,10 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       ),
       $options['prefix'] . 'gender_id' => array(
         'name' => 'gender_id',
-        'title' => ts($options['prefix_label'] . 'Gender ID'),
+        'title' => ts($options['prefix_label'] . 'Gender'),
         'options' => CRM_Contact_BAO_Contact::buildOptions('gender_id'),
         'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+        'alter_display' => 'alterGenderID',
         'is_fields' => TRUE,
         'is_filters' => TRUE,
       ),
@@ -6449,20 +6454,22 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
   /**
    * Get the selected pivot chart column fields as an array.
    *
-   * @return array
-   *  Selected fields in format
-   *   array('custom_2' => array('civicrm_contact');
-   *   ie fieldname => table alias
+   * @param string $type
+   *   Row or column to denote the fields we are extracting.
+   *
+   * @return array Selected fields in format
+   * Selected fields in format
+   * array('custom_2' => array('civicrm_contact');
+   * ie fieldname => table alias
    */
-  protected function getColumnFields() {
-    $columnHeader = $this->_params['aggregate_column_headers'];
+  protected function getFieldBreakdownForAggregates($type) {
+    $columnHeader = $this->_params['aggregate_' . $type . '_headers'];
     if (!empty($columnHeader)) {
       $fieldArr = explode(":", $columnHeader);
       return array($fieldArr[1] => array($fieldArr[0]));
-
     }
     else {
-      return array(0 => '');
+      return array();
     }
   }
 
