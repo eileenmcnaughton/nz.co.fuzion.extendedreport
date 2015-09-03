@@ -536,26 +536,18 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    * Function to do a simple cross-tab.
    *
    * Generally a rowHeader and a columnHeader will be defined.
-   * Column Header is optional - in which case a single total column
-   * will show.
+   *
+   * Column Header is optional - in which case a single total column will show.
    */
   function aggregateSelect() {
     if (empty($this->_customGroupAggregates)) {
       return;
     }
-    $columnHeader = $this->_params['aggregate_column_headers'];
-    $rowHeader = $this->_params['aggregate_row_headers'];
 
+    $rowHeader = $this->_params['aggregate_row_headers'];
     $fieldArr = explode(":", $rowHeader);
     $rowFields[$fieldArr[1]][] = $fieldArr[0];
-
-    if (!empty($columnHeader)) {
-      $fieldArr = explode(":", $columnHeader);
-      $columnFields[$fieldArr[1]][] = $fieldArr[0];
-    }
-    else {
-      $columnFields = array(0 => '');
-    }
+    $columnFields = $this->getColumnFields();
 
     $selectedTables = array();
     $rowColumns = $this->extractCustomFields($rowFields, $selectedTables, 'row_header');
@@ -6471,6 +6463,26 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
         );
         return $clause;
       }
+    }
+  }
+
+  /**
+   * Get the selected pivot chart column fields as an array.
+   *
+   * @return array
+   *  Selected fields in format
+   *   array('custom_2' => array('civicrm_contact');
+   *   ie fieldname => table alias
+   */
+  protected function getColumnFields() {
+    $columnHeader = $this->_params['aggregate_column_headers'];
+    if (!empty($columnHeader)) {
+      $fieldArr = explode(":", $columnHeader);
+      return array($fieldArr[1] => array($fieldArr[0]));
+
+    }
+    else {
+      return array(0 => '');
     }
   }
 
