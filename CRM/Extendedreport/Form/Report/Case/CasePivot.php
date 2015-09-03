@@ -16,7 +16,7 @@ class CRM_Extendedreport_Form_Report_Case_CasePivot extends CRM_Extendedreport_F
   protected $_potentialCriteria = array();
 
   /**
-   *
+   * Class constructor.
    */
   public function __construct() {
     $this->_customGroupExtended['civicrm_case'] = array(
@@ -58,9 +58,11 @@ class CRM_Extendedreport_Form_Report_Case_CasePivot extends CRM_Extendedreport_F
   }
 
   /**
+   * Declare from joins.
+   *
    * @return array
    */
-  function fromClauses() {
+  public function fromClauses() {
     return array(
       'contact_from_case',
     );

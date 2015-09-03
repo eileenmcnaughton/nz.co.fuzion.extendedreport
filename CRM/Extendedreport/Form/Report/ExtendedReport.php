@@ -1255,6 +1255,11 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     );
     $order = array_intersect_key(array_fill_keys($order, 1), $this->tabs);
     $order = array_merge($order, $this->tabs);
+    if (isset($this->tabs['Aggregate'])) {
+      unset($this->tabs['FieldSelection']);
+      unset($this->tabs['GroupBy']);
+      unset($this->tabs['OrderBy']);
+    }
     $this->assign('tabs', $order);
   }
 
@@ -1745,8 +1750,8 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       // build array of result based on column headers. This method also allows
       // modifying column headers before using it to build result set i.e $rows.
       $rows = array();
-      $this->buildRows($sql, $rows);
       $this->addDeveloperTab($sql);
+      $this->buildRows($sql, $rows);
       $this->addAggregatePercentRow($rows);
 
       // format result set.
