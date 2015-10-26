@@ -5910,8 +5910,12 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
   function alterCrmEditable($value, &$row, $selectedField, $criteriaFieldName, $specs) {
     $id_field = $specs['id_table'] . '_' . $specs['id_field'];
     if (empty($row[$id_field])) {
-      // If the relevant id has not been set on the report the field cannot be editable.
-      return;
+      // Check one more possible field...
+      $id_field = $specs['id_table'] . '_' . $specs['entity'] . '_' . $specs['id_field'];
+      if (empty($row[$id_field])) {
+        // If the relevant id has not been set on the report the field cannot be editable.
+        return;
+      }
     }
     $entityID = $row[$id_field];
     $entity = $specs['entity'];
