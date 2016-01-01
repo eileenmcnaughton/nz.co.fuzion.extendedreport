@@ -2915,7 +2915,7 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
               $alterMap[$tableName . '_' . $field] = $field;
               $alterSpecs[$tableName . '_' . $field] = NULL;
             }
-            if ($this->_editableFields && array_key_exists('crm_editable', $specs)) {
+            if ($this->_editableFields && array_key_exists('crm_editable', $specs) && !empty($this->_aliases[$specs['crm_editable']['id_table']])) {
               //id key array is what the array would look like if the ONLY group by field is our id field
               // in which case it should be editable - in any other group by scenario it shouldn't be
               $idKeyArray = array($this->_aliases[$specs['crm_editable']['id_table']] . "." . $specs['crm_editable']['id_field']);
