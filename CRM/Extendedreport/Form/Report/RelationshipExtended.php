@@ -17,26 +17,34 @@ class CRM_Extendedreport_Form_Report_RelationshipExtended extends CRM_Extendedre
     $this->_tagFilter = TRUE;
 
     $this->_columns = $this->getColumns('Contact', array(
-        'prefix' => 'contact_a_',
-        'prefix_label' => 'Contact A ::'
-      ))
-      + $this->getColumns('Contact', array(
+          'prefix' => 'contact_a_',
+          'prefix_label' => 'Contact A ::',
+        )
+      ) + $this->getColumns('Address', array(
+          'prefix' => 'contact_a_',
+          'prefix_label' => 'Contact A ::',
+        )
+      ) + $this->getColumns('Email', array(
+          'prefix' => 'contact_a_',
+          'prefix_label' => 'Contact A ::',
+        )
+      ) + $this->getColumns('Phone', array(
+          'prefix' => 'contact_a_',
+          'prefix_label' => 'Contact A ::',
+          'subquery' => FALSE,
+        )
+      ) + $this->getColumns('Contact', array(
+        'prefix' => 'contact_b_',
+        'prefix_label' => 'Contact B ::',
+      )) + $this->getColumns('Address', array(
+          'prefix' => 'contact_b_',
+          'prefix_label' => 'Contact B ::',
+        )
+      ) + $this->getColumns('Email', array(
         'prefix' => 'contact_b_',
         'prefix_label' => 'Contact B ::',
       ))
-      + $this->getColumns('Email', array(
-        'prefix' => 'contact_a_',
-        'prefix_label' => 'Contact A ::',
-      ))
-      + $this->getColumns('Email', array(
-        'prefix' => 'contact_b_',
-        'prefix_label' => 'Contact B ::',
-      ))
-      + $this->getColumns('Phone', array(
-        'prefix' => 'contact_a_',
-        'prefix_label' => 'Contact A ::',
-        'subquery' => FALSE,
-      ))
+
       + $this->getColumns('Phone', array(
         'prefix' => 'contact_b_',
         'prefix_label' => 'Contact B ::',
@@ -48,7 +56,7 @@ class CRM_Extendedreport_Form_Report_RelationshipExtended extends CRM_Extendedre
           'fields' => array(
             'label_a_b' => array(
               'title' => ts('Relationship A-B '),
-              'default' => TRUE
+              'default' => TRUE,
             ),
             'label_b_a' => array(
               'title' => ts('Relationship B-A '),
@@ -85,17 +93,7 @@ class CRM_Extendedreport_Form_Report_RelationshipExtended extends CRM_Extendedre
           ),
         ),
       )
-      + $this->getColumns('Case')
-      + $this->getColumns('Address', array(
-          'prefix' => 'contact_a_',
-          'prefix_label' => 'Contact A ::',
-        )
-      )
-      + $this->getColumns('Address', array(
-          'prefix' => 'contact_b_',
-          'prefix_label' => 'Contact B ::',
-        )
-      );
+      + $this->getColumns('Case');
     parent::__construct();
   }
 

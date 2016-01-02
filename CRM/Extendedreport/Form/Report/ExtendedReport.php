@@ -2481,8 +2481,10 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
                 unset($this->_columns[$tableAlias]['filters']);
               }
               else {
-                foreach ($this->_columns[$tableAlias]['filters'] as &$filter) {
+                foreach ($this->_columns[$tableAlias]['filters'] as $filterKey => $filter) {
                   $filter['title'] = $spec['title'] . " " . $filter['title'];
+                  $this->_columns[$tableAlias]['filters'][$tableAlias . $filterKey] = $filter;
+                  unset($this->_columns[$tableAlias]['filters'][$filterKey]);
                 }
               }
               unset ($this->_columns[$tableAlias]['fields']);
@@ -2511,7 +2513,7 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
     }
 
     else {
-      $sel = $this->add('select', 'custom_tables', ts('Custom Columns'), $customFieldsTable, FALSE,
+      $this->add('select', 'custom_tables', ts('Custom Columns'), $customFieldsTable, FALSE,
         array(
           'id' => 'custom_tables',
           'multiple' => 'multiple',
@@ -2527,6 +2529,14 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
           'hierarchy' => json_encode($customFields)
         )
       );
+
+      $this->tabs['CustomFieldSelection'] = array(
+        'title' => ts('Custom Field Display'),
+        'tpl' => 'CustomFieldSelection',
+        'div_label' => 'set-custom-fields',
+      );
+
+      $this->assignTabs();
     }
   }
 
@@ -2663,6 +2673,50 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
     }
     return $field;
   }
+
+  /**
+   * Build custom data from clause.
+   *
+   * Overridden to support custom data for multiple entities of the same type.
+   */
+  public function customDataFrom() {
+    $mapper = CRM_Core_BAO_CustomQuery::$extendsMap;
+
+    foreach ($this->_columns as $table => $prop) {
+      // This is a change - don't rely on table key matching table name.
+      if (!empty($prop['extends'])) {
+        $extendsTable = $mapper[$prop['extends']];
+        if (!isset($prop['fields'])) {
+          $prop['fields'] = array();
+        }
+        // check field is in params
+        if (!$this->isFieldSelected($prop)) {
+          continue;
+        }
+        $baseJoin = CRM_Utils_Array::value($prop['extends'], $this->_customGroupExtendsJoin, "{$this->_aliases[$extendsTable]}.id");
+
+        $customJoin = is_array($this->_customGroupJoin) ? $this->_customGroupJoin[$table] : $this->_customGroupJoin;
+        if (!stristr($this->_from, $this->_aliases[$table])) {
+          // Protect against conflict with selectableCustomFrom.
+          $this->_from .= "
+{$customJoin} {$prop['name']} {$this->_aliases[$table]} ON {$this->_aliases[$table]}.entity_id = {$baseJoin}";
+        }
+        // handle for ContactReference
+        if (array_key_exists('fields', $prop)) {
+          foreach ($prop['fields'] as $fieldName => $field) {
+            if (CRM_Utils_Array::value('dataType', $field) ==
+              'ContactReference'
+            ) {
+              $columnName = CRM_Core_DAO::getFieldValue('CRM_Core_DAO_CustomField', CRM_Core_BAO_CustomField::getKeyID($fieldName), 'column_name');
+              $this->_from .= "
+LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_aliases[$table]}.{$columnName} ";
+            }
+          }
+        }
+      }
+    }
+  }
+
 
   /**
    * Add the SELECT AND From clauses for the extensible CustomData
@@ -4168,7 +4222,6 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    * @return array
    */
   function getContactColumns($options = array()) {
-    static $weight = 0;
     $defaultOptions = array(
       'prefix' => '',
       'prefix_label' => '',
