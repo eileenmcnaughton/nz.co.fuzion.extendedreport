@@ -16,6 +16,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   protected $_editableFields = TRUE;
   protected $_rollup = '';
   protected $_fieldSpecs = array();
+  public $_defaults = array();
 
   /**
   * CiviCRM major version - e.g. 4.6
@@ -511,6 +512,9 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     foreach ($this->_params['fields'] as $fieldName => $field) {
       if (substr($fieldName, 0, 7) == 'custom_') {
         foreach ($this->_columns as $table => $specs) {
+          if (empty($specs['fields'])) {
+            continue;
+          }
           if (CRM_Utils_Array::value($fieldName, $specs['fields'])) {
             if ($specs['fields'][$fieldName]['dataType'] == 'ContactReference') {
               $this->_columns[$table]['fields'][$fieldName . '_id'] = $specs['fields'][$fieldName];
@@ -2199,6 +2203,7 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
         $this->_columns[$curTable]['extends'] = $customDAO->extends;
         $this->_columns[$curTable]['grouping'] = $customDAO->table_name;
         $this->_columns[$curTable]['group_title'] = $customDAO->title;
+        $this->_columns[$curTable]['name'] = $customDAO->table_name;
 
         foreach (array(
                    'fields',
@@ -2218,7 +2223,8 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
           'name' => $customDAO->column_name,
           'title' => $customDAO->label,
           'dataType' => $customDAO->data_type,
-          'htmlType' => $customDAO->html_type
+          'htmlType' => $customDAO->html_type,
+          //'alterDisplay' =>
         );
       }
       if ($this->_customGroupFilters) {
@@ -2686,9 +2692,12 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
       // This is a change - don't rely on table key matching table name.
       if (!empty($prop['extends'])) {
         $extendsTable = $mapper[$prop['extends']];
-        if (!isset($prop['fields'])) {
-          $prop['fields'] = array();
+        foreach (array('fields', 'group_bys') as $key) {
+          if (!isset($prop[$key])) {
+            $prop[$key] = array();
+          }
         }
+
         // check field is in params
         if (!$this->isFieldSelected($prop)) {
           continue;
@@ -3165,6 +3174,21 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       foreach ($row as $tableCol => $val) {
         if (array_key_exists($tableCol, $customFields)) {
           $rows[$rowNum][$tableCol] = $this->formatCustomValues($val, $customFields[$tableCol], $fieldValueMap, $row);
+          if (!empty($this->_drilldownReport)) {
+            foreach ($this->_drilldownReport as $baseUrl => $label) {
+              // Only one - that was a crap way of grabbing it. Too late to think of
+              // an elegant one.
+            }
+            $fieldName = 'custom_' . $customFields[$tableCol]['id'];
+            $criteriaQueryParams = CRM_Report_Utils_Report::getPreviewCriteriaQueryParams($this->_defaults, $this->_params);
+            $url = CRM_Report_Utils_Report::getNextUrl($baseUrl,
+              "reset=1&force=1&{$criteriaQueryParams}&" .
+              $fieldName . "_op=in&{$fieldName}_value={$val}",
+              $this->_absoluteUrl, $this->_id
+            );
+
+            $rows[$rowNum][$tableCol . '_link'] = $url;
+          }
           $entryFound = TRUE;
         }
       }
@@ -3896,6 +3920,49 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     return $this->buildColumns($columns['civicrm_membership']['fields'], $options['prefix'] . 'civicrm_membership', 'CRM_Member_DAO_Membership');
   }
 
+
+  /**
+   * @return array
+   */
+  protected function getFinancialTypeColumns() {
+    return array(
+      'civicrm_financial_type' => array(
+        'dao' => 'CRM_Financial_DAO_FinancialType',
+        'grouping' => 'pledge-fields',
+        'fields' => array(
+          'name' => array(
+            'title' => ts('Financial_type')
+          ),
+          'accounting_code' => array(
+            'title' => ts('Accounting Code')
+          ),
+          'is_deductible' => array(
+            'title' => ts('Tax Deductible')
+          )
+        ),
+      )
+    );
+  }
+
+  /**
+   * @return array
+   */
+  protected function getPledgePaymentColumns() {
+    return array(
+      'civicrm_pledge_payment' => array(
+        'dao' => 'CRM_Pledge_DAO_PledgePayment',
+        'grouping' => 'pledge-fields',
+        'fields' => array(
+          'actual_amount' => array(
+            'title' => ts('Amount Paid'),
+            'type' => CRM_Utils_Type::T_MONEY,
+            'statistics' => array('sum' => ts('Total Amount Paid')),
+          ),
+        ),
+      ),
+    );
+  }
+
   /**
    * @return array
    */
@@ -4468,11 +4535,84 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     return $this->buildColumns($spec, $options['prefix'] . 'civicrm_phone', 'CRM_Core_DAO_Phone');
   }
 
-  /*
-   * Get email columns
-   * @param array $options column options
-   */
   /**
+   * Get phone columns to add to array
+   *
+   * @param array $options
+   *  - prefix Prefix to add to table (in case of more than one instance of the table)
+   *  - prefix_label Label to give columns from this phone table instance
+   *
+   * @return array pledge columns definition
+   */
+  protected function getPledgeColumns($options = array()) {
+    $spec = array(
+      'id' => array(
+        'no_display' => TRUE,
+        'required' => TRUE
+      ),
+      'contact_id' => array(
+        'no_display' => TRUE,
+        'required' => TRUE
+      ),
+      'amount' => array(
+        'title' => ts('Pledge Amount'),
+        'statistics' => array('sum' => ts('Total Pledge Amount')),
+        'type' => CRM_Utils_Type::T_MONEY,
+        'name' => 'amount',
+        'operatorType' => CRM_Report_Form::OP_INT,
+        'is_fields' => TRUE,
+      ),
+      'financial_type_id' => array(
+        'title' => ts('Financial Type'),
+        'type' => CRM_Utils_Type::T_INT,
+        'alter_display' => 'alterFinancialType',
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+        'is_order_bys' => TRUE,
+        'is_group_bys' => TRUE,
+        'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+        'options' => CRM_Contribute_PseudoConstant::financialType(),
+      ),
+      'frequency_unit' => array(
+        'title' => ts('Frequency Unit'),
+        'is_fields' => TRUE,
+      ),
+      'installments' => array(
+        'title' => ts('Installments'),
+        'is_fields' => TRUE,
+      ),
+      'create_date' => array(
+        'title' => ts('Pledge Made Date'),
+        'operatorType' => CRM_Report_Form::OP_DATE,
+        'is_fields' => TRUE,
+      ),
+      'start_date' => array(
+        'title' => ts('Pledge Start Date'),
+        'type' => CRM_Utils_Type::T_DATE,
+        'is_fields' => TRUE,
+      ),
+      'end_date' => array(
+        'title' => ts('Pledge End Date'),
+        'type' => CRM_Utils_Type::T_DATE
+      ),
+      'status_id' => array(
+        'name' => 'status_id',
+        'title' => ts('Pledge Status'),
+        'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+        'options' => CRM_Core_OptionGroup::values('contribution_status'),
+        'is_fields' => TRUE,
+        'is_group_bys' => TRUE,
+      ),
+    );
+
+    return $this->buildColumns($spec, 'civicrm_pledge', 'CRM_Pledge_DAO_Pledge');
+  }
+
+  /**
+   * Get email columns.
+   *
+   * @param array $options column options
+
    * @param array $options
    *
    * @return array
