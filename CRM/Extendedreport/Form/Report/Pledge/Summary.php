@@ -90,7 +90,7 @@ class CRM_Extendedreport_Form_Report_Pledge_Summary extends CRM_Extendedreport_F
        $this->_columnHeaders["{$tableName}_{$fieldName}"]['title'] = CRM_Utils_Array::value('title', $field);
        $this->_columnHeaders["{$tableName}_{$fieldName}"]['type'] = CRM_Utils_Array::value('type', $field);
        $this->_statFields['Balance to Pay'] = "{$tableName}_{$fieldName}";
-       return " COALESCE(sum(pledge.amount),0) - sum(pledge_payment_civireport.actual_amount) as civicrm_pledge_balance_amount ";
+       return " COALESCE(sum(pledge.amount), 0) - COALESCE(sum(pledge_payment_civireport.actual_amount), 0) as civicrm_pledge_balance_amount ";
      }
   }
 
