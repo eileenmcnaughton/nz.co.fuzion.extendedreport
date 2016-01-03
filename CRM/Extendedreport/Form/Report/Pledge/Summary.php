@@ -27,9 +27,14 @@ class CRM_Extendedreport_Form_Report_Pledge_Summary extends CRM_Extendedreport_F
         )
       ) + $this->getColumns('Contact')
       + $this->getColumns('Email')
+      + $this->getColumns('FinancialType')
       + $this->getColumns('Pledge', array('fields' => TRUE))
-      + $this->getColumns('PledgePayment')
-      + $this->getColumns('FinancialType');
+      + $this->getColumns('PledgePayment');
+    $this->_columns['civicrm_pledge']['fields']['balance_amount'] = array(
+      'title' => 'Balance to Pay',
+      'statistics' => array('sum' => ts('Balance')),
+      'type' => CRM_Utils_Type::T_MONEY,
+    );
     $this->_groupFilter = TRUE;
     $this->_tagFilter = TRUE;
     parent::__construct();
@@ -68,6 +73,32 @@ class CRM_Extendedreport_Form_Report_Pledge_Summary extends CRM_Extendedreport_F
                                {$this->_aliases['civicrm_email']}.contact_id) AND
                                {$this->_aliases['civicrm_email']}.is_primary = 1\n";
     }
+  }
+
+  /**
+   * Add balance amount calculation.
+   *
+   * @param string $tableName
+   * @param string $tableKey
+   * @param string $fieldName
+   * @param array $field
+   *
+   * @return string
+   */
+   function selectClause(&$tableName, $tableKey, &$fieldName, &$field) {
+     if ($fieldName == 'balance_amount') {
+       $this->_columnHeaders["{$tableName}_{$fieldName}"]['title'] = CRM_Utils_Array::value('title', $field);
+       $this->_columnHeaders["{$tableName}_{$fieldName}"]['type'] = CRM_Utils_Array::value('type', $field);
+       $this->_statFields['Balance to Pay'] = "{$tableName}_{$fieldName}";
+       return " COALESCE(sum(pledge.amount),0) - sum(pledge_payment_civireport.actual_amount) as civicrm_pledge_balance_amount ";
+     }
+  }
+
+  /**
+   * Block parent re-ordering of headers.
+   */
+  function reOrderColumnHeaders() {
+
   }
 
 }

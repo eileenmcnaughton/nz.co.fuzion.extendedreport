@@ -967,6 +967,12 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   function groupBy() {
     $this->storeGroupByArray();
     if (!empty($this->_groupByArray)) {
+      foreach (array_keys($this->_groupByArray) as $groupByColumn) {
+        if (isset($this->_columnHeaders[$groupByColumn])) {
+          $columnValues = $this->_columnHeaders[$groupByColumn];
+          $this->_columnHeaders = array($groupByColumn => $columnValues) + $this->_columnHeaders;
+        }
+      }
       $this->_groupBy = "GROUP BY " . implode(', ', $this->_groupByArray);
       if (!empty($this->_sections)) {
         // if we have group bys & sections the sections need to be grouped
@@ -3054,8 +3060,8 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
             continue;
           }
           if (empty($row[$field]) && empty($altered[$rowNumber])) {
-            $groupedValue = $groupByLabels[array_search($field, $groupBy) + 1];
-            if ($rows[$rowNumber + 1][$groupedValue] != $rows[$rowNumber][$groupedValue]) {
+            $groupedValue = $groupByLabels[array_search($field, $groupBys) + 1];
+            if (!isset($rows[$rowNumber + 1]) || $rows[$rowNumber + 1][$groupedValue] != $rows[$rowNumber][$groupedValue]) {
               //we set altered because we are started from the lowest grouping & working up & if both have changed only want to act on the lowest
               //(I think)
               $altered[$rowNumber] = TRUE;
