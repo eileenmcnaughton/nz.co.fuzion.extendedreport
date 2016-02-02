@@ -1946,7 +1946,10 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     if (method_exists('CRM_Utils_Hook', 'alterReportVar')) {
       CRM_Utils_Hook::alterReportVar('sql', $this, $this);
     }
-    $sql = "{$this->_select} {$this->_from} {$this->_where} {$this->_groupBy} {$this->_having} {$this->_orderBy} {$this->_limit}";
+    $sql = "{$this->_select} {$this->_from} {$this->_where} {$this->_groupBy} {$this->_having} {$this->_orderBy} ";
+    if (!$this->_rollup) {
+      $sql .= $this->_limit;
+    }
     return $sql;
   }
 
@@ -4251,15 +4254,15 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'is_filters' => TRUE,
       ),
       'receipt_date' => array('is_fields' => TRUE),
-      'fee_amount' => array('is_fields' => TRUE),
-      'net_amount' => array('is_fields' => TRUE),
       'total_amount' => array(
         'title' => ts('Contribution Amount'),
-        'statistics' => array('sum' => ts('Total Amount')),
+        'statistics' => array('count' => ts('No. Contributions'), 'sum' => ts('Total Amount')),
         'type' => CRM_Utils_Type::T_MONEY,
         'is_fields' => TRUE,
         'is_filters' => TRUE,
       ),
+      'fee_amount' => array('is_fields' => TRUE),
+      'net_amount' => array('is_fields' => TRUE),
       'check_number' => array('is_fields' => TRUE),
     );
     return $this->buildColumns($specs, 'civicrm_contribution', 'CRM_Contribute_BAO_Contribution');
@@ -6157,17 +6160,26 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
   }
 
 
-  /*
-   * Retrieve text for contribution type from pseudoconstant
-  */
   /**
+   * Retrieve text for contribution type from pseudoconstant.
+   *
    * @param $value
    * @param $row
    *
    * @return string
    */
-  function alterFinancialType($value, &$row) {
+  function alterFinancialType($value, &$row, $selectedField, $criteriaFieldName) {
     $fn = $this->financialTypePseudoConstant;
+    if ($this->_drilldownReport) {
+      $criteriaQueryParams = CRM_Report_Utils_Report::getPreviewCriteriaQueryParams($this->_defaults, $this->_params);
+      $url = CRM_Report_Utils_Report::getNextUrl(key($this->_drilldownReport),
+        "reset=1&force=1&{$criteriaQueryParams}&" .
+        "{$criteriaFieldName}_op=in&{$criteriaFieldName}_value={$value}",
+        $this->_absoluteUrl, $this->_id
+      );
+      $row[$selectedField . '_link'] = $url;
+    }
+
     return is_string(CRM_Contribute_PseudoConstant::$fn($value, FALSE)) ? CRM_Contribute_PseudoConstant::$fn($value, FALSE) : '';
   }
 

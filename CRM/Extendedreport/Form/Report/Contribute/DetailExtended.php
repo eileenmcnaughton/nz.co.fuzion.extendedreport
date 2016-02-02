@@ -207,12 +207,14 @@ class CRM_Extendedreport_Form_Report_Contribute_DetailExtended extends CRM_Repor
           'title' => ts('Soft Credit For'),
           'dbAlias' => "NULL"
         ),
-        'financial_type_id' => array(
+        'contribution_financial_type_id' => array(
           'title' => ts('Financial Type'),
           'default' => TRUE,
+          'name' => 'financial_type_id',
         ),
-        'contribution_status_id' => array(
+        'contribution_contribution_status_id' => array(
           'title' => ts('Contribution Status'),
+          'name' => 'contribution_status_id',
         ),
         'contribution_page_id' => array(
           'title' => ts('Contribution Page'),
@@ -261,11 +263,12 @@ class CRM_Extendedreport_Form_Report_Contribute_DetailExtended extends CRM_Repor
           'default' => NULL,
           'type' => CRM_Utils_Type::T_STRING,
         ),
-        'financial_type_id' => array(
+        'contribution_financial_type_id' => array(
           'title' => ts('Financial Type'),
           'operatorType' => CRM_Report_Form::OP_MULTISELECT,
           'options' => CRM_Contribute_PseudoConstant::financialType(),
           'type' => CRM_Utils_Type::T_INT,
+          'name' => 'financial_type_id',
         ),
         'contribution_page_id' => array(
           'title' => ts('Contribution Page'),
@@ -284,12 +287,13 @@ class CRM_Extendedreport_Form_Report_Contribute_DetailExtended extends CRM_Repor
           'name' => 'source',
           'type' => CRM_Utils_Type::T_STRING,
         ),
-        'contribution_status_id' => array(
+        'contribution_contribution_status_id' => array(
           'title' => ts('Contribution Status'),
           'operatorType' => CRM_Report_Form::OP_MULTISELECT,
           'options' => CRM_Contribute_PseudoConstant::contributionStatus(),
           'default' => array(1),
           'type' => CRM_Utils_Type::T_INT,
+          'name' => 'contribution_status_id',
         ),
         'total_amount' => array('title' => ts('Contribution Amount')),
       ),
