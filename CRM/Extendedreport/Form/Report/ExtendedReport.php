@@ -233,7 +233,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   }
 
   /**
-   * wrapper for getOptions / pseudoconstant to get contact type options
+   * Wrapper for getOptions / pseudoconstant to get contact type options.
    */
   function getContactTypeOptions() {
     if (method_exists('CRM_Contribute_PseudoConstant', 'contactType')) {
@@ -245,7 +245,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   }
 
   /**
-   * check if ActivityContact table should be used
+   * Check if ActivityContact table should be used.
    */
 
   function isActivityContact() {
@@ -270,7 +270,8 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   }
 
   /**
-   * Get the name of the PriceFieldValueBAO correct for the civi version
+   * Get the name of the PriceFieldValueBAO correct for the civi version.
+   *
    * @return string BAO Name
    */
   function getPriceFieldValueBAO() {
@@ -1997,12 +1998,14 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   }
 
 
-  /*
-   * 4.2 backport of this function including 4.3 tweak whereby compileContent is a separate function
-   * Should be able to be removed once 4.3 version is in use
-   */
   /**
-   * @param null $rows
+   * 4.2 backport of this function including 4.3 tweak whereby compileContent is a separate function.
+   *
+   * Should be able to be removed once 4.3 version is in use
+   *
+   * @param array $rows
+   *
+   * @return bool
    */
   function endPostProcess(&$rows = NULL) {
     if ($this->_storeResultSet) {
@@ -2400,6 +2403,10 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
    * 1) put together the selection of fields using a prefix so that we can use multiple instances of the
    *    same custom fields in a report - ie. so we can use the fields for 2 different contacts
    * 2) we assign these fields as a flat list to the multiple select - might move to json later
+   *
+   * @param bool $addFields
+   *
+   * @throws \CiviCRM_API3_Exception
    */
   function addSelectableCustomFields($addFields = TRUE) {
 
@@ -3740,6 +3747,8 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
   }
 
   /**
+   * @param array $options
+   *
    * @return array
    */
   function getPriceFieldValueColumns($options) {
