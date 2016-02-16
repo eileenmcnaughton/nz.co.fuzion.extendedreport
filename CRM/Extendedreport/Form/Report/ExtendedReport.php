@@ -3199,10 +3199,9 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
             $criteriaQueryParams = CRM_Report_Utils_Report::getPreviewCriteriaQueryParams($this->_defaults, $this->_params);
             $url = CRM_Report_Utils_Report::getNextUrl($baseUrl,
               "reset=1&force=1&{$criteriaQueryParams}&" .
-              $fieldName . "_op=in&{$fieldName}_value={$val}",
+              $fieldName . "_op=in&{$fieldName}_value=" . $this->commaSeparateCustomValues($val),
               $this->_absoluteUrl, $this->_id
             );
-
             $rows[$rowNum][$tableCol . '_link'] = $url;
           }
           $entryFound = TRUE;
@@ -3215,6 +3214,25 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         break;
       }
     }
+  }
+
+  /**
+   * Reformat custom value, removing first & last separator and using commas for the rest.
+   *
+   * @param string $value
+   */
+  protected function commaSeparateCustomValues($value) {
+    if (empty($value)) {
+      return '';
+    }
+
+    if (substr($value, 0, 1) == CRM_Core_DAO::VALUE_SEPARATOR) {
+      $value = substr($value, 1);
+    }
+    if (substr($value, -1, 1) == CRM_Core_DAO::VALUE_SEPARATOR) {
+      $value = substr($value, 0, -1);
+    }
+    return implode(',', explode(CRM_Core_DAO::VALUE_SEPARATOR, $value));
   }
 
   /**
