@@ -3065,7 +3065,7 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
     else {
       foreach ($rows as $rowNumber => $row) {
         foreach ($groupBys as $field => $groupBy) {
-          if ($rowNumber < $statLayers) {
+          if (($rowNumber + 1) < $statLayers) {
             $groupBys[$field] = $row[$field];
             continue;
           }
