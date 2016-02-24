@@ -4067,6 +4067,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'name' => 'event_type_id',
         'operatorType' => CRM_Report_Form::OP_MULTISELECT,
         'options' => CRM_Core_OptionGroup::values('event_type'),
+        'type' => CRM_Utils_Type::T_INT,
         'is_fields' => TRUE,
         'is_filters' => TRUE,
         'is_order_bys' => TRUE,
