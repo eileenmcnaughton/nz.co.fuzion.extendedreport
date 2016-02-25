@@ -44,7 +44,7 @@ class CRM_Extendedreport_Form_Report_Pledge_Summary extends CRM_Extendedreport_F
     $this->_from = "
             FROM civicrm_pledge {$this->_aliases['civicrm_pledge']}
             LEFT JOIN
-            (SELECT pledge_id, sum(actual_amount) as actual_amount FROM
+            (SELECT pledge_id, sum(if(status_id = 1, actual_amount, 0)) as actual_amount FROM
               civicrm_pledge_payment
               GROUP BY pledge_id
             ) as {$this->_aliases['civicrm_pledge_payment']} ON {$this->_aliases['civicrm_pledge_payment']}.pledge_id = {$this->_aliases['civicrm_pledge']}.id
