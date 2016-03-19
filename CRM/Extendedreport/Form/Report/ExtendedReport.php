@@ -17,6 +17,15 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   protected $_rollup = '';
   protected $_fieldSpecs = array();
   public $_defaults = array();
+  /**
+   * Report ID to link through to.
+   *
+   * Generally if we are linking to the same report we should keep the id of the report we are on
+   * (filter within the report) but just the general report if not.
+   *
+   * @var int|null
+   */
+  protected $linkedReportID;
 
   /**
   * CiviCRM major version - e.g. 4.6
@@ -3195,12 +3204,14 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
               // Only one - that was a crap way of grabbing it. Too late to think of
               // an elegant one.
             }
+
             $fieldName = 'custom_' . $customFields[$tableCol]['id'];
+            $this->linkedReportID = ($this->_defaults['report_id'] == $baseUrl ? $this->_id : NULL);
             $criteriaQueryParams = CRM_Report_Utils_Report::getPreviewCriteriaQueryParams($this->_defaults, $this->_params);
             $url = CRM_Report_Utils_Report::getNextUrl($baseUrl,
               "reset=1&force=1&{$criteriaQueryParams}&" .
               $fieldName . "_op=in&{$fieldName}_value=" . $this->commaSeparateCustomValues($val),
-              $this->_absoluteUrl, $this->_id
+              $this->_absoluteUrl, $this->linkedReportID
             );
             $rows[$rowNum][$tableCol . '_link'] = $url;
           }
