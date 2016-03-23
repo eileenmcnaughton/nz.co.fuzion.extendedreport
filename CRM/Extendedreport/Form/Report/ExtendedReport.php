@@ -2733,7 +2733,7 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
         if (!stristr($this->_from, $this->_aliases[$table])) {
           // Protect against conflict with selectableCustomFrom.
           $this->_from .= "
-{$customJoin} {$prop['name']} {$this->_aliases[$table]} ON {$this->_aliases[$table]}.entity_id = {$baseJoin}";
+{$customJoin} {$prop['grouping']} {$this->_aliases[$table]} ON {$this->_aliases[$table]}.entity_id = {$baseJoin}";
         }
         // handle for ContactReference
         if (array_key_exists('fields', $prop)) {
