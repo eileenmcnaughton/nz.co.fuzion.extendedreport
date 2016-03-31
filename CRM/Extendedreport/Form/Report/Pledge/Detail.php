@@ -86,6 +86,7 @@ class CRM_Extendedreport_Form_Report_Pledge_Detail extends CRM_Extendedreport_Fo
 
     $this->addDeveloperTab($sql);
     $rows = $payment = array();
+    $this->buildRows($sql, $rows);
 
     $dao = CRM_Core_DAO::executeQuery($sql);
 
@@ -113,7 +114,6 @@ class CRM_Extendedreport_Form_Report_Pledge_Detail extends CRM_Extendedreport_Fo
         'type' => CRM_Utils_Type::T_MONEY,
         'title' => 'Next Payment Amount'
       ),
-      'status_id' => NULL
     );
     foreach ($tableHeader as $k => $val) {
       $this->_columnHeaders[$k] = $val;
@@ -147,20 +147,13 @@ class CRM_Extendedreport_Form_Report_Pledge_Detail extends CRM_Extendedreport_Fo
           }
         }
       }
-
-
-    // Displaying entire data on the form
-    if (!empty($display)) {
-      foreach ($display as $key => $value) {
-        $row = array();
-        foreach ($this->_columnHeaders as $columnKey => $columnValue) {
-          if (CRM_Utils_Array::value($columnKey, $value)) {
-            $row[$columnKey] = $value[$columnKey];
-          }
-        }
-        $rows[] = $row;
+    foreach ($rows as $index => $row) {
+      if (!empty($display[$row['civicrm_pledge_pledge_id']]) && !empty($display[$row['civicrm_pledge_pledge_id']]['scheduled_date'])) {
+        $rows[$index]['scheduled_date'] = $display[$row['civicrm_pledge_pledge_id']]['scheduled_date'];
+        $rows[$index]['scheduled_amount'] = $display[$row['civicrm_pledge_pledge_id']]['scheduled_amount'];
       }
     }
+
     $this->formatDisplay($rows, FALSE);
     $this->doTemplateAssignment($rows);
     $this->endPostProcess($rows);
