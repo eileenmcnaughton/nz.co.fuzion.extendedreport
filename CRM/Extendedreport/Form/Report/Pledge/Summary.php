@@ -14,7 +14,7 @@ class CRM_Extendedreport_Form_Report_Pledge_Summary extends CRM_Extendedreport_F
   protected $_customGroupExtends = array(
     'Pledge',
   );
-  public $_drilldownReport = array('pledge/detail' => 'Pledge Details');
+  public $_drilldownReport = array('pledge/details' => 'Pledge Details');
   protected $_customGroupGroupBy = TRUE;
 
   /**
@@ -42,12 +42,9 @@ class CRM_Extendedreport_Form_Report_Pledge_Summary extends CRM_Extendedreport_F
 
   function from() {
     $this->_from = "
-            FROM civicrm_pledge {$this->_aliases['civicrm_pledge']}
-            LEFT JOIN
-            (SELECT pledge_id, sum(if(status_id = 1, actual_amount, 0)) as actual_amount FROM
-              civicrm_pledge_payment
-              GROUP BY pledge_id
-            ) as {$this->_aliases['civicrm_pledge_payment']} ON {$this->_aliases['civicrm_pledge_payment']}.pledge_id = {$this->_aliases['civicrm_pledge']}.id
+            FROM civicrm_pledge {$this->_aliases['civicrm_pledge']}";
+    $this->joinPledgePaymentFromPledge();
+    $this->_from .= "
             LEFT JOIN civicrm_financial_type {$this->_aliases['civicrm_financial_type']}
                       ON  ({$this->_aliases['civicrm_pledge']}.financial_type_id =
                           {$this->_aliases['civicrm_financial_type']}.id)
@@ -85,13 +82,16 @@ class CRM_Extendedreport_Form_Report_Pledge_Summary extends CRM_Extendedreport_F
    *
    * @return string
    */
-   function selectClause(&$tableName, $tableKey, &$fieldName, &$field) {
-     if ($fieldName == 'balance_amount') {
-       $this->_columnHeaders["{$tableName}_{$fieldName}"]['title'] = CRM_Utils_Array::value('title', $field);
-       $this->_columnHeaders["{$tableName}_{$fieldName}"]['type'] = CRM_Utils_Array::value('type', $field);
-       $this->_statFields['Balance to Pay'] = "{$tableName}_{$fieldName}";
-       return " COALESCE(sum(pledge.amount), 0) - COALESCE(sum(pledge_payment_civireport.actual_amount), 0) as civicrm_pledge_balance_amount ";
-     }
+  function selectClause(&$tableName, $tableKey, &$fieldName, &$field) {
+    if ($fieldName == 'balance_amount') {
+      $alias = $this->selectStatSum($tableName, $fieldName, $field);
+      return " SUM(COALESCE(IF((pledge.status_id =3), pledge_payment_civireport.actual_amount, pledge.amount), 0))
+        - COALESCE(sum(pledge_payment_civireport.actual_amount), 0) as $alias ";
+    }
+    if ($fieldName == 'pledge_amount') {
+      $alias = $this->selectStatSum($tableName, $fieldName, $field);
+      return " SUM(COALESCE(IF((pledge.status_id =3), pledge_payment_civireport.actual_amount, pledge.amount), 0)) as $alias ";
+    }
   }
 
   /**

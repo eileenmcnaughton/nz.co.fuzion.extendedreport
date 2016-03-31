@@ -26,20 +26,31 @@ class CRM_Extendedreport_Form_Report_Pledge_Detail extends CRM_Extendedreport_Fo
       + $this->getColumns('Pledge', array('group_bys' => FALSE))
       + $this->getColumns('PledgePayment')
       + $this->getColumns('FinancialType');
+    $this->_columns['civicrm_pledge_payment']['fields']['balance_amount'] = array(
+      'title' => 'Balance to Pay',
+      'statistics' => array('sum' => ts('Balance')),
+      'type' => CRM_Utils_Type::T_MONEY,
+    );
     $this->_groupFilter = TRUE;
     $this->_tagFilter = TRUE;
+    $defaults = array(
+      'civicrm_contact' => array('civicrm_contact_display_name', 'civicrm_contact_contact_id'),
+      'civicrm_pledge' => array('pledge_amount'),
+      'civicrm_pledge_payment' => array('actual_amount', 'balance_amount'),
+    );
+    foreach ($defaults as $entity => $fields) {
+      foreach ($fields as $field) {
+        $this->_columns[$entity]['fields'][$field]['default'] = 1;
+      }
+    }
     parent::__construct();
   }
 
   function from() {
     $this->_from = "
-            FROM civicrm_pledge {$this->_aliases['civicrm_pledge']}
-            LEFT JOIN
-            (SELECT pledge_id, sum(actual_amount) as actual_amount FROM
-              civicrm_pledge_payment
-              GROUP BY pledge_id
-            ) as {$this->_aliases['civicrm_pledge_payment']} ON {$this->_aliases['civicrm_pledge_payment']}.pledge_id = {$this->_aliases['civicrm_pledge']}.id
-            LEFT JOIN civicrm_financial_type {$this->_aliases['civicrm_financial_type']}
+            FROM civicrm_pledge {$this->_aliases['civicrm_pledge']}";
+    $this->joinPledgePaymentFromPledge();
+    $this->_from .= " LEFT JOIN civicrm_financial_type {$this->_aliases['civicrm_financial_type']}
                       ON  ({$this->_aliases['civicrm_pledge']}.financial_type_id =
                           {$this->_aliases['civicrm_financial_type']}.id)
                  LEFT JOIN civicrm_contact {$this->_aliases['civicrm_contact']}
@@ -83,7 +94,7 @@ class CRM_Extendedreport_Form_Report_Pledge_Detail extends CRM_Extendedreport_Fo
     $this->assign('columnHeaders', $this->_columnHeaders);
 
     while ($dao->fetch()) {
-      $pledgeID = $dao->civicrm_pledge_id;
+      $pledgeID = $dao->civicrm_pledge_pledge_id;
       foreach ($this->_columnHeaders as $columnHeadersKey => $columnHeadersValue) {
         if (property_exists($dao, $columnHeadersKey)) {
           $display[$pledgeID][$columnHeadersKey] = $dao->$columnHeadersKey;
@@ -102,10 +113,6 @@ class CRM_Extendedreport_Form_Report_Pledge_Detail extends CRM_Extendedreport_Fo
         'type' => CRM_Utils_Type::T_MONEY,
         'title' => 'Next Payment Amount'
       ),
-      'balance_due' => array(
-        'type' => CRM_Utils_Type::T_MONEY,
-        'title' => 'Balance Due'
-      ),
       'status_id' => NULL
     );
     foreach ($tableHeader as $k => $val) {
@@ -114,7 +121,6 @@ class CRM_Extendedreport_Form_Report_Pledge_Detail extends CRM_Extendedreport_Fo
 
     // To Display Payment Details of pledged amount
     // for pledge payments In Progress
-    if (!empty($display)) {
       $sqlPayment = "
                  SELECT min(payment.scheduled_date) as scheduled_date,
                         payment.pledge_id,
@@ -125,7 +131,7 @@ class CRM_Extendedreport_Form_Report_Pledge_Detail extends CRM_Extendedreport_Fo
                        LEFT JOIN civicrm_pledge pledge
                                  ON pledge.id = payment.pledge_id
 
-                  WHERE payment.status_id = 2
+                  WHERE payment.status_id IN(2, 6)
 
                   GROUP BY payment.pledge_id";
 
@@ -142,43 +148,6 @@ class CRM_Extendedreport_Form_Report_Pledge_Detail extends CRM_Extendedreport_Fo
         }
       }
 
-      // Do calculations for Total amount paid AND
-      // Balance Due, based on Pledge Status either
-      // In Progress, Pending or Completed
-      foreach ($display as $pledgeID => $data) {
-        $count = $due = $paid = 0;
-
-        // Get Sum of all the payments made
-        $payDetailsSQL = "
-                    SELECT SUM( payment.actual_amount ) as total_amount
-                       FROM civicrm_pledge_payment payment
-                       WHERE payment.pledge_id = {$pledgeID} AND
-                             payment.status_id = 1";
-
-        $totalPaidAmt = CRM_Core_DAO::singleValueQuery($payDetailsSQL);
-
-        if (CRM_Utils_Array::value('civicrm_pledge_status_id', $data) == 5) {
-          $due = $data['civicrm_pledge_amount'] - $totalPaidAmt;
-          $paid = $totalPaidAmt;
-          $count++;
-        }
-        else {
-          if (CRM_Utils_Array::value('civicrm_pledge_status_id', $data) == 2) {
-            $due = $data['civicrm_pledge_amount'];
-            $paid = 0;
-          }
-          else {
-            if (CRM_Utils_Array::value('civicrm_pledge_status_id', $data) == 1) {
-              $due = 0;
-              $paid = $paid + $data['civicrm_pledge_amount'];
-            }
-          }
-        }
-
-        $display[$pledgeID]['total_paid'] = $paid;
-        $display[$pledgeID]['balance_due'] = $due;
-      }
-    }
 
     // Displaying entire data on the form
     if (!empty($display)) {
@@ -195,6 +164,29 @@ class CRM_Extendedreport_Form_Report_Pledge_Detail extends CRM_Extendedreport_Fo
     $this->formatDisplay($rows, FALSE);
     $this->doTemplateAssignment($rows);
     $this->endPostProcess($rows);
+  }
+
+  /**
+   * Add balance amount calculation.
+   *
+   * @param string $tableName
+   * @param string $tableKey
+   * @param string $fieldName
+   * @param array $field
+   *
+   * @return string
+   */
+  function selectClause(&$tableName, $tableKey, &$fieldName, &$field) {
+    $alias = "{$tableName}_{$fieldName}_sum";
+    if ($fieldName == 'balance_amount') {
+      $alias = $this->selectStatSum($tableName, $fieldName, $field);
+      return " SUM(COALESCE(IF((pledge.status_id =3), pledge_payment_civireport.actual_amount, pledge.amount), 0)) - COALESCE(sum(pledge_payment_civireport.actual_amount), 0) as $alias ";
+    }
+    if ($fieldName == 'pledge_amount') {
+      $alias = $this->selectStatSum($tableName, $fieldName, $field);
+      return " SUM(COALESCE(IF((pledge.status_id =3), pledge_payment_civireport.actual_amount, pledge.amount), 0)) as $alias ";
+    }
+
   }
 
 }

@@ -1163,7 +1163,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     }
   }
 
-  /*
+  /**
    * It's not useful to do stats on the base table if no group by is going on
    * the table is likely to be involved in left joins & give a bad answer for no reason
    * (still pondering how to deal with turned totaling on & off appropriately)
@@ -1776,8 +1776,25 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       else {
         CRM_Core_Error::debug($err);
       }
-
     }
+  }
+
+  /**
+   * Add a field as a stat sum field.
+   *
+   * @param $tableName
+   * @param $fieldName
+   * @param $field
+   *
+   * @return string
+   */
+  protected function selectStatSum(&$tableName, &$fieldName, &$field) {
+    $alias = "{$tableName}_{$fieldName}_sum";
+    $this->_columnHeaders[$alias]['title'] = CRM_Utils_Array::value('title', $field);
+    $this->_columnHeaders[$alias]['type'] = CRM_Utils_Array::value('type', $field);
+    $this->_statFields[CRM_Utils_Array::value('title', $field)] = $alias;
+    $this->_selectAliases[] = $alias;
+    return $alias;
   }
 
   /**
@@ -2971,6 +2988,9 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
    * @param $rows
    */
   function alterDisplay(&$rows) {
+    if (!empty($this->_defaults['report_id']) && $this->_defaults['report_id'] == reset($this->_drilldownReport)) {
+      $this->linkedReportID = $this->_id;
+    }
     parent::alterDisplay($rows);
 
     //THis is all generic functionality which can hopefully go into the parent class
@@ -3206,11 +3226,12 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
             }
 
             $fieldName = 'custom_' . $customFields[$tableCol]['id'];
-            $this->linkedReportID = ($this->_defaults['report_id'] == $baseUrl ? $this->_id : NULL);
             $criteriaQueryParams = CRM_Report_Utils_Report::getPreviewCriteriaQueryParams($this->_defaults, $this->_params);
+            $groupByCriteria = $this->getGroupByCriteria($tableCol, $row);
+
             $url = CRM_Report_Utils_Report::getNextUrl($baseUrl,
               "reset=1&force=1&{$criteriaQueryParams}&" .
-              $fieldName . "_op=in&{$fieldName}_value=" . $this->commaSeparateCustomValues($val),
+              $fieldName . "_op=in&{$fieldName}_value=" . $this->commaSeparateCustomValues($val) . $groupByCriteria,
               $this->_absoluteUrl, $this->linkedReportID
             );
             $rows[$rowNum][$tableCol . '_link'] = $url;
@@ -5691,6 +5712,18 @@ AND {$this->_aliases['civicrm_line_item']}.entity_table = 'civicrm_participant')
   }
 
   /**
+   * Define join from pledge table to pledge payment table.
+   */
+  protected function joinPledgePaymentFromPledge() {
+    $this->_from .= " LEFT JOIN
+    (SELECT pledge_id, sum(if(status_id = 1, actual_amount, 0)) as actual_amount
+      FROM civicrm_pledge_payment
+      GROUP BY pledge_id
+     ) as {$this->_aliases['civicrm_pledge_payment']}
+     ON {$this->_aliases['civicrm_pledge_payment']}.pledge_id = {$this->_aliases['civicrm_pledge']}.id";
+  }
+
+  /**
    * Define conditional join to related contact from participant.
    *
    * The parameters for this come from the relationship tab.
@@ -6209,7 +6242,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
       );
       $row[$selectedField . '_link'] = $url;
     }
-
+    $row[$selectedField . '_raw'] = $value;
     return is_string(CRM_Contribute_PseudoConstant::$fn($value, FALSE)) ? CRM_Contribute_PseudoConstant::$fn($value, FALSE) : '';
   }
 
@@ -6784,6 +6817,34 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
       $aggregateField = explode(':', $this->_params['aggregate_row_headers']);
       return $aggregateField[0];
     }
+  }
+
+  /**
+   * @param $tableCol
+   * @param $row
+   *
+   * @return string
+   */
+  protected function getGroupByCriteria($tableCol, $row) {
+    $otherGroupedFields = array_diff(array_keys($this->_groupByArray), array($tableCol));
+    $groupByCriteria = '';
+    foreach ($otherGroupedFields as $field) {
+      $fieldParts = explode ('_', $field);
+      // argh can't be bothered doing this properly right now.
+      $tableName =  $fieldParts[0] . '_' .  $fieldParts[1];
+      unset($fieldParts[0], $fieldParts[1]);
+      if (!isset($this->_columns[$tableName])) {
+        $tableName .= '_' .  $fieldParts[2];
+        unset( $fieldParts[2]);
+      }
+      $presumedName = implode('_', $fieldParts);
+      if (isset($this->_columns[$tableName]) && isset($this->_columns[$tableName]['metadata'][$presumedName])) {
+        $value = isset($row["{$field}_raw"]) ? $row["{$field}_raw"] : $row[$field];
+        $groupByCriteria .= "&{$presumedName}_op=in&{$presumedName}_value=" . $value;
+      }
+    }
+
+    return $groupByCriteria;
   }
 
 }
