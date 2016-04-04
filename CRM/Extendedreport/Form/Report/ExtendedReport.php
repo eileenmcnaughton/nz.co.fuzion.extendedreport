@@ -4729,6 +4729,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       $prefix . 'id' => array(
         'name' => 'id',
         'title' => ts('Relationship ID'),
+        'is_fields' => TRUE,
       ),
       $prefix . 'relationship_start_date' => array(
         'title' => ts('Relationship Start Date'),
