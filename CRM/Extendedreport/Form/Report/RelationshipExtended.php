@@ -15,6 +15,11 @@ class CRM_Extendedreport_Form_Report_RelationshipExtended extends CRM_Extendedre
    */
   public function __construct() {
     $this->_tagFilter = TRUE;
+    $this->_customGroupExtended['civicrm_relationship'] = array(
+      'extends' => array('Relationship'),
+      'title' => ts('Relationship'),
+      'filters' => TRUE,
+    );
 
     $this->_columns = $this->getColumns('Contact', array(
           'prefix' => 'contact_a_',
