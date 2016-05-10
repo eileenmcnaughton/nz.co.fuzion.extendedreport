@@ -361,7 +361,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
           $expFields[$field['name']] = $field;
         }
       }
-      $doNotCopy = array('required');
+      $doNotCopy = array('required', 'default');
 
       // Extended reports customisation starts ==
       // We don't want all the schema data copied onto group_bys or order_bys.
@@ -3945,8 +3945,6 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'is_fields' => TRUE,
         'is_order_bys' => TRUE,
         'is_group_bys' => TRUE,
-        'default_weight' => '1',
-        'default_order' => 'ASC',
         'operatorType' => CRM_Report_Form::OP_MULTISELECT,
         'options' => $_events['all'],
       ),
@@ -4168,8 +4166,6 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'is_filters' => TRUE,
         'is_order_bys' => TRUE,
         'is_group_bys' => TRUE,
-        'default_weight' => '2',
-        'default_order' => 'ASC',
 
       ),
       'fee_label' => array(
@@ -4178,8 +4174,6 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       ),
       'event_start_date' => array(
         'title' => ts('Event Start Date'),
-        'default_weight' => '1',
-        'default_order' => 'ASC',
         'type' => CRM_Utils_Type::T_DATE,
         'operatorType' => CRM_Report_Form::OP_DATE,
         'name' => 'start_date',

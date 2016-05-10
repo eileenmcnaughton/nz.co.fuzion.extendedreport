@@ -33,11 +33,6 @@
  * $Id$
  */
 class CRM_Extendedreport_Form_Report_Price_Lineitem extends CRM_Extendedreport_Form_Report_ExtendedReport {
-  protected $_addressField = FALSE;
-
-  protected $_emailField = FALSE;
-
-  protected $_summary = NULL;
 
   protected $_customGroupExtends = array('Contribution');
 
