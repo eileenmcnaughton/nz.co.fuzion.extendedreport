@@ -229,6 +229,13 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   protected $_groupByArray = array();
 
   /**
+   * If we have stat fields that are set we may want to force the group by.
+   *
+   * @var bool
+   */
+  protected $isForceGroupBy = FALSE;
+
+  /**
    * Class constructor.
    */
   public function __construct() {
@@ -1163,10 +1170,43 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
         }
       }
     }
-
+    $this->calculateStatsFields();
+    $this->isForceGroupBy = (!empty($this->_statFields) && !$this->_noGroupBY);
     // if a stat field has been selected then do a group by - this is not in parent
-    if (!empty($this->_statFields) && !$this->_noGroupBY && empty($this->_groupByArray)) {
+    if ($this->isForceGroupBy && empty($this->_groupByArray)) {
       $this->_groupByArray[] = $this->_aliases[$this->_baseTable] . ".id";
+    }
+  }
+
+  /**
+   * Calculate whether we have stats fields.
+   *
+   * This will cause a group by.
+   */
+  protected function calculateStatsFields() {
+    foreach ($this->_columns as $tableName => $table) {
+      if (array_key_exists('metadata', $table)) {
+        foreach ($table['metadata'] as $fieldName => $field) {
+          if (!empty($field['required']) ||
+            !empty($this->_params['fields'][$fieldName])
+          ) {
+            if (!empty($field['statistics'])) {
+              foreach ($field['statistics'] as $stat => $label) {
+                $alias = "{$tableName}_{$fieldName}_{$stat}";
+                switch (strtolower($stat)) {
+                  case 'max':
+                  case 'sum':
+                  case 'count':
+                  case 'count_distinct':
+                  case 'avg':
+                    $this->_statFields[$label] = $alias;
+                    break;
+                }
+              }
+            }
+          }
+        }
+      }
     }
   }
 
@@ -2891,6 +2931,22 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
       return " GROUP_CONCAT(CONCAT({$field['dbAlias']},':', {$this->_aliases[$tableName]}.location_type_id, ':', {$this->_aliases[$tableName]}.phone_type_id) ) as $alias";
     }
 
+    if ($tableKey == 'fields' && !empty($field['statistics'])) {
+      if (in_array('GROUP_CONCAT', $field['statistics'])) {
+        $label = CRM_Utils_Array::value('title', $field);
+        $alias = "{$tableName}_{$fieldName}";
+        $this->_columnHeaders["{$tableName}_{$fieldName}"]['title'] = $label;
+        $this->_columnHeaders["{$tableName}_{$fieldName}"]['type'] = $field['type'];
+        $this->_selectAliases[] = $alias;
+        if (!empty($this->_groupByArray) || $this->isForceGroupBy) {
+          return "GROUP_CONCAT({$field['dbAlias']}) as $alias";
+        }
+        else {
+          return "({$field['dbAlias']}) as $alias";
+        }
+      }
+    }
+
     return FALSE;
   }
 
@@ -3750,6 +3806,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'is_group_bys' => TRUE,
         'operatorType' => CRM_Report_Form::OP_MULTISELECT,
         'options' => CRM_Contribute_PseudoConstant::$pseudoMethod(),
+        'statistics' => array('GROUP_CONCAT'),
       );
     }
     $specs = array_merge($specs, array(
@@ -6214,7 +6271,14 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
       $row[$selectedField . '_link'] = $url;
     }
     $row[$selectedField . '_raw'] = $value;
-    return is_string(CRM_Contribute_PseudoConstant::$fn($value, FALSE)) ? CRM_Contribute_PseudoConstant::$fn($value, FALSE) : '';
+    $financialTypes = explode(',', $value);
+    $display = array();
+    foreach ($financialTypes as $financialType) {
+      $displayType = is_string(CRM_Contribute_PseudoConstant::$fn($financialType, FALSE)) ? CRM_Contribute_PseudoConstant::$fn($financialType, FALSE) : '';
+      // Index the array in order to display each type only once.
+      $display[$displayType] = $displayType;
+    }
+    return implode('|', $display);
   }
 
   /*
