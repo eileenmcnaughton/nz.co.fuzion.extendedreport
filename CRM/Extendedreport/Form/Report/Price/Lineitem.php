@@ -51,7 +51,7 @@ class CRM_Extendedreport_Form_Report_Price_Lineitem extends CRM_Extendedreport_F
       + $this->getColumns('Contribution', array('order_by' => TRUE))
       + $this->getColumns('PriceField', array('order_by' => TRUE))
       + $this->getColumns('PriceFieldValue' , array('order_by' => TRUE))
-      + $this->getColumns('LineItem', array('order_by' => TRUE)) +
+      + $this->getColumns('LineItem', array('order_by' => TRUE, 'fields_defaults' => array('financial_type_id', 'line_total'))) +
       $this->getColumns('Address');
     parent::__construct();
   }

@@ -3745,10 +3745,11 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    * @param string $tableName
    * @param string $tableAlias
    * @param string $daoName
+   * @param array $defaults
    *
    * @return array
    */
-  function buildColumns($specs, $tableName, $daoName = NULL, $tableAlias = NULL) {
+  function buildColumns($specs, $tableName, $daoName = NULL, $tableAlias = NULL, $defaults = array()) {
     if (!$tableAlias) {
       $tableAlias = str_replace('civicrm_', '', $tableName);
     }
@@ -3771,9 +3772,14 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       if (empty($spec['name'])) {
         $spec['name'] = $specName;
       }
+
       $fieldAlias = $tableAlias . '_' . $specName;
       $columns[$tableName]['metadata'][$fieldAlias] = $spec;
       $columns[$tableName]['fields'][$fieldAlias] = $spec;
+      if (isset($defaults['fields_defaults']) && in_array($spec['name'], $defaults['fields_defaults'])) {
+        $columns[$tableName]['fields'][$fieldAlias]['default'] = TRUE;
+      }
+
       if (empty($spec['is_fields'])) {
         $columns[$tableName]['fields'][$fieldAlias]['no_display'] = TRUE;
       }
@@ -3791,7 +3797,24 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
   /**
    * @return array
    */
-  function getLineItemColumns() {
+  function getLineItemColumns($options) {
+    $defaultOptions = array(
+      'prefix' => '',
+      'prefix_label' => '',
+      'group_by' => TRUE,
+      'order_by' => TRUE,
+      'filters' => TRUE,
+      'fields' => TRUE,
+      'custom_fields' => array('Individual', 'Contact', 'Organization'),
+      'fields_defaults' => array('display_name', 'id'),
+      'filters_defaults' => array(),
+      'group_by_defaults' => array(),
+      'order_by_defaults' => array('sort_name ASC'),
+      'contact_type' => NULL,
+    );
+
+    $options = array_merge($defaultOptions, $options);
+    $defaults = $this->getDefaultsFromOptions($options);
     $specs = array();
     $this->setFinancialType();
     $pseudoMethod = $this->financialTypePseudoConstant;
@@ -3860,7 +3883,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       ),
     ));
 
-    return $this->buildColumns($specs, 'civicrm_line_item', 'CRM_Price_BAO_LineItem');
+    return $this->buildColumns($specs, 'civicrm_line_item', 'CRM_Price_BAO_LineItem', NULL, $defaults);
   }
 
   /**
@@ -4234,9 +4257,13 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       'group_by' => FALSE,
       'order_by' => TRUE,
       'filters' => TRUE,
-      'defaults' => array(),
+      'fields_defaults' => array(),
+      'filters_defaults' => array(),
+      'group_by_defaults' => array(),
+      'order_by_defaults' => array(),
     );
     $options = array_merge($defaultOptions, $options);
+    $defaults = $this->getDefaultsFromOptions($options);
 
     $fields = array(
       'civicrm_event_summary' . $options['prefix'] => array(
@@ -4289,7 +4316,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         ),
       );
 
-    return $this->buildColumns($fields['civicrm_event_summary' . $options['prefix']]['fields'], 'civicrm_event_summary' . $options['prefix']);
+    return $this->buildColumns($fields['civicrm_event_summary' . $options['prefix']]['fields'], 'civicrm_event_summary' . $options['prefix'], NULL, $defaults);
   }
 
 
@@ -4392,9 +4419,13 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       'group_by' => FALSE,
       'order_by' => TRUE,
       'filters' => TRUE,
-      'defaults' => array(),
+      'fields_defaults' => array(),
+      'filters_defaults' => array(),
+      'group_by_defaults' => array(),
+      'order_by_defaults' => array(),
     );
     $options = array_merge($defaultOptions, $options);
+    $defaults = $this->getDefaultsFromOptions($options);
 
     $spec =
       array(
@@ -4407,7 +4438,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
 
       );
 
-    return $this->buildColumns($spec, $options['prefix'] . 'civicrm_contribution_summary', 'CRM_Contribute_DAO_Contribution');
+    return $this->buildColumns($spec, $options['prefix'] . 'civicrm_contribution_summary', 'CRM_Contribute_DAO_Contribution', NULL, $defaults);
   }
 
   /**
@@ -4424,10 +4455,15 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       'filters' => TRUE,
       'fields' => TRUE,
       'custom_fields' => array('Individual', 'Contact', 'Organization'),
-      'defaults' => array(),
+      'fields_defaults' => array('display_name', 'id'),
+      'filters_defaults' => array(),
+      'group_by_defaults' => array(),
+      'order_by_defaults' => array('sort_name ASC'),
       'contact_type' => NULL,
     );
+
     $options = array_merge($defaultOptions, $options);
+    $defaults = $this->getDefaultsFromOptions($options);
     $orgOnly = FALSE;
     if (CRM_Utils_Array::value('contact_type', $options) == 'Organization') {
       $orgOnly = TRUE;
@@ -4531,7 +4567,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       );
     }
 
-    return $this->buildColumns($spec, $options['prefix'] . 'civicrm_contact', 'CRM_Contact_DAO_Contact', $tableAlias);
+    return $this->buildColumns($spec, $options['prefix'] . 'civicrm_contact', 'CRM_Contact_DAO_Contact', $tableAlias, $defaults);
   }
 
   /**
@@ -4644,9 +4680,14 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       'filters' => TRUE,
       'defaults' => array(),
       'subquery' => TRUE,
+      'fields_defaults' => array(),
+      'filters_defaults' => array(),
+      'group_by_defaults' => array(),
+      'order_by_defaults' => array(),
     );
 
     $options = array_merge($defaultOptions, $options);
+    $defaults = $this->getDefaultsFromOptions($options);
 
     $spec = array(
       $options['prefix'] . 'phone' => array(
@@ -4659,7 +4700,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     if ($options['subquery']) {
       $spec[$options['prefix'] . 'phone']['alter_display'] = 'alterPhoneGroup';
     }
-    return $this->buildColumns($spec, $options['prefix'] . 'civicrm_phone', 'CRM_Core_DAO_Phone');
+    return $this->buildColumns($spec, $options['prefix'] . 'civicrm_phone', 'CRM_Core_DAO_Phone', NULL, $defaults);
   }
 
   /**
@@ -4751,8 +4792,13 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       'group_by' => FALSE,
       'order_by' => TRUE,
       'filters' => TRUE,
+      'fields_defaults' => array('display_name', 'id'),
+      'filters_defaults' => array(),
+      'group_by_defaults' => array(),
+      'order_by_defaults' => array('sort_name ASC'),
     );
     $options = array_merge($defaultOptions, $options);
+    $defaults = $this->getDefaultsFromOptions($options);
 
     $fields = array(
       'email' => array(
@@ -4761,7 +4807,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'is_fields' => TRUE,
       ),
     );
-    return $this->buildColumns($fields, $options['prefix'] . 'civicrm_email', 'CRM_Core_DAO_Email');
+    return $this->buildColumns($fields, $options['prefix'] . 'civicrm_email', 'CRM_Core_DAO_Email', NULL, $defaults);
   }
 
   /**
@@ -4778,10 +4824,14 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       'group_by' => FALSE,
       'order_by' => TRUE,
       'filters' => TRUE,
-      'defaults' => array(),
+      'fields_defaults' => array('display_name', 'id'),
+      'filters_defaults' => array(),
+      'group_by_defaults' => array(),
+      'order_by_defaults' => array('sort_name ASC'),
     );
 
     $options = array_merge($defaultOptions, $options);
+    $defaults = $this->getDefaultsFromOptions($options);
     $prefix = $options['prefix'];
     $specs = array(
       $prefix . 'id' => array(
@@ -4802,7 +4852,6 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'name' => 'end_date',
         'is_fields' => TRUE,
         'type' => CRM_Utils_Type::T_DATE,
-        'is_fields' => TRUE,
         'is_filters' => TRUE,
         'is_join_filters' => TRUE,
       ),
@@ -4854,7 +4903,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
 
     );
 
-    return $this->buildColumns($specs, 'civicrm_relationship', 'CRM_Contact_BAO_Relationship');
+    return $this->buildColumns($specs, 'civicrm_relationship', 'CRM_Contact_BAO_Relationship', NULL, $defaults);
   }
 
   /**
@@ -4915,10 +4964,14 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       'group_by' => FALSE,
       'order_by' => TRUE,
       'filters' => TRUE,
-      'defaults' => array(),
+      'fields_defaults' => array(),
+      'filters_defaults' => array(),
+      'group_by_defaults' => array(),
+      'order_by_defaults' => array(),
     );
 
     $options = array_merge($defaultOptions, $options);
+    $defaults = $this->getDefaultsFromOptions($options);
 
     $addressFields = array(
       $options['prefix'] . 'civicrm_address' => array(
@@ -4928,7 +4981,6 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'fields' => array(
           $options['prefix'] . 'name' => array(
             'title' => ts($options['prefix_label'] . 'Address Name'),
-            'default' => CRM_Utils_Array::value('name', $options['defaults'], FALSE),
             'name' => 'name',
             'is_fields' => TRUE,
           ),
@@ -4936,7 +4988,6 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
             'name' => 'street_number',
             'title' => ts($options['prefix_label'] . 'Street Number'),
             'type' => 1,
-            'default' => CRM_Utils_Array::value('street_number', $options['defaults'], FALSE),
             'crm_editable' => array(
               'id_table' => 'civicrm_address',
               'id_field' => 'id',
@@ -4948,7 +4999,6 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
             'name' => 'street_name',
             'title' => ts($options['prefix_label'] . 'Street Name'),
             'type' => 1,
-            'default' => CRM_Utils_Array::value('street_name', $options['defaults'], FALSE),
             'crm_editable' => array(
               'id_table' => 'civicrm_address',
               'id_field' => 'id',
@@ -4961,7 +5011,6 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
           ),
           $options['prefix'] . 'street_address' => array(
             'title' => ts($options['prefix_label'] . 'Street Address'),
-            'default' => CRM_Utils_Array::value('street_address', $options['defaults'], FALSE),
             'name' => 'street_address',
             'is_fields' => TRUE,
             'is_filters' => TRUE,
@@ -4970,7 +5019,6 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
           ),
           $options['prefix'] . 'supplemental_address_1' => array(
             'title' => ts($options['prefix_label'] . 'Supplementary Address Field 1'),
-            'default' => CRM_Utils_Array::value('supplemental_address_1', $options['defaults'], FALSE),
             'name' => 'supplemental_address_1',
             'crm_editable' => array(
               'id_table' => 'civicrm_address',
@@ -4981,7 +5029,6 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
           ),
           $options['prefix'] . 'supplemental_address_2' => array(
             'title' => ts($options['prefix_label'] . 'Supplementary Address Field 2'),
-            'default' => CRM_Utils_Array::value('supplemental_address_2', $options['defaults'], FALSE),
             'name' => 'supplemental_address_2',
             'crm_editable' => array(
               'id_table' => 'civicrm_address',
@@ -4994,10 +5041,6 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
             'name' => 'street_number',
             'title' => ts($options['prefix_label'] . 'Street Number'),
             'type' => 1,
-            'default' => CRM_Utils_Array::value('street_number', $options['defaults'], FALSE),
-            'title' => ts($options['prefix_label'] . 'Street Number'),
-            'type' => 1,
-            'name' => 'street_number',
             'is_order_bys' => TRUE,
             'is_filters' => TRUE,
             'is_fields' => TRUE,
@@ -5006,22 +5049,18 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
             'name' => 'street_name',
             'title' => ts($options['prefix_label'] . 'Street Name'),
             'type' => 1,
-            'default' => CRM_Utils_Array::value('street_name', $options['defaults'], FALSE),
             'is_fields' => TRUE,
           ),
           $options['prefix'] . 'street_unit' => array(
             'name' => 'street_unit',
             'title' => ts($options['prefix_label'] . 'Street Unit'),
             'type' => 1,
-            'default' => CRM_Utils_Array::value('street_unit', $options['defaults'], FALSE),
             'is_fields' => TRUE,
           ),
           $options['prefix'] . 'city' => array(
             'title' => ts($options['prefix_label'] . 'City'),
-            'default' => CRM_Utils_Array::value('city', $options['defaults'], FALSE),
             'name' => 'city',
             'operator' => 'like',
-            'name' => 'city',
             'crm_editable' => array(
               'id_table' => 'civicrm_address',
               'id_field' => 'id',
@@ -5034,7 +5073,6 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
           ),
           $options['prefix'] . 'postal_code' => array(
             'title' => ts($options['prefix_label'] . 'Postal Code'),
-            'default' => CRM_Utils_Array::value('postal_code', $options['defaults'], FALSE),
             'name' => 'postal_code',
             'type' => 1,
             'is_fields' => TRUE,
@@ -5044,7 +5082,6 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
           ),
           $options['prefix'] . 'county_id' => array(
             'title' => ts($options['prefix_label'] . 'County'),
-            'default' => CRM_Utils_Array::value('county_id', $options['defaults'], FALSE),
             'alter_display' => 'alterCountyID',
             'name' => 'county_id',
             'type' => CRM_Utils_Type::T_INT,
@@ -5056,7 +5093,6 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
           ),
           $options['prefix'] . 'state_province_id' => array(
             'title' => ts($options['prefix_label'] . 'State/Province'),
-            'default' => CRM_Utils_Array::value('state_province_id', $options['defaults'], FALSE),
             'alter_display' => 'alterStateProvinceID',
             'name' => 'state_province_id',
             'type' => CRM_Utils_Type::T_INT,
@@ -5068,13 +5104,11 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
           ),
           $options['prefix'] . 'country_id' => array(
             'title' => ts($options['prefix_label'] . 'Country'),
-            'default' => CRM_Utils_Array::value('country_id', $options['defaults'], FALSE),
             'alter_display' => 'alterCountryID',
             'name' => 'country_id',
             'is_fields' => TRUE,
             'is_filters' => TRUE,
             'is_group_bys' => TRUE,
-            'name' => 'country_id',
             'type' => CRM_Utils_Type::T_INT,
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
             'options' => CRM_Core_PseudoConstant::country(),
@@ -5088,7 +5122,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'grouping' => 'location-fields',
       ),
     );
-    return $this->buildColumns($addressFields[$options['prefix'] . 'civicrm_address']['fields'], $options['prefix'] . 'civicrm_address', 'CRM_Core_DAO_Address');
+    return $this->buildColumns($addressFields[$options['prefix'] . 'civicrm_address']['fields'], $options['prefix'] . 'civicrm_address', 'CRM_Core_DAO_Address', NULL, $defaults);
   }
 
   /**
@@ -5106,12 +5140,14 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       'group_by' => FALSE,
       'order_by' => TRUE,
       'filters' => TRUE,
-      'defaults' => array(
-        'country_id' => TRUE
-      ),
+      'fields_defaults' => array(),
+      'filters_defaults' => array(),
+      'group_by_defaults' => array(),
+      'order_by_defaults' => array(),
     );
 
     $options = array_merge($defaultOptions, $options);
+    $defaults = $this->getDefaultsFromOptions($options);
 
     $spec = array(
       'tag_name' => array(
@@ -5121,7 +5157,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       )
     );
 
-    return $this->buildColumns($spec, $options['prefix'] . 'civicrm_tag', 'CRM_Core_DAO_EntityTag');
+    return $this->buildColumns($spec, $options['prefix'] . 'civicrm_tag', 'CRM_Core_DAO_EntityTag', NUL, $defaults);
   }
 
   /*
@@ -5181,10 +5217,14 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       'group_by' => FALSE,
       'order_by' => TRUE,
       'filters' => TRUE,
-      'defaults' => array(),
+      'fields_defaults' => array(),
+      'filters_defaults' => array(),
+      'group_by_defaults' => array(),
+      'order_by_defaults' => array(),
     );
 
     $options = array_merge($defaultOptions, $options);
+    $defaults = $this->getDefaultsFromOptions($options);
 
     $spec = array(
       'id' => array(
@@ -5291,7 +5331,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       ),
 
     );
-    return $this->buildColumns($spec, $options['prefix'] . 'civicrm_activity', 'CRM_Activity_DAO_Activity');
+    return $this->buildColumns($spec, $options['prefix'] . 'civicrm_activity', 'CRM_Activity_DAO_Activity', NULL, $defaults);
   }
 
   /**
@@ -6952,6 +6992,21 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
       LEFT JOIN civicrm_contribution as {$this->_aliases['civicrm_contribution']}
       ON line_item_mapping.contid = {$this->_aliases['civicrm_contribution']}.id
     ";
+  }
+
+  /**
+   * @param $options
+   *
+   * @return array
+   */
+  protected function getDefaultsFromOptions($options) {
+    $defaults = array(
+      'fields_defaults' => $options['fields_defaults'],
+      'filters_defaults' => $options['filters_defaults'],
+      'group_by_defaults' => $options['group_by_defaults'],
+      'order_by_defaults' => $options['order_by_defaults'],
+    );
+    return $defaults;
   }
 
 }
