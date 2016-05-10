@@ -1946,14 +1946,14 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     $this->from();
     $this->where();
     $this->aggregateSelect();
-    $this->customDataFrom();
+    $this->extendedCustomDataFrom();
 
     if ($this->_preConstrain && !$this->_preConstrained) {
       $this->generateTempTable();
       $this->_preConstrained = TRUE;
       $this->select();
       $this->from();
-      $this->customDataFrom();
+      $this->extendedCustomDataFrom();
       $this->constrainedWhere();
       $this->aggregateSelect();
     }
@@ -2727,7 +2727,7 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
    *
    * Overridden to support custom data for multiple entities of the same type.
    */
-  public function customDataFrom() {
+  public function extendedCustomDataFrom() {
     $mapper = CRM_Core_BAO_CustomQuery::$extendsMap;
 
     foreach ($this->_columns as $table => $prop) {

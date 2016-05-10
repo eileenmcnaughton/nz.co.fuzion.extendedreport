@@ -207,7 +207,7 @@ class CRM_Extendedreport_Form_Report_Contribute_Overview extends CRM_Extendedrep
     $group = "\nGROUP BY {$this->_aliases['civicrm_contribution']}.currency";
 
     $this->from('contribution');
-    $this->customDataFrom();
+    $this->extendedCustomDataFrom();
 
     $contriQuery = "
 COUNT({$this->_aliases['civicrm_contribution']}.total_amount )        as civicrm_contribution_total_amount_count,

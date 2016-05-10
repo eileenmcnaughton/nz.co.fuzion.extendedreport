@@ -228,7 +228,7 @@ class CRM_Extendedreport_Form_Report_Pledge_Btbns extends CRM_Extendedreport_For
     $this->buildACLClause($this->_aliases['civicrm_contact']);
     $this->select();
     $this->from();
-    $this->customDataFrom();
+    $this->extendedCustomDataFrom();
     $this->where();
     $this->groupBy();
     $rows = $contactIds = array();

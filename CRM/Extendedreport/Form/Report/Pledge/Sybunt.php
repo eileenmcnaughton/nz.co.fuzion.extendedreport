@@ -286,7 +286,7 @@ class CRM_Extendedreport_Form_Report_Pledge_Sybunt extends CRM_Extendedreport_Fo
     $this->buildACLClause($this->_aliases['civicrm_contact']);
     $this->select();
     $this->from();
-    $this->customDataFrom();
+    $this->extendedCustomDataFrom();
     $this->where();
     $this->groupBy();
 

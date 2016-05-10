@@ -616,7 +616,7 @@ GROUP BY {$this->_aliases['civicrm_contribution']}.currency";
     $this->from(TRUE);
     // also include custom group from if included
     // since this might be included in select
-    $this->customDataFrom();
+    $this->extecustomDataFrom();
 
     $select = str_ireplace('contribution_civireport.total_amount', 'contribution_soft_civireport.amount', $this->_select);
     $select = str_ireplace("'Contribution' as", "'Soft Credit' as", $select);
