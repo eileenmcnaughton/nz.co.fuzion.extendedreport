@@ -9,6 +9,7 @@ class CRM_Extendedreport_Form_Report_Event_EventPivot extends CRM_Extendedreport
   protected $_customGroupAggregates = TRUE;
   protected $_aggregatesIncludeNULL = TRUE;
   protected $_aggregatesAddTotal = TRUE;
+  protected $isPivot = TRUE;
   protected $_rollup = 'WITH ROLLUP';
   public $_drilldownReport = array('event/participantlist' => 'Link to Participants');
   protected $_potentialCriteria = array(

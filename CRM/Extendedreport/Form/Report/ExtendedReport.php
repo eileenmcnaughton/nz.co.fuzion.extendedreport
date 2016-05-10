@@ -17,6 +17,13 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   protected $_rollup = '';
   protected $_fieldSpecs = array();
   public $_defaults = array();
+
+  /**
+   * Is this report a pivot chart.
+   *
+   * @var bool
+   */
+  protected $isPivot = FALSE;
   /**
    * Report ID to link through to.
    *
@@ -6736,6 +6743,9 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    * @param array $validColumnHeaderFields
    */
   protected function addAggregateSelectorsToForm($customFieldsFlat, $validColumnHeaderFields) {
+    if (!$this->isPivot) {
+      return;
+    }
     $columnHeaderFields = array_intersect_key($customFieldsFlat, array_flip($validColumnHeaderFields));
     $this->_aggregateColumnHeaderFields = array('' => ts('--Select--')) + $this->_aggregateColumnHeaderFields + $columnHeaderFields;
     $this->_aggregateRowFields = array('' => ts('--Select--')) + $this->_aggregateRowFields + $customFieldsFlat;

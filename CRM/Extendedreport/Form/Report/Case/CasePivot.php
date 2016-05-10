@@ -14,6 +14,7 @@ class CRM_Extendedreport_Form_Report_Case_CasePivot extends CRM_Extendedreport_F
   protected $_rollup = 'WITH ROLLUP';
   public $_drilldownReport = array();
   protected $_potentialCriteria = array();
+  protected $isPivot = TRUE;
 
   /**
    * Class constructor.
