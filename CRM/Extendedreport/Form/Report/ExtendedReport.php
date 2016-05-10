@@ -4318,7 +4318,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'is_group_bys' => TRUE,
       ),
       $this->financialTypeField => array(
-        'title' => ts($this->financialTypeLabel . ' (Contribution)'),
+        'title' => ts('Contribution Type (Financial)'),
         'type' => CRM_Utils_Type::T_INT,
         'alter_display' => 'alterFinancialType',
         'operatorType' => CRM_Report_Form::OP_MULTISELECT,
