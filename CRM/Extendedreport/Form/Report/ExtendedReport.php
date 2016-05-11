@@ -2946,8 +2946,6 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
         }
       }
     }
-
-    return FALSE;
   }
 
   /**
@@ -4026,7 +4024,6 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
             'is_group_bys' => TRUE,
             'name' => 'membership_type_id',
             'type' => CRM_Utils_Type::T_INT,
-            'options' => $this->_getOptions('membership', 'membership_type_id', $action = 'get'),
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
           ),
           'membership_status_id' => array(
@@ -4038,7 +4035,6 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
             'is_filters' => TRUE,
             'is_group_bys' => TRUE,
             'type' => CRM_Utils_Type::T_INT,
-            'options' => CRM_Member_PseudoConstant::membershipStatus(),
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
           ),
           'join_date' => array(
@@ -4073,6 +4069,46 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     return $this->buildColumns($columns['civicrm_membership']['fields'], $options['prefix'] . 'civicrm_membership', 'CRM_Member_DAO_Membership');
   }
 
+  function getFinancialAccountColumns($options = array()) {
+    $defaultOptions = array(
+      'prefix' => '',
+      'prefix_label' => '',
+      'group_by' => TRUE,
+      'order_by' => TRUE,
+      'filters' => TRUE,
+      'fields' => TRUE,
+      'custom_fields' => array('Individual', 'Contact', 'Organization'),
+      'fields_defaults' => array('display_name', 'id'),
+      'filters_defaults' => array(),
+      'group_by_defaults' => array(),
+      'order_by_defaults' => array('sort_name ASC'),
+      'contact_type' => NULL,
+    );
+
+    $options = array_merge($defaultOptions, $options);
+    $defaults = $this->getDefaultsFromOptions($options);
+    $spec = array(
+      'accounting_code' => array(
+        'title' => ts($options['prefix_label'] . 'Financial Account Code'),
+        'name' => 'accounting_code',
+        'type' => CRM_Utils_Type::T_STRING,
+        'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+        'options' => CRM_Contribute_PseudoConstant::financialAccount(NULL, NULL, 'accounting_code', 'accounting_code'),
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+      ),
+      'name' => array(
+        'title' => ts($options['prefix_label'] . 'Financial Account Name'),
+        'name' => 'name',
+        'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+        'options' => CRM_Contribute_PseudoConstant::financialAccount(),
+        'type' => CRM_Utils_Type::T_STRING,
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+      ),
+    );
+    return $this->buildColumns($spec, $options['prefix'] . 'civicrm_financial_account', 'CRM_Financial_DAO_FinancialAccount', NULL, $defaults);
+  }
 
   /**
    * @return array
