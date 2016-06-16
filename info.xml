@@ -14,8 +14,8 @@
         <author>Eileen McNaughton</author>
         <email>eileen@fuzion.co.nz</email>
     </maintainer>
-    <releaseDate>2016-01-02</releaseDate>
-    <version>2.2</version>
+    <releaseDate>2016-06-17</releaseDate>
+    <version>2.3</version>
     <develStage>stable</develStage>
     <compatibility>
         <ver>4.4</ver>
