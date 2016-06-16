@@ -990,13 +990,15 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    */
   function groupBy() {
     $this->storeGroupByArray();
+    $groupedColumns = array();
     if (!empty($this->_groupByArray)) {
       foreach (array_keys($this->_groupByArray) as $groupByColumn) {
         if (isset($this->_columnHeaders[$groupByColumn])) {
           $columnValues = $this->_columnHeaders[$groupByColumn];
-          $this->_columnHeaders = array($groupByColumn => $columnValues) + $this->_columnHeaders;
+          $groupedColumns[$groupByColumn] = $columnValues;
         }
       }
+      $this->_columnHeaders = $groupedColumns + $this->_columnHeaders;
       $this->_groupBy = "GROUP BY " . implode(', ', $this->_groupByArray);
       if (!empty($this->_sections)) {
         // if we have group bys & sections the sections need to be grouped
@@ -4355,6 +4357,50 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     return $this->buildColumns($fields['civicrm_event_summary' . $options['prefix']]['fields'], 'civicrm_event_summary' . $options['prefix'], NULL, $defaults);
   }
 
+  /**
+   *
+   * @param array
+   *
+   * @return array
+   */
+  function getCampaignColumns() {
+
+    if (!CRM_Campaign_BAO_Campaign::isCampaignEnable()) {
+      return array();
+    }
+    $specs = array(
+      'campaign_type_id' => array(
+        'title' => ts('Campaign Type'),
+        'is_filters' => TRUE,
+        'is_order_bys' => TRUE,
+        'is_fields' => TRUE,
+        'is_group_bys' => TRUE,
+        'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+        'options' => CRM_Campaign_BAO_Campaign::buildOptions('campaign_type_id'),
+        'alter_display' => 'alterCampaignType',
+      ),
+      'id' => array(
+        'title' => ts('Campaign'),
+        'is_filters' => TRUE,
+        'is_order_bys' => TRUE,
+        'is_fields' => TRUE,
+        'is_group_bys' => TRUE,
+        'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+        'options' => CRM_Campaign_BAO_Campaign::getCampaigns(),
+        'alter_display' => 'alterCampaign',
+      ),
+      'goal_revenue' => array(
+        'title' => ts('Revenue goal'),
+        'is_filters' => TRUE,
+        'is_order_bys' => TRUE,
+        'is_fields' => TRUE,
+        'is_group_bys' => TRUE,
+        'type' => CRM_Utils_Type::T_MONEY,
+        //'statistics' => array('coalesce' => ts('Total Goal')),
+      ),
+    );
+    return $this->buildColumns($specs, 'civicrm_campaign', 'CRM_Campaign_BAO_Campaign');
+  }
 
   /**
    *
@@ -4759,7 +4805,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'required' => TRUE
       ),
       'amount' => array(
-        'title' => ts('Pledge Amount'),
+        'title' => ts('Pledged Amount'),
         'statistics' => array('sum' => ts('Total Pledge Amount')),
         'type' => CRM_Utils_Type::T_MONEY,
         'name' => 'amount',
@@ -5377,6 +5423,11 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    */
   function getAvailableJoins() {
     return array(
+      'campaign_fromPledge' => array(
+        'leftTable' => 'civicrm_pledge',
+        'rightTable' => 'civicrm_campaign',
+        'callback' => 'joinCampaignFromPledge',
+      ),
       'priceFieldValue_from_lineItem' => array(
         'leftTable' => 'civicrm_line_item',
         'rightTable' => 'civicrm_price_field_value',
@@ -5660,6 +5711,11 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
 ";
   }
 
+  protected function joinCampaignFromPledge($prefix = '') {
+    $this->_from .= " LEFT JOIN civicrm_campaign {$this->_aliases[$prefix . 'civicrm_campaign']}
+     ON {$this->_aliases[$prefix . 'civicrm_campaign']}.id = {$this->_aliases[$prefix . 'civicrm_pledge']}.campaign_id
+    ";
+  }
   /**
    * Add join from contact table to phone. Prefix will be added to both tables
    * as it's assumed you are using it to get address of a secondary contact
@@ -6309,6 +6365,28 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
   function alterContributionStatus($value, &$row) {
     return CRM_Contribute_PseudoConstant::contributionStatus($value);
   }
+
+  /**
+   * @param $value
+   * @param $row
+   *
+   * @return array
+   */
+  function alterCampaign($value, &$row) {
+    $campaigns = CRM_Campaign_BAO_Campaign::getCampaigns();
+    return $campaigns[$value];
+  }
+
+  /**
+   * @param $value
+   *
+   * @return mixed
+   */
+  function alterCampaignType($value) {
+    $values = CRM_Campaign_BAO_Campaign::buildOptions('campaign_type_id');
+    return $values[$value];
+  }
+
   /*
 * Retrieve text for payment instrument from pseudoconstant
 */

@@ -21,7 +21,9 @@ class CRM_Extendedreport_Form_Report_Pledge_Summary extends CRM_Extendedreport_F
    * Class constructor.
    */
   public function __construct() {
-    $this->_columns = $this->getColumns('Contact', array(
+    $this->_columns =
+      $this->getColumns('Campaign')
+      + $this->getColumns('Contact', array(
           'fields' => TRUE,
           'order_by' => TRUE,
         )
@@ -35,6 +37,7 @@ class CRM_Extendedreport_Form_Report_Pledge_Summary extends CRM_Extendedreport_F
       'statistics' => array('sum' => ts('Balance')),
       'type' => CRM_Utils_Type::T_MONEY,
     );
+
     $this->_groupFilter = TRUE;
     $this->_tagFilter = TRUE;
     parent::__construct();
@@ -43,6 +46,7 @@ class CRM_Extendedreport_Form_Report_Pledge_Summary extends CRM_Extendedreport_F
   function from() {
     $this->_from = "
             FROM civicrm_pledge {$this->_aliases['civicrm_pledge']}";
+    $this->joinCampaignFromPledge();
     $this->joinPledgePaymentFromPledge();
     $this->_from .= "
             LEFT JOIN civicrm_financial_type {$this->_aliases['civicrm_financial_type']}
