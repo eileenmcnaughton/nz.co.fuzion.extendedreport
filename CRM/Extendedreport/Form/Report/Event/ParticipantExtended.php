@@ -173,6 +173,10 @@ class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Exten
             'title' => ts('Registered by'),
             'default' => TRUE,
           ),
+          'source' => array(
+            'title' => ts('Source'),
+            'default' => TRUE,
+          ),
           'fee_currency' => array(
             'required' => TRUE,
             'no_display' => TRUE,
@@ -333,7 +337,7 @@ class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Exten
         'join_filters' => TRUE,
         'group_by' => FALSE,
     )) +
-     $this->getColumns('Contact', array(
+    $this->getColumns('Contact', array(
         'fields' => TRUE,
         'join_fields' => TRUE,
         'filters' => FALSE,
@@ -512,7 +516,6 @@ GROUP BY  cv.label
    */
   public function groupBy() {
     $this->_groupBy = "GROUP BY {$this->_aliases['civicrm_participant']}.id";
-    //$this->_groupBy = "GROUP BY {$this->_aliases['civicrm_participant']}.registered_by_id";
   }
 
   /**
@@ -588,7 +591,6 @@ GROUP BY  cv.label
             'return' => "contact_id",
             'id' => $row['civicrm_participant_registered_by_id']
           ));
-
           $our_contact_id = $result['values']['0']['contact_id'];
 
           $result = civicrm_api3('Contact', 'get', array(
@@ -596,7 +598,6 @@ GROUP BY  cv.label
             'return' => "sort_name",
             'id' => $our_contact_id,
           ));
-
           $our_sort_name = $result['values']['0']['sort_name'];
 
           $rows[$rowNum]['civicrm_participant_registered_by_id'] = $our_sort_name;
