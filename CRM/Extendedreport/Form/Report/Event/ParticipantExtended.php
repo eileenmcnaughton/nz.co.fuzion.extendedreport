@@ -148,7 +148,10 @@ class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Exten
       'civicrm_participant' => array(
         'dao' => 'CRM_Event_DAO_Participant',
         'fields' => array(
-          'participant_id' => array('title' => 'Participant ID'),
+          'participant_id' => array(
+            'title' => 'Participant ID',
+            'default' => TRUE,
+          ),
           'participant_record' => array(
             'name' => 'id',
             'no_display' => TRUE,
@@ -164,6 +167,14 @@ class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Exten
           ),
           'role_id' => array(
             'title' => ts('Role'),
+            'default' => TRUE,
+          ),
+          'registered_by_id' => array(
+            'title' => ts('Registered by'),
+            'default' => TRUE,
+          ),
+          'source' => array(
+            'title' => ts('Source'),
             'default' => TRUE,
           ),
           'fee_currency' => array(
@@ -210,6 +221,11 @@ class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Exten
         'order_bys' => array(
           'event_id' => array(
             'title' => ts('Event'),
+            'default_weight' => '1',
+            'default_order' => 'ASC',
+          ),
+          'registered_by_id' => array(
+            'title' => ts('Registered by ID/Name'),
             'default_weight' => '1',
             'default_order' => 'ASC',
           ),
@@ -563,6 +579,30 @@ GROUP BY  cv.label
           $rows[$rowNum]['civicrm_participant_role_id'] = implode(', ', $value);
         }
         $entryFound = TRUE;
+      }
+
+      // handle registered_by_id -> replace ID with the Name of the Contact instead
+      if (array_key_exists('civicrm_participant_registered_by_id', $row)) {
+        if ($value = $row['civicrm_participant_registered_by_id']) {
+          // find the contact ID of this participant ID
+
+          $result = civicrm_api3('Participant', 'get', array(
+            'sequential' => 1,
+            'return' => "contact_id",
+            'id' => $row['civicrm_participant_registered_by_id']
+          ));
+          $our_contact_id = $result['values']['0']['contact_id'];
+
+          $result = civicrm_api3('Contact', 'get', array(
+            'sequential' => 1,
+            'return' => "sort_name",
+            'id' => $our_contact_id,
+          ));
+          $our_sort_name = $result['values']['0']['sort_name'];
+
+          $rows[$rowNum]['civicrm_participant_registered_by_id'] = $our_sort_name;
+        }
+          $entryFound = TRUE;
       }
 
       // Handle value separator in Fee Level
