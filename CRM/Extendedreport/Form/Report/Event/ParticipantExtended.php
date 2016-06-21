@@ -220,6 +220,11 @@ class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Exten
             'default_weight' => '1',
             'default_order' => 'ASC',
           ),
+          'registered_by_id' => array(
+            'title' => ts('Registered by ID/Name'),
+            'default_weight' => '1',
+            'default_order' => 'ASC',
+          ),
         ),
       ),
     ) +
@@ -328,7 +333,7 @@ class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Exten
         'join_filters' => TRUE,
         'group_by' => FALSE,
     )) +
-    $this->getColumns('Contact', array(
+     $this->getColumns('Contact', array(
         'fields' => TRUE,
         'join_fields' => TRUE,
         'filters' => FALSE,
@@ -507,6 +512,7 @@ GROUP BY  cv.label
    */
   public function groupBy() {
     $this->_groupBy = "GROUP BY {$this->_aliases['civicrm_participant']}.id";
+    //$this->_groupBy = "GROUP BY {$this->_aliases['civicrm_participant']}.registered_by_id";
   }
 
   /**
