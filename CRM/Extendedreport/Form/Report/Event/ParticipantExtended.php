@@ -193,6 +193,11 @@ class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Exten
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
             'options' => $this->getEventFilterOptions(),
           ),
+          'source' => array(
+            'name' => 'source',
+            'title' => ts('Source'),
+            'operator' => 'like',
+          ),
           'sid' => array(
             'name' => 'status_id',
             'title' => ts('Participant Status'),
@@ -226,6 +231,11 @@ class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Exten
           ),
           'registered_by_id' => array(
             'title' => ts('Registered by ID/Name'),
+            'default_weight' => '1',
+            'default_order' => 'ASC',
+          ),
+          'source' => array(
+            'title' => ts('Source'),
             'default_weight' => '1',
             'default_order' => 'ASC',
           ),
@@ -586,10 +596,12 @@ GROUP BY  cv.label
         if ($value = $row['civicrm_participant_registered_by_id']) {
           // find the contact ID of this participant ID
 
+          $our_participant_id = $row['civicrm_participant_registered_by_id'];
+
           $result = civicrm_api3('Participant', 'get', array(
             'sequential' => 1,
             'return' => "contact_id",
-            'id' => $row['civicrm_participant_registered_by_id']
+            'id' => $our_participant_id,
           ));
           $our_contact_id = $result['values']['0']['contact_id'];
 
@@ -601,6 +613,16 @@ GROUP BY  cv.label
           $our_sort_name = $result['values']['0']['sort_name'];
 
           $rows[$rowNum]['civicrm_participant_registered_by_id'] = $our_sort_name;
+
+          // Convert our_sort_name to a link:
+          // civicrm/contact/view/participant?reset=1&id=663&cid=2997&action=view&context=participant&selectedChild=event
+
+          $viewUrl = CRM_Utils_System::url("civicrm/contact/view/participant",
+            "reset=1&id=$our_participant_id&cid=$our_contact_id&action=view&context=participant"
+          );
+          $Title = ts('View Participant Details');
+          $rows[$rowNum]['civicrm_participant_registered_by_id'] = "<a title='$Title' href=$viewUrl>$our_sort_name</a>";
+
         }
           $entryFound = TRUE;
       }
