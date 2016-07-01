@@ -614,9 +614,6 @@ GROUP BY  cv.label
 
           $rows[$rowNum]['civicrm_participant_registered_by_id'] = $our_sort_name;
 
-          // Convert our_sort_name to a link:
-          // civicrm/contact/view/participant?reset=1&id=663&cid=2997&action=view&context=participant&selectedChild=event
-
           $viewUrl = CRM_Utils_System::url("civicrm/contact/view/participant",
             "reset=1&id=$our_participant_id&cid=$our_contact_id&action=view&context=participant"
           );
