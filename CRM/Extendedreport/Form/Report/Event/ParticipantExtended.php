@@ -22,6 +22,7 @@ class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Exten
   );
 
   public $_drilldownReport = array('event/income' => 'Link to Detail Report');
+  protected $_participantTable = 'civicrm_participant';
 
   /**
    * Class constructor.
