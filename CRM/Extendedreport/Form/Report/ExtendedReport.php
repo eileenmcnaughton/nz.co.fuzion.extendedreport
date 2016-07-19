@@ -3098,7 +3098,7 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
               }
             }
           }
-          if (substr($pivotRowField, 0, 7) == 'custom_' && $field == $pivotRowField) {
+          if (substr($pivotRowField, 0, 7) == 'custom_' && isset($specs['id']) && $specs['id'] == substr($pivotRowField, 7)) {
             $alterFunctions[$this->getPivotRowTableAlias() . '_' . $pivotRowField] = 'alterFromOptions';
             $alterMap[$this->getPivotRowTableAlias() . '_' . $pivotRowField] = $field;
             $alterSpecs[$this->getPivotRowTableAlias() . '_' . $pivotRowField] = $specs;
