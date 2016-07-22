@@ -6079,8 +6079,12 @@ ON {$this->_aliases['civicrm_line_item']}.contid = {$this->_aliases['civicrm_con
   }
 
   function joinContactFromParticipant() {
-    $this->_from .= " LEFT JOIN civicrm_contact {$this->_aliases['civicrm_contact']}
-ON {$this->_aliases['civicrm_participant']}.contact_id = {$this->_aliases['civicrm_contact']}.id";
+    $this->_from .= "
+      LEFT JOIN {$this->_participantTable} cp ON cp.id = {$this->_aliases['civicrm_participant']}.id
+      LEFT JOIN civicrm_contact {$this->_aliases['civicrm_contact']}
+ON cp.contact_id = {$this->_aliases['civicrm_contact']}.id
+    ";
+
   }
 
   function joinContactFromMembership() {
