@@ -2799,7 +2799,7 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
         if (!stristr($this->_from, $this->_aliases[$table])) {
           // Protect against conflict with selectableCustomFrom.
           $this->_from .= "
-{$customJoin} {$prop['name']} {$this->_aliases[$table]} ON {$this->_aliases[$table]}.entity_id = {$baseJoin}";
+{$customJoin} {$prop['grouping']} {$this->_aliases[$table]} ON {$this->_aliases[$table]}.entity_id = {$baseJoin}";
         }
         // handle for ContactReference
         if (array_key_exists('fields', $prop)) {
@@ -6291,8 +6291,13 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
       // Check one more possible field...
       $id_field = $specs['id_table'] . '_' . $specs['entity'] . '_' . $specs['id_field'];
       if (empty($row[$id_field])) {
-        // If the relevant id has not been set on the report the field cannot be editable.
-        return;
+        //FIXME For some reason, the event id is returned with the entity repeated twice.
+        //which means we need a tertiary check. This just a temporary fix
+        $id_field = $specs['id_table'] . '_' . $specs['entity']. '_' . $specs['entity'] . '_' . $specs['id_field'];
+        if (empty($row[$id_field])) {
+          // If the relevant id has not been set on the report the field cannot be editable.
+          return;
+        }
       }
     }
     $entityID = $row[$id_field];
