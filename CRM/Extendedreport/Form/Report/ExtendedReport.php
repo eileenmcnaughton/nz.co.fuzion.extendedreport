@@ -3624,31 +3624,9 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    */
   function buildInstanceAndButtons() {
     CRM_Report_Form_Instance::buildForm($this);
-
-    $label = $this->_id ? ts('Update Report') : ts('Create Report');
-
-    $this->addElement('submit', $this->_instanceButtonName, $label);
-    $this->addElement('submit', $this->_printButtonName, ts('Print Report'));
-    $this->addElement('submit', $this->_pdfButtonName, ts('PDF'));
-
-    if ($this->_id) {
-      $this->addElement('submit', $this->_createNewButtonName, ts('Save a Copy') . '...');
-    }
-    if ($this->_instanceForm) {
-      $this->assign('instanceForm', TRUE);
-    }
-
-    $label = $this->_id ? ts('Print Report') : ts('Print Preview');
-    $this->addElement('submit', $this->_printButtonName, $label);
-
-    $label = $this->_id ? ts('PDF') : ts('Preview PDF');
-    $this->addElement('submit', $this->_pdfButtonName, $label);
-
-    $label = $this->_id ? ts('Export to CSV') : ts('Preview CSV');
-
-    if ($this->_csvSupported) {
-      $this->addElement('submit', $this->_csvButtonName, $label);
-    }
+    $this->_actionButtonName = $this->getButtonName('submit');
+    $this->addTaskMenu($this->getActions($this->_id));
+    $this->assign('instanceForm', $this->_instanceForm);
 
     if (CRM_Core_Permission::check('administer Reports') && $this->_add2groupSupported) {
       $this->addElement('select', 'groups', ts('Group'),
