@@ -1181,7 +1181,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       }
     }
     $this->calculateStatsFields();
-    $this->isForceGroupBy = (!empty($this->_statFields) && !$this->_noGroupBY);
+    $this->isForceGroupBy = (!empty($this->_statFields) && !$this->_noGroupBY && isset($this->_aliases[$this->_baseTable]));
     // if a stat field has been selected then do a group by - this is not in parent
     if ($this->isForceGroupBy && empty($this->_groupByArray)) {
       $this->_groupByArray[] = $this->_aliases[$this->_baseTable] . ".id";

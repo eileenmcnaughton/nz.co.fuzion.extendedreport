@@ -181,14 +181,16 @@ LEFT JOIN
   function alterDisplay(&$rows) {
     parent::alterDisplay($rows);
 
-    $move = $this->_columnHeaders['progress_still_to_raise'];
-    unset($this->_columnHeaders['progress_still_to_raise']);
-    $this->_columnHeaders['progress_still_to_raise'] = $move;
+    if (isset($this->_columnHeaders['progress_still_to_raise'])) {
+      $move = $this->_columnHeaders['progress_still_to_raise'];
+      unset($this->_columnHeaders['progress_still_to_raise']);
+      $this->_columnHeaders['progress_still_to_raise'] = $move;
+    }
 
     $runningTotalRaised = $runningTotalLeft = 0;
     $grandTotalRaised = $grandTotalLeft = 0;
     foreach ($rows as $index => $row) {
-      if (is_numeric($row['civicrm_campaign_campaign_goal_revenue'])) {
+      if (isset($row['civicrm_campaign_campaign_goal_revenue']) && is_numeric($row['civicrm_campaign_campaign_goal_revenue'])) {
         $runningTotalRaised += $row['civicrm_campaign_campaign_goal_revenue'];
         $runningTotalLeft += $row['progress_still_to_raise'];
       }
