@@ -42,6 +42,13 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   protected $majorVersion = '';
 
   /**
+   * CiviCRM major version - e.g. 4.6
+   *
+   * @var string
+   */
+  protected $fullVersion = '';
+
+  /**
    * Available templates.
    *
    * @var array
@@ -516,7 +523,8 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    * Set the code major version.
    */
   function setVersion () {
-    $this->majorVersion = str_replace('.', '', substr(CRM_Utils_System::version(), 0, 3));
+    $this->fullVersion = CRM_Utils_System::version();
+    $this->majorVersion = str_replace('.', '', substr($this->fullVersion, 0, 3));
   }
 
   /**
@@ -1825,6 +1833,36 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       else {
         CRM_Core_Error::debug($err);
       }
+    }
+  }
+
+  /**
+   * Add actions in a way compatible with pre 4.7.9 versions.
+   */
+  public function legacyAddActions() {
+    $label = $this->_id ? ts('Update Report') : ts('Create Report');
+
+    $this->addElement('submit', $this->_instanceButtonName, $label);
+    $this->addElement('submit', $this->_printButtonName, ts('Print Report'));
+    $this->addElement('submit', $this->_pdfButtonName, ts('PDF'));
+
+    if ($this->_id) {
+      $this->addElement('submit', $this->_createNewButtonName, ts('Save a Copy') . '...');
+    }
+    if ($this->_instanceForm) {
+      $this->assign('instanceForm', TRUE);
+    }
+
+    $label = $this->_id ? ts('Print Report') : ts('Print Preview');
+    $this->addElement('submit', $this->_printButtonName, $label);
+
+    $label = $this->_id ? ts('PDF') : ts('Preview PDF');
+    $this->addElement('submit', $this->_pdfButtonName, $label);
+
+    $label = $this->_id ? ts('Export to CSV') : ts('Preview CSV');
+
+    if ($this->_csvSupported) {
+      $this->addElement('submit', $this->_csvButtonName, $label);
     }
   }
 
@@ -3624,31 +3662,15 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    */
   function buildInstanceAndButtons() {
     CRM_Report_Form_Instance::buildForm($this);
-
-    $label = $this->_id ? ts('Update Report') : ts('Create Report');
-
-    $this->addElement('submit', $this->_instanceButtonName, $label);
-    $this->addElement('submit', $this->_printButtonName, ts('Print Report'));
-    $this->addElement('submit', $this->_pdfButtonName, ts('PDF'));
-
-    if ($this->_id) {
-      $this->addElement('submit', $this->_createNewButtonName, ts('Save a Copy') . '...');
+    if (version_compare($this->fullVersion, '4.7.9') >= 0) {
+      $this->_actionButtonName = $this->getButtonName('submit');
+      $this->addTaskMenu($this->getActions($this->_id));
+      $this->assign('instanceForm', $this->_instanceForm);
     }
-    if ($this->_instanceForm) {
-      $this->assign('instanceForm', TRUE);
+    else {
+      $this->legacyAddActions();
     }
 
-    $label = $this->_id ? ts('Print Report') : ts('Print Preview');
-    $this->addElement('submit', $this->_printButtonName, $label);
-
-    $label = $this->_id ? ts('PDF') : ts('Preview PDF');
-    $this->addElement('submit', $this->_pdfButtonName, $label);
-
-    $label = $this->_id ? ts('Export to CSV') : ts('Preview CSV');
-
-    if ($this->_csvSupported) {
-      $this->addElement('submit', $this->_csvButtonName, $label);
-    }
 
     if (CRM_Core_Permission::check('administer Reports') && $this->_add2groupSupported) {
       $this->addElement('select', 'groups', ts('Group'),
