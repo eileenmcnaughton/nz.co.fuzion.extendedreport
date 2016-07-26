@@ -124,14 +124,19 @@ class CRM_Extendedreport_Form_Report_Campaign_CampaignProgressReport extends CRM
 
 FROM civicrm_pledge p
 LEFT JOIN
-    (SELECT pledge_id, sum(if(status_id = 1, actual_amount, 0)) as paid_amount
+    (SELECT pledge_id, sum(if(status_id = 1";
+    if ($until) {
+      $this->_from .= ' AND c.receive_date <="' . CRM_Utils_Type::validate(CRM_Utils_Date::processDate($until, 235959), 'Integer') . '"';
+    }
+    $this->_from .= ", actual_amount, 0)) as paid_amount
       FROM civicrm_pledge_payment
+      LEFT JOIN civicrm_contribution c ON c.id = contribution_id
       GROUP BY pledge_id
      ) as pp
      ON pp.pledge_id = p.id
      WHERE p.is_test = 0";
     if ($until) {
-      $this->_from .= ' AND p.create_date <="' . CRM_Utils_Type::validate(CRM_Utils_Date::processDate($until), 'Integer') . '"';
+      $this->_from .= ' AND p.create_date <="' . CRM_Utils_Type::validate(CRM_Utils_Date::processDate($until, 235959), 'Integer') . '"';
     }
 
     $this->_from .= " UNION 
@@ -146,7 +151,7 @@ LEFT JOIN
  WHERE c.contribution_status_id = 1
  AND pp.id IS NULL ";
   if ($until) {
-    $this->_from .= ' AND c.receive_date <= "' . CRM_Utils_Type::validate(CRM_Utils_Date::processDate($until), 'Integer') . '"';
+    $this->_from .= ' AND c.receive_date <= "' . CRM_Utils_Type::validate(CRM_Utils_Date::processDate($until, 235959), 'Integer') . '"';
   }
 
     $this->_from .= ") as progress  ON progress.campaign_id = campaign.id
