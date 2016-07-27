@@ -57,6 +57,14 @@ class CRM_Extendedreport_Form_Report_Campaign_CampaignProgressReport extends CRM
               'type' => CRM_Utils_Type::T_MONEY,
             ),
           ),
+          'filters' => array(
+            'effective_date' => array(
+              'type' => CRM_Utils_Type::T_DATE + CRM_Utils_Type::T_TIME,
+              'title' => ts('Date range'),
+              'operatorType' => self::OP_SINGLEDATE,
+              'pseudofield' => TRUE,
+            )
+          ),
         ),
       );
 
@@ -103,6 +111,7 @@ class CRM_Extendedreport_Form_Report_Campaign_CampaignProgressReport extends CRM
    * Join on a progress summary.
    */
   protected function joinProgressTable() {
+    $until = CRM_Utils_Array::value('effective_date_value', $this->_params);
     $this->_from .= " LEFT JOIN 
     
     (
@@ -115,23 +124,37 @@ class CRM_Extendedreport_Form_Report_Campaign_CampaignProgressReport extends CRM
 
 FROM civicrm_pledge p
 LEFT JOIN
-    (SELECT pledge_id, sum(if(status_id = 1, actual_amount, 0)) as paid_amount
+    (SELECT pledge_id, sum(if(status_id = 1";
+    if ($until) {
+      $this->_from .= ' AND c.receive_date <="' . CRM_Utils_Type::validate(CRM_Utils_Date::processDate($until, 235959), 'Integer') . '"';
+    }
+    $this->_from .= ", actual_amount, 0)) as paid_amount
       FROM civicrm_pledge_payment
+      LEFT JOIN civicrm_contribution c ON c.id = contribution_id
       GROUP BY pledge_id
      ) as pp
      ON pp.pledge_id = p.id
-     WHERE p.is_test = 0
-     UNION 
+     WHERE p.is_test = 0";
+    if ($until) {
+      $this->_from .= ' AND p.create_date <="' . CRM_Utils_Type::validate(CRM_Utils_Date::processDate($until, 235959), 'Integer') . '"';
+    }
+
+    $this->_from .= " UNION 
      
  SELECT CONCAT('c', c.id) as id, contact_id, campaign_id, financial_type_id, 
  COALESCE(total_amount, 0) as total_amount, c.currency, 
  COALESCE(total_amount, 0) as paid_amount,
  0 as balance_amount, 
  0 as is_pledge  
- FROM civicrm_contribution c LEFT JOIN civicrm_pledge_payment pp ON pp.contribution_id = c.id  
+ FROM civicrm_contribution c
+ LEFT JOIN civicrm_pledge_payment pp ON pp.contribution_id = c.id
  WHERE c.contribution_status_id = 1
- AND pp.id IS NULL 
- ) as progress  ON progress.campaign_id = campaign.id
+ AND pp.id IS NULL ";
+  if ($until) {
+    $this->_from .= ' AND c.receive_date <= "' . CRM_Utils_Type::validate(CRM_Utils_Date::processDate($until, 235959), 'Integer') . '"';
+  }
+
+    $this->_from .= ") as progress  ON progress.campaign_id = campaign.id
  
     ";
   }
@@ -181,14 +204,16 @@ LEFT JOIN
   function alterDisplay(&$rows) {
     parent::alterDisplay($rows);
 
-    $move = $this->_columnHeaders['progress_still_to_raise'];
-    unset($this->_columnHeaders['progress_still_to_raise']);
-    $this->_columnHeaders['progress_still_to_raise'] = $move;
+    if (isset($this->_columnHeaders['progress_still_to_raise'])) {
+      $move = $this->_columnHeaders['progress_still_to_raise'];
+      unset($this->_columnHeaders['progress_still_to_raise']);
+      $this->_columnHeaders['progress_still_to_raise'] = $move;
+    }
 
     $runningTotalRaised = $runningTotalLeft = 0;
     $grandTotalRaised = $grandTotalLeft = 0;
     foreach ($rows as $index => $row) {
-      if (is_numeric($row['civicrm_campaign_campaign_goal_revenue'])) {
+      if (isset($row['civicrm_campaign_campaign_goal_revenue']) && is_numeric($row['civicrm_campaign_campaign_goal_revenue'])) {
         $runningTotalRaised += $row['civicrm_campaign_campaign_goal_revenue'];
         $runningTotalLeft += $row['progress_still_to_raise'];
       }
@@ -209,6 +234,25 @@ LEFT JOIN
     $this->rollupRow['civicrm_campaign_campaign_goal_revenue'] = $grandTotalRaised;
     $this->rollupRow['progress_still_to_raise'] = $grandTotalLeft;
     $this->assign('grandStat', $this->rollupRow);
+  }
+
+
+  /**
+   *  Note: $fieldName param allows inheriting class to build operationPairs
+   * specific to a field.
+   *
+   * @param string $type
+   * @param null $fieldName
+   *
+   * @return array
+   */
+  function getOperationPair($type = "string", $fieldName = NULL) {
+    if ($type == self::OP_SINGLEDATE) {
+      return array(
+        'to' => ts('Until Date'),
+      );
+    }
+    return parent::getOperationPair($type, $fieldName);
   }
 
 }

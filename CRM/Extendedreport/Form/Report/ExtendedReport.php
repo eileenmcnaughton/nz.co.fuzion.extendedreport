@@ -42,6 +42,13 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   protected $majorVersion = '';
 
   /**
+   * CiviCRM major version - e.g. 4.6
+   *
+   * @var string
+   */
+  protected $fullVersion = '';
+
+  /**
    * Available templates.
    *
    * @var array
@@ -516,7 +523,8 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    * Set the code major version.
    */
   function setVersion () {
-    $this->majorVersion = str_replace('.', '', substr(CRM_Utils_System::version(), 0, 3));
+    $this->fullVersion = CRM_Utils_System::version();
+    $this->majorVersion = str_replace('.', '', substr($this->fullVersion, 0, 3));
   }
 
   /**
@@ -1173,7 +1181,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       }
     }
     $this->calculateStatsFields();
-    $this->isForceGroupBy = (!empty($this->_statFields) && !$this->_noGroupBY);
+    $this->isForceGroupBy = (!empty($this->_statFields) && !$this->_noGroupBY && isset($this->_aliases[$this->_baseTable]));
     // if a stat field has been selected then do a group by - this is not in parent
     if ($this->isForceGroupBy && empty($this->_groupByArray)) {
       $this->_groupByArray[] = $this->_aliases[$this->_baseTable] . ".id";
@@ -1825,6 +1833,36 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       else {
         CRM_Core_Error::debug($err);
       }
+    }
+  }
+
+  /**
+   * Add actions in a way compatible with pre 4.7.9 versions.
+   */
+  public function legacyAddActions() {
+    $label = $this->_id ? ts('Update Report') : ts('Create Report');
+
+    $this->addElement('submit', $this->_instanceButtonName, $label);
+    $this->addElement('submit', $this->_printButtonName, ts('Print Report'));
+    $this->addElement('submit', $this->_pdfButtonName, ts('PDF'));
+
+    if ($this->_id) {
+      $this->addElement('submit', $this->_createNewButtonName, ts('Save a Copy') . '...');
+    }
+    if ($this->_instanceForm) {
+      $this->assign('instanceForm', TRUE);
+    }
+
+    $label = $this->_id ? ts('Print Report') : ts('Print Preview');
+    $this->addElement('submit', $this->_printButtonName, $label);
+
+    $label = $this->_id ? ts('PDF') : ts('Preview PDF');
+    $this->addElement('submit', $this->_pdfButtonName, $label);
+
+    $label = $this->_id ? ts('Export to CSV') : ts('Preview CSV');
+
+    if ($this->_csvSupported) {
+      $this->addElement('submit', $this->_csvButtonName, $label);
     }
   }
 
@@ -2799,7 +2837,7 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
         if (!stristr($this->_from, $this->_aliases[$table])) {
           // Protect against conflict with selectableCustomFrom.
           $this->_from .= "
-{$customJoin} {$prop['name']} {$this->_aliases[$table]} ON {$this->_aliases[$table]}.entity_id = {$baseJoin}";
+{$customJoin} {$prop['grouping']} {$this->_aliases[$table]} ON {$this->_aliases[$table]}.entity_id = {$baseJoin}";
         }
         // handle for ContactReference
         if (array_key_exists('fields', $prop)) {
@@ -3098,7 +3136,7 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
               }
             }
           }
-          if (substr($pivotRowField, 0, 7) == 'custom_' && $field == $pivotRowField) {
+          if (substr($pivotRowField, 0, 7) == 'custom_' && isset($specs['id']) && $specs['id'] == substr($pivotRowField, 7)) {
             $alterFunctions[$this->getPivotRowTableAlias() . '_' . $pivotRowField] = 'alterFromOptions';
             $alterMap[$this->getPivotRowTableAlias() . '_' . $pivotRowField] = $field;
             $alterSpecs[$this->getPivotRowTableAlias() . '_' . $pivotRowField] = $specs;
@@ -3624,31 +3662,15 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    */
   function buildInstanceAndButtons() {
     CRM_Report_Form_Instance::buildForm($this);
-
-    $label = $this->_id ? ts('Update Report') : ts('Create Report');
-
-    $this->addElement('submit', $this->_instanceButtonName, $label);
-    $this->addElement('submit', $this->_printButtonName, ts('Print Report'));
-    $this->addElement('submit', $this->_pdfButtonName, ts('PDF'));
-
-    if ($this->_id) {
-      $this->addElement('submit', $this->_createNewButtonName, ts('Save a Copy') . '...');
+    if (version_compare($this->fullVersion, '4.7.9') >= 0) {
+      $this->_actionButtonName = $this->getButtonName('submit');
+      $this->addTaskMenu($this->getActions($this->_id));
+      $this->assign('instanceForm', $this->_instanceForm);
     }
-    if ($this->_instanceForm) {
-      $this->assign('instanceForm', TRUE);
+    else {
+      $this->legacyAddActions();
     }
 
-    $label = $this->_id ? ts('Print Report') : ts('Print Preview');
-    $this->addElement('submit', $this->_printButtonName, $label);
-
-    $label = $this->_id ? ts('PDF') : ts('Preview PDF');
-    $this->addElement('submit', $this->_pdfButtonName, $label);
-
-    $label = $this->_id ? ts('Export to CSV') : ts('Preview CSV');
-
-    if ($this->_csvSupported) {
-      $this->addElement('submit', $this->_csvButtonName, $label);
-    }
 
     if (CRM_Core_Permission::check('administer Reports') && $this->_add2groupSupported) {
       $this->addElement('select', 'groups', ts('Group'),
@@ -6088,8 +6110,12 @@ ON {$this->_aliases['civicrm_line_item']}.contid = {$this->_aliases['civicrm_con
   }
 
   function joinContactFromParticipant() {
-    $this->_from .= " LEFT JOIN civicrm_contact {$this->_aliases['civicrm_contact']}
-ON {$this->_aliases['civicrm_participant']}.contact_id = {$this->_aliases['civicrm_contact']}.id";
+    $this->_from .= "
+      LEFT JOIN {$this->_participantTable} cp ON cp.id = {$this->_aliases['civicrm_participant']}.id
+      LEFT JOIN civicrm_contact {$this->_aliases['civicrm_contact']}
+ON cp.contact_id = {$this->_aliases['civicrm_contact']}.id
+    ";
+
   }
 
   function joinContactFromMembership() {
@@ -6296,8 +6322,13 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
       // Check one more possible field...
       $id_field = $specs['id_table'] . '_' . $specs['entity'] . '_' . $specs['id_field'];
       if (empty($row[$id_field])) {
-        // If the relevant id has not been set on the report the field cannot be editable.
-        return;
+        //FIXME For some reason, the event id is returned with the entity repeated twice.
+        //which means we need a tertiary check. This just a temporary fix
+        $id_field = $specs['id_table'] . '_' . $specs['entity']. '_' . $specs['entity'] . '_' . $specs['id_field'];
+        if (empty($row[$id_field])) {
+          // If the relevant id has not been set on the report the field cannot be editable.
+          return;
+        }
       }
     }
     $entityID = $row[$id_field];
