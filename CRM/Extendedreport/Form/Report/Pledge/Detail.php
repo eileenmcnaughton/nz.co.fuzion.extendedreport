@@ -43,6 +43,8 @@ class CRM_Extendedreport_Form_Report_Pledge_Detail extends CRM_Extendedreport_Fo
         $this->_columns[$entity]['fields'][$field]['default'] = 1;
       }
     }
+    $this->_columns['civicrm_pledge_payment']['fields']['scheduled_date']['pseudofield'] = TRUE;
+    $this->_columns['civicrm_pledge_payment']['fields']['scheduled_amount']['pseudofield'] = TRUE;
     parent::__construct();
   }
 
@@ -104,21 +106,6 @@ class CRM_Extendedreport_Form_Report_Pledge_Detail extends CRM_Extendedreport_Fo
       $pledgeIDArray[] = $pledgeID;
     }
 
-    // Pledge- Payment Detail Headers
-    $tableHeader = array(
-      'scheduled_date' => array(
-        'type' => CRM_Utils_Type::T_DATE,
-        'title' => 'Next Payment Due'
-      ),
-      'scheduled_amount' => array(
-        'type' => CRM_Utils_Type::T_MONEY,
-        'title' => 'Next Payment Amount'
-      ),
-    );
-    foreach ($tableHeader as $k => $val) {
-      $this->_columnHeaders[$k] = $val;
-    }
-
     // To Display Payment Details of pledged amount
     // for pledge payments In Progress
       $sqlPayment = "
@@ -148,9 +135,9 @@ class CRM_Extendedreport_Form_Report_Pledge_Detail extends CRM_Extendedreport_Fo
         }
       }
     foreach ($rows as $index => $row) {
-      if (!empty($display[$row['civicrm_pledge_pledge_id']]) && !empty($display[$row['civicrm_pledge_pledge_id']]['scheduled_date'])) {
-        $rows[$index]['scheduled_date'] = $display[$row['civicrm_pledge_pledge_id']]['scheduled_date'];
-        $rows[$index]['scheduled_amount'] = $display[$row['civicrm_pledge_pledge_id']]['scheduled_amount'];
+      if (!empty($display[$row['civicrm_pledge_pledge_id']])) {
+        $rows[$index]['civicrm_pledge_payment_scheduled_date'] = $display[$row['civicrm_pledge_pledge_id']]['scheduled_date'];
+        $rows[$index]['civicrm_pledge_payment_scheduled_amount'] = $display[$row['civicrm_pledge_pledge_id']]['scheduled_amount'];
       }
     }
 
@@ -179,6 +166,7 @@ class CRM_Extendedreport_Form_Report_Pledge_Detail extends CRM_Extendedreport_Fo
       $alias = $this->selectStatSum($tableName, $fieldName, $field);
       return " SUM(COALESCE(IF((pledge.status_id =3), pledge_payment_civireport.actual_amount, pledge.amount), 0)) as $alias ";
     }
+    return parent::selectClause($tableName, $tableKey, $fieldName, $field);
 
   }
 

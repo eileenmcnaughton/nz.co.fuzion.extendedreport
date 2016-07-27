@@ -2970,6 +2970,14 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
       $this->_selectAliases[] = $alias;
       return " GROUP_CONCAT(CONCAT({$field['dbAlias']},':', {$this->_aliases[$tableName]}.location_type_id, ':', {$this->_aliases[$tableName]}.phone_type_id) ) as $alias";
     }
+    if(!empty($field['pseudofield'])) {
+      $alias = "{$tableName}_{$fieldName}";
+      $this->_columnHeaders["{$tableName}_{$fieldName}"]['title'] = CRM_Utils_Array::value('title', $field);
+      $this->_columnHeaders["{$tableName}_{$fieldName}"]['type'] = CRM_Utils_Array::value('type', $field);
+      $this->_columnHeaders["{$tableName}_{$fieldName}"]['dbAlias'] = CRM_Utils_Array::value('dbAlias', $field);
+      $this->_selectAliases[] = $alias;
+      return ' 1 as  ' . $alias;
+    }
 
     if ($tableKey == 'fields' && !empty($field['statistics'])) {
       if (in_array('GROUP_CONCAT', $field['statistics'])) {
@@ -4179,6 +4187,14 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
             'title' => ts('Amount Paid'),
             'type' => CRM_Utils_Type::T_MONEY,
             'statistics' => array('sum' => ts('Total Amount Paid')),
+          ),
+          'scheduled_date' => array(
+            'type' => CRM_Utils_Type::T_DATE,
+            'title' => 'Next Payment Due'
+          ),
+          'scheduled_amount' => array(
+            'type' => CRM_Utils_Type::T_MONEY,
+            'title' => 'Next Payment Amount'
           ),
         ),
       ),
