@@ -4618,6 +4618,16 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'options' => $this->getContactTypeOptions(),
         'is_fields' => TRUE,
         'is_filters' => TRUE,
+        'is_group_bys' => TRUE,
+      ),
+      $options['prefix'] . 'contact_sub_type' => array(
+        'title' => ts($options['prefix_label'] . 'Contact Sub Type'),
+        'name' => 'contact_sub_type',
+        'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+        'options' => $this->getContactTypeOptions(),
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+        'is_group_bys' => TRUE,
       ),
     );
     $individualFields = array(
@@ -4866,15 +4876,18 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'title' => ts('Pledge Made Date'),
         'operatorType' => CRM_Report_Form::OP_DATE,
         'is_fields' => TRUE,
+        'is_filters' => TRUE,
       ),
       'start_date' => array(
         'title' => ts('Pledge Start Date'),
         'type' => CRM_Utils_Type::T_DATE,
         'is_fields' => TRUE,
+        'is_filters' => TRUE,
       ),
       'end_date' => array(
         'title' => ts('Pledge End Date'),
-        'type' => CRM_Utils_Type::T_DATE
+        'type' => CRM_Utils_Type::T_DATE,
+        'is_filters' => TRUE,
       ),
       'status_id' => array(
         'name' => 'status_id',
