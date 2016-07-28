@@ -5299,7 +5299,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       )
     );
 
-    return $this->buildColumns($spec, $options['prefix'] . 'civicrm_tag', 'CRM_Core_DAO_EntityTag', NUL, $defaults);
+    return $this->buildColumns($spec, $options['prefix'] . 'civicrm_tag', 'CRM_Core_DAO_EntityTag', NULL, $defaults);
   }
 
   /*
