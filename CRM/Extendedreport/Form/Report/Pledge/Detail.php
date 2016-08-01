@@ -77,6 +77,7 @@ class CRM_Extendedreport_Form_Report_Pledge_Detail extends CRM_Extendedreport_Fo
                                {$this->_aliases['civicrm_email']}.contact_id) AND
                                {$this->_aliases['civicrm_email']}.is_primary = 1\n";
     }
+
   }
 
   function postProcess() {

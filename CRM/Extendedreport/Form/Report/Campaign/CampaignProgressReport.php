@@ -63,7 +63,7 @@ class CRM_Extendedreport_Form_Report_Campaign_CampaignProgressReport extends CRM
               'title' => ts('Date range'),
               'operatorType' => self::OP_SINGLEDATE,
               'pseudofield' => TRUE,
-            )
+            ),
           ),
         ),
       );
@@ -112,14 +112,14 @@ class CRM_Extendedreport_Form_Report_Campaign_CampaignProgressReport extends CRM
    */
   protected function joinProgressTable() {
     $until = CRM_Utils_Array::value('effective_date_value', $this->_params);
-    $this->_from .= " LEFT JOIN 
-    
+    $this->_from .= " LEFT JOIN
+
     (
-    SELECT CONCAT('p', p.id) as id, contact_id, campaign_id, financial_type_id, 
-    COALESCE(amount, 0) as total_amount, 
-    currency, 
+    SELECT CONCAT('p', p.id) as id, contact_id, campaign_id, financial_type_id,
+    COALESCE(amount, 0) as total_amount,
+    currency,
     COALESCE(paid_amount, 0) as paid_amount,
-    COALESCE(amount - paid_amount, 0) as balance_amount, 
+    COALESCE(amount - paid_amount, 0) as balance_amount,
     1 as is_pledge
 
 FROM civicrm_pledge p
@@ -139,13 +139,13 @@ LEFT JOIN
       $this->_from .= ' AND p.create_date <="' . CRM_Utils_Type::validate(CRM_Utils_Date::processDate($until, 235959), 'Integer') . '"';
     }
 
-    $this->_from .= " UNION 
-     
- SELECT CONCAT('c', c.id) as id, contact_id, campaign_id, financial_type_id, 
- COALESCE(total_amount, 0) as total_amount, c.currency, 
+    $this->_from .= " UNION
+
+ SELECT CONCAT('c', c.id) as id, contact_id, campaign_id, financial_type_id,
+ COALESCE(total_amount, 0) as total_amount, c.currency,
  COALESCE(total_amount, 0) as paid_amount,
- 0 as balance_amount, 
- 0 as is_pledge  
+ 0 as balance_amount,
+ 0 as is_pledge
  FROM civicrm_contribution c
  LEFT JOIN civicrm_pledge_payment pp ON pp.contribution_id = c.id
  WHERE c.contribution_status_id = 1
@@ -155,7 +155,7 @@ LEFT JOIN
   }
 
     $this->_from .= ") as progress  ON progress.campaign_id = campaign.id
- 
+
     ";
   }
 
