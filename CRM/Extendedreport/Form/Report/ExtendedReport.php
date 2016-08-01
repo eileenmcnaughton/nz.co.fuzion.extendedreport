@@ -5966,10 +5966,14 @@ AND {$this->_aliases['civicrm_line_item']}.entity_table = 'civicrm_participant')
    * Define join from pledge table to pledge payment table.
    */
   protected function joinPledgePaymentFromPledge() {
+    $until = CRM_Utils_Array::value('effective_date_value', $this->_params);
     $this->_from .= " LEFT JOIN
     (SELECT pledge_id, sum(if(status_id = 1, actual_amount, 0)) as actual_amount
-      FROM civicrm_pledge_payment
-      GROUP BY pledge_id
+      FROM civicrm_pledge_payment";
+    if ($until) {
+      $this->_from .= ' INNER JOIN civicrm_contribution c ON c.id = contribution_id  AND c.receive_date <="' . CRM_Utils_Type::validate(CRM_Utils_Date::processDate($until, 235959), 'Integer') . '"';
+    }
+    $this->_from .= " GROUP BY pledge_id
      ) as {$this->_aliases['civicrm_pledge_payment']}
      ON {$this->_aliases['civicrm_pledge_payment']}.pledge_id = {$this->_aliases['civicrm_pledge']}.id";
   }

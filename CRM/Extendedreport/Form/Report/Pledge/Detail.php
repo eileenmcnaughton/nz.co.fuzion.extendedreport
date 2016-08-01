@@ -27,9 +27,15 @@ class CRM_Extendedreport_Form_Report_Pledge_Detail extends CRM_Extendedreport_Fo
       + $this->getColumns('PledgePayment')
       + $this->getColumns('FinancialType');
     $this->_columns['civicrm_pledge_payment']['fields']['balance_amount'] = array(
-      'title' => 'Balance to Pay',
+      'title' => ts('Balance to Pay'),
       'statistics' => array('sum' => ts('Balance')),
       'type' => CRM_Utils_Type::T_MONEY,
+    );
+    $this->_columns['civicrm_contribution']['filters']['effective_date'] = array(
+      'type' => CRM_Utils_Type::T_DATE + CRM_Utils_Type::T_TIME,
+      'title' => ts('Do not consider payments after...'),
+      'operatorType' => self::OP_SINGLEDATE,
+      'pseudofield' => TRUE,
     );
     $this->_groupFilter = TRUE;
     $this->_tagFilter = TRUE;
@@ -118,9 +124,9 @@ class CRM_Extendedreport_Form_Report_Pledge_Detail extends CRM_Extendedreport_Fo
                   FROM civicrm_pledge_payment payment
                        LEFT JOIN civicrm_pledge pledge
                                  ON pledge.id = payment.pledge_id
+                  LEFT JOIN civicrm_contribution {$this->_aliases['civicrm_contribution']} ON {$this->_aliases['civicrm_contribution']}.id = payment.contribution_id
 
                   WHERE payment.status_id IN(2, 6)
-
                   GROUP BY payment.pledge_id";
 
       $daoPayment = CRM_Core_DAO::executeQuery($sqlPayment);
