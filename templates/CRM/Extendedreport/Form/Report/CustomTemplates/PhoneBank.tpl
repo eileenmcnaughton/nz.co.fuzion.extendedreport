@@ -12,7 +12,7 @@
                   <strong>Name</strong>
                 </td>
                 <td>
-                  {$row.civicrm_contact_contact_first_name}{if $row.civicrm_contact_contact_nick_name}   '{$row.civicrm_contact_contact_nick_name}' {/if} {$row.civicrm_contact_contact_last_name}
+                  {$row.civicrm_contact_civicrm_contact_first_name}{if $row.civicrm_contact_civicrm_contact_nick_name}   '{$row.civicrm_contact_civicrm_contact_nick_name}' {/if} {$row.civicrm_contact_civicrm_contact_last_name}
                 </td>
               </tr>
               <tr>
@@ -114,7 +114,7 @@
         </tr>
 
       </table>
-      Printed {$reportDate} Contact ID : {$row.civicrm_contact_contact_contact_id}
+      Printed {$reportDate} Contact ID : {$row.civicrm_contact_civicrm_contact_contact_id}
       {foreach from=$statistics.filters key=filterkey item=filter}
         Report Criteria:  {$filter.title} {$filter.value}
       {/foreach}
