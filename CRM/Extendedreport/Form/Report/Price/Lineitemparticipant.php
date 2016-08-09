@@ -14,6 +14,7 @@ class CRM_Extendedreport_Form_Report_Price_Lineitemparticipant extends CRM_Exten
   protected $_baseTable = 'civicrm_line_item';
 
   protected $_aclTable = 'civicrm_contact';
+  protected $_participantTable = 'civicrm_participant';
 
   /**
    * Class constructor.
