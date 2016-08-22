@@ -3461,7 +3461,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
             ));
             $options = $options['values'];
             $options['selected'] = $value;
-            $extra = "data-type='select' data-options='" . json_encode($options) . "'";
+            $extra = "data-type='select' data-options='" . json_encode($options, JSON_HEX_APOS) . "'";
             $value = $options[$value];
           }
           if (!empty($entity_field)) {
