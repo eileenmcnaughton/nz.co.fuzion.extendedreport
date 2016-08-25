@@ -3466,8 +3466,8 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
           }
           if (!empty($entity_field)) {
             //$
-            $retValue = "<div id={$entity}-{$entityID} class='crm-entity'>
-          <span class='crm-editable crmf-custom_{$customField['id']} crm-editable' data-action='create' $extra >" . $value . "</span></div>";
+            $retValue = "<div id={$entity}-{$entityID} class='crm-entity'>" .
+              "<span class='crm-editable crmf-custom_{$customField['id']} crm-editable' data-action='create' $extra >" . $value . "</span></div>";
           }
           break;
         }
@@ -6374,8 +6374,9 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
       $class = 'editable_select';
     }
     //nodeName == "INPUT" && this.type=="checkbox"
-    return "<div data-id='{$entityID}' data-entity='{$entity}' class='crm-entity'>
-    <span class='crm-editable crmf-{$specs['field_name']} $class ' data-action='create' $extra>" . $value . "</span></div>";
+    $editableDiv = "<div data-id='{$entityID}' data-entity='{$entity}' class='crm-entity'>" .
+      "<span class='crm-editable crmf-{$specs['field_name']} $class ' data-action='create' $extra>" . $value . "</span></div>";
+    return $editableDiv;
   }
 
   /*
