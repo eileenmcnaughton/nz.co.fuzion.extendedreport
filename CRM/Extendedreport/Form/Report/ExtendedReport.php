@@ -3466,8 +3466,8 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
           }
           if (!empty($entity_field)) {
             //$
-            $retValue = "<div id={$entity}-{$entityID} class='crm-entity'>
-          <span class='crm-editable crmf-custom_{$customField['id']} crm-editable' data-action='create' $extra >" . $value . "</span></div>";
+            $retValue = "<div id={$entity}-{$entityID} class='crm-entity'>" .
+              "<span class='crm-editable crmf-custom_{$customField['id']} crm-editable' data-action='create' $extra >" . $value . "</span></div>";
           }
           break;
         }
