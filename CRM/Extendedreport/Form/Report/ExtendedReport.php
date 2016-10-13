@@ -4952,6 +4952,35 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     return $this->buildColumns($fields, $options['prefix'] . 'civicrm_email', 'CRM_Core_DAO_Email', NULL, $defaults);
   }
 
+  /*
+   * Get note columns
+   * @param array $options column options
+   */
+  /**
+   * @param array $options
+   *
+   * @return array
+   */
+  function getNoteColumns($options = array()) {
+    $defaultOptions = array(
+      'prefix' => '',
+      'prefix_label' => '',
+      'group_by' => FALSE,
+      'order_by' => TRUE,
+      'filters' => TRUE,
+    );
+    $options = array_merge($defaultOptions, $options);
+
+    $fields = array(
+      'note' => array(
+        'title' => ts($options['prefix_label'] . 'Note'),
+        'name' => 'note',
+        'is_fields' => TRUE,
+      ),
+    );
+    return $this->buildColumns($fields, $options['prefix'] . 'civicrm_note', 'CRM_Core_DAO_Note');
+  }
+
   /**
    * Get columns for relationship fields.
    *
@@ -5644,6 +5673,11 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'rightTable' => 'civicrm_contact',
         'callback' => 'joinRelatedContactFromParticipant',
       ),
+      'note_from_participant' => array(
+        'leftTable' => 'civicrm_participant',
+        'rightTable' => 'civicrm_note',
+        'callback' => 'joinNoteFromParticipant',
+      ),
     );
   }
 
@@ -6149,6 +6183,11 @@ ON {$this->_aliases['civicrm_line_item']}.contid = {$this->_aliases['civicrm_con
 ON cp.contact_id = {$this->_aliases['civicrm_contact']}.id
     ";
 
+  }
+
+  function joinNoteFromParticipant() {
+    $this->_from .= " LEFT JOIN civicrm_note {$this->_aliases['civicrm_note']}
+ON {$this->_aliases['civicrm_participant']}.id = {$this->_aliases['civicrm_note']}.entity_id";
   }
 
   function joinContactFromMembership() {
