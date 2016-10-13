@@ -251,11 +251,6 @@ class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Exten
             'default_weight' => '1',
             'default_order' => 'ASC',
           ),
-          'participant_registered_by_id' => array(
-            'title' => ts('Registered By'),
-            'default_weight' => '1',
-            'default_order' => 'ASC',
-          ),
         ),
       ),
     ) +
