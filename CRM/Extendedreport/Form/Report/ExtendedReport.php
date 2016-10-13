@@ -2474,6 +2474,11 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
       }
 
       if ($addFields) {
+        // Add totals field
+        $curFields[$fieldName . '_qty'] = $curFields[$fieldName];
+        $curFields[$fieldName . '_qty']['title'] = "$customDAO->label Quantity";
+        $curFields[$fieldName . '_qty']['statistics'] = array('count' => ts("Quantity Selected"));
+        // Merge new fields into list
         $this->_columns[$curTable]['fields'] = array_merge($this->_columns[$curTable]['fields'], $curFields);
       }
       if ($this->_customGroupFilters) {
@@ -3452,7 +3457,11 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
           'Radio'
         ))
         ) {
-          $retValue = $value;
+          if ($htmlType == 'Select' || $htmlType == 'Radio') {
+            $retValue = $fieldValueMap[$customField['option_group_id']][$value];
+          } else {
+            $retValue = $value;
+          }
           $extra = '';
           if (($htmlType == 'Select' || $htmlType == 'Radio') && !empty($entity)) {
             $options = civicrm_api($entity, 'getoptions', array(
@@ -4952,6 +4961,35 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     return $this->buildColumns($fields, $options['prefix'] . 'civicrm_email', 'CRM_Core_DAO_Email', NULL, $defaults);
   }
 
+  /*
+   * Get note columns
+   * @param array $options column options
+   */
+  /**
+   * @param array $options
+   *
+   * @return array
+   */
+  function getNoteColumns($options = array()) {
+    $defaultOptions = array(
+      'prefix' => '',
+      'prefix_label' => '',
+      'group_by' => FALSE,
+      'order_by' => TRUE,
+      'filters' => TRUE,
+    );
+    $options = array_merge($defaultOptions, $options);
+
+    $fields = array(
+      'note' => array(
+        'title' => ts($options['prefix_label'] . 'Note'),
+        'name' => 'note',
+        'is_fields' => TRUE,
+      ),
+    );
+    return $this->buildColumns($fields, $options['prefix'] . 'civicrm_note', 'CRM_Core_DAO_Note');
+  }
+
   /**
    * Get columns for relationship fields.
    *
@@ -5644,6 +5682,11 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'rightTable' => 'civicrm_contact',
         'callback' => 'joinRelatedContactFromParticipant',
       ),
+      'note_from_participant' => array(
+        'leftTable' => 'civicrm_participant',
+        'rightTable' => 'civicrm_note',
+        'callback' => 'joinNoteFromParticipant',
+      ),
     );
   }
 
@@ -6151,6 +6194,11 @@ ON cp.contact_id = {$this->_aliases['civicrm_contact']}.id
 
   }
 
+  function joinNoteFromParticipant() {
+    $this->_from .= " LEFT JOIN civicrm_note {$this->_aliases['civicrm_note']}
+ON {$this->_aliases['civicrm_participant']}.id = {$this->_aliases['civicrm_note']}.entity_id";
+  }
+
   function joinContactFromMembership() {
     $this->_from .= " LEFT JOIN civicrm_contact {$this->_aliases['civicrm_contact']}
 ON {$this->_aliases['civicrm_membership']}.contact_id = {$this->_aliases['civicrm_contact']}.id";
@@ -6326,14 +6374,16 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    */
   function getCriteriaString() {
     $queryURL = "reset=1&force=1";
-    foreach ($this->_potentialCriteria as $criterion) {
-      $name = $criterion . '_value';
-      $op = $criterion . '_op';
-      if (empty($this->_params[$name])) {
-        continue;
+    if (!empty($this->_potentialCriteria) && is_array($this->_potentialCriteria)) {
+      foreach ($this->_potentialCriteria as $criterion) {
+        $name = $criterion . '_value';
+        $op = $criterion . '_op';
+        if (empty($this->_params[$name])) {
+          continue;
+        }
+        $criterionValue = is_array($this->_params[$name]) ? implode(',', $this->_params[$name]) : $this->_params[$name];
+        $queryURL .= "&{$name}=" . $criterionValue . "&{$op}=" . $this->_params[$op];
       }
-      $criterionValue = is_array($this->_params[$name]) ? implode(',', $this->_params[$name]) : $this->_params[$name];
-      $queryURL .= "&{$name}=" . $criterionValue . "&{$op}=" . $this->_params[$op];
     }
     return $queryURL;
   }
