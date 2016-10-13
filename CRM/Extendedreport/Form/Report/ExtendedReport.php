@@ -2474,6 +2474,11 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
       }
 
       if ($addFields) {
+        // Add totals field
+        $curFields[$fieldName . '_qty'] = $curFields[$fieldName];
+        $curFields[$fieldName . '_qty']['title'] = "$customDAO->label Quantity";
+        $curFields[$fieldName . '_qty']['statistics'] = array('count' => ts("Quantity Selected"));
+        // Merge new fields into list
         $this->_columns[$curTable]['fields'] = array_merge($this->_columns[$curTable]['fields'], $curFields);
       }
       if ($this->_customGroupFilters) {
@@ -3452,7 +3457,11 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
           'Radio'
         ))
         ) {
-          $retValue = $value;
+          if ($htmlType == 'Select' || $htmlType == 'Radio') {
+            $retValue = $fieldValueMap[$customField['option_group_id']][$value];
+          } else {
+            $retValue = $value;
+          }
           $extra = '';
           if (($htmlType == 'Select' || $htmlType == 'Radio') && !empty($entity)) {
             $options = civicrm_api($entity, 'getoptions', array(
@@ -6365,14 +6374,16 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    */
   function getCriteriaString() {
     $queryURL = "reset=1&force=1";
-    foreach ($this->_potentialCriteria as $criterion) {
-      $name = $criterion . '_value';
-      $op = $criterion . '_op';
-      if (empty($this->_params[$name])) {
-        continue;
+    if (!empty($this->_potentialCriteria) && is_array($this->_potentialCriteria)) {
+      foreach ($this->_potentialCriteria as $criterion) {
+        $name = $criterion . '_value';
+        $op = $criterion . '_op';
+        if (empty($this->_params[$name])) {
+          continue;
+        }
+        $criterionValue = is_array($this->_params[$name]) ? implode(',', $this->_params[$name]) : $this->_params[$name];
+        $queryURL .= "&{$name}=" . $criterionValue . "&{$op}=" . $this->_params[$op];
       }
-      $criterionValue = is_array($this->_params[$name]) ? implode(',', $this->_params[$name]) : $this->_params[$name];
-      $queryURL .= "&{$name}=" . $criterionValue . "&{$op}=" . $this->_params[$op];
     }
     return $queryURL;
   }
