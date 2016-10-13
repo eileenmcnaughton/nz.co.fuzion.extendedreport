@@ -29,6 +29,7 @@ class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Exten
    */
   public function __construct() {
     $this->_autoIncludeIndexedFieldsAsOrderBys = 1;
+    $this->_customGroupGroupBy = 1;
 
     // Check if CiviCampaign is a) enabled and b) has active campaigns
     $config = CRM_Core_Config::singleton();
@@ -45,7 +46,7 @@ class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Exten
         'fields' => array(
           'sort_name' => array(
             'title' => ts('Participant Name'),
-            'required' => TRUE,
+            'default' => TRUE,
             'no_repeat' => TRUE,
             'dbAlias' => 'contact_civireport.sort_name',
           ),
@@ -93,6 +94,10 @@ class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Exten
             'name' => 'birth_date',
             'title' => ts('Birth Date'),
           ),
+          'age' => array(
+            'name' => 'age',
+            'title' => ts('Age'),
+          ),
           'age_at_event' => array(
             'name' => 'age_at_event',
             'title' => ts('Age at Event'),
@@ -109,7 +114,7 @@ class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Exten
             'options' => CRM_Core_PseudoConstant::get('CRM_Contact_DAO_Contact', 'gender_id'),
           ),
           'birth_date' => array(
-            'title' => 'Birth Date',
+            'title' => ts('Birth Date'),
             'operatorType' => CRM_Report_Form::OP_DATE,
             'type' => CRM_Utils_Type::T_DATE,
           ),
@@ -215,6 +220,12 @@ class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Exten
             'title' => 'Registration Date',
             'operatorType' => CRM_Report_Form::OP_DATE,
           ),
+          'participant_registered_by_id' => array(
+            'title' => ts('Registered By ID'),
+            'operatorType' => CRM_Report_Form::OP_INT,
+            'default' => "",
+            'type' => CRM_Utils_Type::T_INT,
+          ),
           'fee_currency' => array(
             'title' => ts('Fee Currency'),
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
@@ -237,6 +248,11 @@ class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Exten
           ),
           'source' => array(
             'title' => ts('Source'),
+            'default_weight' => '1',
+            'default_order' => 'ASC',
+          ),
+          'participant_registered_by_id' => array(
+            'title' => ts('Registered By'),
             'default_weight' => '1',
             'default_order' => 'ASC',
           ),
@@ -341,6 +357,14 @@ class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Exten
           ),
         ),
       ),
+    ) +
+    $this->getColumns('Note') + array(
+      'civicrm_note' => array(
+        'dao' => 'CRM_Core_DAO_Note',
+        'fields' => array(
+          'note' => array('title' => ts('Note')),
+        ),
+      ),
     )
     + $this->getColumns('Relationship', array(
         'fields' => FALSE,
@@ -436,6 +460,7 @@ GROUP BY  cv.label
     return array(
       'event_from_participant',
       'contact_from_participant',
+      'note_from_participant',
       'phone_from_contact',
       'address_from_contact',
       'email_from_contact',
@@ -481,7 +506,7 @@ GROUP BY  cv.label
             $to = CRM_Utils_Array::value("{$fieldName}_to", $this->_params);
 
             if ($relative || $from || $to) {
-              $clause = $this->dateClause($field['name'], $relative, $from, $to, $field['type']);
+              $clause = $this->dateClause($field['dbAlias'], $relative, $from, $to, $field['type']);
             }
           }
           else {
@@ -520,13 +545,6 @@ GROUP BY  cv.label
     if ($this->_aclWhere) {
       $this->_where .= " AND {$this->_aclWhere} ";
     }
-  }
-
-  /**
-   * Add group by row.
-   */
-  public function groupBy() {
-    $this->_groupBy = "GROUP BY {$this->_aliases['civicrm_participant']}.id";
   }
 
   /**
@@ -639,22 +657,32 @@ GROUP BY  cv.label
         ($cid = CRM_Utils_Array::value('civicrm_contact_id', $row)) &&
         ($id = CRM_Utils_Array::value('civicrm_participant_participant_record', $row))
       ) {
-        $url = CRM_Report_Utils_Report::getNextUrl('contact/detail',
-          "reset=1&force=1&id_op=eq&id_value=$cid",
-          $this->_absoluteUrl, $this->_id, $this->_drilldownReport
-        );
-
         $viewUrl = CRM_Utils_System::url("civicrm/contact/view/participant",
           "reset=1&id=$id&cid=$cid&action=view&context=participant"
         );
 
-        $contactTitle = ts('View Contact Details');
         $participantTitle = ts('View Participant Record');
 
-        $rows[$rowNum]['civicrm_contact_sort_name'] = "<a title='$contactTitle' href=$url>$displayName</a>";
-        if ($this->_outputMode !== 'csv' && $this->_outputMode !== 'pdf' && $this->_outputMode !== 'print') {
-          $rows[$rowNum]['civicrm_contact_sort_name'] .= "<span style='float: right;'>
-          <a title='$participantTitle' href=$viewUrl> " . ts('View') . "</a></span>";
+        $rows[$rowNum]['civicrm_contact_sort_name'] = "<a title='$participantTitle' href=$viewUrl>$displayName</a>";
+
+        $entryFound = TRUE;
+      }
+
+      // handle participant registered by
+      if (array_key_exists('civicrm_participant_participant_registered_by_id', $row)) {
+        if ($value = $row['civicrm_participant_participant_registered_by_id']) {
+          $details = CRM_Event_BAO_Participant::participantDetails($value);
+
+        $viewUrl = CRM_Utils_System::url("civicrm/contact/view/participant",
+          "reset=1&id=" . $row['civicrm_participant_participant_registered_by_id'] .
+          "&cid=" . $details['cid'] . "&action=view&context=participant"
+        );
+
+        $participantTitle = ts('View Participant Record');
+
+        $rows[$rowNum]['civicrm_participant_participant_registered_by_id'] =
+          "<a title='$participantTitle' href=$viewUrl>" . $details['name'] . "</a>";
+        //$rows[$rowNum]['civicrm_participant_participant_registered_by_id'] = $details['name'];
         }
         $entryFound = TRUE;
       }
