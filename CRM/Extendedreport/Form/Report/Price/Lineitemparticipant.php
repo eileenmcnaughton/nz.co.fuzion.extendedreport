@@ -20,6 +20,9 @@ class CRM_Extendedreport_Form_Report_Price_Lineitemparticipant extends CRM_Exten
    * Class constructor.
    */
   public function __construct() {
+    $this->_autoIncludeIndexedFieldsAsOrderBys = 1;
+    $this->_customGroupGroupBy = 1;
+
     $this->_columns = $this->getColumns('Contact') +
     $this->getColumns('Event') +
     $this->getColumns('Participant') +
