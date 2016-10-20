@@ -5470,11 +5470,17 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         ),
       ),
       'duration' => array(
-        'title' => ts('Duration'),
+        'title' => ts('Duration (sum for all contacts)'),
         'type' => CRM_Utils_Type::T_INT,
         'statistics' => array(
           'sum' => ts('Total Duration')
         ),
+        'is_fields' => TRUE,
+      ),
+      'duration_each' => array(
+        'title' => ts('Duration (for each contact)'),
+        'name' => 'duration',
+        'type' => CRM_Utils_Type::T_INT,
         'is_fields' => TRUE,
       ),
       'details' => array(
