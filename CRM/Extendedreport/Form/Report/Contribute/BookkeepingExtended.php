@@ -128,7 +128,24 @@ class CRM_Extendedreport_Form_Report_Contribute_BookkeepingExtended extends CRM_
           ),
         ),
       ),
-    );
+    ) + array(
+      'civicrm_batch' => array(
+        'dao' => 'CRM_Batch_DAO_Batch',
+        'fields' => array(
+          'name' => array(
+            'title' => ts('Batch Name'),
+            'type' => CRM_Utils_Type::T_STRING,
+          ),
+        ),
+        'filters' => array(
+          'name' => array(
+            'title' => ts('Batch Name'),
+            'type' => CRM_Utils_Type::T_STRING,
+          ),
+        ),
+      ),
+    )
+    ;
 
     $this->_groupFilter = TRUE;
     $this->_tagFilter = TRUE;
@@ -209,16 +226,17 @@ class CRM_Extendedreport_Form_Report_Contribute_BookkeepingExtended extends CRM_
   function from() {
     $this->_from = NULL;
 
+    // help make this sql a bit more readable!
+    $line_item= $this->_aliases['civicrm_line_item'];
+    $contribution = $this->_aliases['civicrm_contribution'];
+    $batch = $this->_aliases['civicrm_batch'];
+
     $this->_from = "FROM  civicrm_contact {$this->_aliases['civicrm_contact']} {$this->_aclFrom}
-              INNER JOIN civicrm_contribution {$this->_aliases['civicrm_contribution']}
-                    ON {$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_contribution']}.contact_id AND
-                         {$this->_aliases['civicrm_contribution']}.is_test = 0
-              LEFT JOIN civicrm_membership_payment payment
-                    ON ( {$this->_aliases['civicrm_contribution']}.id = payment.contribution_id )
-              LEFT JOIN civicrm_membership {$this->_aliases['civicrm_membership']}
-                    ON payment.membership_id = {$this->_aliases['civicrm_membership']}.id
+              INNER JOIN civicrm_contribution $contribution
+                    ON {$this->_aliases['civicrm_contact']}.id = $contribution.contact_id AND
+                         $contribution.is_test = 0
               LEFT JOIN civicrm_entity_financial_trxn {$this->_aliases['civicrm_entity_financial_trxn']}
-                    ON ({$this->_aliases['civicrm_contribution']}.id = {$this->_aliases['civicrm_entity_financial_trxn']}.entity_id AND
+                    ON ($contribution.id = {$this->_aliases['civicrm_entity_financial_trxn']}.entity_id AND
                         {$this->_aliases['civicrm_entity_financial_trxn']}.entity_table = 'civicrm_contribution')
               LEFT JOIN civicrm_financial_trxn {$this->_aliases['civicrm_financial_trxn']}
                     ON {$this->_aliases['civicrm_financial_trxn']}.id = {$this->_aliases['civicrm_entity_financial_trxn']}.financial_trxn_id
@@ -230,13 +248,34 @@ class CRM_Extendedreport_Form_Report_Contribute_BookkeepingExtended extends CRM_
               LEFT JOIN civicrm_entity_financial_trxn {$this->_aliases['civicrm_entity_financial_trxn']}_item
                     ON ({$this->_aliases['civicrm_financial_trxn']}.id = {$this->_aliases['civicrm_entity_financial_trxn']}_item.financial_trxn_id AND
                         {$this->_aliases['civicrm_entity_financial_trxn']}_item.entity_table = 'civicrm_financial_item')
+              LEFT JOIN civicrm_entity_batch entity_batch
+                    ON (entity_batch.entity_id = {$this->_aliases['civicrm_financial_trxn']}.id AND
+                        entity_batch.entity_table = 'civicrm_financial_trxn')
+              LEFT JOIN civicrm_batch $batch
+                    ON $batch.id = entity_batch.batch_id
               LEFT JOIN civicrm_financial_item fitem
                     ON fitem.id = {$this->_aliases['civicrm_entity_financial_trxn']}_item.entity_id
               LEFT JOIN civicrm_financial_account credit_financial_item_financial_account
                     ON fitem.financial_account_id = credit_financial_item_financial_account.id
-              LEFT JOIN civicrm_line_item {$this->_aliases['civicrm_line_item']}
-                    ON  fitem.entity_id = {$this->_aliases['civicrm_line_item']}.id AND fitem.entity_table = 'civicrm_line_item'
+                    
+              LEFT JOIN civicrm_line_item $line_item
+                    ON  fitem.entity_id = $line_item.id AND fitem.entity_table = 'civicrm_line_item'
 
+              LEFT JOIN civicrm_membership_payment payment
+                    ON ( $contribution.id = payment.contribution_id 
+                    		AND ($line_item.price_field_value_id IS NULL
+                    					OR EXISTS(SELECT 1
+                    					            FROM civicrm_membership pfv_mem
+                    					           WHERE pfv_mem.id = payment.membership_id
+                    					             AND pfv_mem.membership_type_id = (SELECT membership_type_id
+                    					             							FROM civicrm_price_field_value pfv
+                    					             						    WHERE pfv.id = $line_item.price_field_value_id)
+                    					             						 )
+									   )
+	                  )
+              LEFT JOIN civicrm_membership {$this->_aliases['civicrm_membership']}
+                    ON payment.membership_id = {$this->_aliases['civicrm_membership']}.id
+                    
               LEFT JOIN civicrm_address {$this->_aliases['civicrm_address']} ON {$this->_aliases['civicrm_address']}.contact_id = {$this->_aliases['civicrm_contact']}.id AND {$this->_aliases['civicrm_address']}.is_primary = 1
               LEFT JOIN civicrm_phone {$this->_aliases['civicrm_phone']} ON {$this->_aliases['civicrm_phone']}.contact_id = {$this->_aliases['civicrm_contact']}.id AND {$this->_aliases['civicrm_phone']}.is_primary = 1
               LEFT JOIN civicrm_email {$this->_aliases['civicrm_email']} ON {$this->_aliases['civicrm_email']}.contact_id = {$this->_aliases['civicrm_contact']}.id AND {$this->_aliases['civicrm_email']}.is_primary = 1

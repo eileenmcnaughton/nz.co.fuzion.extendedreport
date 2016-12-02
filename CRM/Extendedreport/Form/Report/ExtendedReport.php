@@ -3166,7 +3166,10 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
     foreach ($rows as $index => & $row) {
       foreach ($row as $selectedField => $value) {
         if (array_key_exists($selectedField, $alterFunctions)) {
-          $rows[$index][$selectedField] = $this->$alterFunctions[$selectedField]($value, $row, $selectedField, $alterMap[$selectedField], $alterSpecs[$selectedField]);
+          $fn = $this->$alterFunctions[$selectedField];
+          if (method_exists($this, $fn)) {
+            $rows[$index][$selectedField] = $this->$fn($value, $row, $selectedField, $alterMap[$selectedField], $alterSpecs[$selectedField]);
+          }
         }
       }
     }
