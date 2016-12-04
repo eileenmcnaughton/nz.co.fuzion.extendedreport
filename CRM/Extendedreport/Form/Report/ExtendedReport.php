@@ -3170,6 +3170,9 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
           if (method_exists($this, $fn)) {
             $rows[$index][$selectedField] = $this->$fn($value, $row, $selectedField, $alterMap[$selectedField], $alterSpecs[$selectedField]);
           }
+          else {
+            CRM_Core_Error::debug("Undefined alter display method: " . $fn);
+          }
         }
       }
     }
