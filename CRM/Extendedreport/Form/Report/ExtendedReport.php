@@ -3243,6 +3243,7 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
    * @return string
    */
   function alterFromOptions($value, &$row, $selectedField, $criteriaFieldName, $specs) {
+    $value = trim($value, CRM_Core_DAO::VALUE_SEPARATOR);
     return CRM_Utils_Array::value($value, $specs['options']);
   }
 
