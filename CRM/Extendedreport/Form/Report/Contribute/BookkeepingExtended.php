@@ -128,7 +128,13 @@ class CRM_Extendedreport_Form_Report_Contribute_BookkeepingExtended extends CRM_
           ),
         ),
       ),
-    );
+    ) + $this->getColumns('Batch', array(
+          'group_by' => TRUE,
+          'prefix_label' => ts('Batch '),
+          'filters' => TRUE,
+        )
+    )
+    ;
 
     $this->_groupFilter = TRUE;
     $this->_tagFilter = TRUE;
@@ -209,40 +215,89 @@ class CRM_Extendedreport_Form_Report_Contribute_BookkeepingExtended extends CRM_
   function from() {
     $this->_from = NULL;
 
-    $this->_from = "FROM  civicrm_contact {$this->_aliases['civicrm_contact']} {$this->_aclFrom}
-              INNER JOIN civicrm_contribution {$this->_aliases['civicrm_contribution']}
-                    ON {$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_contribution']}.contact_id AND
-                         {$this->_aliases['civicrm_contribution']}.is_test = 0
-              LEFT JOIN civicrm_membership_payment payment
-                    ON ( {$this->_aliases['civicrm_contribution']}.id = payment.contribution_id )
-              LEFT JOIN civicrm_membership {$this->_aliases['civicrm_membership']}
-                    ON payment.membership_id = {$this->_aliases['civicrm_membership']}.id
-              LEFT JOIN civicrm_entity_financial_trxn {$this->_aliases['civicrm_entity_financial_trxn']}
-                    ON ({$this->_aliases['civicrm_contribution']}.id = {$this->_aliases['civicrm_entity_financial_trxn']}.entity_id AND
-                        {$this->_aliases['civicrm_entity_financial_trxn']}.entity_table = 'civicrm_contribution')
-              LEFT JOIN civicrm_financial_trxn {$this->_aliases['civicrm_financial_trxn']}
-                    ON {$this->_aliases['civicrm_financial_trxn']}.id = {$this->_aliases['civicrm_entity_financial_trxn']}.financial_trxn_id
-              LEFT JOIN civicrm_financial_account {$this->_aliases['debit_civicrm_financial_account']}
-                    ON {$this->_aliases['civicrm_financial_trxn']}.to_financial_account_id =
-                    {$this->_aliases['debit_civicrm_financial_account']}.id
-              LEFT JOIN civicrm_financial_account {$this->_aliases['credit_civicrm_financial_account']}
-                    ON {$this->_aliases['civicrm_financial_trxn']}.from_financial_account_id = {$this->_aliases['credit_civicrm_financial_account']}.id
-              LEFT JOIN civicrm_entity_financial_trxn {$this->_aliases['civicrm_entity_financial_trxn']}_item
-                    ON ({$this->_aliases['civicrm_financial_trxn']}.id = {$this->_aliases['civicrm_entity_financial_trxn']}_item.financial_trxn_id AND
-                        {$this->_aliases['civicrm_entity_financial_trxn']}_item.entity_table = 'civicrm_financial_item')
-              LEFT JOIN civicrm_financial_item fitem
-                    ON fitem.id = {$this->_aliases['civicrm_entity_financial_trxn']}_item.entity_id
-              LEFT JOIN civicrm_financial_account credit_financial_item_financial_account
-                    ON fitem.financial_account_id = credit_financial_item_financial_account.id
-              LEFT JOIN civicrm_line_item {$this->_aliases['civicrm_line_item']}
-                    ON  fitem.entity_id = {$this->_aliases['civicrm_line_item']}.id AND fitem.entity_table = 'civicrm_line_item'
+    // help make this sql a bit more readable!
+    $contact = $this->_aliases['civicrm_contact'];
+    $financial_trxn = $this->_aliases['civicrm_financial_trxn'];
+    $debit_financial_account = $this->_aliases['debit_civicrm_financial_account'];
+    $credit_financial_account = $this->_aliases['credit_civicrm_financial_account'];
+    $entity_financial_trxn = $this->_aliases['civicrm_entity_financial_trxn'];
+    $line_item= $this->_aliases['civicrm_line_item'];
+    $contribution = $this->_aliases['civicrm_contribution'];
+    $membership = $this->_aliases['civicrm_membership'];
+    $address = $this->_aliases['civicrm_address'];
+    $phone = $this->_aliases['civicrm_phone'];
+    $email = $this->_aliases['civicrm_email'];
 
-              LEFT JOIN civicrm_address {$this->_aliases['civicrm_address']} ON {$this->_aliases['civicrm_address']}.contact_id = {$this->_aliases['civicrm_contact']}.id AND {$this->_aliases['civicrm_address']}.is_primary = 1
-              LEFT JOIN civicrm_phone {$this->_aliases['civicrm_phone']} ON {$this->_aliases['civicrm_phone']}.contact_id = {$this->_aliases['civicrm_contact']}.id AND {$this->_aliases['civicrm_phone']}.is_primary = 1
-              LEFT JOIN civicrm_email {$this->_aliases['civicrm_email']} ON {$this->_aliases['civicrm_email']}.contact_id = {$this->_aliases['civicrm_contact']}.id AND {$this->_aliases['civicrm_email']}.is_primary = 1
-                AND {$this->_aliases['civicrm_email']}.on_hold = 0
+    $this->_from = "FROM civicrm_contact $contact {$this->_aclFrom}
+              INNER JOIN civicrm_contribution $contribution
+                      ON $contact.id = $contribution.contact_id AND
+                         $contribution.is_test = 0
+              LEFT  JOIN civicrm_entity_financial_trxn $entity_financial_trxn
+                      ON $contribution.id = $entity_financial_trxn.entity_id 
+                     AND $entity_financial_trxn.entity_table = 'civicrm_contribution'
+              LEFT  JOIN civicrm_financial_trxn $financial_trxn
+                      ON $financial_trxn.id = $entity_financial_trxn.financial_trxn_id
+              LEFT  JOIN civicrm_financial_account $debit_financial_account
+                      ON $financial_trxn.to_financial_account_id = $debit_financial_account.id
+              LEFT  JOIN civicrm_financial_account $credit_financial_account
+                      ON $financial_trxn.from_financial_account_id = $credit_financial_account.id
+              LEFT  JOIN civicrm_entity_financial_trxn {$entity_financial_trxn}_item
+                      ON $financial_trxn.id = {$entity_financial_trxn}_item.financial_trxn_id 
+                     AND {$entity_financial_trxn}_item.entity_table = 'civicrm_financial_item'
+              ";
 
-                    ";
+    if (!empty($this->_aliases['civicrm_batch'])) {
+      $batch = $this->_aliases['civicrm_batch'];
+      $this->_from .= "
+              -- to get the batch name, if contribution has been assigned to a batch.
+              LEFT  JOIN civicrm_entity_batch entity_batch
+                      ON entity_batch.entity_id = $financial_trxn.id 
+                     AND entity_batch.entity_table = 'civicrm_financial_trxn'
+              LEFT  JOIN civicrm_batch $batch
+                      ON $batch.id = entity_batch.batch_id
+                      ";
+    }
+
+    $this->_from .= "
+              -- to get the line items (e.g., line item financial type)
+              LEFT  JOIN civicrm_financial_item fitem
+                      ON fitem.id = {$entity_financial_trxn}_item.entity_id
+              LEFT  JOIN civicrm_financial_account credit_financial_item_financial_account
+                      ON fitem.financial_account_id = credit_financial_item_financial_account.id
+                      
+              -- to get the membership
+              LEFT  JOIN civicrm_line_item $line_item
+                      ON fitem.entity_id = $line_item.id AND fitem.entity_table = 'civicrm_line_item'
+              LEFT  JOIN civicrm_line_item mem_line_item 
+                      ON mem_line_item.price_field_id = $line_item.price_field_id 
+                     AND mem_line_item.contribution_id = contribution.id 
+                     AND mem_line_item.entity_Table = 'civicrm_membership'
+                     
+              -- Next join just in case contribution does not have a price set associated to it.
+              -- Typically, anything with a membership *would* get a price set (either user configured
+              -- or a quick config one).  But for historical or unconfirmed 'hear-say' bugs reasons,
+              -- this may or may not.  Keeping this historical 'more dangerous join' just in case.
+              LEFT  JOIN civicrm_membership_payment payment
+                      ON $contribution.id = payment.contribution_id 
+                  	 AND $line_item.price_field_id IS NULL -- IS NULL because if there is a price set
+                  	                                       -- Then this join shouldn't be used.
+                  	                                      
+              -- The membership join.  Ideally, just on mem_line_item, but for 'just-in-case' reasons,
+              -- Also keep legacy join on payment.membership_id, if mem_line_item join fails.
+              LEFT  JOIN civicrm_membership $membership
+                      ON $membership.id = COALESCE(mem_line_item.entity_id, payment.membership_id)
+                      
+              LEFT  JOIN civicrm_address $address 
+                      ON $address.contact_id = $contact.id 
+                     AND $address.is_primary = 1
+              LEFT  JOIN civicrm_phone $phone 
+                      ON $phone.contact_id = $contact.id 
+                     AND $phone.is_primary = 1
+              LEFT  JOIN civicrm_email $email 
+                      ON $email.contact_id = $contact.id 
+                     AND $email.is_primary = 1
+                     AND $email.on_hold = 0
+                   ";
   }
 
   function orderBy() {
@@ -389,6 +444,55 @@ class CRM_Extendedreport_Form_Report_Contribute_BookkeepingExtended extends CRM_
     $this->_columnHeaders["{$tableName}_{$fieldName}"]['type'] = CRM_Utils_Array::value('type', $field);
     $this->_columnHeaders["{$tableName}_{$fieldName}"]['dbAlias'] = CRM_Utils_Array::value('dbAlias', $field);
     $this->_selectAliases[] = $alias;
+  }
+
+  /**
+   * @return int
+   */
+  public function getBatchColumns() {
+    $cnt = CRM_Batch_BAO_Batch::singleValueQuery("SELECT COUNT(*) FROM civicrm_batch");
+    if ($cnt == 0) {
+      return array();
+    }
+    $specs = array(
+      'name' => array(
+        'title' => ts('Batch Name'),
+        'is_filters' => TRUE,
+        'is_order_bys' => TRUE,
+        'is_fields' => TRUE,
+        'is_group_bys' => TRUE,
+        // keep free form text... there could be lots of batches after a while
+        // make selection unwieldy.
+        'type' => CRM_Utils_Type::T_STRING,
+      ),
+      'status_id' => array(
+        'title' => ts('Batch Status'),
+        'is_filters' => TRUE,
+        'is_order_bys' => FALSE,
+        'is_fields' => TRUE,
+        'is_group_bys' => FALSE,
+        // keep free form text... there could be lots of batches after a while
+        // make selection unwieldy.
+        'alter_display' => 'alterBatchStatus',
+        'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+        'options' => CRM_Batch_BAO_Batch::buildOptions("status_id"),
+        'type' => CRM_Utils_Type::T_INT,
+      ),
+    );
+    return $this->buildColumns($specs, 'civicrm_batch', 'CRM_Batch_DAO_Batch');
+  }
+
+  /**
+   * @param $value
+   *
+   * @return mixed
+   */
+  function alterBatchStatus($value) {
+    if (!$value) {
+      return ts("N/A");
+    }
+    $values = CRM_Batch_BAO_Batch::buildOptions('status_id');
+    return $values[$value];
   }
 }
 
