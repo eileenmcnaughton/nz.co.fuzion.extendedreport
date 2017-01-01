@@ -5,15 +5,15 @@
 // http://wiki.civicrm.org/confluence/display/CRMDOC42/Hook+Reference
 return array(
   0 => array(
-    'name' => 'Extended Report - Contribution Overview',
+    'name' => 'Extended Report - Future income',
     'entity' => 'ReportTemplate',
     'params' => array(
       'version' => 3,
-      'label' => 'Extended Report - Contributions Overview',
-      'description' => 'Extended Report - Contributions Summary',
-      'class_name' => 'CRM_Extendedreport_Form_Report_Contribute_Overview',
-      'report_url' => 'contribution/overview',
-      'component' => 'CiviContribute',
+      'label' => 'Extended Report - Future income',
+      'description' => 'Income projections based on pledges',
+      'class_name' => 'CRM_Extendedreport_Form_Report_Pledge_Income',
+      'report_url' => 'pledge/income',
+      'component' => 'CiviPledge',
     ),
   ),
 );

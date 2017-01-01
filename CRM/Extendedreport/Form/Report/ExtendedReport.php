@@ -4223,11 +4223,11 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
           ),
           'scheduled_date' => array(
             'type' => CRM_Utils_Type::T_DATE,
-            'title' => 'Next Payment Due'
+            'title' => ts('Payment Due'),
           ),
           'scheduled_amount' => array(
             'type' => CRM_Utils_Type::T_MONEY,
-            'title' => 'Next Payment Amount'
+            'title' => ts('Payment Amount')
           ),
         ),
       ),
@@ -6596,7 +6596,6 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    * @return string
    */
   function alterFinancialType($value, &$row, $selectedField, $criteriaFieldName) {
-    $fn = $this->financialTypePseudoConstant;
     if ($this->_drilldownReport) {
       $criteriaQueryParams = CRM_Report_Utils_Report::getPreviewCriteriaQueryParams($this->_defaults, $this->_params);
       $url = CRM_Report_Utils_Report::getNextUrl(key($this->_drilldownReport),
@@ -6610,7 +6609,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
     $financialTypes = explode(',', $value);
     $display = array();
     foreach ($financialTypes as $financialType) {
-      $displayType = is_string(CRM_Contribute_PseudoConstant::$fn($financialType, FALSE)) ? CRM_Contribute_PseudoConstant::$fn($financialType, FALSE) : '';
+      $displayType = is_string(CRM_Contribute_PseudoConstant::financialType($financialType, FALSE)) ? CRM_Contribute_PseudoConstant::financialType($financialType, FALSE) : '';
       // Index the array in order to display each type only once.
       $display[$displayType] = $displayType;
     }
