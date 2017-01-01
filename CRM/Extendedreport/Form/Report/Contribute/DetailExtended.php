@@ -58,15 +58,8 @@ class CRM_Extendedreport_Form_Report_Contribute_DetailExtended extends CRM_Exten
    * Class constructor.
    */
   public function __construct() {
+    echo "<pre>";
     // Check if CiviCampaign is a) enabled and b) has active campaigns
-
-    $codeVersion = explode('.', CRM_Utils_System::version());
-    if (version_compare($codeVersion[0] . '.' . $codeVersion[1], 4.5) >= 0) {
-      $isHonor = FALSE;
-    }
-    else {
-      $isHonor = TRUE;
-    }
     $config = CRM_Core_Config::singleton();
     $campaignEnabled = in_array("CiviCampaign", $config->enableComponents);
     if ($campaignEnabled) {
@@ -478,25 +471,7 @@ class CRM_Extendedreport_Form_Report_Contribute_DetailExtended extends CRM_Exten
                    ON {$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_email']}.contact_id AND
                       {$this->_aliases['civicrm_email']}.is_primary = 1\n";
     }
-    $codeVersion = explode('.', CRM_Utils_System::version());
-    if (version_compare($codeVersion[0] . '.' . $codeVersion[1], 4.5) >= 0) {
-      // Now we only have soft credits - skip honor stuff.
-    }
-    else {
-      // include Honor name field
-      if ($this->_nameFieldHonor) {
-        $this->_from .= "
-            LEFT JOIN civicrm_contact contacthonor
-                      ON contacthonor.id = {$this->_aliases['civicrm_contribution']}.honor_contact_id";
-      }
-      // include Honor email field
-      if ($this->_emailFieldHonor) {
-        $this->_from .= "
-            LEFT JOIN civicrm_email emailhonor
-                      ON emailhonor.contact_id = {$this->_aliases['civicrm_contribution']}.honor_contact_id
-                      AND emailhonor.is_primary = 1\n";
-      }
-    }
+
     // include contribution note
     if (CRM_Utils_Array::value('contribution_note', $this->_params['fields']) ||
       CRM_Utils_Array::value('note_value', $this->_params)

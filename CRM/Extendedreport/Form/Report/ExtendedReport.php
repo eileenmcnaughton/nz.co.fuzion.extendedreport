@@ -4485,9 +4485,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    *
    * @return array
    */
-  function getContributionColumns() {
-    $this->setFinancialType();
-    $pseudoMethod = $this->financialTypePseudoConstant;
+  function getContributionColumns($options) {
 
     $specs = array(
       'id' => array(
@@ -4497,12 +4495,12 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'is_fields' => TRUE,
         'is_group_bys' => TRUE,
       ),
-      $this->financialTypeField => array(
+      'financial_type_id' => array(
         'title' => ts('Contribution Type (Financial)'),
         'type' => CRM_Utils_Type::T_INT,
         'alter_display' => 'alterFinancialType',
         'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-        'options' => CRM_Contribute_PseudoConstant::$pseudoMethod(),
+        'options' => CRM_Contribute_PseudoConstant::financialType(),
         'is_fields' => TRUE,
         'is_filters' => TRUE,
         'is_order_bys' => TRUE,
