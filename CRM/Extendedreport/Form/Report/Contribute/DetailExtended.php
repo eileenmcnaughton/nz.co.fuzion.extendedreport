@@ -438,13 +438,9 @@ UNION ALL
   }
 
   function alterDisplay(&$rows) {
-    // custom code to alter rows
-    $checkList = array();
     $entryFound = FALSE;
     $display_flag = $prev_cid = $cid = 0;
-    $contributionTypes = CRM_Contribute_PseudoConstant::financialType();
     $contributionStatus = CRM_Contribute_PseudoConstant::contributionStatus();
-    $paymentInstruments = CRM_Contribute_PseudoConstant::paymentInstrument();
     $contributionPages = CRM_Contribute_PseudoConstant::contributionPage();
     $honorTypes = CRM_Core_OptionGroup::values('honor_type', FALSE, FALSE, FALSE, NULL, 'label');
 
@@ -509,10 +505,6 @@ UNION ALL
         $rows[$rowNum]['civicrm_contact_honor_sort_name_honor_hover'] = ts("View Contact Summary for Honoree.");
       }
 
-      if ($value = CRM_Utils_Array::value('civicrm_contribution_financial_type_id', $row)) {
-        $rows[$rowNum]['civicrm_contribution_financial_type_id'] = $contributionTypes[$value];
-        $entryFound = TRUE;
-      }
       if ($value = CRM_Utils_Array::value('civicrm_contribution_contribution_status_id', $row)) {
         $rows[$rowNum]['civicrm_contribution_contribution_status_id'] = $contributionStatus[$value];
         $entryFound = TRUE;
@@ -521,10 +513,7 @@ UNION ALL
         $rows[$rowNum]['civicrm_contribution_contribution_page_id'] = $contributionPages[$value];
         $entryFound = TRUE;
       }
-      if ($value = CRM_Utils_Array::value('civicrm_contribution_payment_instrument_id', $row)) {
-        $rows[$rowNum]['civicrm_contribution_payment_instrument_id'] = $paymentInstruments[$value];
-        $entryFound = TRUE;
-      }
+
       if ($value = CRM_Utils_Array::value('civicrm_contribution_honor_type_id', $row)) {
         $rows[$rowNum]['civicrm_contribution_honor_type_id'] = $honorTypes[$value];
         $entryFound = TRUE;
@@ -601,8 +590,8 @@ WHERE  civicrm_contribution_contribution_id={$row['civicrm_contribution_contribu
       if (!$entryFound) {
         break;
       }
-      $lastKey = $rowNum;
     }
+    parent::alterDisplay($rows);
   }
 
   function sectionTotals() {
