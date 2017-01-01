@@ -3787,6 +3787,9 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       foreach ($types as $type) {
         if (!empty($spec['is_' . $type])) {
           $columns[$tableName][$type][$fieldAlias] = $spec;
+          if (isset($spec[$type . '_defaults'])) {
+            $columns[$tableName][$type][$fieldAlias]['default'] = $spec[$type . '_defaults'];
+          }
         }
       }
     }
@@ -4119,6 +4122,63 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       ),
     );
     return $this->buildColumns($spec, $options['prefix'] . 'civicrm_financial_account', 'CRM_Financial_DAO_FinancialAccount', NULL, $defaults);
+  }
+
+  protected function getFinancialTrxnColumns() {
+    $specs = array(
+        'check_number' => array(
+          'title' => ts('Cheque #'),
+          'default' => TRUE,
+          'type' => CRM_Utils_Type::T_STRING,
+        ),
+        'payment_instrument_id' => array(
+          'title' => ts('Payment Instrument'),
+          'default' => TRUE,
+          'alter_display' => 'alterPaymentType',
+          'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+          'options' => CRM_Contribute_PseudoConstant::paymentInstrument(),
+          'type' => CRM_Utils_Type::T_INT,
+          'is_fields' => TRUE,
+          'is_filters' => TRUE,
+          'is_order_bys' => TRUE,
+        ),
+        'currency' => array(
+          'required' => TRUE,
+          'no_display' => FALSE,
+          'type' => CRM_Utils_Type::T_STRING,
+          'title' => ts('Currency'),
+          'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+          'options' => CRM_Core_OptionGroup::values('currencies_enabled'),
+          'is_fields' => TRUE,
+          'is_filters' => TRUE,
+        ),
+        'trxn_date' => array(
+          'title' => ts('Transaction Date'),
+          'default' => TRUE,
+          'type' => CRM_Utils_Type::T_DATE,
+          'operatorType' => CRM_Report_Form::OP_DATE,
+          'is_fields' => TRUE,
+          'is_filters' => TRUE,
+        ),
+        'trxn_id' => array(
+          'title' => ts('Transaction #'),
+          'default' => TRUE,
+          'is_fields' => TRUE,
+          'is_filters' => TRUE,
+          'type' => CRM_Utils_Type::T_STRING,
+        ),
+        'financial_trxn_status_id' => array(
+          'name' => 'status_id',
+          'is_fields' => TRUE,
+          'is_filters' => TRUE,
+          'title' => ts('Transaction Status'),
+          'filters_default' => array(1),
+          'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+          'type' => CRM_Utils_Type::T_INT,
+          'options' => CRM_Contribute_PseudoConstant::contributionStatus(),
+        )
+      );
+      return $this->buildColumns($specs, 'civicrm_financial_trxn', 'CRM_Core_BAO_FinancialTrxn');
   }
 
   /**
@@ -4538,6 +4598,43 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       );
 
     return $this->buildColumns($spec, $options['prefix'] . 'civicrm_contribution_summary', 'CRM_Contribute_DAO_Contribution', NULL, $defaults);
+  }
+
+  /**
+   * Get columns for the batch.
+   *
+   * @return array
+   */
+  public function getBatchColumns() {
+    if (!CRM_Batch_BAO_Batch::singleValueQuery("SELECT COUNT(*) FROM civicrm_batch")) {
+      return array();
+    }
+    $specs = array(
+      'title' => array(
+        'title' => ts('Batch Title'),
+        'is_filters' => TRUE,
+        'is_order_bys' => TRUE,
+        'is_fields' => TRUE,
+        'is_group_bys' => TRUE,
+        // keep free form text... there could be lots of batches after a while
+        // make selection unwieldy.
+        'type' => CRM_Utils_Type::T_STRING,
+      ),
+      'status_id' => array(
+        'title' => ts('Batch Status'),
+        'is_filters' => TRUE,
+        'is_order_bys' => FALSE,
+        'is_fields' => TRUE,
+        'is_group_bys' => FALSE,
+        // keep free form text... there could be lots of batches after a while
+        // make selection unwieldy.
+        'alter_display' => 'alterBatchStatus',
+        'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+        'options' => CRM_Batch_BAO_Batch::buildOptions("status_id"),
+        'type' => CRM_Utils_Type::T_INT,
+      ),
+    );
+    return $this->buildColumns($specs, 'civicrm_batch', 'CRM_Batch_DAO_Batch');
   }
 
   /**
@@ -5488,6 +5585,11 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    */
   function getAvailableJoins() {
     return array(
+      'batch_from_financialTrxn' => array(
+        'leftTable' => 'civicrm_financial_trxn',
+        'rightTable' => 'civicrm_batch',
+        'callback' => 'joinBatchFromFinancialTrxn'
+      ),
       'campaign_fromPledge' => array(
         'leftTable' => 'civicrm_pledge',
         'rightTable' => 'civicrm_campaign',
@@ -5532,6 +5634,11 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'leftTable' => 'civicrm_membership',
         'rightTable' => 'civicrm_contribution',
         'callback' => 'joinContributionFromMembership',
+      ),
+      'financial_trxn_from_contribution' => array(
+        'leftTable' => 'civicrm_contribution',
+        'rightTable' => 'civicrm_financial_trxn',
+        'callback' => 'joinFinancialTrxnFromContribution',
       ),
       'membership_from_contribution' => array(
         'leftTable' => 'civicrm_contribution',
@@ -5597,6 +5704,11 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'leftTable' => 'civicrm_contact',
         'rightTable' => 'civicrm_email',
         'callback' => 'joinEmailFromContact',
+      ),
+      'primary_phone_from_contact' => array(
+        'leftTable' => 'civicrm_contact',
+        'rightTable' => 'civicrm_phone',
+        'callback' => 'joinPrimaryPhoneFromContact',
       ),
       'phone_from_contact' => array(
         'leftTable' => 'civicrm_contact',
@@ -5787,14 +5899,28 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     ";
   }
   /**
-   * Add join from contact table to phone. Prefix will be added to both tables
-   * as it's assumed you are using it to get address of a secondary contact
+   * Add join from contact table to phone.
+   *
+   * This join may include multiple phones & should be used when displaying the phone block.
    *
    * @param string $prefix
    */
   function joinPhoneFromContact($prefix = '') {
     $this->_from .= " LEFT JOIN civicrm_phone {$this->_aliases[$prefix . 'civicrm_phone']}
-    ON {$this->_aliases[$prefix . 'civicrm_phone']}.contact_id = {$this->_aliases[$prefix . 'civicrm_contact']}.id";
+    ON {$this->_aliases[$prefix . 'civicrm_phone']}.contact_id = {$this->_aliases[$prefix . 'civicrm_contact']}.id
+    ";
+  }
+
+  /**
+   * Add join from contact table to primary phone.
+   *
+   * @param string $prefix
+   */
+  function joinPrimaryPhoneFromContact($prefix = '') {
+    $this->_from .= " LEFT JOIN civicrm_phone {$this->_aliases[$prefix . 'civicrm_phone']}
+    ON {$this->_aliases[$prefix . 'civicrm_phone']}.contact_id = {$this->_aliases[$prefix . 'civicrm_contact']}.id
+    AND {$this->_aliases[$prefix . 'civicrm_phone']}.is_primary = 1
+    ";
   }
 
   /*
@@ -6152,7 +6278,33 @@ ON {$this->_aliases['civicrm_line_item']}.contid = {$this->_aliases['civicrm_con
 ";
   }
 
-  function joinContactFromParticipant() {
+  /**
+   * Join financial transaction table from contribution table.
+   */
+  protected function joinFinancialTrxnFromContribution() {
+    $this->_from .= "
+      LEFT JOIN civicrm_entity_financial_trxn {$this->_aliases['civicrm_entity_financial_trxn']}
+      ON ({$this->_aliases['civicrm_contribution']}.id = {$this->_aliases['civicrm_entity_financial_trxn']}.entity_id
+      AND {$this->_aliases['civicrm_entity_financial_trxn']}.entity_table = 'civicrm_contribution')
+      LEFT JOIN civicrm_financial_trxn {$this->_aliases['civicrm_financial_trxn']}
+      ON {$this->_aliases['civicrm_financial_trxn']}.id = {$this->_aliases['civicrm_entity_financial_trxn']}.financial_trxn_id
+    ";
+  }
+
+  /**
+   * Join batch table from Financial Trxn.
+   */
+  protected function joinBatchFromFinancialTrxn() {
+    $this->_from .= "
+      LEFT  JOIN civicrm_entity_batch entity_batch
+        ON entity_batch.entity_id = {$this->_aliases['civicrm_financial_trxn']}.id
+        AND entity_batch.entity_table = 'civicrm_financial_trxn'
+      LEFT  JOIN civicrm_batch {$this->_aliases['civicrm_batch']}
+        ON {$this->_aliases['civicrm_batch']}.id = entity_batch.batch_id";
+  }
+
+
+  protected function joinContactFromParticipant() {
     $this->_from .= "
       LEFT JOIN {$this->_participantTable} cp ON cp.id = {$this->_aliases['civicrm_participant']}.id
       LEFT JOIN civicrm_contact {$this->_aliases['civicrm_contact']}
@@ -6699,6 +6851,19 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
   function alterActivityType($value) {
     $activityTypes = $activityType = CRM_Core_PseudoConstant::activityType(TRUE, TRUE, FALSE, 'label', TRUE);
     return CRM_Utils_Array::value($value, $activityTypes);
+  }
+
+  /**
+   * @param $value
+   *
+   * @return mixed
+   */
+  function alterBatchStatus($value) {
+    if (!$value) {
+      return ts("N/A");
+    }
+    $values = CRM_Batch_BAO_Batch::buildOptions('status_id');
+    return $values[$value];
   }
 
   /**
