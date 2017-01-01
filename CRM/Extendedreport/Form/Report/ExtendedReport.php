@@ -263,18 +263,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   }
 
   /**
-   * Wrapper for getOptions / pseudoconstant to get contact type options.
-   */
-  function getContactTypeOptions() {
-    if (method_exists('CRM_Contribute_PseudoConstant', 'contactType')) {
-      return CRM_Contribute_PseudoConstant::contactType();
-    }
-    else {
-      return CRM_Contact_BAO_Contact::buildOptions('contact_type');
-    }
-  }
-
-  /**
    * Check if ActivityContact table should be used.
    */
 
@@ -4641,7 +4629,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'title' => ts($options['prefix_label'] . 'Contact Type'),
         'name' => 'contact_type',
         'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-        'options' => $this->getContactTypeOptions(),
+        'options' => CRM_Contact_BAO_Contact::buildOptions('contact_type'),
         'is_fields' => TRUE,
         'is_filters' => TRUE,
         'is_group_bys' => TRUE,
@@ -4650,7 +4638,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'title' => ts($options['prefix_label'] . 'Contact Sub Type'),
         'name' => 'contact_sub_type',
         'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-        'options' => $this->getContactTypeOptions(),
+        'options' => CRM_Contact_BAO_Contact::buildOptions('contact_sub_type'),
         'is_fields' => TRUE,
         'is_filters' => TRUE,
         'is_group_bys' => TRUE,

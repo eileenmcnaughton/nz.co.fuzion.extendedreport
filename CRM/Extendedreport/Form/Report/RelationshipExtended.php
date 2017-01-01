@@ -72,13 +72,13 @@ class CRM_Extendedreport_Form_Report_RelationshipExtended extends CRM_Extendedre
             'contact_type_a' => array(
               'title' => ts('Contact Type  A'),
               'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-              'options' => $this->getContactTypeOptions(),
+              'options' => CRM_Contact_BAO_Contact::buildOptions('contact_type'),
               'type' => CRM_Utils_Type::T_STRING
             ),
             'contact_type_b' => array(
               'title' => ts('Contact Type  B'),
               'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-              'options' => $this->getContactTypeOptions(),
+              'options' => CRM_Contact_BAO_Contact::buildOptions('contact_type'),
               'type' => CRM_Utils_Type::T_STRING
             ),
           ),
