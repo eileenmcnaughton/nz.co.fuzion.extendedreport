@@ -357,7 +357,7 @@ class CRM_Extendedreport_Form_Report_Pledge_Sybuns extends CRM_Extendedreport_Fo
       $upTo_year = $current_year - 4;
 
       $rows = $row = array();
-      $this->addDeveloperTab($sql);
+      $this->addToDeveloperTab($sql);
       $dao = CRM_Core_DAO::executeQuery($sql);
       $contributionSum = 0;
       while ($dao->fetch()) {

@@ -1785,7 +1785,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       // build array of result based on column headers. This method also allows
       // modifying column headers before using it to build result set i.e $rows.
       $rows = array();
-      $this->addDeveloperTab($sql);
+      $this->addToDeveloperTab($sql);
       $this->buildRows($sql, $rows);
       $this->addAggregatePercentRow($rows);
 

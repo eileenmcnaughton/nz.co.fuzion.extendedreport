@@ -93,7 +93,7 @@ class CRM_Extendedreport_Form_Report_Pledge_Detail extends CRM_Extendedreport_Fo
     $this->buildACLClause($this->_aliases['civicrm_contact']);
     $sql = $this->buildQuery();
 
-    $this->addDeveloperTab($sql);
+    $this->addToDeveloperTab($sql);
     $rows = $payment = array();
     $this->buildRows($sql, $rows);
 
