@@ -70,23 +70,6 @@ function extendedreport_civicrm_managed(&$entities) {
 }
 
 /**
- * Implements hook_civicrm_permission().
- */
-function extendedreport_civicrm_permission(&$permissions) {
-  $prefix = ts('CiviCRM Extended report') . ': ';
-  if (extendedreport_version_at_least('4.6')) {
-    $permissions['access CiviCRM report developer'] = array(
-      $prefix . ts('access CiviCRM report developer'),
-      ts('View developer tab in extended reports'),
-    );
-  }
-  else {
-    $permissions['access CiviCRM report developer'] =
-      $prefix . ts('access CiviCRM report developer');
-  }
-}
-
-/**
  * Check version is at least as high as the one passed.
  *
  * @param string $version

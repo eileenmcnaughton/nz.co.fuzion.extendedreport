@@ -1873,34 +1873,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   }
 
   /**
-   * The intent is to add a tab for developers to view the sql.
-   *
-   * Currently using dpm.
-   *
-   * @param string $sql
-   */
-  protected function addDeveloperTab($sql) {
-    if (!CRM_Core_Permission::check('access CiviCRM report developer')) {
-      return;
-    }
-    $this->tabs['Developer'] = array(
-      'title' => ts('Developer'),
-      'tpl' => 'Developer',
-      'div_label' => 'set-developer',
-    );
-
-    $this->assignTabs();
-    foreach (array('LEFT JOIN') as $term) {
-      $sql = str_replace($term, '<br>&nbsp&nbsp' . $term, $sql);
-    }
-    foreach (array('FROM', 'WHERE', 'GROUP BY', 'ORDER BY', 'LIMIT') as $term) {
-      $sql = str_replace($term, '<br><br>' . $term, $sql);
-    }
-
-    $this->assign('sql', $sql);
-  }
-
-  /**
    * Add an extra row with percentages for a single row result to the chart (this is where
    * there is no grandTotal row
    *
