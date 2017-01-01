@@ -3695,6 +3695,10 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       'filters' => TRUE,
       'join_filters' => FALSE,
       'join_fields' => FALSE,
+      'fields_defaults' => array(),
+      'filters_defaults' => array(),
+      'group_by_defaults' => array(),
+      'order_by_defaults' => array(),
     );
     $options = array_merge($defaultOptions, $options);
 
@@ -3787,13 +3791,12 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       foreach ($types as $type) {
         if (!empty($spec['is_' . $type])) {
           $columns[$tableName][$type][$fieldAlias] = $spec;
-          if (isset($spec[$type . '_defaults'])) {
-            $columns[$tableName][$type][$fieldAlias]['default'] = $spec[$type . '_defaults'];
+          if (isset($defaults[$type . '_defaults']) && isset($defaults[$type . '_defaults'][$spec['name']])) {
+            $columns[$tableName][$type][$fieldAlias]['default'] = $defaults[$type . '_defaults'][$spec['name']];
           }
         }
       }
     }
-
     return $columns;
   }
 
@@ -4525,6 +4528,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'type' => CRM_Utils_Type::T_INT,
         'is_fields' => TRUE,
         'is_filters' => TRUE,
+        'is_order_bys' => TRUE,
         'is_group_bys' => TRUE,
       ),
       'campaign_id' => array(
@@ -4534,10 +4538,13 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'options' => CRM_Campaign_BAO_Campaign::getCampaigns(),
         'is_fields' => TRUE,
         'is_filters' => TRUE,
+        'is_order_bys' => TRUE,
+        'is_group_bys' => TRUE,
       ),
       'source' => array(
         'title' => 'Contribution Source',
         'is_fields' => TRUE,
+        'is_filters' => TRUE,
       ),
       'trxn_id' => array('is_fields' => TRUE),
       'receive_date' => array(
@@ -4557,8 +4564,25 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       'fee_amount' => array('is_fields' => TRUE),
       'net_amount' => array('is_fields' => TRUE),
       'check_number' => array('is_fields' => TRUE),
+      'contribution_page_id' => array(
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+        'title' => ts('Contribution Page'),
+        'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+        'options' => CRM_Contribute_PseudoConstant::contributionPage(),
+        'type' => CRM_Utils_Type::T_INT,
+      ),
+      'currency' => array(
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+        'title' => 'Currency',
+        'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+        'options' => CRM_Core_OptionGroup::values('currencies_enabled'),
+        'default' => NULL,
+        'type' => CRM_Utils_Type::T_STRING,
+      ),
     );
-    return $this->buildColumns($specs, 'civicrm_contribution', 'CRM_Contribute_BAO_Contribution');
+    return $this->buildColumns($specs, 'civicrm_contribution', 'CRM_Contribute_BAO_Contribution', NULL, $this->getDefaultsFromOptions($options));
   }
 
   /**
@@ -4657,7 +4681,6 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     );
 
     $options = array_merge($defaultOptions, $options);
-    $defaults = $this->getDefaultsFromOptions($options);
     $orgOnly = FALSE;
     if (CRM_Utils_Array::value('contact_type', $options) == 'Organization') {
       $orgOnly = TRUE;
@@ -4771,7 +4794,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       );
     }
 
-    return $this->buildColumns($spec, $options['prefix'] . 'civicrm_contact', 'CRM_Contact_DAO_Contact', $tableAlias, $defaults);
+    return $this->buildColumns($spec, $options['prefix'] . 'civicrm_contact', 'CRM_Contact_DAO_Contact', $tableAlias, $this->getDefaultsFromOptions($options));
   }
 
   /**

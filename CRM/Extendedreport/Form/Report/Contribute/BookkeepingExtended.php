@@ -56,8 +56,8 @@ class CRM_Extendedreport_Form_Report_Contribute_BookkeepingExtended extends CRM_
     ))
     + $this->getColumns('LineItem')
     + $this->getColumns('Contribution', array(
-      'field_defaults' => array('receive_date', 'id'),
-      'filters_defaults' => array('contribution_status_id' => array('IN' => array(1)),
+      'fields_defaults' => array('receive_date'),
+      'filters_defaults' => array('contribution_status_id' => array(1),
      )))
     +  $this->getColumns('FinancialTrxn', array(
       'filters_defaults' => array('status_id' => array('IN' => array(1)),
