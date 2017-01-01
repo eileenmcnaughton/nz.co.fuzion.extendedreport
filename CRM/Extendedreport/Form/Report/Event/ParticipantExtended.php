@@ -258,7 +258,10 @@ class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Exten
       'civicrm_event' => array(
         'dao' => 'CRM_Event_DAO_Event',
         'fields' => array(
-          'event_type_id' => array('title' => ts('Event Type')),
+          'event_type_id' => array(
+            'title' => ts('Event Type'),
+            'type' => CRM_Utils_Type::T_INT,
+          ),
           'event_start_date' => array('title' => ts('Event Start Date')),
         ),
         'grouping' => 'event-fields',
@@ -268,6 +271,7 @@ class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Exten
             'title' => ts('Event Type'),
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
             'options' => CRM_Core_OptionGroup::values('event_type'),
+            'type' => CRM_Utils_Type::T_INT,
           ),
           'event_start_date' => array(
             'title' => ts('Event Start Date'),
@@ -279,6 +283,7 @@ class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Exten
             'title' => ts('Event Type'),
             'default_weight' => '2',
             'default_order' => 'ASC',
+            'type' => CRM_Utils_Type::T_INT,
           ),
         ),
       ),
@@ -292,7 +297,10 @@ class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Exten
             'csv_display' => TRUE,
             'title' => ts('Contribution ID'),
           ),
-          'financial_type_id' => array('title' => ts('Financial Type')),
+          'financial_type_id' => array(
+            'title' => ts('Financial Type'),
+            'type' => CRM_Utils_Type::T_INT,
+          ),
           'receive_date' => array('title' => ts('Payment Date')),
           'contribution_status_id' => array('title' => ts('Contribution Status')),
           'payment_instrument_id' => array('title' => ts('Payment Type')),
@@ -319,6 +327,7 @@ class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Exten
             'title' => ts('Financial Type'),
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
             'options' => CRM_Contribute_PseudoConstant::financialType(),
+            'type' => CRM_Utils_Type::T_INT,
           ),
           'currency' => array(
             'title' => ts('Contribution Currency'),
@@ -331,12 +340,14 @@ class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Exten
             'title' => ts('Payment Type'),
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
             'options' => CRM_Contribute_PseudoConstant::paymentInstrument(),
+            'type' => CRM_Utils_Type::T_INT,
           ),
           'contribution_status_id' => array(
             'title' => ts('Contribution Status'),
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
             'options' => CRM_Contribute_PseudoConstant::contributionStatus(),
             'default' => NULL,
+            'type' => CRM_Utils_Type::T_INT,
           ),
         ),
       ),
@@ -349,6 +360,7 @@ class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Exten
             'title' => ts('Fee Level'),
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
             'options' => $this->getPriceLevels(),
+            'type' => CRM_Utils_Type::T_INT,
           ),
         ),
       ),
