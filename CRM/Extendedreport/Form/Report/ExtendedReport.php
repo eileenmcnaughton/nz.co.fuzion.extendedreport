@@ -364,7 +364,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       // 'dip into that' as required. But a lot to untangle before then....
       // allowing it on group_bys & order_bys can lead to required fields defaulting
       // to being a group by.
-      $fieldGroups = array('fields', 'filters', 'metadata', 'join_filters');
+      $fieldGroups = array('fields', 'filters', 'metadata', 'join_filters', 'group_bys');
       // Extended reports customisation ends ==
 
       foreach ($fieldGroups as $fieldGrp) {
@@ -418,8 +418,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
             // set dbAlias = alias.name, unless already set
             if (!isset($this->_columns[$tableName][$fieldGrp][$fieldName]['dbAlias'])) {
               $this->_columns[$tableName][$fieldGrp][$fieldName]['dbAlias']
-                = $alias . '.' .
-                $this->_columns[$tableName][$fieldGrp][$fieldName]['name'];
+                = $alias . '.' . $this->_columns[$tableName][$fieldGrp][$fieldName]['name'];
             }
 
             // a few auto fills for filters
@@ -3419,7 +3418,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         ))
         ) {
           if ($htmlType == 'Select' || $htmlType == 'Radio') {
-            $retValue = $fieldValueMap[$customField['option_group_id']][$value];
+            $retValue = CRM_Utils_Array::value($value, $fieldValueMap[$customField['option_group_id']]);
           } else {
             $retValue = $value;
           }
@@ -4210,28 +4209,31 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
   /**
    * @return array
    */
-  protected function getPledgePaymentColumns() {
-    return array(
-      'civicrm_pledge_payment' => array(
-        'dao' => 'CRM_Pledge_DAO_PledgePayment',
-        'grouping' => 'pledge-fields',
-        'fields' => array(
-          'actual_amount' => array(
-            'title' => ts('Amount Paid'),
-            'type' => CRM_Utils_Type::T_MONEY,
-            'statistics' => array('sum' => ts('Total Amount Paid')),
-          ),
-          'scheduled_date' => array(
-            'type' => CRM_Utils_Type::T_DATE,
-            'title' => ts('Payment Due'),
-          ),
-          'scheduled_amount' => array(
-            'type' => CRM_Utils_Type::T_MONEY,
-            'title' => ts('Payment Amount')
-          ),
-        ),
+  protected function getPledgePaymentColumns($options) {
+    $specs = array(
+      'actual_amount' => array(
+        'title' => ts('Amount Paid'),
+        'type' => CRM_Utils_Type::T_MONEY,
+        'statistics' => array('sum' => ts('Total Amount Paid')),
+        'is_fields' => TRUE,
+      ),
+      'scheduled_date' => array(
+        'type' => CRM_Utils_Type::T_DATE,
+        'title' => ts('Scheduled Payment Due'),
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+        'is_group_bys' => TRUE,
+        'frequency' => TRUE,
+      ),
+      'scheduled_amount' => array(
+        'type' => CRM_Utils_Type::T_MONEY,
+        'title' => ts('Scheduled Payment Amount'),
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
       ),
     );
+    return $this->buildColumns($specs, 'civicrm_pledge_payment', 'CRM_Pledge_BAO_PledgePayment', NULL, $this->getDefaultsFromOptions($options));
+
   }
 
   /**
@@ -5616,6 +5618,11 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'rightTable' => 'civicrm_campaign',
         'callback' => 'joinCampaignFromPledge',
       ),
+      'pledge_from_pledge_payment' => array(
+        'leftTable' => 'civicrm_pledge_payment',
+        'rightTable' => 'civicrm_pledge',
+        'callback' => 'joinPledgeFromPledgePayment',
+      ),
       'priceFieldValue_from_lineItem' => array(
         'leftTable' => 'civicrm_line_item',
         'rightTable' => 'civicrm_price_field_value',
@@ -5700,6 +5707,11 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'leftTable' => 'civicrm_contribution',
         'rightTable' => 'civicrm_contact',
         'callback' => 'joinContactFromContribution',
+      ),
+      'contact_from_pledge' => array(
+        'leftTable' => 'civicrm_pledge',
+        'rightTable' => 'civicrm_contact',
+        'callback' => 'joinContactFromPledge',
       ),
       'event_from_participant' => array(
         'leftTable' => 'civicrm_participant',
@@ -6120,6 +6132,15 @@ AND {$this->_aliases['civicrm_line_item']}.entity_table = 'civicrm_participant')
   }
 
   /**
+   * Define join from pledge payment table to pledge table..
+   */
+  protected function joinPledgeFromPledgePayment() {
+    $this->_from .= "
+     LEFT JOIN civicrm_pledge {$this->_aliases['civicrm_pledge']}
+     ON {$this->_aliases['civicrm_pledge_payment']}.pledge_id = {$this->_aliases['civicrm_pledge']}.id";
+  }
+
+  /**
    * Define join from pledge table to pledge payment table.
    */
   protected function joinPledgePaymentFromPledge() {
@@ -6347,6 +6368,16 @@ ON {$this->_aliases['civicrm_membership']}.contact_id = {$this->_aliases['civicr
   function joinContactFromContribution() {
     $this->_from .= " LEFT JOIN civicrm_contact {$this->_aliases['civicrm_contact']}
 ON {$this->_aliases['civicrm_contribution']}.contact_id = {$this->_aliases['civicrm_contact']}.id";
+  }
+
+  /**
+   * Define join from pledge table to contact table.
+   */
+  function joinContactFromPledge() {
+    $this->_from .= "
+      LEFT JOIN civicrm_contact {$this->_aliases['civicrm_contact']}
+      ON {$this->_aliases['civicrm_pledge']}.contact_id = {$this->_aliases['civicrm_contact']}.id
+    ";
   }
 
   /**
