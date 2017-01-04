@@ -18,8 +18,14 @@ class CRM_Extendedreport_Form_Report_Pledge_Income extends CRM_Extendedreport_Fo
    * Class constructor.
    */
   public function __construct() {
+    $paymentStatuses = array_flip(CRM_Pledge_BAO_PledgePayment::buildOptions('status_id'));
     $this->_columns = $this->getColumns('PledgePayment', array(
-      'fields_defaults' => array('scheduled_amount', 'scheduled_date')
+      'fields_defaults' => array('scheduled_amount', 'scheduled_date'),
+      'filters_defaults' => array('status_id' => array(
+        $paymentStatuses['Pending'],
+        $paymentStatuses['Overdue'],
+      )),
+      'is_order_bys' => TRUE,
     ))
     + $this->getColumns('Contact')
     + $this->getColumns('Pledge');

@@ -4207,6 +4207,8 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
   }
 
   /**
+   * @param array $options
+   *
    * @return array
    */
   protected function getPledgePaymentColumns($options) {
@@ -4223,6 +4225,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'is_fields' => TRUE,
         'is_filters' => TRUE,
         'is_group_bys' => TRUE,
+        'is_order_bys' => TRUE,
         'frequency' => TRUE,
       ),
       'scheduled_amount' => array(
@@ -4230,6 +4233,16 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'title' => ts('Scheduled Payment Amount'),
         'is_fields' => TRUE,
         'is_filters' => TRUE,
+        'is_order_bys' => TRUE,
+      ),
+      'status_id' => array(
+        'type' => CRM_Utils_Type::T_INT,
+        'title' => ts('Payment Status'),
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+        'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+        'options' => CRM_Contribute_PseudoConstant::contributionStatus(),
+        'alter_display' => 'alterContributionStatus',
       ),
     );
     return $this->buildColumns($specs, 'civicrm_pledge_payment', 'CRM_Pledge_BAO_PledgePayment', NULL, $this->getDefaultsFromOptions($options));
@@ -6647,10 +6660,8 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
     return implode('|', $display);
   }
 
-  /*
-* Retrieve text for contribution status from pseudoconstant
-*/
   /**
+   * Retrieve text for contribution status from pseudoconstant
    * @param $value
    * @param $row
    *
