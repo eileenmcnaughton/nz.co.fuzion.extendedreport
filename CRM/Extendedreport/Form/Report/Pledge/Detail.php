@@ -167,11 +167,12 @@ class CRM_Extendedreport_Form_Report_Pledge_Detail extends CRM_Extendedreport_Fo
     $alias = "{$tableName}_{$fieldName}_sum";
     if ($fieldName == 'balance_amount') {
       $alias = $this->selectStatSum($tableName, $fieldName, $field);
-      return " SUM(COALESCE(IF((pledge.status_id =3), pledge_payment_civireport.actual_amount, pledge.amount), 0)) - COALESCE(sum(pledge_payment_civireport.actual_amount), 0) as $alias ";
+      return " SUM(COALESCE(IF((pledge.status_id =3), {$this->_aliases['civicrm_pledge_payment']}.actual_amount, pledge.amount), 0))
+       - COALESCE(sum({$this->_aliases['civicrm_pledge_payment']}.actual_amount), 0) as $alias ";
     }
     if ($fieldName == 'pledge_amount') {
       $alias = $this->selectStatSum($tableName, $fieldName, $field);
-      return " SUM(COALESCE(IF((pledge.status_id =3), pledge_payment_civireport.actual_amount, pledge.amount), 0)) as $alias ";
+      return " SUM(COALESCE(IF((pledge.status_id =3), {$this->_aliases['civicrm_pledge_payment']}.actual_amount, pledge.amount), 0)) as $alias ";
     }
     return parent::selectClause($tableName, $tableKey, $fieldName, $field);
 
