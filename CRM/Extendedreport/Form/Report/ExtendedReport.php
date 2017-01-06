@@ -1157,13 +1157,39 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
         }
         if (array_key_exists('group_bys', $table)) {
           foreach ($table['group_bys'] as $fieldName => $field) {
-            $metadata = $this->_columns[$tableName]['metadata'][$fieldName];
-            if (CRM_Utils_Array::value($fieldName, $this->_params['group_bys'])) {
-              if (!in_array($metadata['dbAlias'], $this->_groupByArray)) {
-                $this->_groupByArray[$tableName . '_' . $fieldName] = $metadata['dbAlias'];
+          }
+          foreach ($table['group_bys'] as $fieldName => $fieldData) {
+            $field = $this->_columns[$tableName]['metadata'][$fieldName];
+            if (!empty($this->_params['group_bys'][$fieldName])) {
+              if (!empty($field['chart'])) {
+                $this->assign('chartSupported', TRUE);
+              }
+
+              if (!empty($table['group_bys'][$fieldName]['frequency']) &&
+                !empty($this->_params['group_bys_freq'][$fieldName])
+              ) {
+
+                switch ($this->_params['group_bys_freq'][$fieldName]) {
+                  case 'FISCALYEAR' :
+                    $this->_groupByArray[$tableName . '_' . $fieldName . '_start'] = self::fiscalYearOffset($field['dbAlias']);
+
+                  case 'YEAR' :
+                    $this->_groupByArray[$tableName . '_' . $fieldName . '_start'] = " {$this->_params['group_bys_freq'][$fieldName]}({$field['dbAlias']})";
+
+                  default :
+                    $this->_groupByArray[$tableName . '_' . $fieldName . '_start'] =
+                      "EXTRACT(YEAR_{$this->_params['group_bys_freq'][$fieldName]} FROM {$field['dbAlias']})";
+
+                }
+              }
+              else {
+                if (!in_array($field['dbAlias'], $this->_groupByArray)) {
+                  $this->_groupByArray[$tableName . '_' . $fieldName] = $field['dbAlias'];
+                }
               }
             }
           }
+
         }
       }
     }
@@ -1751,7 +1777,9 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   }
 
   /**
-   * re-order column headers based on 'fields' order
+   * re-order column headers.
+   *
+   * This is based on the input field 'fields' and shuffling group bys to the left.
    */
   function reOrderColumnHeaders() {
     $fieldMap = array();
@@ -1764,6 +1792,18 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
         }
       }
     }
+
+    foreach (array_keys($this->_groupByArray) as $groupByField) {
+      if (stristr($groupByField, '_start')) {
+        $ungroupedField = str_replace(array('_start'), '', $groupByField);
+        unset($this->_columnHeaders[$ungroupedField]);
+        $fieldMapKey = array_search($ungroupedField, $fieldMap);
+        if ($fieldMapKey) {
+          $fieldMap[$fieldMapKey] = $fieldMap[$fieldMapKey] . '_start';
+        }
+      }
+    }
+
     $fieldMap = array_merge(CRM_Utils_Array::value('fields', $this->_params, array()), $fieldMap);
     $this->_columnHeaders = array_merge(array_intersect_key(array_flip($fieldMap), $this->_columnHeaders), $this->_columnHeaders);
   }
@@ -1787,7 +1827,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       $this->addToDeveloperTab($sql);
       $this->buildRows($sql, $rows);
       $this->addAggregatePercentRow($rows);
-
       // format result set.
       $this->formatDisplay($rows);
 
@@ -2934,7 +2973,7 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
       $this->_selectAliases[] = $alias;
       return " GROUP_CONCAT(CONCAT({$field['dbAlias']},':', {$this->_aliases[$tableName]}.location_type_id, ':', {$this->_aliases[$tableName]}.phone_type_id) ) as $alias";
     }
-    if(!empty($field['pseudofield'])) {
+    if (!empty($field['pseudofield'])) {
       $alias = "{$tableName}_{$fieldName}";
       $this->_columnHeaders["{$tableName}_{$fieldName}"]['title'] = CRM_Utils_Array::value('title', $field);
       $this->_columnHeaders["{$tableName}_{$fieldName}"]['type'] = CRM_Utils_Array::value('type', $field);
@@ -2943,21 +2982,19 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
       return ' 1 as  ' . $alias;
     }
 
-    if ($tableKey == 'fields' && !empty($field['statistics'])) {
-      if (in_array('GROUP_CONCAT', $field['statistics'])) {
-        $label = CRM_Utils_Array::value('title', $field);
-        $alias = "{$tableName}_{$fieldName}";
-        $this->_columnHeaders["{$tableName}_{$fieldName}"]['title'] = $label;
-        $this->_columnHeaders["{$tableName}_{$fieldName}"]['type'] = $field['type'];
-        $this->_selectAliases[] = $alias;
-        if (!empty($this->_groupByArray) || $this->isForceGroupBy) {
-          return "GROUP_CONCAT({$field['dbAlias']}) as $alias";
-        }
-        else {
-          return "({$field['dbAlias']}) as $alias";
-        }
+    if ((!empty($this->_groupByArray) || $this->isForceGroupBy) && empty($this->_groupByArray[$tableName . '_' . $fieldName])) {
+      if ($tableKey === 'fields' &&
+        (empty($field['statistics']) || in_array('GROUP_CONCAT', $field['statistics']))
+        ) {
+          $label = CRM_Utils_Array::value('title', $field);
+          $alias = "{$tableName}_{$fieldName}";
+          $this->_columnHeaders["{$tableName}_{$fieldName}"]['title'] = $label;
+          $this->_columnHeaders["{$tableName}_{$fieldName}"]['type'] = $field['type'];
+          $this->_selectAliases[] = $alias;
+         return "GROUP_CONCAT(DISTINCT {$field['dbAlias']}) as $alias";
       }
     }
+
   }
 
   /**
@@ -3090,6 +3127,14 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
     foreach ($this->_columns as $tableName => $table) {
       if (array_key_exists('metadata', $table)) {
         foreach ($table['metadata'] as $field => $specs) {
+          if (in_array($tableName . '_' . $field . '_sum', $selectedFields)
+            && !empty($this->_groupByArray) && isset($specs['statistics']) && isset($specs['statistics']['cumulative'])) {
+            $this->_columnHeaders[$tableName . '_' . $field . '_cumulative']['title'] = $specs['statistics']['cumulative'];
+            $this->_columnHeaders[$tableName . '_' . $field . '_cumulative']['type'] = $specs['type'];
+            $alterFunctions[$tableName . '_' . $field . '_sum'] = 'alterCumulative';
+            $alterMap[$tableName . '_' . $field . '_sum'] = $field;
+            $alterSpecs[$tableName . '_' . $field . '_sum'] = $specs['name'];
+          }
           if (in_array($tableName . '_' . $field, $selectedFields)) {
             if (array_key_exists('alter_display', $specs)) {
               $alterFunctions[$tableName . '_' . $field] = $specs['alter_display'];
@@ -3117,11 +3162,15 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
       }
     }
 
+    if ($this->_rollup) {
+      //we want to be able to unset rows so here
+      $this->alterRollupRows($rows);
+    }
+
     if (empty($alterFunctions)) {
       // - no manipulation to be done
       return;
     }
-
     foreach ($rows as $index => & $row) {
       foreach ($row as $selectedField => $value) {
         if (array_key_exists($selectedField, $alterFunctions)) {
@@ -3129,27 +3178,56 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
         }
       }
     }
-    if ($this->_rollup) {
-      //we want to be able to unset rows so here
-      $this->alterRollupRows($rows);
-    }
+
   }
 
   /**
+   * If rollup is in use we want to dmarcarate rollou rows.
+   *
+   * With rollup the very last row will be a summary row.
+   *
+   * There will be an unknown number of summary rows in the middle depending on
+   * the data and the number of rows.
+   *
+   * Each distinct combination of group by fields results in a summary row. So it might look
+   * like
+   *
+   * Canvasser | Campaign Type | Campaign | Raised
+   *
+   * Mickey    |Phone         | Morning  | $50
+   * Mickey    |Phone         | Evening  | $100
+   * Mickey    |Phone         |          | $150
+   * Mickey    |Doors         |          | $600
+   * Mickey    |Doors         |          | $600
+   * Mickey    |              |          | $750
+   * |         |              |          | $750
+   *
    * @param $rows
    */
   function alterRollupRows(&$rows) {
-    $statLayers = count($this->_groupByArray);
     $groupBys = array_reverse(array_fill_keys(array_keys($this->_groupByArray), NULL));
+    $firstRow = reset($rows);
+    foreach ($groupBys as $field => $groupBy) {
+      $fieldKey = isset($firstRow[$field]) ? $field : str_replace(array(
+        '_YEAR',
+        '_MONTH'
+      ), '_start', $field);
+      unset($groupBys[$field]);
+      $groupBys[$fieldKey] = $firstRow[$fieldKey];
+    }
     $groupByLabels = array_keys($groupBys);
+
     $altered = array();
     $fieldsToUnSetForSubtotalLines = array();
     //on this first round we'll get a list of keys that are not groupbys or stats
-    foreach (array_keys($rows[0]) as $rowField) {
+    foreach (array_keys($firstRow) as $rowField) {
       if (!array_key_exists($rowField, $groupBys) && substr($rowField, -4) != '_sum' && !substr($rowField, -7) != '_count') {
         $fieldsToUnSetForSubtotalLines[] = $rowField;
       }
     }
+
+    $statLayers = count($this->_groupByArray);
+
     //I don't know that this precaution is required?          $this->fixSubTotalDisplay($rows[$rowNum], $this->_statFields);
     if (count($this->_statFields) == 0) {
       return;
@@ -3165,25 +3243,27 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
       */
     }
     else {
+      $unsetAllRollupRows = TRUE;
+      $rowsSinceLastRollup = 0;
       foreach ($rows as $rowNumber => $row) {
-        foreach ($groupBys as $field => $groupBy) {
-          if (($rowNumber + 1) < $statLayers) {
-            $groupBys[$field] = $row[$field];
-            continue;
-          }
-          if (empty($row[$field]) && empty($altered[$rowNumber])) {
-            $groupedValue = $groupByLabels[array_search($field, $groupBys) + 1];
-            if (!isset($rows[$rowNumber + 1]) || $rows[$rowNumber + 1][$groupedValue] != $rows[$rowNumber][$groupedValue]) {
-              //we set altered because we are started from the lowest grouping & working up & if both have changed only want to act on the lowest
-              //(I think)
-              $altered[$rowNumber] = TRUE;
-              $rows[$rowNumber][$groupedValue] = "<span class= 'report-label'> {$rows[$rowNumber][$groupedValue]} (Subtotal)</span> ";
-              foreach ($fieldsToUnSetForSubtotalLines as $unsetField) {
-                $rows[$rowNumber][$unsetField] = '';
-              }
-            }
-          }
-          $groupBys[$field] = $row[$field];
+        $this->alterRowForRollup($rows[$rowNumber], CRM_Utils_Array::value($rowNumber +1, $rows), $groupBys, $rowNumber, $statLayers, $groupByLabels, $altered, $fieldsToUnSetForSubtotalLines);
+      }
+      if (empty($row['is_rollup'])) {
+        $rowsSinceLastRollup = 0;
+      }
+      else {
+        $rowsSinceLastRollup++;
+      }
+      if ($rowsSinceLastRollup > 1) {
+        $unsetAllRollupRows = FALSE;
+      }
+    }
+    // If every row has a rollup then is't just ugly.
+    // clean them out.
+    if ($unsetAllRollupRows) {
+      foreach ($rows as $rowNumber => $row) {
+        if (!empty($row['is_rollup'])) {
+          unset($rows[$rowNumber]);
         }
       }
     }
@@ -4234,6 +4314,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'is_fields' => TRUE,
         'is_filters' => TRUE,
         'is_order_bys' => TRUE,
+        'statistics' => array('sum' => ts('Total to be Paid'), 'cumulative' => ts('Cumulative to be paid')),
       ),
       'status_id' => array(
         'type' => CRM_Utils_Type::T_INT,
@@ -4555,6 +4636,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'is_filters' => TRUE,
         'is_order_bys' => TRUE,
         'is_group_bys' => TRUE,
+        'alter_display' => 'alterCampaign',
       ),
       'source' => array(
         'title' => 'Contribution Source',
@@ -5015,6 +5097,17 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'options' => CRM_Core_OptionGroup::values('contribution_status'),
         'is_fields' => TRUE,
         'is_group_bys' => TRUE,
+      ),
+      'campaign_id' => array(
+        'title' => ts('Campaign'),
+        'type' => CRM_Utils_Type::T_INT,
+        'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+        'options' => CRM_Campaign_BAO_Campaign::getCampaigns(),
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+        'is_order_bys' => TRUE,
+        'is_group_bys' => TRUE,
+        'alter_display' => 'alterCampaign',
       ),
     );
 
@@ -6810,6 +6903,23 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    * @param $selectedfield
    * @param $criteriaFieldName
    *
+   * @return array
+   */
+  function alterCumulative($value, &$row, $selectedfield, $criteriaFieldName) {
+    static $cumlative = 0;
+    if (empty($row['is_rollup'])) {
+      $cumlative = $cumlative + $value;
+    }
+    $row[str_replace('_sum', '_cumulative', $selectedfield)] = $cumlative;
+    return $value;
+  }
+
+  /**
+   * @param $value
+   * @param $row
+   * @param $selectedfield
+   * @param $criteriaFieldName
+   *
    * @return mixed
    */
   function alterGenderID($value, &$row, $selectedfield, $criteriaFieldName) {
@@ -7439,6 +7549,42 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
       'order_by_defaults' => $options['order_by_defaults'],
     );
     return $defaults;
+  }
+
+  /**
+   * @param $row
+   * @param $nextRow
+   * @param $groupBys
+   * @param $rowNumber
+   * @param $statLayers
+   *
+   * @param $groupByLabels
+   * @param $altered
+   * @param $fieldsToUnSetForSubtotalLines
+   *
+   * @return mixed
+   */
+  private function alterRowForRollup(&$row, $nextRow, &$groupBys, $rowNumber, $statLayers, $groupByLabels, $altered, $fieldsToUnSetForSubtotalLines) {
+    foreach ($groupBys as $field => $groupBy) {
+      if (($rowNumber + 1) < $statLayers) {
+        continue;
+      }
+      if (empty($row[$field]) && empty($row['is_rollup'])) {
+        $groupedValue = $groupByLabels[array_search($field, $groupBys) + 1];
+        if (!($nextRow) || $nextRow[$groupedValue] != $row[$groupedValue]) {
+          //we set altered because we are started from the lowest grouping & working up & if both have changed only want to act on the lowest
+          //(I think)
+          $altered[$rowNumber] = TRUE;
+//          $row[$groupedValue] = "<span class= 'report-label'> {$row[$groupedValue]} (Subtotal)</span> ";
+          foreach ($fieldsToUnSetForSubtotalLines as $unsetField) {
+            $row[$unsetField] = '';
+          }
+          $row['is_rollup'] = TRUE;
+          $row['summary_field'] = $groupedValue;
+        }
+      }
+      $groupBys[$field] = $row[$field];
+    }
   }
 
 }

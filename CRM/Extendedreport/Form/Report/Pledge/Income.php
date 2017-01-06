@@ -6,6 +6,7 @@
 class CRM_Extendedreport_Form_Report_Pledge_Income extends CRM_Extendedreport_Form_Report_ExtendedReport {
   protected $_baseTable = 'civicrm_pledge_payment';
   protected $skipACL = FALSE;
+  protected $_customGroupGroupBy = TRUE;
   protected $_customGroupExtends = array(
     'Pledge',
     'Contact',
