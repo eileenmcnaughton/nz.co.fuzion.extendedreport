@@ -6314,6 +6314,9 @@ ON {$this->_aliases['civicrm_line_item']}.contid = {$this->_aliases['civicrm_con
    * Join batch table from Financial Trxn.
    */
   protected function joinBatchFromFinancialTrxn() {
+    if (!CRM_Batch_BAO_Batch::singleValueQuery("SELECT COUNT(*) FROM civicrm_batch")) {
+      return array();
+    }
     $this->_from .= "
       LEFT  JOIN civicrm_entity_batch entity_batch
         ON entity_batch.entity_id = {$this->_aliases['civicrm_financial_trxn']}.id
