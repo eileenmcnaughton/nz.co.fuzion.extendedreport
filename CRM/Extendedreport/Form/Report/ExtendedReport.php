@@ -2053,10 +2053,8 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     if ($applyLimit && !CRM_Utils_Array::value('charts', $this->_params)) {
       $this->limit();
     }
-    //4.2 support - method may not exist
-    if (method_exists('CRM_Utils_Hook', 'alterReportVar')) {
-      CRM_Utils_Hook::alterReportVar('sql', $this, $this);
-    }
+
+    CRM_Utils_Hook::alterReportVar('sql', $this, $this);
     $sql = "{$this->_select} {$this->_from} {$this->_where} {$this->_groupBy} {$this->_having} {$this->_orderBy} ";
     if (!$this->_rollup) {
       $sql .= $this->_limit;
