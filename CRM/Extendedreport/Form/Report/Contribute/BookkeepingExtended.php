@@ -86,10 +86,10 @@ class CRM_Extendedreport_Form_Report_Contribute_BookkeepingExtended extends CRM_
       'filters' => TRUE,
     ));
 
-
     $this->_groupFilter = TRUE;
     $this->_tagFilter = TRUE;
     parent::__construct();
+
   }
 
   /**
