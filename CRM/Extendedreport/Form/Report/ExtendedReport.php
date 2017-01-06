@@ -263,17 +263,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   }
 
   /**
-   * Check if ActivityContact table should be used.
-   */
-
-  function isActivityContact() {
-    if ($this->tableExists('civicrm_activity_contact')) {
-      return TRUE;
-    }
-    return FALSE;
-  }
-
-  /**
    * Wrapper for getOptions / pseudoconstant to get contact type options.
    *
    * @return array
@@ -5756,47 +5745,30 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    * Define join from Activity to Activity Assignee
    */
   function joinActivityAssigneeFromActivity() {
-    if ($this->isActivityContact()) {
-      $activityContacts = CRM_Core_OptionGroup::values('activity_contacts', FALSE, FALSE, FALSE, NULL, 'name');
-      $assigneeID = CRM_Utils_Array::key('Activity Assignees', $activityContacts);
-      $this->_from .= "
-        LEFT JOIN civicrm_activity_contact civicrm_activity_assignment
-          ON {$this->_aliases['civicrm_activity']}.id = civicrm_activity_assignment.activity_id
-          AND civicrm_activity_assignment.record_type_id = {$assigneeID}
-        LEFT JOIN civicrm_contact {$this->_aliases['assignee_civicrm_contact']}
-          ON civicrm_activity_assignment.contact_id = {$this->_aliases['assignee_civicrm_contact']}.id
-          ";
-    }
-    else {
-      $this->_from .= "
-        LEFT JOIN civicrm_activity_assignment
-          ON {$this->_aliases['civicrm_activity']}.id = civicrm_activity_assignment.activity_id
-        LEFT JOIN civicrm_contact {$this->_aliases['assignee_civicrm_contact']}
-          ON civicrm_activity_assignment.assignee_contact_id = {$this->_aliases['assignee_civicrm_contact']}.id
-        ";
-    }
+    $activityContacts = CRM_Core_OptionGroup::values('activity_contacts', FALSE, FALSE, FALSE, NULL, 'name');
+    $assigneeID = CRM_Utils_Array::key('Activity Assignees', $activityContacts);
+    $this->_from .= "
+      LEFT JOIN civicrm_activity_contact civicrm_activity_assignment
+        ON {$this->_aliases['civicrm_activity']}.id = civicrm_activity_assignment.activity_id
+        AND civicrm_activity_assignment.record_type_id = {$assigneeID}
+      LEFT JOIN civicrm_contact {$this->_aliases['assignee_civicrm_contact']}
+        ON civicrm_activity_assignment.contact_id = {$this->_aliases['assignee_civicrm_contact']}.id
+     ";
   }
 
   /**
    * Define join from Activity to Activity Source
    */
   function joinActivitySourceFromActivity() {
-    if ($this->isActivityContact()) {
-      $activityContacts = CRM_Core_OptionGroup::values('activity_contacts', FALSE, FALSE, FALSE, NULL, 'name');
-      $sourceID = CRM_Utils_Array::key('Activity Source', $activityContacts);
-      $this->_from .= "
-        LEFT JOIN civicrm_activity_contact civicrm_activity_source
-        ON {$this->_aliases['civicrm_activity']}.id = civicrm_activity_source.activity_id
-        AND civicrm_activity_source.record_type_id = {$sourceID}
-        LEFT JOIN civicrm_contact {$this->_aliases['civicrm_contact']}
-        ON civicrm_activity_source.contact_id = {$this->_aliases['civicrm_contact']}.id
-        ";
-    }
-    else {
-      $this->_from .= "
-        LEFT JOIN civicrm_contact {$this->_aliases['civicrm_contact']}
-        ON {$this->_aliases['civicrm_activity']}.source_contact_id = {$this->_aliases['civicrm_contact']}.id";
-    }
+    $activityContacts = CRM_Core_OptionGroup::values('activity_contacts', FALSE, FALSE, FALSE, NULL, 'name');
+    $sourceID = CRM_Utils_Array::key('Activity Source', $activityContacts);
+    $this->_from .= "
+      LEFT JOIN civicrm_activity_contact civicrm_activity_source
+      ON {$this->_aliases['civicrm_activity']}.id = civicrm_activity_source.activity_id
+      AND civicrm_activity_source.record_type_id = {$sourceID}
+      LEFT JOIN civicrm_contact {$this->_aliases['civicrm_contact']}
+      ON civicrm_activity_source.contact_id = {$this->_aliases['civicrm_contact']}.id
+      ";
   }
 
   /*
@@ -5946,8 +5918,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
   ENGINE=HEAP;";
       CRM_Core_DAO::executeQuery($sql);
 
-      if ($this->isActivityContact()) {
-        $sql = "
+      $sql = "
       REPLACE INTO $tmpTableName
       SELECT contact_id, a.id, activity_type_id, activity_date_time
       FROM
@@ -5958,75 +5929,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       ) as a
       GROUP BY contact_id
       ";
-        CRM_Core_DAO::executeQuery($sql);
-      }
-      else {
-        $sql = "
-        CREATE  TABLE $assigneeTable
-        (
-          `contact_id` INT(10) NULL,
-          `id` INT(10) NULL,
-          `activity_type_id` VARCHAR(50) NULL,
-          `activity_date_time` DATETIME NULL,
-          PRIMARY KEY (`contact_id`)
-      )
-      ENGINE=HEAP;";
-
-        CRM_Core_DAO::executeQuery($sql);
-        $sql = "
-        CREATE  TABLE $targetTable
-        (
-        `contact_id` INT(10) NULL,
-        `id` INT(10) NULL,
-        `activity_type_id` VARCHAR(50) NULL,
-        `activity_date_time` DATETIME NULL,
-        PRIMARY KEY (`contact_id`)
-        )
-        ENGINE=HEAP;";
-        CRM_Core_DAO::executeQuery($sql);
-
-        $sql = "
-        REPLACE INTO $tmpTableName
-        SELECT source_contact_id as contact_id, max(id), activity_type_id, activity_date_time
-        FROM civicrm_activity
-        GROUP BY source_contact_id,  activity_date_time DESC
-      ";
-        CRM_Core_DAO::executeQuery($sql);
-
-        $sql = "
-        REPLACE INTO $assigneeTable
-        SELECT assignee_contact_id as contact_id, activity_id as id, a.activity_type_id, a.activity_date_time
-        FROM civicrm_activity_assignment aa
-        LEFT JOIN civicrm_activity a on a.id = aa.activity_id
-        LEFT JOIN $tmpTableName tmp ON tmp.contact_id = aa.assignee_contact_id
-        WHERE (a.activity_date_time < tmp.activity_date_time OR tmp.activity_date_time IS NULL)
-        GROUP BY assignee_contact_id,  a.activity_date_time DESC
-      ";
-        CRM_Core_DAO::executeQuery($sql);
-
-        $sql = "
-        REPLACE INTO $tmpTableName
-        SELECT * FROM $assigneeTable
-      ";
-        CRM_Core_DAO::executeQuery($sql);
-
-        $sql = "
-        REPLACE INTO $targetTable
-        SELECT target_contact_id as contact_id, activity_id as id, a.activity_type_id, a.activity_date_time
-        FROM civicrm_activity_target aa
-        LEFT JOIN civicrm_activity a on a.id = aa.activity_id
-        LEFT JOIN $tmpTableName tmp ON tmp.contact_id = aa.target_contact_id
-        WHERE (a.activity_date_time < tmp.activity_date_time OR tmp.activity_date_time IS NULL)
-        GROUP BY target_contact_id,  a.activity_date_time DESC
-      ";
-
-        CRM_Core_DAO::executeQuery($sql);
-        $sql = "
-        REPLACE INTO $tmpTableName
-        SELECT * FROM $targetTable
-      ";
-        CRM_Core_DAO::executeQuery($sql);
-      }
+      CRM_Core_DAO::executeQuery($sql);
     }
     $this->_from .= " LEFT JOIN $tmpTableName {$this->_aliases['civicrm_activity']}
    ON {$this->_aliases['civicrm_activity']}.contact_id = {$this->_aliases['civicrm_contact']}.id";
