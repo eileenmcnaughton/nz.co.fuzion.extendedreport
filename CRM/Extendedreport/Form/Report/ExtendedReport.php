@@ -1156,8 +1156,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
           $this->setMetaDataForTable($tableName);
         }
         if (array_key_exists('group_bys', $table)) {
-          foreach ($table['group_bys'] as $fieldName => $field) {
-          }
           foreach ($table['group_bys'] as $fieldName => $fieldData) {
             $field = $this->_columns[$tableName]['metadata'][$fieldName];
             if (!empty($this->_params['group_bys'][$fieldName])) {
@@ -1197,7 +1195,8 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     $this->isForceGroupBy = (!empty($this->_statFields) && !$this->_noGroupBY && isset($this->_aliases[$this->_baseTable]));
     // if a stat field has been selected then do a group by - this is not in parent
     if ($this->isForceGroupBy && empty($this->_groupByArray)) {
-      $this->_groupByArray[] = $this->_aliases[$this->_baseTable] . ".id";
+      $this->_groupByArray[$this->_baseTable . '_id'] = $this->_aliases[$this->_baseTable] . ".id";
+
     }
   }
 
@@ -3197,8 +3196,10 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
         '_YEAR',
         '_MONTH'
       ), '_start', $field);
-      unset($groupBys[$field]);
-      $groupBys[$fieldKey] = $firstRow[$fieldKey];
+      if (isset($firstRow[$fieldKey])) {
+        unset($groupBys[$field]);
+        $groupBys[$fieldKey] = $firstRow[$fieldKey];
+      }
     }
     $groupByLabels = array_keys($groupBys);
 
