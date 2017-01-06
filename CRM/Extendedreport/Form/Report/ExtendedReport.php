@@ -1421,51 +1421,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   }
 
   /**
-   * Create a chain-select target field. All settings are optional; the defaults usually work.
-   *
-   * Backported from 4.6 CRM_Core_Form to support pre-4.6 versions.
-   *
-   * @param string $elementName
-   * @param array $settings
-   *
-   * @return HTML_QuickForm_Element
-   */
-  public function addChainSelect($elementName, $settings = array()) {
-    $props = $settings += array(
-      'control_field' => str_replace(array(
-        'state_province',
-        'StateProvince',
-        'county',
-        'County'
-      ), array(
-        'country',
-        'Country',
-        'state_province',
-        'StateProvince',
-      ), $elementName),
-      'data-callback' => strpos($elementName, 'rovince') ? 'civicrm/ajax/jqState' : 'civicrm/ajax/jqCounty',
-      'label' => strpos($elementName, 'rovince') ? ts('State/Province') : ts('County'),
-      'data-empty-prompt' => strpos($elementName, 'rovince') ? ts('Choose country first') : ts('Choose state first'),
-      'data-none-prompt' => ts('- N/A -'),
-      'multiple' => FALSE,
-      'required' => FALSE,
-      'placeholder' => empty($settings['required']) ? ts('- none -') : ts('- select -'),
-    );
-    CRM_Utils_Array::remove($props, 'label', 'required', 'control_field');
-    $props['class'] = (empty($props['class']) ? '' : "{$props['class']} ") . 'crm-select2';
-    $props['data-select-prompt'] = $props['placeholder'];
-    $props['data-name'] = $elementName;
-
-    $this->_chainSelectFields[$settings['control_field']] = $elementName;
-
-    // Passing NULL instead of an array of options
-    // CRM-15225 - normally QF will reject any selected values that are not part of the field's options, but due to a
-    // quirk in our patched version of HTML_QuickForm_select, this doesn't happen if the options are NULL
-    // which seems a bit dirty but it allows our dynamically-popuplated select element to function as expected.
-    return $this->add('select', $elementName, $settings['label'], NULL, $settings['required'], $props);
-  }
-
-  /**
    * Backport of 4.6
    *
    * Add group by options to the report.
