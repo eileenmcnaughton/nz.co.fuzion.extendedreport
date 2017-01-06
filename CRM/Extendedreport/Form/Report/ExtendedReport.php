@@ -2248,25 +2248,12 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     }
     return $defaultTpl;
   }
-  /*
-   * Compile the report content
-   *
-   *  4.3 introduced function - overriding on 4.2
-   */
-  /**
-   * @return string
-   */
-  function compileContent() {
-    $templateFile = $this->getTemplateFileName();
-    return $this->_formValues['report_header'] . CRM_Core_Form::$_template->fetch($templateFile) . $this->_formValues['report_footer'];
-  }
 
-  /*
+  /**
    * We are overriding this so that we can add time if required
    * Note that in 4.4 we could call the parent function setting $displayTime as appropriate
    * - not sure when this became an option - ie what version
-   */
-  /**
+   *
    * @param $name
    * @param string $from
    * @param string $to
