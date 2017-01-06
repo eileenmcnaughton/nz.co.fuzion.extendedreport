@@ -5738,23 +5738,15 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    * Define join from Activity to Activity Target
    */
   function joinActivityTargetFromActivity() {
-    if ($this->isActivityContact()) {
-      $activityContacts = CRM_Core_OptionGroup::values('activity_contacts', FALSE, FALSE, FALSE, NULL, 'name');
-      $targetID = CRM_Utils_Array::key('Activity Targets', $activityContacts);
-      $this->_from .= "
-        LEFT JOIN civicrm_activity_contact civicrm_activity_target
-          ON {$this->_aliases['civicrm_activity']}.id = civicrm_activity_target.activity_id
-          AND civicrm_activity_target.record_type_id = {$targetID}
-        LEFT JOIN civicrm_contact {$this->_aliases['target_civicrm_contact']}
-          ON civicrm_activity_target.contact_id = {$this->_aliases['target_civicrm_contact']}.id
-        ";
-    }
-    else {
-      $this->_from .= "
-      LEFT JOIN civicrm_activity_target
+    $activityContacts = CRM_Core_OptionGroup::values('activity_contacts', FALSE, FALSE, FALSE, NULL, 'name');
+    $targetID = CRM_Utils_Array::key('Activity Targets', $activityContacts);
+    $this->_from .= "
+      LEFT JOIN civicrm_activity_contact civicrm_activity_target
         ON {$this->_aliases['civicrm_activity']}.id = civicrm_activity_target.activity_id
+        AND civicrm_activity_target.record_type_id = {$targetID}
       LEFT JOIN civicrm_contact {$this->_aliases['target_civicrm_contact']}
-        ON civicrm_activity_target.target_contact_id = {$this->_aliases['target_civicrm_contact']}.id
+        ON civicrm_activity_target.contact_id = {$this->_aliases['target_civicrm_contact']}.id
+        AND {$this->_aliases['target_civicrm_contact']}.id_deleted = 0
       ";
     }
   }

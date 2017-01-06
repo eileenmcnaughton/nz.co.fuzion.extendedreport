@@ -96,14 +96,18 @@ class CRM_Extendedreport_Form_Report_ActivityExtended extends CRM_Extendedreport
        LEFT JOIN civicrm_email civicrm_email_source
          ON {$this->_aliases['civicrm_activity']}.source_contact_id = civicrm_email_source.contact_id
          AND civicrm_email_source.is_primary = 1
+         AND civicrm_email_source.is_deleted = 0
 
        LEFT JOIN civicrm_email civicrm_email_target
          ON {$this->_aliases['civicrm_activity_target']}.target_contact_id = civicrm_email_target.contact_id
          AND civicrm_email_target.is_primary = 1
+         AND civicrm_email_target.is_deleted = 0
 
        LEFT JOIN civicrm_email civicrm_email_assignee
         ON {$this->_aliases['civicrm_activity_assignment']}.assignee_contact_id = civicrm_email_assignee.contact_id
-        AND civicrm_email_assignee.is_primary = 1 ";
+        AND civicrm_email_assignee.is_primary = 1
+        AND civicrm_email_assignee.is_deleted = 0
+        ";
     }
     $this->addAddressFromClause();
     $this->selectableCustomDataFrom();
