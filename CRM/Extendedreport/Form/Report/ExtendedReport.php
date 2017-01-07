@@ -4269,7 +4269,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         ),
       ),
     );
-    return $this->buildColumns($specs, 'civicrm_event', 'CRM_Event_DAO_Event');
+    return $this->buildColumns($specs, 'civicrm_event', 'CRM_Event_DAO_Event', NULL, $this->getDefaultsFromOptions($options));
   }
 
   /**
@@ -4293,15 +4293,8 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       'order_by_defaults' => array(),
     );
     $options = array_merge($defaultOptions, $options);
-    $defaults = $this->getDefaultsFromOptions($options);
-
-    $fields = array(
-      'civicrm_event_summary' . $options['prefix'] => array(
-        'grouping' => 'event-fields',
-      )
-    );
-    $fields['civicrm_event_summary' . $options['prefix']]['fields'] =
-      array(
+   // $fields['civicrm_event_summary' . $options['prefix']]['fields'] =
+    $specs =  array(
         'registered_amount' . $options['prefix'] => array(
           'title' => $options['prefix_label'] . ts('Total Income'),
           'default' => TRUE,
@@ -4345,8 +4338,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
           'is_fields' => TRUE,
         ),
       );
-
-    return $this->buildColumns($fields['civicrm_event_summary' . $options['prefix']]['fields'], 'civicrm_event_summary' . $options['prefix'], NULL, $defaults);
+    return $this->buildColumns($specs, 'civicrm_event_summary' . $options['prefix'], NULL, NULL, $this->getDefaultsFromOptions($options));
   }
 
   /**
