@@ -10,6 +10,7 @@ class CRM_Extendedreport_Form_Report_Contact_Extendedcontact extends CRM_Extende
   protected $_baseTable = 'civicrm_contact';
   protected $skipACL = TRUE;
   protected $_customGroupAggregates = TRUE;
+  protected $isPivot = TRUE;
 
 
   /**
@@ -22,6 +23,9 @@ class CRM_Extendedreport_Form_Report_Contact_Extendedcontact extends CRM_Extende
       )
     );
     $this->_columns['civicrm_contact']['fields']['id']['required'] = TRUE;
+    $this->_aggregateColumnHeaderFields = array(
+      'civicrm_contact_civireport:gender_id' => 'Gender',
+    );
     parent::__construct();
   }
 }
