@@ -3744,6 +3744,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
           'sum' => ts('Total Participants')
         ),
         'is_fields' => TRUE,
+        'type' => CRM_Utils_Type::T_INT,
       ),
       'price_field_id' => array(
         'title' => ts('Price Field (line item)'),
@@ -5726,7 +5727,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
   /**
    * Define join from Activity to Activity Target
    */
-  function joinActivityTargetFromActivity() {
+  protected function joinActivityTargetFromActivity() {
     $activityContacts = CRM_Core_OptionGroup::values('activity_contacts', FALSE, FALSE, FALSE, NULL, 'name');
     $targetID = CRM_Utils_Array::key('Activity Targets', $activityContacts);
     $this->_from .= "
@@ -5737,14 +5738,12 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         ON civicrm_activity_target.contact_id = {$this->_aliases['target_civicrm_contact']}.id
         AND {$this->_aliases['target_civicrm_contact']}.id_deleted = 0
       ";
-    }
   }
-
 
   /**
    * Define join from Activity to Activity Assignee
    */
-  function joinActivityAssigneeFromActivity() {
+  protected function joinActivityAssigneeFromActivity() {
     $activityContacts = CRM_Core_OptionGroup::values('activity_contacts', FALSE, FALSE, FALSE, NULL, 'name');
     $assigneeID = CRM_Utils_Array::key('Activity Assignees', $activityContacts);
     $this->_from .= "
@@ -5757,9 +5756,9 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
   }
 
   /**
-   * Define join from Activity to Activity Source
+   * Define join from Activity to Activity Source.
    */
-  function joinActivitySourceFromActivity() {
+   protected function joinActivitySourceFromActivity() {
     $activityContacts = CRM_Core_OptionGroup::values('activity_contacts', FALSE, FALSE, FALSE, NULL, 'name');
     $sourceID = CRM_Utils_Array::key('Activity Source', $activityContacts);
     $this->_from .= "
@@ -5771,20 +5770,17 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       ";
   }
 
-  /*
-* Add join from contact table to address. Prefix will be added to both tables
-* as it's assumed you are using it to get address of a secondary contact
-* @param string $prefix prefix to add to table names
-* @param array $extra extra join parameters
-* @return bool true or false to denote whether extra filters can be appended to join
-*/
   /**
-   * @param string $prefix
-   * @param array $extra
+   * Add join from contact table to address.
    *
-   * @return bool
+   * Prefix will be added to both tables as it's assumed you are using it to get address of a secondary contact
+   *
+  * @param string $prefix prefix to add to table names
+  * @param array $extra extra join parameters
+   *
+  * @return bool true or false to denote whether extra filters can be appended to join
    */
-  function joinAddressFromContact($prefix = '', $extra = array()) {
+  protected function joinAddressFromContact($prefix = '', $extra = array()) {
 
     $this->_from .= " LEFT JOIN civicrm_address {$this->_aliases[$prefix . 'civicrm_address']}
     ON {$this->_aliases[$prefix . 'civicrm_address']}.contact_id = {$this->_aliases[$prefix . 'civicrm_contact']}.id
@@ -5801,28 +5797,29 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    *
    * @return bool true or false to denote whether extra filters can be appended to join
    */
-  function joinContactFromAddress($prefix = '', $extra = array()) {
+  protected  function joinContactFromAddress($prefix = '', $extra = array()) {
 
     $this->_from .= " LEFT JOIN civicrm_contact {$this->_aliases[$prefix . 'civicrm_contact']}
     ON {$this->_aliases[$prefix . 'civicrm_address']}.contact_id = {$this->_aliases[$prefix . 'civicrm_contact']}.id
     ";
     return TRUE;
   }
-  /*
-  * Add join from contact table to email. Prefix will be added to both tables
-  * as it's assumed you are using it to get address of a secondary contact
-*/
+
   /**
+  * Add join from contact table to email.
+   *
+   * Prefix will be added to both tables as it's assumed you are using it to get address of a secondary contact.
+   *
    * @param string $prefix
    */
-  function joinEmailFromContact($prefix = '') {
+  protected function joinEmailFromContact($prefix = '') {
     $this->_from .= " LEFT JOIN civicrm_email {$this->_aliases[$prefix . 'civicrm_email']}
    ON {$this->_aliases[$prefix . 'civicrm_email']}.contact_id = {$this->_aliases[$prefix . 'civicrm_contact']}.id
    AND {$this->_aliases[$prefix . 'civicrm_email']}.is_primary = 1
 ";
   }
 
-  protected function joinCampaignFromPledge($prefix = '') {
+   protected function joinCampaignFromPledge($prefix = '') {
     $this->_from .= " LEFT JOIN civicrm_campaign {$this->_aliases[$prefix . 'civicrm_campaign']}
      ON {$this->_aliases[$prefix . 'civicrm_campaign']}.id = {$this->_aliases[$prefix . 'civicrm_pledge']}.campaign_id
     ";
