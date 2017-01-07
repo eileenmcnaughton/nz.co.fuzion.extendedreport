@@ -5736,7 +5736,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         AND civicrm_activity_target.record_type_id = {$targetID}
       LEFT JOIN civicrm_contact {$this->_aliases['target_civicrm_contact']}
         ON civicrm_activity_target.contact_id = {$this->_aliases['target_civicrm_contact']}.id
-        AND {$this->_aliases['target_civicrm_contact']}.id_deleted = 0
+        AND {$this->_aliases['target_civicrm_contact']}.is_deleted = 0
       ";
   }
 
