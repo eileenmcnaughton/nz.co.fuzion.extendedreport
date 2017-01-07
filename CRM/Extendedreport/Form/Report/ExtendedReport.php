@@ -6645,7 +6645,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    */
   function alterGenderID($value, &$row, $selectedfield, $criteriaFieldName) {
     $values = CRM_Contact_BAO_Contact::buildOptions('gender_id');
-    return $values[$value];
+    return CRM_Utils_Array::value($value, $values);
   }
 
   /**
