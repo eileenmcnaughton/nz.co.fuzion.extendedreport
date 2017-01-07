@@ -5513,9 +5513,9 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'type' => CRM_Report_Form::OP_INT,
         'operatorType' => CRM_Report_Form::OP_SELECT,
         'title' => ts("Current Revision"),
-        'default' => 1,
+        'default' => array(1),
         'name' => 'is_current_revision',
-        'options' => array('0' => 'No', '1' => 'Yes'),
+        'options' => array('1' => 'Yes', '0' => 'No',),
         'is_filters' => TRUE,
       ),
 

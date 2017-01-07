@@ -12,22 +12,6 @@ class CRM_Extendedreport_Form_Report_ActivityEditable extends CRM_Extendedreport
   /**
    * @var bool
    */
-  protected $_addressField = FALSE;
-  /**
-   * @var bool
-   */
-  protected $_emailField = FALSE;
-  /**
-   * @var null
-   */
-  protected $_summary = NULL;
-  /**
-   * @var bool
-   */
-  protected $_exposeContactID = FALSE;
-  /**
-   * @var bool
-   */
   protected $_customGroupGroupBy = FALSE;
   /**
    * @var string
@@ -42,8 +26,8 @@ class CRM_Extendedreport_Form_Report_ActivityEditable extends CRM_Extendedreport
    * Class constructor.
    */
   public function __construct() {
-    $this->_columns = $this->getColumns('Activity')
-      + $this->getColumns('Contact', array('prefix' => 'target_',));
+    $this->_columns = $this->getColumns('Activity', array('fields_defaults' => array('activity_type_id', 'details', 'subject')))
+      + $this->getColumns('Contact', array('prefix' => 'target_'));
     $this->_columns['civicrm_activity']['fields']['id'] = array(
       'title' => 'id',
       'required' => TRUE,
