@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.5                                                |
+ | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2014                                |
+ | Copyright CiviCRM LLC (c) 2004-2017                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -182,8 +182,8 @@ class CRM_Extendedreport_Form_Report_Contribute_BookkeepingExtended extends CRM_
                     ON fitem.financial_account_id = credit_financial_item_financial_account.id
               LEFT JOIN civicrm_line_item {$this->_aliases['civicrm_line_item']}
                     ON  fitem.entity_id = {$this->_aliases['civicrm_line_item']}.id AND fitem.entity_table = 'civicrm_line_item'
-
     ";
+    $this->joinMembershipFromLineItem();
   }
 
   /**
@@ -192,7 +192,6 @@ class CRM_Extendedreport_Form_Report_Contribute_BookkeepingExtended extends CRM_
   function fromClauses() {
     return array(
       'contact_from_contribution',
-      'membership_from_contribution',
       'financial_trxn_from_contribution',
       'batch_from_financialTrxn',
       'primary_phone_from_contact',

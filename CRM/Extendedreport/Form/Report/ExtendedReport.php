@@ -55,7 +55,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    */
   protected $_templates = array();
 
-
   /**
    * Add a tab for adding a join relationship?
    *
@@ -273,22 +272,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     }
     else {
       return $this->_getOptions('address', 'location_type_id');
-    }
-  }
-
-  /**
-   * Get the name of the PriceFieldValueBAO correct for the civi version.
-   *
-   * @return string BAO Name
-   */
-  function getPriceFieldValueBAO() {
-    $codeVersion = explode('.', CRM_Utils_System::version());
-    // if db.ver < code.ver, time to upgrade
-    if (version_compare($codeVersion[0] . '.' . $codeVersion[1], 4.4) >= 0) {
-      return 'CRM_Price_BAO_PriceFieldValue';
-    }
-    else {
-      return 'CRM_Price_BAO_FieldValue';
     }
   }
 
@@ -3825,7 +3808,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'options' => CRM_Contribute_PseudoConstant::$pseudoMethod(),
       ),
     );
-    return $this->buildColumns($specs, 'civicrm_price_field_value', $this->getPriceFieldValueBAO());
+    return $this->buildColumns($specs, 'civicrm_price_field_value', 'CRM_Price_BAO_PriceFieldValue');
   }
 
   /**
@@ -6001,19 +5984,15 @@ AND {$this->_aliases['civicrm_line_item']}.entity_table = 'civicrm_participant')
     }
   }
 
-  /*
-* Define join from line item table to Membership table. Seems to be still via contribution
-* as the entity. Have made 'inner' to restrict does that make sense?
-*/
-  function joinMembershipFromLineItem() {
-    $this->_from .= " INNER JOIN civicrm_contribution {$this->_aliases['civicrm_contribution']}
-ON ( {$this->_aliases['civicrm_line_item']}.entity_id = {$this->_aliases['civicrm_contribution']}.id
-AND {$this->_aliases['civicrm_line_item']}.entity_table = 'civicrm_contribution')
-LEFT JOIN civicrm_membership_payment pp
-ON {$this->_aliases['civicrm_contribution']}.id = pp.contribution_id
-LEFT JOIN civicrm_membership {$this->_aliases['civicrm_membership']}
-ON pp.membership_id = {$this->_aliases['civicrm_membership']}.id
-";
+  /**
+   * Define join from line item table to Membership table.
+   */
+  protected function joinMembershipFromLineItem() {
+    $this->_from .= "
+      LEFT JOIN civicrm_membership {$this->_aliases['civicrm_membership']}
+      ON {$this->_aliases['civicrm_line_item']}.entity_id = {$this->_aliases['civicrm_membership']}.id
+      AND {$this->_aliases['civicrm_line_item']}.entity_table = 'civicrm_membership'
+    ";
   }
 
   /**
@@ -6040,14 +6019,15 @@ ON pp.contribution_id = {$this->_aliases['civicrm_contribution']}.id
 ";
   }
 
-  /*
-* Define join from Membership to Contribution table
-*/
+  /**
+   * Define join from Membership to Contribution table
+   */
   function joinContributionFromMembership() {
-    $this->_from .= " LEFT JOIN civicrm_membership_payment pp
-ON {$this->_aliases['civicrm_membership']}.id = pp.membership_id
-LEFT JOIN civicrm_contribution {$this->_aliases['civicrm_contribution']}
-ON pp.contribution_id = {$this->_aliases['civicrm_contribution']}.id
+    $this->_from .= "
+      LEFT JOIN civicrm_membership_payment pp
+      ON {$this->_aliases['civicrm_membership']}.id = pp.membership_id
+  LEFT JOIN civicrm_contribution {$this->_aliases['civicrm_contribution']}
+  ON pp.contribution_id = {$this->_aliases['civicrm_contribution']}.id
 ";
   }
 
@@ -6083,10 +6063,10 @@ ON {$this->_aliases['civicrm_membership']}.membership_type_id = {$this->_aliases
     ";
   }
 
-  function joinContributionFromLineItem() {
-    if ($this->majorVersion < 4.5) {
-      $this->legacyFromLineItemJoin();
-    }
+  /**
+   * Join contribution table from line item.
+   */
+  protected function joinContributionFromLineItem() {
     $this->_from .= "
       LEFT JOIN civicrm_contribution as {$this->_aliases['civicrm_contribution']}
       ON {$this->_aliases['civicrm_line_item']}.contribution_id = {$this->_aliases['civicrm_contribution']}.id
@@ -6095,19 +6075,12 @@ ON {$this->_aliases['civicrm_membership']}.membership_type_id = {$this->_aliases
 
   /**
    * Join line item table from contribution.
-   *
-   * From 4.5 onwards we use the contribution id on the line item table.
    */
-  function joinLineItemFromContribution() {
-    if ($this->majorVersion < 4.5) {
-      $this->legacyLineItemJoin();
-    }
-    else {
-      $this->_from .= "
-        LEFT JOIN civicrm_line_item as {$this->_aliases['civicrm_line_item']}
-        ON {$this->_aliases['civicrm_line_item']}.contribution_id = {$this->_aliases['civicrm_contribution']}.id
+  protected function joinLineItemFromContribution() {
+    $this->_from .= "
+      LEFT JOIN civicrm_line_item as {$this->_aliases['civicrm_line_item']}
+      ON {$this->_aliases['civicrm_line_item']}.contribution_id = {$this->_aliases['civicrm_contribution']}.id
     ";
-    }
   }
 
   function joinLineItemFromMembership() {
@@ -7117,135 +7090,6 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
     }
 
     return $groupByCriteria;
-  }
-
-  /**
-   * Line item join for older CiviCRM versions.
-   *
-   * This is definitely not required from 4.5 & is somewhat suspect prior to that.
-   */
-  protected function legacyLineItemJoin() {
-    $temporary = $this->_temporary; // because we like to change this for debugging
-    $tempTable = 'civicrm_report_temp_line_item_map' . rand(1, 10000);
-    $createTablesql = "
-    CREATE  $temporary TABLE $tempTable (
-    `contid` INT(10) UNSIGNED NULL DEFAULT '0' COMMENT 'Contribution ID',
-    `lid` INT(10) UNSIGNED NOT NULL DEFAULT '0' COMMENT 'Line Item',
-    INDEX `ContributionId` (`contid`),
-    INDEX `LineItemId` (`lid`)
-    )
-    COLLATE='utf8_unicode_ci'
-    ENGINE=InnoDB;";
-
-    $insertContributionRecordsSql = "
-    INSERT INTO $tempTable
-    SELECT contribution_civireport_direct.id AS contid, line_item_civireport.id as lid
-    FROM civicrm_contribution contribution_civireport_direct
-    LEFT JOIN civicrm_line_item line_item_civireport ON (line_item_civireport.line_total > 0 AND line_item_civireport.entity_id = contribution_civireport_direct.id AND line_item_civireport.entity_table = 'civicrm_contribution')
-    WHERE line_item_civireport.id IS NOT NULL
-    ";
-
-    $insertParticipantRecordsSql = "
-    INSERT INTO $tempTable
-    SELECT contribution_civireport_direct.id AS contid, line_item_civireport.id as lid
-    FROM civicrm_contribution contribution_civireport_direct
-    LEFT JOIN civicrm_participant_payment pp ON contribution_civireport_direct.id = pp.contribution_id
-    LEFT JOIN civicrm_participant p ON pp.participant_id = p.id
-    LEFT JOIN civicrm_line_item line_item_civireport ON (line_item_civireport.line_total > 0 AND line_item_civireport.entity_id = p.id AND line_item_civireport.entity_table = 'civicrm_participant')
-    WHERE line_item_civireport.id IS NOT NULL
-    ";
-
-    $insertMembershipRecordSql = "
-    INSERT INTO $tempTable
-    SELECT contribution_civireport_direct.id AS contid, line_item_civireport.id as lid
-    FROM civicrm_contribution contribution_civireport_direct
-    LEFT JOIN civicrm_membership_payment pp ON contribution_civireport_direct.id = pp.contribution_id
-    LEFT JOIN civicrm_membership p ON pp.membership_id = p.id
-    LEFT JOIN civicrm_line_item line_item_civireport ON (line_item_civireport.line_total > 0 AND line_item_civireport.entity_id = p.id AND line_item_civireport.entity_table = 'civicrm_membership')
-    WHERE line_item_civireport.id IS NOT NULL
-    ";
-
-    CRM_Core_DAO::executeQuery($createTablesql);
-    CRM_Core_DAO::executeQuery($insertContributionRecordsSql);
-    CRM_Core_DAO::executeQuery($insertParticipantRecordsSql);
-    CRM_Core_DAO::executeQuery($insertMembershipRecordSql);
-    $this->_from .= "
-    LEFT JOIN $tempTable as line_item_mapping
-    ON line_item_mapping.contid = {$this->_aliases['civicrm_contribution']}.id
-    LEFT JOIN civicrm_line_item as {$this->_aliases['civicrm_line_item']}
-    ON {$this->_aliases['civicrm_line_item']}.id = line_item_mapping.lid
-
-    ";
-  }
-
-  /**
-   * Join the line item to the contribution table based on pre-4.5 structure.
-   *
-   * In 4.5 we added the contribution id directly to the line item table & we no longer
-   * need this.
-   */
-  protected function legacyFromLineItemJoin() {
-    $temporary = $this->_temporary;
-    $tempTable = 'civicrm_report_temp_line_items' . rand(1, 10000);
-    $createTablesql = "
-    CREATE  $temporary TABLE $tempTable (
-    `lid` INT(10) UNSIGNED NOT NULL DEFAULT '0' COMMENT 'Line Item',
-    `contid` INT(10) UNSIGNED NULL DEFAULT '0' COMMENT 'Contribution ID',
-    INDEX `ContributionId` (`contid`),
-    INDEX `LineItemId` (`lid`)
-    )
-    COLLATE='utf8_unicode_ci'
-    ENGINE=InnoDB;";
-
-    $insertContributionRecordsSql = "
-     INSERT INTO $tempTable
-     SELECT line_item_civireport.id as lid, contribution_civireport_direct.id
-     FROM civicrm_line_item line_item_civireport
-     LEFT JOIN civicrm_contribution contribution_civireport_direct
-     ON (line_item_civireport.entity_id = contribution_civireport_direct.id
-       AND line_item_civireport.entity_table = 'civicrm_contribution'
-       AND contribution_civireport_direct.is_test = 0
-     )
-     WHERE contribution_civireport_direct.id IS NOT NULL
-     ";
-
-    $insertParticipantRecordsSql = "
-      INSERT INTO $tempTable
-      SELECT line_item_civireport.id as lid, contribution_civireport.id
-      FROM civicrm_line_item line_item_civireport
-      LEFT JOIN civicrm_participant participant_civireport
-      ON (line_item_civireport.entity_id = participant_civireport.id AND line_item_civireport.entity_table = 'civicrm_participant')
-      LEFT JOIN civicrm_participant_payment pp
-      ON participant_civireport.id = pp.participant_id
-      LEFT JOIN civicrm_contribution contribution_civireport
-        ON pp.contribution_id = contribution_civireport.id
-        AND contribution_civireport.is_test = 0
-      WHERE contribution_civireport.id IS NOT NULL
-    ";
-
-    $insertMembershipRecordSql = "
-      INSERT INTO $tempTable
-      SELECT line_item_civireport.id as lid,contribution_civireport.id
-      FROM civicrm_line_item line_item_civireport
-      LEFT JOIN civicrm_membership membership_civireport
-      ON (line_item_civireport.entity_id =membership_civireport.id AND line_item_civireport.entity_table = 'civicrm_membership')
-      LEFT JOIN civicrm_membership_payment pp
-      ON membership_civireport.id = pp.membership_id
-      LEFT JOIN civicrm_contribution contribution_civireport
-        ON pp.contribution_id = contribution_civireport.id
-      AND contribution_civireport.is_test = 0
-      WHERE contribution_civireport.id IS NOT NULL
-    ";
-    CRM_Core_DAO::executeQuery($createTablesql);
-    CRM_Core_DAO::executeQuery($insertContributionRecordsSql);
-    CRM_Core_DAO::executeQuery($insertParticipantRecordsSql);
-    CRM_Core_DAO::executeQuery($insertMembershipRecordSql);
-    $this->_from .= "
-      LEFT JOIN $tempTable as line_item_mapping
-      ON line_item_mapping.lid = {$this->_aliases['civicrm_line_item']}.id
-      LEFT JOIN civicrm_contribution as {$this->_aliases['civicrm_contribution']}
-      ON line_item_mapping.contid = {$this->_aliases['civicrm_contribution']}.id
-    ";
   }
 
   /**
