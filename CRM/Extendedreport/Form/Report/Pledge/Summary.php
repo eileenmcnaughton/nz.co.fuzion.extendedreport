@@ -66,13 +66,8 @@ class CRM_Extendedreport_Form_Report_Pledge_Summary extends CRM_Extendedreport_F
                                {$this->_aliases['civicrm_address']}.is_primary = 1\n";
     }
 
-    // include email field if email column is to be included
     if ($this->isTableSelected('civicrm_email')) {
-      $this->_from .= "
-                 LEFT JOIN civicrm_email {$this->_aliases['civicrm_email']}
-                           ON ({$this->_aliases['civicrm_contact']}.id =
-                               {$this->_aliases['civicrm_email']}.contact_id) AND
-                               {$this->_aliases['civicrm_email']}.is_primary = 1\n";
+      $this->joinEmailFromContact();
     }
   }
 
@@ -89,12 +84,12 @@ class CRM_Extendedreport_Form_Report_Pledge_Summary extends CRM_Extendedreport_F
   function selectClause(&$tableName, $tableKey, &$fieldName, &$field) {
     if ($fieldName == 'balance_amount') {
       $alias = $this->selectStatSum($tableName, $fieldName, $field);
-      return " SUM(COALESCE(IF((pledge.status_id =3), pledge_payment_civireport.actual_amount, pledge.amount), 0))
-        - COALESCE(sum(pledge_payment_civireport.actual_amount), 0) as $alias ";
+      return " SUM(COALESCE(IF((pledge.status_id =3), {$this->_aliases['civicrm_pledge_payment']}.actual_amount, pledge.amount), 0))
+        - COALESCE(sum({$this->_aliases['civicrm_pledge_payment']}.actual_amount), 0) as $alias ";
     }
     if ($fieldName == 'pledge_amount') {
       $alias = $this->selectStatSum($tableName, $fieldName, $field);
-      return " SUM(COALESCE(IF((pledge.status_id =3), pledge_payment_civireport.actual_amount, pledge.amount), 0)) as $alias ";
+      return " SUM(COALESCE(IF((pledge.status_id =3), {$this->_aliases['civicrm_pledge_payment']}.actual_amount, pledge.amount), 0)) as $alias ";
     }
   }
 
