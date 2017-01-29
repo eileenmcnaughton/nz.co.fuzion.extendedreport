@@ -251,17 +251,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   }
 
   /**
-   * For 4.3 / 4.2 compatibility set financial type fields
-   */
-  function setFinancialType() {
-    if (method_exists('CRM_Contribute_PseudoConstant', 'contributionType')) {
-      $this->financialTypeField = 'contribution_type_id';
-      $this->financialTypeLabel = 'Contribution Type';
-      $this->financialTypePseudoConstant = 'contributionType';
-    }
-  }
-
-  /**
    * Wrapper for getOptions / pseudoconstant to get contact type options.
    *
    * @return array
@@ -3699,7 +3688,6 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     $options = array_merge($defaultOptions, $options);
     $defaults = $this->getDefaultsFromOptions($options);
     $specs = array();
-    $this->setFinancialType();
     $pseudoMethod = $this->financialTypePseudoConstant;
     if ($this->financialTypeField == 'financial_type_id') {
       $specs['financial_type_id'] = array(
@@ -3711,7 +3699,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'is_order_bys' => TRUE,
         'is_group_bys' => TRUE,
         'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-        'options' => CRM_Contribute_PseudoConstant::$pseudoMethod(),
+        'options' => CRM_Contribute_PseudoConstant::financialType(),
         'statistics' => array('GROUP_CONCAT'),
       );
     }
@@ -6694,9 +6682,9 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
   }
 
   /**
-   * @param $value
+   * @param int $value
    *
-   * @return mixed
+   * @return string
    */
   function alterPaymentType($value) {
     $paymentInstruments = CRM_Contribute_PseudoConstant::paymentInstrument();
