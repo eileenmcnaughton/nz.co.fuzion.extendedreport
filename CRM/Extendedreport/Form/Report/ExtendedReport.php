@@ -256,12 +256,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    * @return array
    */
   function getLocationTypeOptions() {
-    if (method_exists('CRM_Core_PseudoConstant', 'locationType')) {
-      return CRM_Core_PseudoConstant::locationType();
-    }
-    else {
-      return $this->_getOptions('address', 'location_type_id');
-    }
+    return $this->_getOptions('address', 'location_type_id');
   }
 
   /**
@@ -629,6 +624,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       $this->addAggregateTotal($fieldName);
       return;
     }
+    $options = array();
 
     // Data type is set for custom fields but not core fields.
     if (CRM_Utils_Array::value('data_type', $spec) == 'Boolean') {
@@ -2313,7 +2309,7 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
    * @throws \CiviCRM_API3_Exception
    */
   function addSelectableCustomFields($addFields = TRUE) {
-
+    $customFieldsTable = array();
     $extends = $customTableMapping = $validColumnHeaderFields = $foundTables = array();
     if (!empty($this->_customGroupExtended)) {
       //lets try to assign custom data select fields
@@ -2796,7 +2792,7 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
   function extractCustomFields(&$customFields, &$selectedTables, $context = 'select') {
     $myColumns = array();
     if (empty($this->_customFields)) {
-      return;
+      return array();
     }
     foreach ($this->_customFields as $tableName => $table) {
       $metadata = array_key_exists('metadata', $table) ? $table['metadata'] : $table['fields'];
@@ -3193,6 +3189,8 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    * Reformat custom value, removing first & last separator and using commas for the rest.
    *
    * @param string $value
+   *
+   * @return string
    */
   protected function commaSeparateCustomValues($value) {
     if (empty($value)) {
@@ -3667,6 +3665,10 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
   }
 
   /**
+   * Get the columns for the line items table.
+   *
+   * @param array $options
+   *
    * @return array
    */
   function getLineItemColumns($options) {
@@ -3688,7 +3690,6 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     $options = array_merge($defaultOptions, $options);
     $defaults = $this->getDefaultsFromOptions($options);
     $specs = array();
-    $pseudoMethod = $this->financialTypePseudoConstant;
     if ($this->financialTypeField == 'financial_type_id') {
       $specs['financial_type_id'] = array(
         'title' => ts('Line Item Financial Type'),
@@ -4138,7 +4139,8 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
   /**
    * Get a standardized array of <select> options for "Event Title"
    * - taken from core event class.
-   * @return Array
+   *
+   * @return array
    */
   function getEventFilterOptions() {
     $events = array();
@@ -6240,7 +6242,6 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    */
   function joinContributionSummaryTableFromContact($prefix, $extra) {
     CRM_Core_DAO::executeQuery("SET group_concat_max_len=15000");
-    $temporary = $this->_temporary;
     $tempTable = 'civicrm_report_temp_contsumm' . $prefix . date('d_H_I') . rand(1, 10000);
     $dropSql = "DROP TABLE IF EXISTS $tempTable";
     $criteria = " is_test = 0 ";
