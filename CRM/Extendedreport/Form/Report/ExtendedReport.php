@@ -5944,8 +5944,11 @@ AND {$this->_aliases['civicrm_line_item']}.entity_table = 'civicrm_participant')
    */
   protected function joinPledgePaymentFromPledge() {
     $until = CRM_Utils_Array::value('effective_date_value', $this->_params);
+    $pledgePaymentStatuses = civicrm_api3('PledgePayment', 'getoptions', array('field' => 'status_id'));
+    $toPayIDs = array(array_search('Pending', $pledgePaymentStatuses['values']), array_search('Overdue', $pledgePaymentStatuses['values']));
     $this->_from .= " LEFT JOIN
-    (SELECT pledge_id, sum(if(status_id = 1, actual_amount, 0)) as actual_amount
+    (SELECT pledge_id, sum(if(status_id = 1, actual_amount, 0)) as actual_amount,
+    IF(MIN(if(status_id IN (" . implode(',', $toPayIDs)  . "), scheduled_date, '2200-01-01')) <> '2200-01-01', MIN(if(status_id IN (" . implode(',', $toPayIDs)  . "), scheduled_date, '2200-01-01')), '') as scheduled_date
       FROM civicrm_pledge_payment";
     if ($until) {
       $this->_from .= ' INNER JOIN civicrm_contribution c ON c.id = contribution_id  AND c.receive_date <="' . CRM_Utils_Type::validate(CRM_Utils_Date::processDate($until, 235959), 'Integer') . '"';
