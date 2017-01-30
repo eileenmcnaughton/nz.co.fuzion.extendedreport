@@ -50,8 +50,6 @@ class CRM_Extendedreport_Form_Report_Pledge_Detail extends CRM_Extendedreport_Fo
         $this->_columns[$entity]['fields'][$field]['default'] = 1;
       }
     }
-    $this->_columns['civicrm_pledge_payment']['fields']['scheduled_date']['pseudofield'] = TRUE;
-    $this->_columns['civicrm_pledge_payment']['fields']['scheduled_amount']['pseudofield'] = TRUE;
     parent::__construct();
   }
 
@@ -81,7 +79,6 @@ class CRM_Extendedreport_Form_Report_Pledge_Detail extends CRM_Extendedreport_Fo
    * @return string
    */
   function selectClause(&$tableName, $tableKey, &$fieldName, &$field) {
-    $alias = "{$tableName}_{$fieldName}_sum";
     if ($fieldName == 'balance_amount') {
       $alias = $this->selectStatSum($tableName, $fieldName, $field);
       return " SUM(COALESCE(IF((pledge.status_id =3), {$this->_aliases['civicrm_pledge_payment']}.actual_amount, pledge.amount), 0))

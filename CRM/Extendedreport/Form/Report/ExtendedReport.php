@@ -504,7 +504,124 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
         }
       }
     }
-    parent::select();
+    // This is parent from 4.7.17.
+    $select = $this->_selectAliases = array();
+    foreach ($this->_columns as $tableName => $table) {
+      if (array_key_exists('fields', $table)) {
+        foreach ($table['fields'] as $fieldName => $field) {
+          if ($tableName == 'civicrm_address') {
+            $this->_addressField = TRUE;
+          }
+          if ($tableName == 'civicrm_email') {
+            $this->_emailField = TRUE;
+          }
+          if ($tableName == 'civicrm_phone') {
+            $this->_phoneField = TRUE;
+          }
+
+          if (!empty($field['required']) ||
+            !empty($this->_params['fields'][$fieldName])
+          ) {
+
+            // 1. In many cases we want select clause to be built in slightly different way
+            // for a particular field of a particular type.
+            // 2. This method when used should receive params by reference and modify $this->_columnHeaders
+            // as needed.
+            $selectClause = $this->selectClause($tableName, 'fields', $fieldName, $field);
+            if ($selectClause) {
+              $select[] = $selectClause;
+              continue;
+            }
+
+            // include statistics columns only if set
+            if (!empty($field['statistics'])) {
+              $select = $this->addStatisticsToSelect($field, $tableName, $fieldName, $select);
+            }
+            else {
+              $select = $this->addBasicFieldToSelect($tableName, $fieldName, $field, $select);
+            }
+          }
+        }
+      }
+
+      // select for group bys
+      if (array_key_exists('group_bys', $table)) {
+        foreach ($table['group_bys'] as $fieldName => $field) {
+
+          if ($tableName == 'civicrm_address') {
+            $this->_addressField = TRUE;
+          }
+          if ($tableName == 'civicrm_email') {
+            $this->_emailField = TRUE;
+          }
+          if ($tableName == 'civicrm_phone') {
+            $this->_phoneField = TRUE;
+          }
+          // 1. In many cases we want select clause to be built in slightly different way
+          // for a particular field of a particular type.
+          // 2. This method when used should receive params by reference and modify $this->_columnHeaders
+          // as needed.
+          $selectClause = $this->selectClause($tableName, 'group_bys', $fieldName, $field);
+          if ($selectClause) {
+            $select[] = $selectClause;
+            continue;
+          }
+
+          if (!empty($this->_params['group_bys']) &&
+            !empty($this->_params['group_bys'][$fieldName]) &&
+            !empty($this->_params['group_bys_freq'])
+          ) {
+            switch (CRM_Utils_Array::value($fieldName, $this->_params['group_bys_freq'])) {
+              case 'YEARWEEK':
+                $select[] = "DATE_SUB({$field['dbAlias']}, INTERVAL WEEKDAY({$field['dbAlias']}) DAY) AS {$tableName}_{$fieldName}_start";
+                $select[] = "YEARWEEK({$field['dbAlias']}) AS {$tableName}_{$fieldName}_subtotal";
+                $select[] = "WEEKOFYEAR({$field['dbAlias']}) AS {$tableName}_{$fieldName}_interval";
+                $field['title'] = 'Week';
+                break;
+
+              case 'YEAR':
+                $select[] = "MAKEDATE(YEAR({$field['dbAlias']}), 1)  AS {$tableName}_{$fieldName}_start";
+                $select[] = "YEAR({$field['dbAlias']}) AS {$tableName}_{$fieldName}_subtotal";
+                $select[] = "YEAR({$field['dbAlias']}) AS {$tableName}_{$fieldName}_interval";
+                $field['title'] = 'Year';
+                break;
+
+              case 'MONTH':
+                $select[] = "DATE_SUB({$field['dbAlias']}, INTERVAL (DAYOFMONTH({$field['dbAlias']})-1) DAY) as {$tableName}_{$fieldName}_start";
+                $select[] = "MONTH({$field['dbAlias']}) AS {$tableName}_{$fieldName}_subtotal";
+                $select[] = "MONTHNAME({$field['dbAlias']}) AS {$tableName}_{$fieldName}_interval";
+                $field['title'] = 'Month';
+                break;
+
+              case 'QUARTER':
+                $select[] = "STR_TO_DATE(CONCAT( 3 * QUARTER( {$field['dbAlias']} ) -2 , '/', '1', '/', YEAR( {$field['dbAlias']} ) ), '%m/%d/%Y') AS {$tableName}_{$fieldName}_start";
+                $select[] = "QUARTER({$field['dbAlias']}) AS {$tableName}_{$fieldName}_subtotal";
+                $select[] = "QUARTER({$field['dbAlias']}) AS {$tableName}_{$fieldName}_interval";
+                $field['title'] = 'Quarter';
+                break;
+            }
+            // for graphs and charts -
+            if (!empty($this->_params['group_bys_freq'][$fieldName])) {
+              $this->_interval = $field['title'];
+              $this->_columnHeaders["{$tableName}_{$fieldName}_start"]['title']
+                = $field['title'] . ' Beginning';
+              $this->_columnHeaders["{$tableName}_{$fieldName}_start"]['type'] = $field['type'];
+              $this->_columnHeaders["{$tableName}_{$fieldName}_start"]['group_by'] = $this->_params['group_bys_freq'][$fieldName];
+
+              // just to make sure these values are transferred to rows.
+              // since we 'll need them for calculation purpose,
+              // e.g making subtotals look nicer or graphs
+              $this->_columnHeaders["{$tableName}_{$fieldName}_interval"] = array('no_display' => TRUE);
+              $this->_columnHeaders["{$tableName}_{$fieldName}_subtotal"] = array('no_display' => TRUE);
+            }
+          }
+        }
+      }
+    }
+
+    $this->_selectClauses = $select;
+    $this->_select = "SELECT " . implode(', ', $select) . " ";
+
 
     if (empty($this->_select) || strtolower(trim($this->_select)) == 'select') {
       $this->_select = " SELECT 1 ";
@@ -4102,7 +4219,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'is_fields' => TRUE,
         'is_filters' => TRUE,
         'is_order_bys' => TRUE,
-        'statistics' => array('sum' => ts('Total to be Paid'), 'cumulative' => ts('Cumulative to be paid')),
+        'statistics' => array('display' => ts('Scheduled Payment Amount'), 'cumulative' => ts('Cumulative to be paid')),
       ),
       'status_id' => array(
         'type' => CRM_Utils_Type::T_INT,
@@ -5958,14 +6075,27 @@ AND {$this->_aliases['civicrm_line_item']}.entity_table = 'civicrm_participant')
     $until = CRM_Utils_Array::value('effective_date_value', $this->_params);
     $pledgePaymentStatuses = civicrm_api3('PledgePayment', 'getoptions', array('field' => 'status_id'));
     $toPayIDs = array(array_search('Pending', $pledgePaymentStatuses['values']), array_search('Overdue', $pledgePaymentStatuses['values']));
-    $this->_from .= " LEFT JOIN
-    (SELECT pledge_id, sum(if(status_id = 1, actual_amount, 0)) as actual_amount,
-    IF(MIN(if(status_id IN (" . implode(',', $toPayIDs)  . "), scheduled_date, '2200-01-01')) <> '2200-01-01', MIN(if(status_id IN (" . implode(',', $toPayIDs)  . "), scheduled_date, '2200-01-01')), '') as scheduled_date
-      FROM civicrm_pledge_payment";
+    $this->_from .= "
+      LEFT JOIN
+      (SELECT p.*, p2.id, p2.scheduled_amount FROM (
+        SELECT pledge_id, sum(if(status_id = 1, actual_amount, 0)) as actual_amount,
+          IF(
+            MIN(if(status_id IN (" . implode(',', $toPayIDs)  . "), scheduled_date, '2200-01-01')) <> '2200-01-01',
+            MIN(if(status_id IN (" . implode(',', $toPayIDs)  . "), scheduled_date, '2200-01-01')),
+          '') as scheduled_date
+        FROM civicrm_pledge_payment";
     if ($until) {
-      $this->_from .= ' INNER JOIN civicrm_contribution c ON c.id = contribution_id  AND c.receive_date <="' . CRM_Utils_Type::validate(CRM_Utils_Date::processDate($until, 235959), 'Integer') . '"';
+      $this->_from .=
+        ' INNER JOIN civicrm_contribution c ON c.id = contribution_id  AND c.receive_date <="'
+        .CRM_Utils_Type::validate(CRM_Utils_Date::processDate($until, 235959), 'Integer') . '"';
     }
-    $this->_from .= " GROUP BY pledge_id
+    $this->_from .= "
+       GROUP BY pledge_id) as p
+      LEFT JOIN civicrm_pledge_payment p2
+       ON p.pledge_id = p2.pledge_id AND p.scheduled_date = p2.scheduled_date
+       AND p2.status_id IN (" . implode(',', $toPayIDs)  . ")
+      ";
+    $this->_from .= "
      ) as {$this->_aliases['civicrm_pledge_payment']}
      ON {$this->_aliases['civicrm_pledge_payment']}.pledge_id = {$this->_aliases['civicrm_pledge']}.id";
   }
@@ -6722,7 +6852,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    * @return string
    */
   protected function alterPledgePaymentLink($value, &$row) {
-    if (!$this->_groupByArray == array('civicrm_pledge_payment_id' => 'pledge_payment.id')) {
+    if ($this->_groupByArray !== array('civicrm_pledge_payment_id' => 'pledge_payment.id')) {
       CRM_Core_Session::setStatus(ts('Pledge payment link not added'), ts('The pledge payment link cannot be added if the grouping options on the report make it ambiguous'));
       return '';
     }
@@ -7182,6 +7312,99 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
       }
       $groupBys[$field] = $row[$field];
     }
+  }
+
+  /**
+   * Add statistics columns.
+   *
+   * This version should be in 4.7.16+.
+   *
+   * If a group by is in play then add columns for the statistics fields.
+   *
+   * This would lead to a new field in the $row such as $fieldName_sum and a new, matching
+   * column header field.
+   *
+   * @param array $field
+   * @param string $tableName
+   * @param string $fieldName
+   * @param array $select
+   *
+   * @return array
+   */
+  protected function addStatisticsToSelect($field, $tableName, $fieldName, $select) {
+    foreach ($field['statistics'] as $stat => $label) {
+      $alias = "{$tableName}_{$fieldName}_{$stat}";
+      switch (strtolower($stat)) {
+        case 'max':
+        case 'sum':
+          $select[] = "$stat({$field['dbAlias']}) as $alias";
+          $this->_columnHeaders["{$tableName}_{$fieldName}_{$stat}"]['title'] = $label;
+          $this->_columnHeaders["{$tableName}_{$fieldName}_{$stat}"]['type'] = $field['type'];
+          if (!isset($stat['cummulative'])) {
+            $this->_statFields[$label] = $alias;
+          }
+          $this->_selectAliases[] = $alias;
+          break;
+
+        case 'cumulative':
+          $alias = "{$tableName}_{$fieldName}_sum";
+          $select[] = "SUM({$field['dbAlias']}) as $alias";
+          $this->_selectAliases[] = $alias;
+          break;
+
+        case 'count':
+          $select[] = "COUNT({$field['dbAlias']}) as $alias";
+          $this->_columnHeaders["{$tableName}_{$fieldName}_{$stat}"]['title'] = $label;
+          $this->_columnHeaders["{$tableName}_{$fieldName}_{$stat}"]['type'] = CRM_Utils_Type::T_INT;
+          $this->_statFields[$label] = $alias;
+          $this->_selectAliases[] = $alias;
+          break;
+
+        case 'count_distinct':
+          $select[] = "COUNT(DISTINCT {$field['dbAlias']}) as $alias";
+          $this->_columnHeaders["{$tableName}_{$fieldName}_{$stat}"]['title'] = $label;
+          $this->_columnHeaders["{$tableName}_{$fieldName}_{$stat}"]['type'] = CRM_Utils_Type::T_INT;
+          $this->_statFields[$label] = $alias;
+          $this->_selectAliases[] = $alias;
+          break;
+
+        case 'avg':
+          $select[] = "ROUND(AVG({$field['dbAlias']}),2) as $alias";
+          $this->_columnHeaders["{$tableName}_{$fieldName}_{$stat}"]['title'] = $label;
+          $this->_columnHeaders["{$tableName}_{$fieldName}_{$stat}"]['type'] = $field['type'];
+          $this->_statFields[$label] = $alias;
+          $this->_selectAliases[] = $alias;
+          break;
+
+        case 'display':
+          $select[] = "{$field['dbAlias']} as $alias";
+          $this->_columnHeaders["{$tableName}_{$fieldName}_{$stat}"]['title'] = $label;
+          $this->_columnHeaders["{$tableName}_{$fieldName}_{$stat}"]['type'] = $field['type'];
+          $this->_selectAliases[] = $alias;
+          break;
+      }
+    }
+    return $select;
+  }
+
+  /**
+   * Add a basic field to the select clause.
+   *
+   * This version should be in 4.7.16+.
+   *
+   * @param string $tableName
+   * @param string $fieldName
+   * @param array $field
+   * @param string $select
+   * @return array
+   */
+  protected function addBasicFieldToSelect($tableName, $fieldName, $field, $select) {
+    $alias = "{$tableName}_{$fieldName}";
+    $select[] = "{$field['dbAlias']} as $alias";
+    $this->_columnHeaders["{$tableName}_{$fieldName}"]['title'] = CRM_Utils_Array::value('title', $field);
+    $this->_columnHeaders["{$tableName}_{$fieldName}"]['type'] = CRM_Utils_Array::value('type', $field);
+    $this->_selectAliases[] = $alias;
+    return $select;
   }
 
 }
