@@ -4114,8 +4114,30 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'alter_display' => 'alterContributionStatus',
       ),
     );
+    if (!empty($options['is_actions'])) {
+      $specs = array_merge($specs, $this->getPledgePaymentActions());
+    }
     return $this->buildColumns($specs, 'civicrm_pledge_payment', 'CRM_Pledge_BAO_PledgePayment', NULL, $this->getDefaultsFromOptions($options));
 
+  }
+
+  /**
+   * Get actions for pledge payments.
+   *
+   * @return array
+   */
+  protected function getPledgePaymentActions() {
+    $actions = array(
+      'add_payment' => array(
+        'type' => CRM_Utils_Type::T_INT,
+        'title' => ts('Payment Link'),
+        'name' => 'id',
+        'alter_display' => 'alterPledgePaymentLink',
+        // Otherwise it will be supressed. We retrieve & alter.
+        'is_fields' => TRUE,
+      ),
+    );
+    return $actions;
   }
 
   /**
@@ -6690,6 +6712,33 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
   function alterPaymentType($value) {
     $paymentInstruments = CRM_Contribute_PseudoConstant::paymentInstrument();
     return CRM_Utils_Array::value($value, $paymentInstruments);
+  }
+
+  /**
+   * Convert the pledge payment id to a link if grouped by only pledge payment id.
+   *
+   * @param id $value
+   *
+   * @return string
+   */
+  protected function alterPledgePaymentLink($value, &$row) {
+    if (!$this->_groupByArray == array('civicrm_pledge_payment_id' => 'pledge_payment.id')) {
+      CRM_Core_Session::setStatus(ts('Pledge payment link not added'), ts('The pledge payment link cannot be added if the grouping options on the report make it ambiguous'));
+      return '';
+    }
+    if (isset($row['civicrm_pledge_pledge_contact_id'])) {
+      $contactID = $row['civicrm_pledge_pledge_contact_id'];
+    }
+    else {
+      $contactID = CRM_Core_DAO::singleValueQuery(
+        "SELECT contact_id FROM civicrm_pledge_payment pp
+         LEFT JOIN civicrm_pledge p ON pp.pledge_id = p.id
+         WHERE pp.id = " . $value
+      );
+    }
+    $row['civicrm_pledge_payment_pledge_payment_add_payment_link'] = CRM_Utils_System::url('civicrm/contact/view/contribution', 'reset=1&action=add&cid=' . $contactID . '&context=pledge&ppid=' . $value);
+    $row['civicrm_pledge_payment_pledge_payment_add_payment_hover'] = ts('Record a payment received for this pledged payment');
+    return ts('Record Payment');
   }
 
   /**

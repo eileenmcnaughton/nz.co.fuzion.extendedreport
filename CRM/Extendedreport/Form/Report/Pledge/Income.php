@@ -27,9 +27,11 @@ class CRM_Extendedreport_Form_Report_Pledge_Income extends CRM_Extendedreport_Fo
         $paymentStatuses['Overdue'],
       )),
       'is_order_bys' => TRUE,
+      'is_actions' => TRUE,
     ))
     + $this->getColumns('Contact')
     + $this->getColumns('Pledge');
+
     parent::__construct();
   }
 
