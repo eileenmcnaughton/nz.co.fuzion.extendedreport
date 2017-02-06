@@ -129,7 +129,8 @@ class CRM_Extendedreport_Form_Report_Pledge_Lybuns extends CRM_Extendedreport_Fo
             'title' => ts('Pledge status'),
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
             'options' => CRM_Contribute_PseudoConstant::contributionStatus(),
-            'default' => array('1')
+            'default' => array('1'),
+            'type' => CRM_Utils_Type::T_INT,
           ),
         ),
       ),
@@ -142,6 +143,7 @@ class CRM_Extendedreport_Form_Report_Pledge_Lybuns extends CRM_Extendedreport_Fo
             'title' => ts('Group'),
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
             'group' => TRUE,
+            'type' => CRM_Utils_Type::T_INT,
             'options' => CRM_Core_PseudoConstant::group()
           ),
         ),

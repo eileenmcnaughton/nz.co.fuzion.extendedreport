@@ -484,6 +484,9 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     }
     $this->storeGroupByArray();
     $this->unsetBaseTableStatsFieldsWhereNoGroupBy();
+    if (!isset($this->_params['fields'])) {
+      $this->_params['fields'] = array();
+    }
     foreach ($this->_params['fields'] as $fieldName => $field) {
       if (substr($fieldName, 0, 7) == 'custom_') {
         foreach ($this->_columns as $table => $specs) {
@@ -1956,52 +1959,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
         $this->assign('grandStat', $stats);
       }
     }
-  }
-
-
-  /**
-   * overriding because to post && !$this->_noFields from 4.3 to 4.2
-   */
-  function beginPostProcess() {
-    $this->_params = $this->controller->exportValues($this->_name);
-    if (empty($this->_params) &&
-      $this->_force
-    ) {
-      $this->_params = $this->_formValues;
-    }
-    // hack to fix params when submitted from dashboard, CRM-8532
-    // fields array is missing because form building etc is skipped
-    // in dashboard mode for report
-    if (!CRM_Utils_Array::value('fields', $this->_params) && !$this->_noFields && !$this->_customGroupAggregates) {
-      $this->_params = $this->_formValues;
-    }
-    if (!empty($this->_params['group_bys'])) {
-      $this->_params['fields'] = array_merge((array) $this->_params['group_bys'], $this->_params['fields']);
-    }
-    /*if (!empty($this->_params['order_bys'])) {
-      //unset($this->_params['group_bys']);
-      foreach ($this->_params['order_bys'] as $orderByName => $orderBy) {
-
-      }
-    }
-    */
-    $this->_formValues = $this->_params;
-    if (CRM_Core_Permission::check('administer Reports') &&
-      isset($this->_id) &&
-      ($this->_instanceButtonName == $this->controller->getButtonName() . '_save' ||
-        $this->_chartButtonName == $this->controller->getButtonName()
-      )
-    ) {
-      $this->assign('updateReportButton', TRUE);
-    }
-
-    if (isset($this->_aliases[$this->_primaryContactPrefix . 'civicrm_contact'])) {
-      $this->_aliases['civicrm_contact'] = $this->_aliases[$this->_primaryContactPrefix . 'civicrm_contact'];
-    }
-
-    $this->storeParametersOnForm();
-    $this->processReportMode();
-    parent::beginPostProcess();
   }
 
   /**
@@ -4266,7 +4223,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'name' => 'id',
         'title' => ts('Membership Types'),
         'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-        'type' => CRM_Utils_Type::T_INT + CRM_Utils_Type::T_ENUM,
+        'type' => CRM_Utils_Type::T_INT,
         'options' => CRM_Member_PseudoConstant::membershipType(),
         'is_fields' => TRUE,
       ),
@@ -4462,7 +4419,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
   function getCampaignColumns() {
 
     if (!CRM_Campaign_BAO_Campaign::isCampaignEnable()) {
-      return array();
+      return array('civicrm_campaign' => array('fields' => array(), 'metadata' => array()));
     }
     $specs = array(
       'campaign_type_id' => array(
@@ -4824,7 +4781,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
   function getCaseColumns($options) {
     $config = CRM_Core_Config::singleton();
     if (!in_array('CiviCase', $config->enableComponents)) {
-      return array();
+      return array('civicrm_case' => array('fields' => array(), 'metadata' => array()));
     }
 
     $spec = array(
@@ -7168,14 +7125,12 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    * ie fieldname => table alias
    */
   protected function getFieldBreakdownForAggregates($type) {
-    $columnHeader = $this->_params['aggregate_' . $type . '_headers'];
-    if (!empty($columnHeader)) {
-      $fieldArr = explode(":", $columnHeader);
-      return array($fieldArr[1] => array($fieldArr[0]));
-    }
-    else {
+    if (empty($this->_params['aggregate_' . $type . '_headers'])) {
       return array();
     }
+    $columnHeader = $this->_params['aggregate_' . $type . '_headers'];
+    $fieldArr = explode(":", $columnHeader);
+    return array($fieldArr[1] => array($fieldArr[0]));
   }
 
   /**

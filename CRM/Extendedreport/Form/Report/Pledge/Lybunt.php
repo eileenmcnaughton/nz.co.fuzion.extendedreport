@@ -137,7 +137,8 @@ class CRM_Extendedreport_Form_Report_Pledge_Lybunt extends CRM_Extendedreport_Fo
             'options' => CRM_Contribute_PseudoConstant::contributionStatus(),
             'default' => array(
               '1'
-            )
+            ),
+            'type' => CRM_Utils_Type::T_INT,
           )
         )
       ),
@@ -150,6 +151,7 @@ class CRM_Extendedreport_Form_Report_Pledge_Lybunt extends CRM_Extendedreport_Fo
             'title' => ts('Group'),
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
             'group' => TRUE,
+            'type' => CRM_Utils_Type::T_INT,
             'options' => CRM_Core_PseudoConstant::group()
           )
         )

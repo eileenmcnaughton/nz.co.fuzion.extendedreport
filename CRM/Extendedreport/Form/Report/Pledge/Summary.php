@@ -57,13 +57,9 @@ class CRM_Extendedreport_Form_Report_Pledge_Summary extends CRM_Extendedreport_F
                           {$this->_aliases['civicrm_pledge']}.contact_id )
                  {$this->_aclFrom} ";
 
-    // include address field if address column is to be included
+
     if ($this->isTableSelected('civicrm_address')) {
-      $this->_from .= "
-                 LEFT JOIN civicrm_address {$this->_aliases['civicrm_address']}
-                           ON ({$this->_aliases['civicrm_contact']}.id =
-                               {$this->_aliases['civicrm_address']}.contact_id) AND
-                               {$this->_aliases['civicrm_address']}.is_primary = 1\n";
+      $this->joinAddressFromContact();
     }
 
     if ($this->isTableSelected('civicrm_email')) {

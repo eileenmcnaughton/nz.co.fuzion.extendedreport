@@ -105,6 +105,7 @@ class CRM_Extendedreport_Form_Report_Pledge_Btbns extends CRM_Extendedreport_For
           'status_id' => array(
             'title' => 'Pledge Status',
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+            'type' => CRM_Utils_Type::T_INT,
             'options' => CRM_Contribute_PseudoConstant::contributionStatus(),
             'default' => array(
               '1',
@@ -121,6 +122,7 @@ class CRM_Extendedreport_Form_Report_Pledge_Btbns extends CRM_Extendedreport_For
             'title' => ts('Group'),
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
             'group' => TRUE,
+            'type' => CRM_Utils_Type::T_INT,
             'options' => CRM_Core_PseudoConstant::group()
           )
         )
@@ -133,7 +135,7 @@ class CRM_Extendedreport_Form_Report_Pledge_Btbns extends CRM_Extendedreport_For
 
   function select() {
     $this->_columnHeaders = $select = array();
-    $current_year = $this->_params['yid_value'];
+    $current_year = isset($this->_params['yid_value']) ? $this->_params['yid_value'] : date('Y');
     $previous_year = $current_year - 1;
 
 

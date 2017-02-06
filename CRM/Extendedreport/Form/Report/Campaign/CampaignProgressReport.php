@@ -14,7 +14,7 @@ class CRM_Extendedreport_Form_Report_Campaign_CampaignProgressReport extends CRM
   protected $_customGroupExtends = array(
     'Pledge',
   );
-  public $_drilldownReport = array('pledge/details' => 'Pledge Details');
+  protected $_baseTable = 'civicrm_campaign';
   protected $_customGroupGroupBy = TRUE;
 
   /**
@@ -75,36 +75,16 @@ class CRM_Extendedreport_Form_Report_Campaign_CampaignProgressReport extends CRM
 
   function from() {
     $this->_from = "
-      FROM civicrm_campaign {$this->_aliases['civicrm_campaign']}";
+      FROM civicrm_campaign campaign";
 
     $this->joinProgressTable();
-    if (!$this->isTableSelected('civicrm_contact')) {
-      $this->_aliases['civicrm_contact'] = 'civicrm_contact';
-    }
+    $this->_aliases['civicrm_contact'] = 'civicrm_contact';
 
     $this->_from .= "
-                 LEFT JOIN civicrm_contact {$this->_aliases['civicrm_contact']}
-                      ON ({$this->_aliases['civicrm_contact']}.id =
-                          progress.contact_id )
-                 {$this->_aclFrom} ";
-
-    // include address field if address column is to be included
-    if ($this->isTableSelected('civicrm_address')) {
-      $this->_from .= "
-                 LEFT JOIN civicrm_address {$this->_aliases['civicrm_address']}
-                           ON ({$this->_aliases['civicrm_contact']}.id =
-                               {$this->_aliases['civicrm_address']}.contact_id) AND
-                               {$this->_aliases['civicrm_address']}.is_primary = 1\n";
-    }
-
-    // include email field if email column is to be included
-    if ($this->isTableSelected('civicrm_email')) {
-      $this->_from .= "
-                 LEFT JOIN civicrm_email {$this->_aliases['civicrm_email']}
-                           ON ({$this->_aliases['civicrm_contact']}.id =
-                               {$this->_aliases['civicrm_email']}.contact_id) AND
-                               {$this->_aliases['civicrm_email']}.is_primary = 1\n";
-    }
+      LEFT JOIN civicrm_contact {$this->_aliases['civicrm_contact']}
+      ON ({$this->_aliases['civicrm_contact']}.id = progress.contact_id )
+      {$this->_aclFrom}
+    ";
   }
 
   /**
