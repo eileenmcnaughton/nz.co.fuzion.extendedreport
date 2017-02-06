@@ -151,12 +151,13 @@ LEFT JOIN
    */
   function selectClause(&$tableName, $tableKey, &$fieldName, &$field) {
     if ($fieldName == 'still_to_raise') {
-      $alias = "{$tableName}_{$fieldName}";
-      $this->_columnHeaders["{$tableName}_{$fieldName}"]['title'] = CRM_Utils_Array::value('title', $field);
-      $this->_columnHeaders["{$tableName}_{$fieldName}"]['type'] = CRM_Utils_Array::value('type', $field);
-      $this->_columnHeaders["{$tableName}_{$fieldName}"]['dbAlias'] = CRM_Utils_Array::value('dbAlias', $field);
+      $alias = "{$tableName}_{$fieldName}_sum";
+      $this->_columnHeaders[$alias]['title'] = CRM_Utils_Array::value('title', $field);
+      $this->_columnHeaders[$alias]['type'] = CRM_Utils_Array::value('type', $field);
+      $this->_columnHeaders[$alias]['dbAlias'] = CRM_Utils_Array::value('dbAlias', $field);
+      $this->_statFields[$alias] = $alias;
       $this->_selectAliases[] = $alias;
-      return " COALESCE(campaign.goal_revenue - SUM(COALESCE(progress.total_amount, 0)), 0) as $alias ";
+      return " SUM(COALESCE(campaign.goal_revenue,0)) - SUM(COALESCE(progress.total_amount, 0)) as $alias ";
     }
   }
 
@@ -199,20 +200,20 @@ LEFT JOIN
       }
       else {
         $rows[$index]['civicrm_campaign_campaign_goal_revenue'] = $runningTotalRaised;
-        $rows[$index]['progress_still_to_raise'] = $runningTotalLeft;
+        //$rows[$index]['progress_still_to_raise'] = $runningTotalLeft;
         $grandTotalLeft += $runningTotalLeft;
         $grandTotalRaised += $runningTotalRaised;
         $runningTotalRaised = $runningTotalLeft = 0;
         foreach ($rows[$index] as $field => $value) {
           if (is_numeric($value)) {
-            $rows[$index][$field] = '<span class="report-label">' . str_replace('$', '', CRM_Utils_Money::format($value)) . '</span>';
+            //$rows[$index][$field] = '<span class="report-label">' . str_replace('$', '', CRM_Utils_Money::format($value)) . '</span>';
           }
         }
       }
 
     }
-    $this->rollupRow['civicrm_campaign_campaign_goal_revenue'] = $grandTotalRaised;
-    $this->rollupRow['progress_still_to_raise'] = $grandTotalLeft;
+   // $this->rollupRow['civicrm_campaign_campaign_goal_revenue'] = $grandTotalRaised;
+   // $this->rollupRow['progress_still_to_raise'] = $grandTotalLeft;
     $this->assign('grandStat', $this->rollupRow);
   }
 

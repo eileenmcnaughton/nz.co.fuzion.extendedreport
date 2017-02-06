@@ -1277,6 +1277,13 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     }
   }
 
+  protected function isSelfGrouped() {
+    if ($this->_groupByArray == array($this->_baseTable . '_id' => $this->_aliases[$this->_baseTable] . ".id")) {
+      return TRUE;
+    }
+    return FALSE;
+  }
+
   /**
    * Calculate whether we have stats fields.
    *
@@ -3691,7 +3698,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    *
    * @return array
    */
-  function buildColumns($specs, $tableName, $daoName = NULL, $tableAlias = NULL, $defaults = array()) {
+  function buildColumns($specs, $tableName, $daoName = NULL, $tableAlias = NULL, $defaults = array(), $options = array()) {
     if (!$tableAlias) {
       $tableAlias = str_replace('civicrm_', '', $tableName);
     }
@@ -3722,7 +3729,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         $columns[$tableName]['fields'][$fieldAlias]['default'] = TRUE;
       }
 
-      if (empty($spec['is_fields'])) {
+      if (empty($spec['is_fields']) || (isset($options['fields_excluded']) && in_array($specName, $options['fields_excluded']))) {
         $columns[$tableName]['fields'][$fieldAlias]['no_display'] = TRUE;
       }
 
@@ -4149,38 +4156,40 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
   }
 
   /**
+   * Get the columns for the pledge payment.
+   *
    * @param array $options
    *
    * @return array
    */
   protected function getPledgePaymentColumns($options) {
     $specs = array(
-      'actual_amount' => array(
-        'title' => ts('Amount Paid'),
+      $options['prefix'] . 'actual_amount' => array(
+        'title' => ts($options['prefix'] . 'Amount Paid'),
         'type' => CRM_Utils_Type::T_MONEY,
         'statistics' => array('sum' => ts('Total Amount Paid')),
         'is_fields' => TRUE,
       ),
-      'scheduled_date' => array(
+      $options['prefix'] . 'scheduled_date' => array(
         'type' => CRM_Utils_Type::T_DATE,
-        'title' => ts('Scheduled Payment Due'),
+        'title' => ts($options['prefix'] . 'Scheduled Payment Due'),
         'is_fields' => TRUE,
         'is_filters' => TRUE,
         'is_group_bys' => TRUE,
         'is_order_bys' => TRUE,
         'frequency' => TRUE,
       ),
-      'scheduled_amount' => array(
+      $options['prefix'] . 'scheduled_amount' => array(
         'type' => CRM_Utils_Type::T_MONEY,
-        'title' => ts('Scheduled Payment Amount'),
+        'title' => ts($options['prefix_label'] .'Amount to be paid'),
         'is_fields' => TRUE,
-        'is_filters' => TRUE,
-        'is_order_bys' => TRUE,
-        'statistics' => array('display' => ts('Scheduled Payment Amount'), 'cumulative' => ts('Cumulative to be paid')),
+        'statistics' => array(
+          'sum' => ts('Amount to be paid'),
+          'cumulative' => ts('Cumulative to be paid')),
       ),
-      'status_id' => array(
+      $options['prefix'] . 'status_id' => array(
         'type' => CRM_Utils_Type::T_INT,
-        'title' => ts('Payment Status'),
+        'title' => ts($options['prefix_label'] . 'Payment Status'),
         'is_fields' => TRUE,
         'is_filters' => TRUE,
         'operatorType' => CRM_Report_Form::OP_MULTISELECT,
@@ -4191,8 +4200,39 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     if (!empty($options['is_actions'])) {
       $specs = array_merge($specs, $this->getPledgePaymentActions());
     }
-    return $this->buildColumns($specs, 'civicrm_pledge_payment', 'CRM_Pledge_BAO_PledgePayment', NULL, $this->getDefaultsFromOptions($options));
 
+    return $this->buildColumns($specs, $options['prefix'] . 'civicrm_pledge_payment', 'CRM_Pledge_BAO_PledgePayment', $options['prefix'] . 'pledge_payment', $this->getDefaultsFromOptions($options), $options);
+
+  }
+
+  /**
+   * Get the columns for the pledge payment.
+   *
+   * @param array $options
+   *
+   * @return array
+   */
+  protected function getNextPledgePaymentColumns($options) {
+    $specs = array(
+      $options['prefix'] . 'scheduled_date' => array(
+        'type' => CRM_Utils_Type::T_DATE,
+        'title' => ts('Next Payment Due'),
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+        'is_group_bys' => TRUE,
+        'is_order_bys' => TRUE,
+        'frequency' => TRUE,
+      ),
+      $options['prefix'] . 'scheduled_amount' => array(
+        'type' => CRM_Utils_Type::T_MONEY,
+        'title' => ts('Next payment Amount'),
+        'is_fields' => TRUE,
+      ),
+    );
+    if (!empty($options['is_actions'])) {
+      $specs = array_merge($specs, $this->getPledgePaymentActions());
+    }
+    return $this->buildColumns($specs, $options['prefix'] . 'civicrm_pledge_payment', 'CRM_Pledge_BAO_PledgePayment', $options['prefix'] . 'civicrm_pledge_payment', $this->getDefaultsFromOptions($options));
   }
 
   /**
@@ -4449,7 +4489,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'is_fields' => TRUE,
         'is_group_bys' => TRUE,
         'type' => CRM_Utils_Type::T_MONEY,
-        //'statistics' => array('coalesce' => ts('Total Goal')),
+        'statistics' => array('sum' => ts('Total Goal')),
       ),
     );
     return $this->buildColumns($specs, 'civicrm_campaign', 'CRM_Campaign_BAO_Campaign');
@@ -5696,6 +5736,11 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'rightTable' => 'civicrm_contact',
         'callback' => 'joinContactFromPledge',
       ),
+      'next_payment_from_pledge' => array(
+        'leftTable' => 'civicrm_pledge',
+        'rightTable' => 'civicrm_pledge_payment',
+        'callback' => 'joinNextPaymentFromPledge',
+      ),
       'event_from_participant' => array(
         'leftTable' => 'civicrm_participant',
         'rightTable' => 'civicrm_event',
@@ -6034,12 +6079,14 @@ AND {$this->_aliases['civicrm_line_item']}.entity_table = 'civicrm_participant')
     $toPayIDs = array(array_search('Pending', $pledgePaymentStatuses['values']), array_search('Overdue', $pledgePaymentStatuses['values']));
     $this->_from .= "
       LEFT JOIN
-      (SELECT p.*, p2.id, p2.scheduled_amount FROM (
+      (SELECT p.*, p2.id, p2.scheduled_amount as next_scheduled_amount
+      FROM (
         SELECT pledge_id, sum(if(status_id = 1, actual_amount, 0)) as actual_amount,
           IF(
             MIN(if(status_id IN (" . implode(',', $toPayIDs)  . "), scheduled_date, '2200-01-01')) <> '2200-01-01',
             MIN(if(status_id IN (" . implode(',', $toPayIDs)  . "), scheduled_date, '2200-01-01')),
-          '') as scheduled_date
+          '') as scheduled_date,
+          SUM(scheduled_amount) as scheduled_amount
         FROM civicrm_pledge_payment";
     if ($until) {
       $this->_from .=
@@ -6057,6 +6104,43 @@ AND {$this->_aliases['civicrm_line_item']}.entity_table = 'civicrm_participant')
      ON {$this->_aliases['civicrm_pledge_payment']}.pledge_id = {$this->_aliases['civicrm_pledge']}.id";
   }
 
+  /**
+   * Join the pledge to the next payment due.
+   */
+  protected function joinNextPaymentFromPledge() {
+    if (!$this->isTableSelected('next_civicrm_pledge_payment')) {
+      $this->_from .= "";
+    }
+    else {
+      CRM_Core_DAO::executeQuery('
+        CREATE TEMPORARY TABLE next_pledge_payment
+        SELECT pledge_id, 1 as id, min(scheduled_date) as next_scheduled_date
+        FROM civicrm_pledge_payment 
+        WHERE status_id IN (2,6)
+        GROUP BY pledge_id ORDER BY scheduled_date DESC;
+      ');
+      CRM_Core_DAO::executeQuery("
+        ALTER TABLE next_pledge_payment
+        ADD INDEX index_pledge_id (`pledge_id`),
+        ADD COLUMN next_scheduled_amount  decimal(20,2) DEFAULT NULL,
+        ADD COLUMN next_status_id  int(11) DEFAULT NULL
+       ");
+      CRM_Core_DAO::executeQuery("
+        UPDATE next_pledge_payment np
+        INNER JOIN civicrm_pledge_payment pp
+        ON pp.pledge_id = np.pledge_id 
+        AND pp.scheduled_date = np.next_scheduled_date
+        AND pp.status_id IN (2,6)
+        SET np.id = pp.id, 
+        np.next_scheduled_amount = pp.scheduled_amount,
+        np.next_status_id = pp.status_id
+      ");
+      $this->_from .= " 
+      LEFT JOIN next_pledge_payment {$this->_aliases['next_civicrm_pledge_payment']}
+      ON {$this->_aliases['next_civicrm_pledge_payment']}.pledge_id = {$this->_aliases['civicrm_pledge']}.id
+      ";
+    }
+  }
   /**
    * Define conditional join to related contact from participant.
    *
@@ -6692,11 +6776,14 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    * @return array
    */
   function alterCumulative($value, &$row, $selectedfield, $criteriaFieldName) {
-    static $cumlative = 0;
-    if (empty($row['is_rollup'])) {
-      $cumlative = $cumlative + $value;
+    if (!isset(\Civi::$statics[__CLASS__]) || !isset(\Civi::$statics[__CLASS__][$selectedfield . 'cumulative'])) {
+      \Civi::$statics[__CLASS__][$selectedfield . 'cumulative'] = 0;
     }
-    $row[str_replace('_sum', '_cumulative', $selectedfield)] = $cumlative;
+
+    if (empty($row['is_rollup'])) {
+      \Civi::$statics[__CLASS__][$selectedfield . 'cumulative'] = \Civi::$statics[__CLASS__][$selectedfield . 'cumulative'] + $value;
+    }
+    $row[str_replace('_sum', '_cumulative', $selectedfield)] = \Civi::$statics[__CLASS__][$selectedfield . 'cumulative'];
     return $value;
   }
 
@@ -6808,10 +6895,15 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    *
    * @return string
    */
-  protected function alterPledgePaymentLink($value, &$row) {
-    if ($this->_groupByArray !== array('civicrm_pledge_payment_id' => 'pledge_payment.id')) {
+  protected function alterPledgePaymentLink($value, &$row, $selectedField) {
+    if ($this->_groupByArray !== array('civicrm_pledge_payment_id' => 'pledge_payment.id')
+     && $this->_groupByArray !== array('civicrm_pledge_payment_id' => 'civicrm_pledge_payment.id')
+    ) {
       CRM_Core_Session::setStatus(ts('Pledge payment link not added'), ts('The pledge payment link cannot be added if the grouping options on the report make it ambiguous'));
       return '';
+    }
+    if (empty($value)) {
+      return $value;
     }
     if (isset($row['civicrm_pledge_pledge_contact_id'])) {
       $contactID = $row['civicrm_pledge_pledge_contact_id'];
@@ -6823,8 +6915,8 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
          WHERE pp.id = " . $value
       );
     }
-    $row['civicrm_pledge_payment_pledge_payment_add_payment_link'] = CRM_Utils_System::url('civicrm/contact/view/contribution', 'reset=1&action=add&cid=' . $contactID . '&context=pledge&ppid=' . $value);
-    $row['civicrm_pledge_payment_pledge_payment_add_payment_hover'] = ts('Record a payment received for this pledged payment');
+    $row[$selectedField . '_link'] = CRM_Utils_System::url('civicrm/contact/view/contribution', 'reset=1&action=add&cid=' . $contactID . '&context=pledge&ppid=' . $value);
+    $row[$selectedField . '_hover'] = ts('Record a payment received for this pledged payment');
     return ts('Record Payment');
   }
 
