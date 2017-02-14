@@ -1856,6 +1856,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
         $this->buildACLClause($this->_aliases[$this->_aclTable]);
       }
       $this->beginPostProcess();
+      $this->storeParametersOnForm();
 
       $sql = $this->buildQuery();
       $this->reOrderColumnHeaders();
