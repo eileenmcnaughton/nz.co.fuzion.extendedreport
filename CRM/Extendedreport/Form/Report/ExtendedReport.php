@@ -1142,7 +1142,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
 
         if (!empty($orderByField)) {
           $this->_orderByFields[] = $orderByField;
-          $orderBys[] = "{$table['metadata'][$orderBy['column']]['dbAlias']} {$orderBy['order']}";
+          $orderBys[] = "({$table['metadata'][$orderBy['column']]['dbAlias']}) {$orderBy['order']}";
           // Record any section headers for assignment to the template
           if (CRM_Utils_Array::value('section', $orderBy)) {
             $this->_sections[$orderByField['tplField']] = $orderByField;

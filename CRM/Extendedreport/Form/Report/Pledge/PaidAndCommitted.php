@@ -26,14 +26,32 @@ class CRM_Extendedreport_Form_Report_Pledge_PaidAndCommitted extends CRM_Extende
           'order_by' => TRUE,
         )
       ) + $this->getColumns('Contact')
-      + $this->getColumns('FinancialType')
-      + $this->getColumns('Pledge', array('fields' => TRUE))
-      + $this->getColumns('PledgePayment');
+      + $this->getColumns('FinancialType');
+
+    $this->_columns['civicrm_pledge_payment']['fields']['actual_amount'] = array(
+      'title' => ts('Amount Paid'),
+      'statistics' => array('sum' => ts('Amount Paid')),
+      'type' => CRM_Utils_Type::T_MONEY,
+    );
+    $this->_columns += $this->getColumns('Pledge', array('fields' => TRUE));
+
+    $this->_columns['civicrm_pledge']['metadata']['balance_amount'] = array(
+      'title' => 'Balance to Pay',
+      'type' => CRM_Utils_Type::T_MONEY,
+      'dbAlias' => "(COALESCE(sum(pledge.amount), 0) - COALESCE(sum(pledge_payment_civireport.actual_amount), 0))",
+    );
+
     $this->_columns['civicrm_pledge']['fields']['balance_amount'] = array(
       'title' => 'Balance to Pay',
       'statistics' => array('sum' => ts('Balance')),
       'type' => CRM_Utils_Type::T_MONEY,
     );
+
+    $this->_columns['civicrm_pledge']['order_bys']['balance_amount'] = array(
+      'title' => 'Balance to Pay',
+      'type' => CRM_Utils_Type::T_MONEY,
+    );
+
     $this->_groupFilter = TRUE;
     $this->_tagFilter = TRUE;
     parent::__construct();
@@ -55,22 +73,12 @@ class CRM_Extendedreport_Form_Report_Pledge_PaidAndCommitted extends CRM_Extende
                           {$this->_aliases['civicrm_pledge']}.contact_id )
                  {$this->_aclFrom} ";
 
-    // include address field if address column is to be included
     if ($this->isTableSelected('civicrm_address')) {
-      $this->_from .= "
-                 LEFT JOIN civicrm_address {$this->_aliases['civicrm_address']}
-                           ON ({$this->_aliases['civicrm_contact']}.id =
-                               {$this->_aliases['civicrm_address']}.contact_id) AND
-                               {$this->_aliases['civicrm_address']}.is_primary = 1\n";
+      $this->joinAddressFromContact();
     }
 
-    // include email field if email column is to be included
     if ($this->isTableSelected('civicrm_email')) {
-      $this->_from .= "
-                 LEFT JOIN civicrm_email {$this->_aliases['civicrm_email']}
-                           ON ({$this->_aliases['civicrm_contact']}.id =
-                               {$this->_aliases['civicrm_email']}.contact_id) AND
-                               {$this->_aliases['civicrm_email']}.is_primary = 1\n";
+      $this->joinEmailFromContact();
     }
   }
 
@@ -89,15 +97,13 @@ class CRM_Extendedreport_Form_Report_Pledge_PaidAndCommitted extends CRM_Extende
        $this->_columnHeaders["{$tableName}_{$fieldName}"]['title'] = CRM_Utils_Array::value('title', $field);
        $this->_columnHeaders["{$tableName}_{$fieldName}"]['type'] = CRM_Utils_Array::value('type', $field);
        $this->_statFields['Balance to Pay'] = "{$tableName}_{$fieldName}";
-       return " COALESCE(sum(pledge.amount), 0) - COALESCE(sum(pledge_payment_civireport.actual_amount), 0) as civicrm_pledge_balance_amount ";
+       return " COALESCE(sum(pledge.amount), 0) - COALESCE(sum({$this->_aliases['civicrm_pledge_payment']}.actual_amount), 0) as civicrm_pledge_balance_amount ";
      }
   }
 
   /**
    * Block parent re-ordering of headers.
    */
-  function reOrderColumnHeaders() {
-
-  }
+  function reOrderColumnHeaders() {}
 
 }
