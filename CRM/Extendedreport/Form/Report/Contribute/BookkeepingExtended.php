@@ -33,6 +33,7 @@
  */
 class CRM_Extendedreport_Form_Report_Contribute_BookkeepingExtended extends CRM_Extendedreport_Form_Report_ExtendedReport {
   protected $_baseTable = 'civicrm_contribution';
+  protected $_rollup = '';
   /**
    * Class constructor.
    */
@@ -42,6 +43,7 @@ class CRM_Extendedreport_Form_Report_Contribute_BookkeepingExtended extends CRM_
     + $this->getColumns('Phone', array('subquery' => FALSE))
     + $this->getColumns('Email')
     + $this->getColumns('Membership')
+    + $this->getColumns('MembershipLog', array('prefix_label' => 'Historical '))
     + $this->getColumns('FinancialAccount', array(
         'prefix' => 'credit_',
         'group_by' => TRUE,
@@ -171,19 +173,15 @@ class CRM_Extendedreport_Form_Report_Contribute_BookkeepingExtended extends CRM_
               LEFT JOIN civicrm_financial_account {$this->_aliases['debit_civicrm_financial_account']}
                     ON {$this->_aliases['civicrm_financial_trxn']}.to_financial_account_id =
                     {$this->_aliases['debit_civicrm_financial_account']}.id
+                    
               LEFT JOIN civicrm_financial_account {$this->_aliases['credit_civicrm_financial_account']}
-                    ON {$this->_aliases['civicrm_financial_trxn']}.from_financial_account_id = {$this->_aliases['credit_civicrm_financial_account']}.id
-              LEFT JOIN civicrm_entity_financial_trxn {$this->_aliases['civicrm_entity_financial_trxn']}_item
-                    ON ({$this->_aliases['civicrm_financial_trxn']}.id = {$this->_aliases['civicrm_entity_financial_trxn']}_item.financial_trxn_id AND
-                        {$this->_aliases['civicrm_entity_financial_trxn']}_item.entity_table = 'civicrm_financial_item')
-              LEFT JOIN civicrm_financial_item fitem
-                    ON fitem.id = {$this->_aliases['civicrm_entity_financial_trxn']}_item.entity_id
-              LEFT JOIN civicrm_financial_account credit_financial_item_financial_account
-                    ON fitem.financial_account_id = credit_financial_item_financial_account.id
-              LEFT JOIN civicrm_line_item {$this->_aliases['civicrm_line_item']}
-                    ON  fitem.entity_id = {$this->_aliases['civicrm_line_item']}.id AND fitem.entity_table = 'civicrm_line_item'
-    ";
-    $this->joinMembershipFromLineItem();
+                    ON {$this->_aliases['civicrm_financial_trxn']}.from_financial_account_id = {$this->_aliases['credit_civicrm_financial_account']}.id";
+    if ($this->isTableSelected('civicrm_membership_log')) {
+      $this->_from .= "
+      LEFT JOIN civicrm_membership_log {$this->_aliases['civicrm_membership_log']}
+      ON {$this->_aliases['civicrm_membership']}.id = {$this->_aliases['civicrm_membership_log']}.membership_id
+      ";
+    }
   }
 
   /**
@@ -193,10 +191,12 @@ class CRM_Extendedreport_Form_Report_Contribute_BookkeepingExtended extends CRM_
     return array(
       'contact_from_contribution',
       'financial_trxn_from_contribution',
+      'lineItem_from_financialTrxn',
       'batch_from_financialTrxn',
       'primary_phone_from_contact',
       'address_from_contact',
       'email_from_contact',
+      'membership_from_lineItem',
     );
   }
 
@@ -211,6 +211,13 @@ class CRM_Extendedreport_Form_Report_Contribute_BookkeepingExtended extends CRM_
       ) {
         $this->_select .= ", {$orderBy['dbAlias']} as {$orderBy['tplField']}";
       }
+    }
+  }
+
+  public function where() {
+    parent::where();
+    if ($this->isTableSelected('civicrm_membership_log')) {
+      $this->_where .= "AND {$this->_aliases['civicrm_membership_log']}.modified_date = DATE({$this->_aliases['civicrm_financial_trxn']}.trxn_date)";
     }
   }
 
@@ -245,14 +252,6 @@ class CRM_Extendedreport_Form_Report_Contribute_BookkeepingExtended extends CRM_
     }
     return parent::whereClause($field, $op, $value, $min, $max);
   }
-
-/*
-          if ($fieldName == 'credit_accounting_code') {
-            $field['dbAlias'] =
-          }
-          else if ($fieldName == 'credit_name') {
-
-          }*/
 
   /**
    * @param $rows
@@ -345,5 +344,18 @@ class CRM_Extendedreport_Form_Report_Contribute_BookkeepingExtended extends CRM_
     $this->_columnHeaders["{$tableName}_{$fieldName}"]['dbAlias'] = CRM_Utils_Array::value('dbAlias', $field);
     $this->_selectAliases[] = $alias;
   }
+
+  public function groupBy() {
+    parent::storeGroupByArray();
+    if (empty(empty($this->_groupByArray))) {
+      $this->_groupByArray = array(
+        "{$this->_aliases['civicrm_entity_financial_trxn']}.id",
+        "{$this->_aliases['civicrm_line_item']}.id",
+      );
+      $this->_rollup = FALSE;
+    }
+    parent::groupBy();
+  }
+
 }
 

@@ -1083,6 +1083,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       }
       if (!empty($this->_statFields) && empty($this->_orderByArray) &&
         (count($this->_groupBy) <= 1 || !$this->_having)
+        && $this->_rollup !== FALSE
       ) {
         $this->_rollup = " WITH ROLLUP";
       }
@@ -3974,6 +3975,8 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
   }
 
   /**
+   * @param array $options
+   *
    * @return array
    */
   function getMembershipColumns($options) {
@@ -4033,6 +4036,61 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
           ),
     )));
     return $this->buildColumns($columns['civicrm_membership']['fields'], $options['prefix'] . 'civicrm_membership', 'CRM_Member_DAO_Membership');
+  }
+
+  /**
+   * Get columns from the membership log table.
+   *
+   * @param array $options
+   *
+   * @return array
+   */
+  function getMembershipLogColumns($options = array()) {
+    $columns = array(
+      'civicrm_membership_log' => array(
+        'grouping' => 'member-fields',
+        'fields' => array(
+          'membership_type_id' => array(
+            'title' =>  ts($options['prefix_label'] . 'Membership Type'),
+            'alter_display' => 'alterMembershipTypeID',
+            'options' => $this->_getOptions('membership', 'membership_type_id', $action = 'get'),
+            'is_fields' => TRUE,
+            'is_filters' => TRUE,
+            'is_group_bys' => TRUE,
+            'name' => 'membership_type_id',
+            'type' => CRM_Utils_Type::T_INT,
+            'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+          ),
+          'membership_status_id' => array(
+            'name' => 'status_id',
+            'title' =>  ts($options['prefix_label'] . 'Membership Status'),
+            'alter_display' => 'alterMembershipStatusID',
+            'options' => $this->_getOptions('membership', 'status_id', $action = 'get'),
+            'is_fields' => TRUE,
+            'is_filters' => TRUE,
+            'is_group_bys' => TRUE,
+            'type' => CRM_Utils_Type::T_INT,
+            'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+          ),
+          'start_date' => array(
+            'name' => 'start_date',
+            'is_fields' => TRUE,
+            'is_filters' => TRUE,
+            'title' => ts($options['prefix_label'] . ' Start Date'),
+            'type' => CRM_Utils_Type::T_DATE,
+            'operatorType' => CRM_Report_Form::OP_DATE,
+          ),
+          'end_date' => array(
+            'name' => 'end_date',
+            'is_fields' => TRUE,
+            'title' =>  ts($options['prefix_label'] . ' Membership Cycle End Date'),
+            'include_null' => TRUE,
+            'is_group_bys' => TRUE,
+            'type' => CRM_Utils_Type::T_DATE,
+            'operatorType' => CRM_Report_Form::OP_DATE,
+          ),
+        )));
+    return $this->buildColumns($columns['civicrm_membership_log']['fields'], $options['prefix'] . 'civicrm_membership_log', 'CRM_Member_DAO_MembershipLog', array(), $options);
   }
 
   function getFinancialAccountColumns($options = array()) {
@@ -5710,10 +5768,10 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'rightTable' => 'civicrm_line_item',
         'callback' => 'joinLineItemFromContribution',
       ),
-      'lineItem_from_membership' => array(
-        'leftTable' => 'civicrm_membership',
-        'rightTable' => 'civicrm_line_item',
-        'callback' => 'joinLineItemFromMembership',
+      'lineItem_from_financialTrxn' => array(
+        'leftTable' => 'civicrm_financial_trxn',
+        'rightTable' => 'civicrm_contribution',
+        'callback' => 'joinLineItemFromFinancialTrxn',
       ),
       'contact_from_participant' => array(
         'leftTable' => 'civicrm_participant',
@@ -6268,30 +6326,18 @@ ON {$this->_aliases['civicrm_membership']}.membership_type_id = {$this->_aliases
     ";
   }
 
-  function joinLineItemFromMembership() {
 
-    // this can be stored as a temp table & indexed for more speed. Not done at this stage.
-    // another option is to cache it but I haven't tried to put that code in yet (have used it before for one hour caching
+  protected function joinLineItemFromFinancialTrxn() {
     $this->_from .= "
-LEFT JOIN (
-SELECT contribution_civireport_direct.id AS contid, line_item_civireport.*
-FROM civicrm_contribution contribution_civireport_direct
-LEFT JOIN civicrm_line_item line_item_civireport
-ON (line_item_civireport.line_total > 0 AND line_item_civireport.entity_id = contribution_civireport_direct.id AND line_item_civireport.entity_table = 'civicrm_contribution')
-
-WHERE line_item_civireport.id IS NOT NULL
-
-UNION
-
-SELECT contribution_civireport_direct.id AS contid, line_item_civireport.*
-FROM civicrm_contribution contribution_civireport_direct
-LEFT JOIN civicrm_membership_payment pp ON contribution_civireport_direct.id = pp.contribution_id
-LEFT JOIN civicrm_membership p ON pp.membership_id = p.id
-LEFT JOIN civicrm_line_item line_item_civireport ON (line_item_civireport.line_total > 0 AND line_item_civireport.entity_id = p.id AND line_item_civireport.entity_table = 'civicrm_membership')
-WHERE line_item_civireport.id IS NOT NULL
-) as {$this->_aliases['civicrm_line_item']}
-ON {$this->_aliases['civicrm_line_item']}.contid = {$this->_aliases['civicrm_contribution']}.id
-";
+    LEFT JOIN civicrm_entity_financial_trxn {$this->_aliases['civicrm_entity_financial_trxn']}_item
+      ON ({$this->_aliases['civicrm_financial_trxn']}.id = {$this->_aliases['civicrm_entity_financial_trxn']}_item.financial_trxn_id
+      AND {$this->_aliases['civicrm_entity_financial_trxn']}_item.entity_table = 'civicrm_financial_item')
+    LEFT JOIN civicrm_financial_item fitem
+      ON fitem.id = {$this->_aliases['civicrm_entity_financial_trxn']}_item.entity_id
+    LEFT JOIN civicrm_financial_account credit_financial_item_financial_account
+      ON fitem.financial_account_id = credit_financial_item_financial_account.id
+    LEFT JOIN civicrm_line_item {$this->_aliases['civicrm_line_item']}
+      ON  fitem.entity_id = {$this->_aliases['civicrm_line_item']}.id AND fitem.entity_table = 'civicrm_line_item'";
   }
 
   /**
