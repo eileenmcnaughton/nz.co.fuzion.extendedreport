@@ -56,7 +56,7 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
           'report_id' => $report['params']['report_url'],
         ));
       }
-      catch (Exception $e) {
+      catch (CiviCRM_API3_Exception $e) {
         $extra = $e->getExtraParams();
         $this->fail($report['params']['report_url'] . " " . $e->getMessage() . " \n" . CRM_Utils_Array::value('sql', $extra) . "\n" . $extra['trace']);
       }
