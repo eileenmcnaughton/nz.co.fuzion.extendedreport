@@ -347,7 +347,7 @@ class CRM_Extendedreport_Form_Report_Contribute_BookkeepingExtended extends CRM_
 
   public function groupBy() {
     parent::storeGroupByArray();
-    if (empty(empty($this->_groupByArray))) {
+    if (empty($this->_groupByArray)) {
       $this->_groupByArray = array(
         "{$this->_aliases['civicrm_entity_financial_trxn']}.id",
         "{$this->_aliases['civicrm_line_item']}.id",
