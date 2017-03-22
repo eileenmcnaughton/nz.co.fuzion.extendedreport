@@ -6427,7 +6427,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
     //@todo currently statuses are hard-coded as 1 for complete & 5-6 for pending
     $createSQL = "
     CREATE {$this->temporary} table  $tempTable (
-      `event_id` INT(10) UNSIGNED NULL DEFAULT '0' COMMENT 'FK to Event ID',
+      `event_id` INT(10) UNSIGNED NOT NULL DEFAULT '0' COMMENT 'FK to Event ID',
       `paid_amount` DECIMAL(42,2) NULL DEFAULT 0,
       `registered_amount` DECIMAL(48,6) NULL DEFAULT 0,
       `pending_amount` DECIMAL(48,6) NOT NULL DEFAULT '0',
