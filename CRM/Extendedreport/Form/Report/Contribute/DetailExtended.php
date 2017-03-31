@@ -409,21 +409,9 @@ UNION ALL
     $this->addToDeveloperTab($sql);
     CRM_Core_DAO::executeQuery($sql);
 
-    // 5. Re-construct order-by to make sense for final query on temp3 table
-    $orderBy = '';
-    if (!empty($this->_orderByArray)) {
-      $aliases = array_flip($this->_aliases);
-      $orderClause = array();
-      foreach ($this->_orderByArray as $clause) {
-        list($alias, $rest) = explode('.', $clause);
-        $orderClause[] = $aliases[$alias] . "_" . $rest;
-      }
-      $orderBy = (!empty($orderClause)) ? "ORDER BY " . implode(', ', $orderClause) : '';
-    }
-
     // 6. show result set from temp table 3
     $rows = array();
-    $sql = "SELECT * FROM civireport_contribution_detail_temp3 {$orderBy}";
+    $sql = "SELECT * FROM civireport_contribution_detail_temp3";
     $this->addToDeveloperTab($sql);
     $this->buildRows($sql, $rows);
 

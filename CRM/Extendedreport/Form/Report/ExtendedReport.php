@@ -1114,7 +1114,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     ) {
 
       // Process order_bys in user-specified order
-      foreach ($this->_params['order_bys'] as $orderByFieldName => $orderBy) {
+      foreach ($this->_params['order_bys'] as $orderBy) {
         $orderByField = array();
         foreach ($this->_columns as $tableName => $table) {
           if (empty($table['metadata'])) {
