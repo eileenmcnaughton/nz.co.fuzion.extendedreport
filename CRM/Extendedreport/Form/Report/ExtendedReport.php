@@ -4631,6 +4631,8 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'type' => CRM_Utils_Type::T_MONEY,
         'is_fields' => TRUE,
         'is_filters' => TRUE,
+        'is_order_bys' => TRUE,
+        'is_group_bys' => TRUE,
       ),
       'fee_amount' => array('is_fields' => TRUE),
       'net_amount' => array('is_fields' => TRUE),
