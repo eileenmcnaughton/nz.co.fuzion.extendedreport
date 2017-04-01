@@ -4286,6 +4286,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'type' => CRM_Utils_Type::T_MONEY,
         'title' => ts('Next payment Amount'),
         'is_fields' => TRUE,
+        'is_filters' => TRUE,
       ),
     );
     if (!empty($options['is_actions'])) {
