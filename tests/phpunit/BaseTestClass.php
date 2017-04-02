@@ -188,4 +188,17 @@ class BaseTestClass extends \PHPUnit_Framework_TestCase implements HeadlessInter
     return civicrm_api($entity, $action, $params);
   }
 
+
+  /**
+   * @param $params
+   * @return array|int
+   */
+  protected function getRows($params) {
+    $params['options']['metadata'] = array('title', 'label', 'sql');
+    $rows = $this->callAPISuccess('ReportTemplate', 'getrows', $params);
+    $rows = $rows['values'];
+    return $rows;
+  }
+
+
 }

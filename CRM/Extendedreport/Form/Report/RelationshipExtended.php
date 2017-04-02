@@ -105,11 +105,11 @@ class CRM_Extendedreport_Form_Report_RelationshipExtended extends CRM_Extendedre
 
   function from() {
     $this->buildACLClause($this->_aliases['contact_a_civicrm_contact']);
-
+    $this->setFromBase('contact_a_civicrm_contact', 'id', $this->_aliases['contact_a_civicrm_contact']);
     $this->_from = "
-      FROM civicrm_relationship {$this->_aliases['civicrm_relationship']}
+      INNER JOIN civicrm_relationship {$this->_aliases['civicrm_relationship']}
 
-      INNER JOIN civicrm_contact {$this->_aliases['contact_a_civicrm_contact']}
+      civicrm_contact {$this->_aliases['contact_a_civicrm_contact']}
           ON ( {$this->_aliases['civicrm_relationship']}.contact_id_a =
           {$this->_aliases['contact_a_civicrm_contact']}.id )
 
@@ -220,7 +220,7 @@ class CRM_Extendedreport_Form_Report_RelationshipExtended extends CRM_Extendedre
   function postProcess() {
     $this->beginPostProcess();
     $this->relationType = NULL;
-    $relType = $originalRelationshipTypes = array();
+    $originalRelationshipTypes = array();
 
     $relationships = array();
     if (CRM_Utils_Array::value('relationship_relationship_type_id_value', $this->_params) && is_array($this->_params['relationship_relationship_type_id_value'])) {
