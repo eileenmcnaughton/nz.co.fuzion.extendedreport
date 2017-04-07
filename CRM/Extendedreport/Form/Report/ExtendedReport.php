@@ -5574,6 +5574,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       'id' => array(
         'no_display' => TRUE,
         'required' => TRUE,
+        'is_group_bys' => $options['group_by'],
       ),
       'source_record_id' => array(
         'no_display' => TRUE,
