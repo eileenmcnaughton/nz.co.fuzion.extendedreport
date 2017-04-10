@@ -67,7 +67,7 @@ class CRM_Extendedreport_Form_Report_ActivityExtended extends CRM_Extendedreport
           'prefix_label' => 'Assignee Contact ::',
           'filters' => FALSE,
         )
-    ) + $this->getColumns('Activity');
+    ) + $this->getColumns('Activity', array('group_by' => TRUE));
     parent::__construct();
   }
 
