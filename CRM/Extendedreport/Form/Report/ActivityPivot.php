@@ -13,6 +13,7 @@ class CRM_Extendedreport_Form_Report_ActivityPivot extends CRM_Extendedreport_Fo
   protected $_rollup = 'WITH ROLLUP';
   public $_drilldownReport = array();
   protected $_potentialCriteria = array();
+  protected $_noFields = TRUE;
 
   /**
    * Class constructor.

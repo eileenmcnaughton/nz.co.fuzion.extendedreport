@@ -13,6 +13,7 @@ class CRM_Extendedreport_Form_Report_Member_MembershipPivot extends CRM_Extended
   protected $isPivot = TRUE;
   public $_drilldownReport = array('membership/membershipdetail' => 'Link to Participants');
   protected $_potentialCriteria = array();
+  protected $_noFields = TRUE;
 
   /**
    * Class constructor.
