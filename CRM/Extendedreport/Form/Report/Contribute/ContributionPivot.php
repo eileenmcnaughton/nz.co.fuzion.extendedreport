@@ -13,6 +13,7 @@ class CRM_Extendedreport_Form_Report_Contribute_ContributionPivot extends CRM_Ex
   public $_drilldownReport = array();
   protected $isPivot = TRUE;
   protected $_potentialCriteria = array();
+  protected $_noFields = TRUE;
 
   /**
    * Class constructor.

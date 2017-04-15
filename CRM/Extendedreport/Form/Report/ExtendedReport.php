@@ -1982,6 +1982,9 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    */
   protected function storeParametersOnForm() {
     $this->_custom_fields_selected = CRM_Utils_Array::value('custom_fields', $this->_params, array());
+    if (empty($this->_params)) {
+      return;
+    }
 
     foreach ($this->_params as $key => $param) {
       if (substr($key, 0, 7) == 'custom_') {
@@ -2548,10 +2551,23 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
    * @param string $field
    */
   function getCustomFieldDetails(&$field) {
+    $types = array(
+      'Date' => CRM_Utils_Type::T_DATE,
+      'Boolean' => CRM_Utils_Type::T_INT,
+      'Int' => CRM_Utils_Type::T_INT,
+      'Money' => CRM_Utils_Type::T_MONEY,
+      'Float' => CRM_Utils_Type::T_FLOAT,
+    );
+
     $field['name'] = $field['column_name'];
     $field['title'] = $field['label'];
     $field['dataType'] = $field['data_type'];
     $field['htmlType'] = $field['html_type'];
+    $field['type'] = CRM_Utils_Array::value($field['dataType'], $types, CRM_Utils_Type::T_STRING);
+
+    if ($field['type'] == CRM_Utils_Type::T_DATE && !empty($field['time_format'])) {
+      $field['type'] = CRM_Utils_Type::T_TIMESTAMP;
+    }
   }
 
   /**
@@ -4851,6 +4867,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       'age' => array(
         'title' => ts($options['prefix_label'] . 'Age'),
         'dbAlias' => 'TIMESTAMPDIFF(YEAR, ' . $tableAlias . '.birth_date, CURDATE())',
+        'type' => CRM_Utils_Type::T_INT,
         'is_fields' => TRUE,
       ),
     );
@@ -6176,7 +6193,7 @@ AND {$this->_aliases['civicrm_line_item']}.entity_table = 'civicrm_participant')
       CRM_Core_DAO::executeQuery('
         CREATE TEMPORARY TABLE next_pledge_payment
         SELECT pledge_id, 1 as id, min(scheduled_date) as next_scheduled_date
-        FROM civicrm_pledge_payment 
+        FROM civicrm_pledge_payment
         WHERE status_id IN (2,6)
         GROUP BY pledge_id ORDER BY scheduled_date DESC;
       ');
@@ -6189,14 +6206,14 @@ AND {$this->_aliases['civicrm_line_item']}.entity_table = 'civicrm_participant')
       CRM_Core_DAO::executeQuery("
         UPDATE next_pledge_payment np
         INNER JOIN civicrm_pledge_payment pp
-        ON pp.pledge_id = np.pledge_id 
+        ON pp.pledge_id = np.pledge_id
         AND pp.scheduled_date = np.next_scheduled_date
         AND pp.status_id IN (2,6)
-        SET np.id = pp.id, 
+        SET np.id = pp.id,
         np.next_scheduled_amount = pp.scheduled_amount,
         np.next_status_id = pp.status_id
       ");
-      $this->_from .= " 
+      $this->_from .= "
       LEFT JOIN next_pledge_payment {$this->_aliases['next_civicrm_pledge_payment']}
       ON {$this->_aliases['next_civicrm_pledge_payment']}.pledge_id = {$this->_aliases['civicrm_pledge']}.id
       ";

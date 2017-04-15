@@ -14,6 +14,7 @@ class CRM_Extendedreport_Form_Report_Case_ActivityPivot extends CRM_Extendedrepo
   public $_drilldownReport = array();
   protected $_potentialCriteria = array();
   protected $isPivot = TRUE;
+  protected $_noFields = TRUE;
 
   /**
    * Class constructor.

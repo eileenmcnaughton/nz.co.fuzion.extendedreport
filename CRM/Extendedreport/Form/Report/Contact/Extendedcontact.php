@@ -11,6 +11,7 @@ class CRM_Extendedreport_Form_Report_Contact_Extendedcontact extends CRM_Extende
   protected $skipACL = TRUE;
   protected $_customGroupAggregates = TRUE;
   protected $isPivot = TRUE;
+  protected $_noFields = TRUE;
 
 
   /**

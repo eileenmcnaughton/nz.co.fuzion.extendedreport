@@ -13,6 +13,7 @@ class CRM_Extendedreport_Form_Report_Event_EventPivot extends CRM_Extendedreport
   protected $_rollup = 'WITH ROLLUP';
   public $_drilldownReport = array('event/participantlist' => 'Link to Participants');
   protected $_participantTable = 'civicrm_participant';
+  protected $_noFields = TRUE;
   protected $_potentialCriteria = array(
     'rid',
     'sid',
