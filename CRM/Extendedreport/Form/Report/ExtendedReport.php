@@ -3033,7 +3033,7 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
               }
             }
           }
-          if (substr($pivotRowField, 0, 7) == 'custom_' && isset($specs['id']) && $specs['id'] == substr($pivotRowField, 7)) {
+          if (substr($pivotRowField, 0, 7) == 'custom_' && isset($specs['id']) && $specs['id'] == substr($pivotRowField, 7) && $specs['dataType'] != 'String') {
             $alterFunctions[$this->getPivotRowTableAlias() . '_' . $pivotRowField] = 'alterFromOptions';
             $alterMap[$this->getPivotRowTableAlias() . '_' . $pivotRowField] = $field;
             $alterSpecs[$this->getPivotRowTableAlias() . '_' . $pivotRowField] = $specs;
@@ -3164,6 +3164,12 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
    * @return string
    */
   function alterFromOptions($value, &$row, $selectedField, $criteriaFieldName, $specs) {
+    if ($specs['dataType'] == 'ContactReference') {
+      if (!empty($row[$selectedField])) {
+        return CRM_Contact_BAO_Contact::displayName($row[$selectedField]);
+      }
+      return NULL;
+    }
     $value = trim($value, CRM_Core_DAO::VALUE_SEPARATOR);
     return CRM_Utils_Array::value($value, $specs['options']);
   }
