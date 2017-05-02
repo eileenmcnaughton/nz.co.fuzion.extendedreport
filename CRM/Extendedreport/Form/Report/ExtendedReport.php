@@ -2862,16 +2862,17 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
       return ' 1 as  ' . $alias;
     }
 
-    if ((!empty($this->_groupByArray) || $this->isForceGroupBy) && empty($this->_groupByArray[$tableName . '_' . $fieldName])) {
-      if ($tableKey === 'fields' &&
-        (empty($field['statistics']) || in_array('GROUP_CONCAT', $field['statistics']))
-        ) {
-          $label = CRM_Utils_Array::value('title', $field);
-          $alias = "{$tableName}_{$fieldName}";
-          $this->_columnHeaders["{$tableName}_{$fieldName}"]['title'] = $label;
-          $this->_columnHeaders["{$tableName}_{$fieldName}"]['type'] = $field['type'];
-          $this->_selectAliases[] = $alias;
-         return "GROUP_CONCAT(DISTINCT {$field['dbAlias']}) as $alias";
+    if ((!empty($this->_groupByArray) || $this->isForceGroupBy)) {
+      if ($tableKey === 'fields' && (empty($field['statistics']) || in_array('GROUP_CONCAT', $field['statistics']))) {
+        $label = CRM_Utils_Array::value('title', $field);
+        $alias = "{$tableName}_{$fieldName}";
+        $this->_columnHeaders["{$tableName}_{$fieldName}"]['title'] = $label;
+        $this->_columnHeaders["{$tableName}_{$fieldName}"]['type'] = $field['type'];
+        $this->_selectAliases[] = $alias;
+        if (empty($this->_groupByArray[$tableName . '_' . $fieldName])) {
+          return "GROUP_CONCAT(DISTINCT {$field['dbAlias']}) as $alias";
+        }
+        return "({$field['dbAlias']}) as $alias";
       }
     }
 
