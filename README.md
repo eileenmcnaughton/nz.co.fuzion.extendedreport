@@ -1,7 +1,6 @@
 # nz.co.fuzion.extendedreport
 Extended Reports for CiviCRM
 
-Reports as at March 2015
 
 Once installed you need to go to Administer/CiviReport/Create Reports from template to create a report.
 
