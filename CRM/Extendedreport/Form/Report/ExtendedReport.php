@@ -283,14 +283,8 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
 
       $this->_aliases[$tableName] = $this->setTableAlias($table, $tableName);
       $expFields = array();
-      $daoOrBaoName = NULL;
       // higher preference to bao object
-      if (array_key_exists('bao', $table)) {
-        $daoOrBaoName = $table['bao'];
-      }
-      elseif (array_key_exists('dao', $table)) {
-        $daoOrBaoName = $table['dao'];
-      }
+      $daoOrBaoName = CRM_Utils_Array::value('bao', $table, CRM_Utils_Array::value('dao', $table));
 
       if ($daoOrBaoName) {
         if (method_exists($daoOrBaoName, 'exportableFields')) {
@@ -374,7 +368,8 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
             // set dbAlias = alias.name, unless already set
             if (!isset($this->_columns[$tableName][$fieldGrp][$fieldName]['dbAlias'])) {
               $this->_columns[$tableName][$fieldGrp][$fieldName]['dbAlias']
-                = $alias . '.' . $this->_columns[$tableName][$fieldGrp][$fieldName]['name'];
+                = $alias . '.' .
+                $this->_columns[$tableName][$fieldGrp][$fieldName]['name'];
             }
 
             // a few auto fills for filters
@@ -409,8 +404,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
 
                   default:
                     if ($daoOrBaoName &&
-                      (array_key_exists('pseudoconstant', $this->_columns[$tableName][$fieldGrp][$fieldName])
-                        || array_key_exists('enumValues', $this->_columns[$tableName][$fieldGrp][$fieldName]))
+                      array_key_exists('pseudoconstant', $this->_columns[$tableName][$fieldGrp][$fieldName])
                     ) {
                       // with multiple options operator-type is generally multi-select
                       $this->_columns[$tableName][$fieldGrp][$fieldName]['operatorType'] = CRM_Report_Form::OP_MULTISELECT;
@@ -2023,6 +2017,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     if (empty($this->_params)) {
       $this->_params = $this->controller->exportValues($this->_name);
     }
+    $this->buildGroupTempTable();
     $this->storeJoinFiltersArray();
     $this->select();
     $this->from();
@@ -4913,7 +4908,6 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'fields' => array(
           'id' => array(
             'title' => ts('Case ID'),
-            'required' => FALSE,
             'name' => 'id',
             'is_fields' => TRUE,
           ),
