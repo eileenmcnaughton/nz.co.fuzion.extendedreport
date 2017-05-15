@@ -2723,6 +2723,11 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
             if (CRM_Utils_Array::value('dataType', $field) ==
               'ContactReference'
             ) {
+              $customFieldID = CRM_Core_BAO_CustomField::getKeyID($fieldName);
+              if (!$customFieldID) {
+                // seems it can be passed with wierd things appended...
+                continue;
+              }
               $columnName = CRM_Core_DAO::getFieldValue('CRM_Core_DAO_CustomField', CRM_Core_BAO_CustomField::getKeyID($fieldName), 'column_name');
               $this->_from .= "
 LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_aliases[$table]}.{$columnName} ";
