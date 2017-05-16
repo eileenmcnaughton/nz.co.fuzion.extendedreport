@@ -105,11 +105,9 @@ class CRM_Extendedreport_Form_Report_RelationshipExtended extends CRM_Extendedre
 
   function from() {
     $this->buildACLClause($this->_aliases['contact_a_civicrm_contact']);
-    $this->setFromBase('contact_a_civicrm_contact', 'id', $this->_aliases['contact_a_civicrm_contact']);
-    $this->_from = "
+    $this->setFromBase('civicrm_contact', 'id', $this->_aliases['contact_a_civicrm_contact']);
+    $this->_from .= "
       INNER JOIN civicrm_relationship {$this->_aliases['civicrm_relationship']}
-
-      civicrm_contact {$this->_aliases['contact_a_civicrm_contact']}
           ON ( {$this->_aliases['civicrm_relationship']}.contact_id_a =
           {$this->_aliases['contact_a_civicrm_contact']}.id )
 
