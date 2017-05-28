@@ -1,13 +1,13 @@
 <?php
 
-require_once __DIR__ . '/BaseTestClass.php';
+require_once __DIR__ . '/../BaseTestClass.php';
 
 use Civi\Test\HeadlessInterface;
 use Civi\Test\HookInterface;
 use Civi\Test\TransactionalInterface;
 
 /**
- * FIXME - Add test description.
+ * Test contribution DetailExtended class.
  *
  * Tips:
  *  - With HookInterface, you may implement CiviCRM hooks directly in the test class.
@@ -20,7 +20,7 @@ use Civi\Test\TransactionalInterface;
  *
  * @group headless
  */
-class BookkeepingExtendedTest extends BaseTestClass implements HeadlessInterface, HookInterface, TransactionalInterface {
+class CampaignProgressReportTest extends BaseTestClass implements HeadlessInterface, HookInterface, TransactionalInterface {
 
   protected $contacts = array();
 
@@ -49,32 +49,22 @@ class BookkeepingExtendedTest extends BaseTestClass implements HeadlessInterface
   }
 
   /**
-   * Test the bookkeeping report with some data.
+   * Test the ContributionDetailExtended report with order by.
    */
-  public function testBookkeepingReport() {
+  public function testContributionExtendedReport() {
     $this->callAPISuccess('Order', 'create', array('contact_id' => $this->contacts[0], 'total_amount' => 5, 'financial_type_id' => 2));
     $params = array(
-      'report_id' => 'contribution/bookkeeping_extended',
-      'fields' => array (
-        'civicrm_contact_display_name' => '1',
-        'membership_membership_type_id' => '1',
-        'membership_membership_status_id' => '1',
-        'membership_join_date' => '1',
-        'membership_start_date' => '1',
-        'line_item_financial_type_id' => '1',
-        'line_item_line_total' => '1',
-        'line_item_tax_amount' => '1',
-        'contribution_source' => '1',
-        'contribution_receive_date' => '1',
-        'contribution_receipt_date' => '1',
-        'financial_trxn_currency' => '1',
-        'amount' => '1',
+      'report_id' => 'campaign/progress',
+      'fields' => array(
+        'campaign_id' => '1',
+        'total_amount' => '1',
+        'paid_amount' => '1',
+        'balance_amount' => '1',
       ),
     );
-    $rows = $this->getRows($params);
-    $this->assertEquals(date('Y-m-d'), date('Y-m-d', strtotime($rows[0]['civicrm_contribution_contribution_receive_date'])));
-    $this->assertEquals('USD', $rows[0]['civicrm_financial_trxn_financial_trxn_currency']);
-    $this->assertEquals('$ 5.00', $rows[0]['civicrm_entity_financial_trxn_amount']);
+
+    // Just checking no error at the moment.
+    $this->getRows($params);
   }
 
 }

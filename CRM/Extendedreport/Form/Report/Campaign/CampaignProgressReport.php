@@ -75,7 +75,7 @@ class CRM_Extendedreport_Form_Report_Campaign_CampaignProgressReport extends CRM
 
   function from() {
     $this->_from = "
-      FROM civicrm_campaign campaign";
+      FROM civicrm_campaign {$this->_aliases['civicrm_campaign']}";
 
     $this->joinProgressTable();
     $this->_aliases['civicrm_contact'] = 'civicrm_contact';
@@ -134,8 +134,7 @@ LEFT JOIN
     $this->_from .= ' AND c.receive_date <= "' . CRM_Utils_Type::validate(CRM_Utils_Date::processDate($until, 235959), 'Integer') . '"';
   }
 
-    $this->_from .= ") as progress  ON progress.campaign_id = campaign.id
-
+    $this->_from .= ") as progress  ON progress.campaign_id = {$this->_aliases['civicrm_campaign']}.id
     ";
   }
 
