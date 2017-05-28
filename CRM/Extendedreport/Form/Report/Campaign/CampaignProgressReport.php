@@ -12,7 +12,7 @@ class CRM_Extendedreport_Form_Report_Campaign_CampaignProgressReport extends CRM
   protected $_summary = NULL;
   protected $_totalPaid = FALSE;
   protected $_customGroupExtends = array(
-    'Pledge',
+    'Campaign',
   );
   protected $_baseTable = 'civicrm_campaign';
   protected $_customGroupGroupBy = TRUE;
