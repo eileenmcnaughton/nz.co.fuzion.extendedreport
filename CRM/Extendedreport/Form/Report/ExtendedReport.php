@@ -35,10 +35,10 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   protected $linkedReportID;
 
   /**
-  * CiviCRM major version - e.g. 4.6
-  *
-  * @var string
-  */
+   * CiviCRM major version - e.g. 4.6
+   *
+   * @var string
+   */
   protected $majorVersion = '';
 
   /**
@@ -314,7 +314,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       // 'dip into that' as required. But a lot to untangle before then....
       // allowing it on group_bys & order_bys can lead to required fields defaulting
       // to being a group by.
-      $fieldGroups = array('fields', 'filters', 'metadata', 'join_filters', 'group_bys');
+      $fieldGroups = array('fields', 'filters', 'metadata', 'join_filters', 'group_bys', 'order_bys');
       // Extended reports customisation ends ==
 
       foreach ($fieldGroups as $fieldGrp) {
@@ -2359,9 +2359,9 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
   }
 
 
- /**
-  * Add tab for selecting template.
-  */
+  /**
+   * Add tab for selecting template.
+   */
   function addTemplateSelector() {
     if (!empty($this->_templates)) {
 
@@ -4485,7 +4485,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       'order_by_defaults' => array(),
     );
     $options = array_merge($defaultOptions, $options);
-   // $fields['civicrm_event_summary' . $options['prefix']]['fields'] =
+    // $fields['civicrm_event_summary' . $options['prefix']]['fields'] =
     $specs =  array(
         'registered_amount' . $options['prefix'] => array(
           'title' => $options['prefix_label'] . ts('Total Income'),
@@ -4640,15 +4640,17 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'title' => 'Contribution Source',
         'is_fields' => TRUE,
         'is_filters' => TRUE,
+        'is_order_bys' => TRUE,
       ),
-      'trxn_id' => array('is_fields' => TRUE),
+      'trxn_id' => array('is_fields' => TRUE, 'is_order_bys' => TRUE,),
       'receive_date' => array(
         'type' => CRM_Utils_Type::T_DATE + CRM_Utils_Type::T_TIME,
         'operatorType' => CRM_Report_Form::OP_DATETIME,
         'is_fields' => TRUE,
         'is_filters' => TRUE,
+        'is_order_bys' => TRUE,
       ),
-      'receipt_date' => array('is_fields' => TRUE),
+      'receipt_date' => array('is_fields' => TRUE, 'is_order_bys' => TRUE,),
       'total_amount' => array(
         'title' => ts('Contribution Amount'),
         'statistics' => array('count' => ts('No. Contributions'), 'sum' => ts('Total Amount')),
@@ -4660,10 +4662,11 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       ),
       'fee_amount' => array('is_fields' => TRUE),
       'net_amount' => array('is_fields' => TRUE),
-      'check_number' => array('is_fields' => TRUE),
+      'check_number' => array('is_fields' => TRUE, 'is_order_bys' => TRUE,),
       'contribution_page_id' => array(
         'is_fields' => TRUE,
         'is_filters' => TRUE,
+        'is_group_bys' => TRUE,
         'title' => ts('Contribution Page'),
         'operatorType' => CRM_Report_Form::OP_MULTISELECT,
         'options' => CRM_Contribute_PseudoConstant::contributionPage(),
@@ -4672,6 +4675,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       'currency' => array(
         'is_fields' => TRUE,
         'is_filters' => TRUE,
+        'is_order_bys' => TRUE,
         'title' => 'Currency',
         'operatorType' => CRM_Report_Form::OP_MULTISELECT,
         'options' => CRM_Core_OptionGroup::values('currencies_enabled'),
@@ -4977,9 +4981,9 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
             'is_filters' => TRUE,
             'operatorType' => CRM_Report_Form::OP_SELECT,
             'options' => array('' => '--select--') + CRM_Case_BAO_Case::buildOptions('is_deleted'),
-            )
           )
-        ),
+        )
+      ),
 
     );
     // Case is a special word in mysql so pass an alias to prevent it from using case.
