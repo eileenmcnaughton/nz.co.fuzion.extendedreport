@@ -49,22 +49,46 @@ class CampaignProgressReportTest extends BaseTestClass implements HeadlessInterf
   }
 
   /**
-   * Test the ContributionDetailExtended report with order by.
+   * Test the Progress report.
+   *
+   * @dataProvider getReportParameters
+   *
+   * @param array $params
+   *   Parameters to pass to the report
    */
-  public function testContributionExtendedReport() {
+  public function testProgressReport($params) {
     $this->callAPISuccess('Order', 'create', array('contact_id' => $this->contacts[0], 'total_amount' => 5, 'financial_type_id' => 2));
-    $params = array(
-      'report_id' => 'campaign/progress',
-      'fields' => array(
-        'campaign_id' => '1',
-        'total_amount' => '1',
-        'paid_amount' => '1',
-        'balance_amount' => '1',
-      ),
-    );
-
     // Just checking no error at the moment.
     $this->getRows($params);
+  }
+
+  /**
+   * Get datasets for testing the report
+   */
+  public function getReportParameters() {
+    return array(
+      'basic' => array(array(
+        'report_id' => 'campaign/progress',
+        'fields' => array(
+          'campaign_id' => '1',
+          'total_amount' => '1',
+          'paid_amount' => '1',
+          'balance_amount' => '1',
+        ),
+      )),
+      'group_by_variant' => array(array(
+        'report_id' => 'campaign/progress',
+        'fields' => array(
+          'campaign_id' => '1',
+          'total_amount' => '1',
+          'paid_amount' => '1',
+          'balance_amount' => '1',
+        ),
+        'group_bys' => array(
+          'campaign_id' => '1',
+        ),
+      )),
+    );
   }
 
 }

@@ -1,6 +1,6 @@
 <?php
 
-require_once __DIR__ . '/BaseTestClass.php';
+require_once __DIR__ . '/../BaseTestClass.php';
 
 use Civi\Test\HeadlessInterface;
 use Civi\Test\HookInterface;
@@ -20,7 +20,7 @@ use Civi\Test\TransactionalInterface;
  *
  * @group headless
  */
-class ContributionDetailExtendedTest extends BaseTestClass implements HeadlessInterface, HookInterface, TransactionalInterface {
+class ContributionBasedTest extends BaseTestClass implements HeadlessInterface, HookInterface, TransactionalInterface {
 
   protected $contacts = array();
 
@@ -44,29 +44,32 @@ class ContributionDetailExtendedTest extends BaseTestClass implements HeadlessIn
     $this->contacts[] = $contact['id'];
   }
 
-  public function tearDown() {
-    parent::tearDown();
+  /**
+   * Test the report runs.
+   *
+   * @dataProvider getReportParameters
+   *
+   * @param array $params
+   *   Parameters to pass to the report
+   */
+  public function testReport($params) {
+    $this->callAPISuccess('Order', 'create', array('contact_id' => $this->contacts[0], 'total_amount' => 5, 'financial_type_id' => 2));
+    // Just checking no error at the moment.
+    $this->getRows($params);
   }
 
   /**
-   * Test the ContributionDetailExtended report with order by.
+   * Get datasets for testing the report
    */
-  public function testContributionExtendedReport() {
-    $this->callAPISuccess('Order', 'create', array('contact_id' => $this->contacts[0], 'total_amount' => 5, 'financial_type_id' => 2));
-    $params = array(
-      'report_id' => 'contribution/detailextended',
-      'fields' => array (
-        'civicrm_contact_display_name' => '1',
-      ),
-      'order_bys' => array(
-        1 => array(
-          'column' => 'contribution_financial_type_id',
-          'order' => 'ASC',
+  public function getReportParameters() {
+    return array(
+      'basic' => array(array(
+        'report_id' => 'price/contributionbased',
+        'fields' => array(
+          'campaign_id' => '1',
+          'total_amount' => '1',
         ),
-      ),
+      )),
     );
-    $rows = $this->getRows($params);
-    $this->assertEquals('USD', $rows[0]['civicrm_contribution_currency']);
   }
-
 }
