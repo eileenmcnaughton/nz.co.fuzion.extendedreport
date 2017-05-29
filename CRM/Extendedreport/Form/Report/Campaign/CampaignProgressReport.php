@@ -30,6 +30,7 @@ class CRM_Extendedreport_Form_Report_Campaign_CampaignProgressReport extends CRM
             'financial_type_id' => array(
               'title' => ts('Financial type'),
               'alter_display' => 'alterFinancialType',
+              'statistics' => array('GROUP_CONCAT'),
             ),
             'total_amount' => array(
               'title' => ts('Raised'),
@@ -51,6 +52,7 @@ class CRM_Extendedreport_Form_Report_Campaign_CampaignProgressReport extends CRM
               'type' => CRM_Utils_Type::T_BOOLEAN,
               'options' => array(0 => ts('Payment'), 1 => ts('Pledge')),
               'alter_display' => 'alterIsPledge',
+              'statistics' => array('GROUP_CONCAT'),
             ),
             'still_to_raise' => array(
               'title' => ts('Balance to raise'),
@@ -63,6 +65,29 @@ class CRM_Extendedreport_Form_Report_Campaign_CampaignProgressReport extends CRM
               'title' => ts('Date range'),
               'operatorType' => self::OP_SINGLEDATE,
               'pseudofield' => TRUE,
+            ),
+            'financial_type_id' => array(
+              'title' => ts('Financial type'),
+              'alter_display' => 'alterFinancialType',
+              'type' => CRM_Utils_Type::T_INT,
+              'operatorType' => self::OP_MULTISELECT,
+              'options' => $this->_getOptions('Contribution', 'financial_type_id'),
+            ),
+          ),
+          'group_bys' => array(
+            'financial_type_id' => array(
+              'title' => ts('Financial type'),
+              'alter_display' => 'alterFinancialType',
+              'type' => CRM_Utils_Type::T_INT,
+              'operatorType' => self::OP_MULTISELECT,
+              'options' => $this->_getOptions('Contribution', 'financial_type_id'),
+            ),
+            'is_pledge' => array(
+              'title' => ts('Type'),
+              'type' => CRM_Utils_Type::T_BOOLEAN,
+              'options' => array(0 => ts('Payment'), 1 => ts('Pledge')),
+              'alter_display' => 'alterIsPledge',
+              'statistics' => array('GROUP_CONCAT'),
             ),
           ),
         ),
@@ -130,9 +155,9 @@ LEFT JOIN
  LEFT JOIN civicrm_pledge_payment pp ON pp.contribution_id = c.id
  WHERE c.contribution_status_id = 1
  AND pp.id IS NULL ";
-  if ($until) {
-    $this->_from .= ' AND c.receive_date <= "' . CRM_Utils_Type::validate(CRM_Utils_Date::processDate($until, 235959), 'Integer') . '"';
-  }
+    if ($until) {
+      $this->_from .= ' AND c.receive_date <= "' . CRM_Utils_Type::validate(CRM_Utils_Date::processDate($until, 235959), 'Integer') . '"';
+    }
 
     $this->_from .= ") as progress  ON progress.campaign_id = {$this->_aliases['civicrm_campaign']}.id
     ";
@@ -157,6 +182,7 @@ LEFT JOIN
       $this->_selectAliases[] = $alias;
       return " COALESCE(campaign.goal_revenue, 0) - SUM(COALESCE(progress.total_amount, 0)) as $alias ";
     }
+    return parent::selectClause($tableName, $tableKey, $fieldName, $field);
   }
 
   /**
@@ -174,7 +200,7 @@ LEFT JOIN
    * @return string
    */
   function alterIsPledge($value) {
-    return $value ? ts('Pledge') : ts('Payment');
+    return str_replace(array(0, 1), array(ts('Payment without pledge'),ts('Pledge')), $value);
   }
 
   /**
