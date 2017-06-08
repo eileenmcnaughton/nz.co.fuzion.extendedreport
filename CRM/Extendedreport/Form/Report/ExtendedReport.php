@@ -5652,6 +5652,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'alter_display' => 'alterActivityStatus',
         'is_fields' => TRUE,
         'is_filters' => TRUE,
+        'is_order_bys' => TRUE,
         'operatorType' => CRM_Report_Form::OP_MULTISELECT,
         'options' => CRM_Core_PseudoConstant::activityStatus(),
         'crm_editable' => array(
