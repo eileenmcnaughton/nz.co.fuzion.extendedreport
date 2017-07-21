@@ -4692,6 +4692,16 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'default' => NULL,
         'type' => CRM_Utils_Type::T_STRING,
       ),
+      'is_test' => array(
+        'is_fields' => FALSE,
+        'is_filters' => TRUE,
+        'is_order_bys' => FALSE,
+        'title' => 'Is a test transaction?',
+        'operatorType' => CRM_Report_Form::OP_SELECT,
+        'options' => array('' => '--select--') + CRM_Contribute_BAO_Contribution::buildOptions('is_test'),
+        'default' => NULL,
+        'type' => CRM_Utils_Type::T_STRING,
+      ),
     );
     return $this->buildColumns($specs, 'civicrm_contribution', 'CRM_Contribute_BAO_Contribution', NULL, $this->getDefaultsFromOptions($options));
   }
