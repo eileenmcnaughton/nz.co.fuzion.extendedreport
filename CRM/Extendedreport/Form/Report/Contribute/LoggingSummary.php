@@ -99,8 +99,11 @@ class CRM_Extendedreport_Form_Report_Contribute_LoggingSummary extends CRM_Exten
    * @return mixed
    */
   function alterContactID($value, &$row, $fieldname) {
-    $value = CRM_Core_DAO::singleValueQuery('SELECT CONCAT(display_name, "(", id ,")") FROM civicrm_contact WHERE id = %1', array(1=> array($value, 'Integer')));
-    return $value;
+    if (!$value) {
+      return;
+    }
+    $display_name = CRM_Core_DAO::singleValueQuery('SELECT display_name FROM civicrm_contact WHERE id = %1', array(1=> array($value, 'Integer')));
+    return $display_name  ? $display_name . '(' . $value . ')' : $value;
   }
 
 
