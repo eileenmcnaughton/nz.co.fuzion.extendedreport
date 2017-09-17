@@ -52,9 +52,15 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
     extendedreport_civicrm_managed($reports);
     foreach ($reports as $report) {
       try {
+        if (!empty($report['is_require_logging'])) {
+          $this->callAPISuccess('Setting', 'create', array('logging' => TRUE));
+        }
         $this->callAPISuccess('ReportTemplate', 'getrows', array(
           'report_id' => $report['params']['report_url'],
         ));
+        if (!empty($report['is_require_logging'])) {
+          $this->callAPISuccess('Setting', 'create', array('logging' => FALSE));
+        }
       }
       catch (CiviCRM_API3_Exception $e) {
         $extra = $e->getExtraParams();

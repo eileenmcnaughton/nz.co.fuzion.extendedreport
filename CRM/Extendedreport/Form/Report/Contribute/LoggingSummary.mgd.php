@@ -3,6 +3,7 @@ return array(
   0 => array(
     'name' => 'Extended Report - Contribution Logging Summary',
     'entity' => 'ReportTemplate',
+    'is_require_logging' => TRUE,
     'params' => array(
       'version' => 3,
       'label' => 'Extended Report - Contribution Logging Summary',

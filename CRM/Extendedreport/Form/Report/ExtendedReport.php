@@ -1780,11 +1780,13 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   }
 
   /**
-   * Wrapper for retrieving otpions for a field
+   * Wrapper for retrieving options for a field.
    *
    * @param string $entity
    * @param string $field
    * @param string $action
+   *
+   * @return array
    */
   protected function _getOptions($entity, $field, $action = 'get') {
     static $allOptions = array();
@@ -4679,7 +4681,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'is_group_bys' => TRUE,
         'title' => ts('Contribution Page'),
         'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-        'options' => CRM_Contribute_PseudoConstant::contributionPage(),
+        'options' => $this->_getOptions('Contribution', 'contribution_page_id'),
         'type' => CRM_Utils_Type::T_INT,
       ),
       'currency' => array(
