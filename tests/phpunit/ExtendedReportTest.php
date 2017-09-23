@@ -33,9 +33,9 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
   public function setUp() {
     parent::setUp();
     $components = array();
-    $dao = new CRM_Core_DAO_Component();
-    while ($dao->fetch()) {
-      $components[$dao->id] = $dao->name;
+    $allComponents = CRM_Core_Component::getComponents();
+    foreach ($allComponents as $component) {
+      $components[$component->componentID] = $component->name;
     }
     civicrm_api3('Setting', 'create', array('enable_components' => $components));
   }
