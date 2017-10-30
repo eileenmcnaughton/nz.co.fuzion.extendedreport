@@ -447,7 +447,7 @@ FROM      civicrm_price_field_value cv
 LEFT JOIN civicrm_price_field cf ON cv.price_field_id = cf.id
 LEFT JOIN civicrm_price_set_entity ce ON ce.price_set_id = cf.price_set_id
 WHERE     ce.entity_table = 'civicrm_event'
-GROUP BY  cv.label
+GROUP BY  cv.label, cv.id
 ";
     $dao = CRM_Core_DAO::executeQuery($query);
     $elements = array();

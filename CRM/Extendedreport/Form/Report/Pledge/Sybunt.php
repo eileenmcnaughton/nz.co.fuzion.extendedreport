@@ -207,7 +207,7 @@ class CRM_Extendedreport_Form_Report_Pledge_Sybunt extends CRM_Extendedreport_Fo
         }
       }
     }
-
+    $this->_selectClauses = $select;
     $this->_select = "SELECT " . implode(', ', $select) . " ";
   }
 
@@ -252,7 +252,8 @@ class CRM_Extendedreport_Form_Report_Pledge_Sybunt extends CRM_Extendedreport_Fo
 
   function groupBy() {
     $this->assign('chartSupported', TRUE);
-    $this->_groupBy = "Group BY {$this->_aliases['civicrm_pledge']}.contact_id, Year({$this->_aliases['civicrm_pledge']}.start_date) WITH ROLLUP ";
+    $this->_groupByArray = array($this->_aliases['civicrm_pledge'] . '.contact_id');
+    $this->_groupBy = CRM_Contact_BAO_Query::getGroupByFromSelectColumns($this->_selectClauses, $this->_groupByArray) . ", Year({$this->_aliases['civicrm_pledge']}.start_date) WITH ROLLUP ";
   }
 
   /**
