@@ -1065,7 +1065,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
         }
       }
       $this->_columnHeaders = $groupedColumns + $this->_columnHeaders;
-      $this->_groupBy = "GROUP BY " . implode(', ', $this->_groupByArray);
+      $this->_groupBy = CRM_Contact_BAO_Query::getGroupByFromSelectColumns($this->_selectClauses, $this->_groupByArray);
       if (!empty($this->_sections)) {
         // if we have group bys & sections the sections need to be grouped
         //otherwise we won't interfere with the parent class
