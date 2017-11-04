@@ -9,6 +9,7 @@ class CRM_Extendedreport_Form_Report_RelationshipExtended extends CRM_Extendedre
   protected $_emailField_b = FALSE;
   protected $_baseTable = 'civicrm_relationship';
   protected $_primaryContactPrefix = 'contact_a_';
+  protected $groupFilterNotOptimised = FALSE;
 
   /**
    * Class constructor.
@@ -55,35 +56,9 @@ class CRM_Extendedreport_Form_Report_RelationshipExtended extends CRM_Extendedre
         'prefix_label' => 'Contact B ::',
         'subquery' => FALSE,
       ))
-      + $this->getColumns('Relationship') + array(
-        'civicrm_relationship_type' => array(
-          'dao' => 'CRM_Contact_DAO_RelationshipType',
-          'fields' => array(
-            'label_a_b' => array(
-              'title' => ts('Relationship A-B '),
-              'default' => TRUE,
-            ),
-            'label_b_a' => array(
-              'title' => ts('Relationship B-A '),
-              'default' => TRUE
-            )
-          ),
-          'filters' => array(
-            'contact_type_a' => array(
-              'title' => ts('Contact Type  A'),
-              'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-              'options' => CRM_Contact_BAO_Contact::buildOptions('contact_type'),
-              'type' => CRM_Utils_Type::T_STRING
-            ),
-            'contact_type_b' => array(
-              'title' => ts('Contact Type  B'),
-              'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-              'options' => CRM_Contact_BAO_Contact::buildOptions('contact_type'),
-              'type' => CRM_Utils_Type::T_STRING
-            ),
-          ),
-          'grouping' => 'relation-fields',
-        ),
+      + $this->getColumns('Relationship')
+      + $this->getColumns('RelationshipType')
+      + array(
         'civicrm_group' => array(
           'dao' => 'CRM_Contact_DAO_Group',
           'alias' => 'cgroup',
@@ -119,11 +94,7 @@ class CRM_Extendedreport_Form_Report_RelationshipExtended extends CRM_Extendedre
           LEFT JOIN civicrm_relationship rc ON ({$this->_aliases['contact_b_civicrm_contact']}.id = rc.contact_id_a AND rc.relationship_type_id = 15)
           LEFT JOIN civicrm_relationship rccoordinator ON ({$this->_aliases['contact_b_civicrm_contact']}.id = rccoordinator.contact_id_a AND rccoordinator.relationship_type_id = 8)
           LEFT JOIN civicrm_case case_civireport ON rccoordinator .case_id = case_civireport.id";
-
-    $this->_from .= "
-          INNER JOIN civicrm_relationship_type {$this->_aliases['civicrm_relationship_type']}
-          ON ( {$this->_aliases['civicrm_relationship']}.relationship_type_id  =
-          {$this->_aliases['civicrm_relationship_type']}.id  ) ";
+    $this->joinRelationshipTypeFromRelationship();
 
     // include Email Field
     if ($this->isTableSelected('contact_a_civicrm_email')) {
@@ -235,6 +206,7 @@ class CRM_Extendedreport_Form_Report_RelationshipExtended extends CRM_Extendedre
       $this->_aliases['contact_b_civicrm_contact']
     ));
     $sql = $this->buildQuery();
+    $this->addToDeveloperTab($sql);
     $rows = array();
     $this->buildRows($sql, $rows);
     $this->_params['relationship_type_id_value'] = $originalRelationshipTypes;

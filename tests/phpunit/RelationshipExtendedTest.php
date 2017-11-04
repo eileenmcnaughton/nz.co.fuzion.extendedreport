@@ -20,16 +20,21 @@ use Civi\Test\TransactionalInterface;
  *
  * @group headless
  */
-class RelationshipExtendedTest extends BaseTestClass implements HeadlessInterface, HookInterface, TransactionalInterface {
+class RelationshipExtendedTest extends BaseTestClass implements HeadlessInterface, HookInterface {
 
   protected $contacts = array();
 
+  /**
+   * @return \Civi\Test\CiviEnvBuilder
+   */
   public function setUpHeadless() {
     // Civi\Test has many helpers, like install(), uninstall(), sql(), and sqlFile().
     // See: https://github.com/civicrm/org.civicrm.testapalooza/blob/master/civi-test.md
-    return \Civi\Test::headless()
+    $env = \Civi\Test::headless()
       ->installMe(__DIR__)
       ->apply();
+    $this->createCustomGroupWithField();
+    return $env;
   }
 
   public function setUp() {
@@ -46,20 +51,25 @@ class RelationshipExtendedTest extends BaseTestClass implements HeadlessInterfac
 
   public function tearDown() {
     parent::tearDown();
+    $this->callAPISuccess('CustomField', 'delete', array('id' => $this->customFieldID));
+    $this->callAPISuccess('CustomGroup', 'delete', array('id' => $this->customGroupID));
+    CRM_Core_DAO::executeQuery('DELETE FROM civicrm_cache');
+    CRM_Core_PseudoConstant::flush();
   }
 
   /**
    * Test the report with group filter.
    */
   public function testReport() {
-    $this->callAPISuccess('Order', 'create', array('contact_id' => $this->contacts[0], 'total_amount' => 5, 'financial_type_id' => 2));
     $params = array(
-      'report_id' => 'contribution/detailextended',
+      'report_id' => 'relationshipextended',
       'fields' => array (
         'label_a_b' => '1',
       ),
       'gid_op' => 'in',
       'gid_value' => array(1),
+      'contact_a_civicrm_contact_civicrm_value_' . $this->customGroup['table_name'] . 'custom_ ' . $this->customFieldID . '_op' => "like",
+      'contact_a_civicrm_contact_civicrm_value_' . $this->customGroup['table_name'] . 'custom_ ' . $this->customFieldID . '_value' => 'h',
     );
     $rows = $this->getRows($params);
     $this->assertEquals(array(), $rows);

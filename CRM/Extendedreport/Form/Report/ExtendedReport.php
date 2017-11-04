@@ -19,6 +19,13 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   public $_defaults = array();
 
   /**
+   * All available filter fields with metadata.
+   *
+   * @var array
+   */
+  protected $availableFilters = array();
+
+  /**
    * Is this report a pivot chart.
    *
    * @var bool
@@ -1111,9 +1118,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       foreach ($this->_params['order_bys'] as $orderBy) {
         $orderByField = array();
         foreach ($this->_columns as $tableName => $table) {
-          if (empty($table['metadata'])) {
-            $table = $this->setMetaDataForTable($tableName);
-          }
           if (array_key_exists('order_bys', $table)) {
             // For DAO columns defined in $this->_columns
             $fields = $table['order_bys'];
@@ -1853,7 +1857,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
         $this->buildACLClause($this->_aliases[$this->_aclTable]);
       }
       $this->beginPostProcess();
-      $this->storeParametersOnForm();
 
       $sql = $this->buildQuery();
       $this->reOrderColumnHeaders();
@@ -1896,6 +1899,14 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
         CRM_Core_Error::debug($err);
       }
     }
+  }
+
+  /**
+   * Override parent to include additional storage action.
+   */
+  public function beginPostProcessCommon() {
+    parent::beginPostProcessCommon();
+    $this->storeParametersOnForm();
   }
 
   /**
@@ -1977,6 +1988,24 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    * $this->_custom_fields_filters
    */
   protected function storeParametersOnForm() {
+    foreach ($this->_columns as $tableName => $table) {
+      if (array_key_exists('filters', $table)) {
+        foreach ($table['filters'] as $fieldName => $field) {
+          if (!empty($table['extends'])) {
+            $this->_columns[$tableName][$fieldName]['metadata'] = $table['extends'];
+          }
+          if (empty($table['metadata'])) {
+            $table = $this->setMetaDataForTable($tableName);
+          }
+          if (!isset($this->_columns[$tableName]['metadata']) || !isset($this->_columns[$tableName]['metadata'][$fieldName])) {
+            // Need to get this down to none but for now...
+            continue;
+          }
+          $this->availableFilters[$fieldName] = $this->_columns[$tableName]['metadata'][$fieldName];
+        }
+      }
+    }
+
     $this->_custom_fields_selected = CRM_Utils_Array::value('custom_fields', $this->_params, array());
     if (empty($this->_params)) {
       return;
@@ -5299,6 +5328,54 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     return $this->buildColumns($specs, 'civicrm_relationship', 'CRM_Contact_BAO_Relationship', NULL, $defaults);
   }
 
+  protected function getRelationshipTypeColumns($options = array()) {
+    $defaultOptions = array(
+      'prefix' => '',
+      'prefix_label' => '',
+      'group_by' => FALSE,
+      'order_by' => TRUE,
+      'filters' => TRUE,
+      'fields_defaults' => array('display_name', 'id'),
+      'filters_defaults' => array(),
+      'group_by_defaults' => array(),
+      'order_by_defaults' => array('sort_name ASC'),
+    );
+
+    $options = array_merge($defaultOptions, $options);
+    $defaults = $this->getDefaultsFromOptions($options);
+    $specs = array(
+      'label_a_b' => array(
+        'title' => ts('Relationship A-B '),
+        'type' => CRM_Utils_Type::T_STRING,
+        'is_fields' => 1,
+        'is_filters' => 1,
+      ),
+      'label_b_a' => array(
+        'title' => ts('Relationship B-A '),
+        'type' => CRM_Utils_Type::T_STRING,
+        'is_fields' => 1,
+        'is_filters' => 1,
+      ),
+      'contact_type_a' => array(
+        'title' => ts('Contact Type  A'),
+        'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+        'options' => CRM_Contact_BAO_Contact::buildOptions('contact_type'),
+        'type' => CRM_Utils_Type::T_STRING,
+        'is_fields' => 0,
+        'is_filters' => 1,
+      ),
+      'contact_type_b' => array(
+        'title' => ts('Contact Type  B'),
+        'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+        'options' => CRM_Contact_BAO_Contact::buildOptions('contact_type'),
+        'type' => CRM_Utils_Type::T_STRING,
+        'is_fields' => 0,
+        'is_filters' => 1,
+      ),
+    );
+    return $this->buildColumns($specs, 'civicrm_relationship_type', 'CRM_Contact_BAO_RelationshipType', NULL, $defaults);
+  }
+
   /**
    * Get an array of relationships in an mono a-b direction
    *
@@ -6279,6 +6356,17 @@ AND {$this->_aliases['civicrm_line_item']}.entity_table = 'civicrm_participant')
         ";
 
     }
+  }
+
+  /**
+   * Define join from relationship table to relationship type table.
+   */
+  protected function joinRelationshipTypeFromRelationship() {
+    $this->_from .= "
+      INNER JOIN civicrm_relationship_type {$this->_aliases['civicrm_relationship_type']}
+      ON ( {$this->_aliases['civicrm_relationship']}.relationship_type_id  =
+      {$this->_aliases['civicrm_relationship_type']}.id  ) 
+    ";
   }
 
   /**
