@@ -472,7 +472,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   }
 
   /**
-   * Select function.
+   * Generate the SELECT clause and set class variable $_select.
    */
   function select() {
     if ($this->_preConstrain && !$this->_preConstrained) {
@@ -508,124 +508,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
         }
       }
     }
-    // This is parent from 4.7.17.
-    $select = $this->_selectAliases = array();
-    foreach ($this->_columns as $tableName => $table) {
-      if (array_key_exists('fields', $table)) {
-        foreach ($table['fields'] as $fieldName => $field) {
-          if ($tableName == 'civicrm_address') {
-            $this->_addressField = TRUE;
-          }
-          if ($tableName == 'civicrm_email') {
-            $this->_emailField = TRUE;
-          }
-          if ($tableName == 'civicrm_phone') {
-            $this->_phoneField = TRUE;
-          }
-
-          if (!empty($field['required']) ||
-            !empty($this->_params['fields'][$fieldName])
-          ) {
-
-            // 1. In many cases we want select clause to be built in slightly different way
-            // for a particular field of a particular type.
-            // 2. This method when used should receive params by reference and modify $this->_columnHeaders
-            // as needed.
-            $selectClause = $this->selectClause($tableName, 'fields', $fieldName, $field);
-            if ($selectClause) {
-              $select[] = $selectClause;
-              continue;
-            }
-
-            // include statistics columns only if set
-            if (!empty($field['statistics'])) {
-              $select = $this->addStatisticsToSelect($field, $tableName, $fieldName, $select);
-            }
-            else {
-              $select = $this->addBasicFieldToSelect($tableName, $fieldName, $field, $select);
-            }
-          }
-        }
-      }
-
-      // select for group bys
-      if (array_key_exists('group_bys', $table)) {
-        foreach ($table['group_bys'] as $fieldName => $field) {
-
-          if ($tableName == 'civicrm_address') {
-            $this->_addressField = TRUE;
-          }
-          if ($tableName == 'civicrm_email') {
-            $this->_emailField = TRUE;
-          }
-          if ($tableName == 'civicrm_phone') {
-            $this->_phoneField = TRUE;
-          }
-          // 1. In many cases we want select clause to be built in slightly different way
-          // for a particular field of a particular type.
-          // 2. This method when used should receive params by reference and modify $this->_columnHeaders
-          // as needed.
-          $selectClause = $this->selectClause($tableName, 'group_bys', $fieldName, $field);
-          if ($selectClause) {
-            $select[] = $selectClause;
-            continue;
-          }
-
-          if (!empty($this->_params['group_bys']) &&
-            !empty($this->_params['group_bys'][$fieldName]) &&
-            !empty($this->_params['group_bys_freq'])
-          ) {
-            switch (CRM_Utils_Array::value($fieldName, $this->_params['group_bys_freq'])) {
-              case 'YEARWEEK':
-                $select[] = "DATE_SUB({$field['dbAlias']}, INTERVAL WEEKDAY({$field['dbAlias']}) DAY) AS {$tableName}_{$fieldName}_start";
-                $select[] = "YEARWEEK({$field['dbAlias']}) AS {$tableName}_{$fieldName}_subtotal";
-                $select[] = "WEEKOFYEAR({$field['dbAlias']}) AS {$tableName}_{$fieldName}_interval";
-                $field['title'] = 'Week';
-                break;
-
-              case 'YEAR':
-                $select[] = "MAKEDATE(YEAR({$field['dbAlias']}), 1)  AS {$tableName}_{$fieldName}_start";
-                $select[] = "YEAR({$field['dbAlias']}) AS {$tableName}_{$fieldName}_subtotal";
-                $select[] = "YEAR({$field['dbAlias']}) AS {$tableName}_{$fieldName}_interval";
-                $field['title'] = 'Year';
-                break;
-
-              case 'MONTH':
-                $select[] = "DATE_SUB({$field['dbAlias']}, INTERVAL (DAYOFMONTH({$field['dbAlias']})-1) DAY) as {$tableName}_{$fieldName}_start";
-                $select[] = "MONTH({$field['dbAlias']}) AS {$tableName}_{$fieldName}_subtotal";
-                $select[] = "MONTHNAME({$field['dbAlias']}) AS {$tableName}_{$fieldName}_interval";
-                $field['title'] = 'Month';
-                break;
-
-              case 'QUARTER':
-                $select[] = "STR_TO_DATE(CONCAT( 3 * QUARTER( {$field['dbAlias']} ) -2 , '/', '1', '/', YEAR( {$field['dbAlias']} ) ), '%m/%d/%Y') AS {$tableName}_{$fieldName}_start";
-                $select[] = "QUARTER({$field['dbAlias']}) AS {$tableName}_{$fieldName}_subtotal";
-                $select[] = "QUARTER({$field['dbAlias']}) AS {$tableName}_{$fieldName}_interval";
-                $field['title'] = 'Quarter';
-                break;
-            }
-            // for graphs and charts -
-            if (!empty($this->_params['group_bys_freq'][$fieldName])) {
-              $this->_interval = $field['title'];
-              $this->_columnHeaders["{$tableName}_{$fieldName}_start"]['title']
-                = $field['title'] . ' Beginning';
-              $this->_columnHeaders["{$tableName}_{$fieldName}_start"]['type'] = $field['type'];
-              $this->_columnHeaders["{$tableName}_{$fieldName}_start"]['group_by'] = $this->_params['group_bys_freq'][$fieldName];
-
-              // just to make sure these values are transferred to rows.
-              // since we 'll need them for calculation purpose,
-              // e.g making subtotals look nicer or graphs
-              $this->_columnHeaders["{$tableName}_{$fieldName}_interval"] = array('no_display' => TRUE);
-              $this->_columnHeaders["{$tableName}_{$fieldName}_subtotal"] = array('no_display' => TRUE);
-            }
-          }
-        }
-      }
-    }
-
-    $this->_selectClauses = $select;
-    $this->_select = "SELECT " . implode(', ', $select) . " ";
-
+    parent::select();
 
     if (empty($this->_select) || strtolower(trim($this->_select)) == 'select') {
       $this->_select = " SELECT 1 ";
