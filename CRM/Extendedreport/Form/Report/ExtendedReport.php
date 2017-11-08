@@ -1894,9 +1894,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     }
 
     $this->_custom_fields_selected = CRM_Utils_Array::value('custom_fields', $this->_params, array());
-    if (empty($this->_params)) {
-      return;
-    }
 
     foreach ($this->_params as $key => $param) {
       if (substr($key, 0, 7) == 'custom_') {
@@ -1920,6 +1917,9 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
           }
         }
       }
+    }
+    if (!isset($this->_params['fields'])) {
+      $this->_params['fields'] = array();
     }
   }
 
