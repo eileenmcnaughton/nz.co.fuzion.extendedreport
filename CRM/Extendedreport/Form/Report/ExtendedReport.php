@@ -510,6 +510,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     }
     parent::select();
 
+    // CRM-21412 Do not give fatal error on report when no fields selected
     if (empty($this->_select) || strtolower(trim($this->_select)) == 'select') {
       $this->_select = " SELECT 1 ";
     }
@@ -1872,20 +1873,23 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    */
   protected function storeParametersOnForm() {
     foreach ($this->_columns as $tableName => $table) {
-      if (array_key_exists('filters', $table)) {
-        foreach ($table['filters'] as $fieldName => $field) {
-          if (!empty($table['extends'])) {
-            $this->_columns[$tableName][$fieldName]['metadata'] = $table['extends'];
-          }
-          if (empty($table['metadata'])) {
-            $table = $this->setMetaDataForTable($tableName);
-          }
-          if (!isset($this->_columns[$tableName]['metadata']) || !isset($this->_columns[$tableName]['metadata'][$fieldName])) {
-            // Need to get this down to none but for now...
-            continue;
-          }
-          $this->availableFilters[$fieldName] = $this->_columns[$tableName]['metadata'][$fieldName];
+      foreach (array('filters', 'fields') as $fieldSet) {
+        if (!isset($this->_columns[$tableName][$fieldSet])) {
+          $this->_columns[$tableName][$fieldSet] = array();
         }
+      }
+      foreach ($table['filters'] as $fieldName => $field) {
+        if (!empty($table['extends'])) {
+          $this->_columns[$tableName][$fieldName]['metadata'] = $table['extends'];
+        }
+        if (empty($table['metadata'])) {
+          $table = $this->setMetaDataForTable($tableName);
+        }
+        if (!isset($this->_columns[$tableName]['metadata']) || !isset($this->_columns[$tableName]['metadata'][$fieldName])) {
+          // Need to get this down to none but for now...
+          continue;
+        }
+        $this->availableFilters[$fieldName] = $this->_columns[$tableName]['metadata'][$fieldName];
       }
     }
 
