@@ -141,8 +141,8 @@ class CRM_Extendedreport_Form_Report_Contact_AddressHistory extends CRM_Extended
    */
   protected function getContactsMergedIntoThisOne($contactID) {
     $result = civicrm_api3('Activity', 'get', array(
-      'target_contact_id' => $contactID,
-      'return' => 'assignee_contact_id',
+      'assignee_contact_id' => $contactID,
+      'return' => 'target_contact_id',
       'activity_type_id' => $this->activityTypeID,
     ));
     if ($result['count']) {
