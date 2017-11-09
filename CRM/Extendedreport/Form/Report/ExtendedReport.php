@@ -485,16 +485,23 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     }
     $this->storeGroupByArray();
     $this->unsetBaseTableStatsFieldsWhereNoGroupBy();
-    if (!isset($this->_params['fields'])) {
-      $this->_params['fields'] = array();
-    }
     foreach ($this->_params['fields'] as $fieldName => $field) {
-      if (substr($fieldName, 0, 7) == 'custom_') {
-        foreach ($this->_columns as $table => $specs) {
-          if (empty($specs['fields'])) {
-            continue;
-          }
+      foreach ($this->_columns as $table => $specs) {
           if (CRM_Utils_Array::value($fieldName, $specs['fields'])) {
+            if (!empty($specs['metadata'][$fieldName]['requires'])) {
+              foreach ($specs['metadata'][$fieldName]['requires'] as $requiredField) {
+                if (empty($this->_params['fields'][$requiredField])) {
+                  $this->_params['fields'][$requiredField] = 1;
+                  //civicrm_address_address_su....
+                  $this->_columns[$table]['fields'][$requiredField]['no_display'] = 1;
+                  $this->_noDisplay[] = $table . '_' . $requiredField;
+                }
+              }
+            }
+            if (substr($fieldName, 0, 7) == 'custom_') {
+              if (empty($specs['fields'])) {
+                continue;
+              }
             if ($specs['fields'][$fieldName]['dataType'] == 'ContactReference') {
               $this->_columns[$table]['fields'][$fieldName . '_id'] = $specs['fields'][$fieldName];
               $this->_columns[$table]['fields'][$fieldName . '_id']['name'] = 'id';
@@ -5339,6 +5346,27 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
             'name' => 'name',
             'is_fields' => TRUE,
           ),
+          $options['prefix'] . 'display_address' => array(
+            'title' => ts($options['prefix_label'] . 'Display Address'),
+            'pseudofield' => TRUE,
+            'is_fields' => TRUE,
+            'requires' => array(
+              $options['prefix'] . 'address_name',
+              $options['prefix'] . 'address_supplemental_address_1',
+              $options['prefix'] . 'address_supplemental_address_2',
+              $options['prefix'] . 'address_supplemental_address_3',
+              $options['prefix'] . 'address_street_address',
+              $options['prefix'] . 'address_city',
+              $options['prefix'] . 'address_postal_code',
+              $options['prefix'] . 'address_postal_code_suffix',
+              $options['prefix'] . 'address_county_id',
+              $options['prefix'] . 'address_country_id',
+              $options['prefix'] . 'address_state_province_id',
+              $options['prefix'] . 'address_is_primary',
+              $options['prefix'] . 'address_location_type_id',
+            ),
+            'alter_display' => 'alterDisplayAddress',
+          ),
           $options['prefix'] . 'street_number' => array(
             'name' => 'street_number',
             'title' => ts($options['prefix_label'] . 'Street Number'),
@@ -5392,6 +5420,16 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
             ),
             'is_fields' => TRUE,
           ),
+          $options['prefix'] . 'supplemental_address_3' => array(
+            'title' => ts($options['prefix_label'] . 'Supplementary Address Field 3'),
+            'name' => 'supplemental_address_3',
+            'crm_editable' => array(
+              'id_table' => 'civicrm_address',
+              'id_field' => 'id',
+              'entity' => 'address',
+            ),
+            'is_fields' => TRUE,
+          ),
           $options['prefix'] . 'street_number' => array(
             'name' => 'street_number',
             'title' => ts($options['prefix_label'] . 'Street Number'),
@@ -5435,6 +5473,15 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
             'is_group_bys' => TRUE,
             'is_order_bys' => TRUE,
           ),
+          $options['prefix'] . 'postal_code_suffix' => array(
+            'title' => ts($options['prefix_label'] . 'Postal Code Suffix'),
+            'name' => 'postal_code',
+            'type' => 1,
+            'is_fields' => TRUE,
+            'is_filters' => TRUE,
+            'is_group_bys' => TRUE,
+            'is_order_bys' => TRUE,
+          ),
           $options['prefix'] . 'county_id' => array(
             'title' => ts($options['prefix_label'] . 'County'),
             'alter_display' => 'alterCountyID',
@@ -5468,9 +5515,21 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
             'options' => CRM_Core_PseudoConstant::country(),
           ),
+          $options['prefix'] . 'location_type_id' => array(
+            'name' => 'is_primary',
+            'title' => ts($options['prefix_label'] . 'Location Type'),
+            'type' => CRM_Utils_Type::T_INT,
+            'is_fields' => TRUE,
+          ),
           $options['prefix'] . 'id' => array(
             'title' => ts($options['prefix_label'] . 'ID'),
             'name' => 'id',
+            'is_fields' => TRUE,
+          ),
+          $options['prefix'] . 'is_primary' => array(
+            'name' => 'is_primary',
+            'title' => ts($options['prefix_label'] . 'Primary Address?'),
+            'type' => CRM_Utils_Type::T_BOOLEAN,
             'is_fields' => TRUE,
           ),
         ),
@@ -7087,6 +7146,64 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
       $value = preg_replace('/<\/td\\s*?\/??>/i', " - ", $value);
     }
     return $value;
+  }
+
+  /**
+   * @param string $value
+   * @param array $row
+   * @param array $selectedField
+   * @param string $criteriaFieldName
+   *
+   * @return string
+   */
+  protected function alterDisplayAddress($value, &$row, $selectedField, $criteriaFieldName) {
+    $address = array();
+    $tablePrefix = str_replace('display_address', '', $selectedField);
+
+    $format = \Civi::settings()->get('address_format');
+    $tokens = $this->extractTokens($format);
+
+    foreach ($tokens as $token) {
+      // ug token names not very standardised.
+      $keyName = $tablePrefix . str_replace('address_', '', $token);
+      $keyName = str_replace('supplemental_', 'supplemental_address_', $keyName);
+      if (array_key_exists($keyName, $row)) {
+        $address[$token] = $row[$keyName];
+      }
+      elseif (!empty($row[$keyName . '_id'])) {
+        if ($token == 'country') {
+          $address[$token] = CRM_Core_PseudoConstant::country($row[$keyName . '_id']);
+        }
+        elseif ($token == 'state_province') {
+          $address[$token] = CRM_Core_PseudoConstant::stateProvince($row[$keyName . '_id']);
+        }
+        elseif ($token == 'county') {
+          $address[$token] = CRM_Core_PseudoConstant::county($row[$keyName . '_id']);
+        }
+      }
+    }
+    $value = CRM_Utils_Address::format($address, $format);
+    if ($this->_outputMode != 'csv') {
+      $value = nl2br($value);
+    }
+    return $value;
+
+  }
+
+  /**
+   * Regex the (contact) tokens out of a string.
+   *
+   * @param string $string
+   * @return array
+   */
+  protected function extractTokens($string) {
+    $tokens = array();
+    preg_match_all('/(?<!\{|\\\\)\{contact.(\w+)\}(?!\})/',
+      $string,
+      $tokens,
+      PREG_PATTERN_ORDER
+    );
+    return $tokens[1];
   }
 
   /**
