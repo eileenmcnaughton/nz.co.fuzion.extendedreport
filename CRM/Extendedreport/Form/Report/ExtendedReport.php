@@ -3723,9 +3723,9 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
 
     $options = array_merge($defaultOptions, $options);
     $defaults = $this->getDefaultsFromOptions($options);
-    $specs = array();
-    if ($this->financialTypeField == 'financial_type_id') {
-      $specs['financial_type_id'] = array(
+
+    $specs = array(
+      'financial_type_id' => array(
         'title' => ts('Line Item Financial Type'),
         'type' => CRM_Utils_Type::T_INT,
         'alter_display' => 'alterFinancialType',
@@ -3736,9 +3736,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'operatorType' => CRM_Report_Form::OP_MULTISELECT,
         'options' => CRM_Contribute_PseudoConstant::financialType(),
         'statistics' => array('GROUP_CONCAT'),
-      );
-    }
-    $specs = array_merge($specs, array(
+      ),
       'id' => array(
         'title' => ts('Individual Line Item'),
         'is_order_bys' => TRUE,
@@ -3797,7 +3795,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'is_fields' => TRUE,
         'is_filters' => TRUE,
       ),
-    ));
+    );
 
     return $this->buildColumns($specs, 'civicrm_line_item', 'CRM_Price_BAO_LineItem', NULL, $defaults);
   }
@@ -6690,7 +6688,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
     $financialTypes = explode(',', $value);
     $display = array();
     foreach ($financialTypes as $financialType) {
-      $displayType = is_string(CRM_Contribute_PseudoConstant::financialType($financialType, FALSE)) ? CRM_Contribute_PseudoConstant::financialType($financialType, FALSE) : '';
+      $displayType = is_string(CRM_Contribute_PseudoConstant::financialType($financialType)) ? CRM_Contribute_PseudoConstant::financialType($financialType) : '';
       // Index the array in order to display each type only once.
       $display[$displayType] = $displayType;
     }
