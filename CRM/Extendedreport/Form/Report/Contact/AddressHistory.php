@@ -8,6 +8,27 @@ class CRM_Extendedreport_Form_Report_Contact_AddressHistory extends CRM_Extended
   protected $_baseTable = 'log_civicrm_address';
   protected $isSupportsContactTab = TRUE;
 
+  /**
+   * Contact ID being filtered for.
+   *
+   * @var int
+   */
+  protected $contactID;
+
+  /**
+   * Contact ID being filtered for.
+   *
+   * @var int
+   */
+  protected $activityTypeID;
+
+  /**
+   * Contacts merged into tracked contacts.
+   *
+   * @var array
+   */
+  protected $mergedContacts = array();
+
   public function __construct() {
     $this->_columns = $this->getColumns('Address', array(
         'fields' => TRUE,
@@ -67,7 +88,10 @@ class CRM_Extendedreport_Form_Report_Contact_AddressHistory extends CRM_Extended
     $this->_columns['log_civicrm_address']['fields'] += $logMetaData;
     $this->_columns['log_civicrm_address']['filters']['contact_id'] = $logMetaData['contact_id'];
 
+    $activityTypes = civicrm_api3('Activity', 'getoptions', array('field' => 'activity_type_id'));
+    $this->activityTypeID = array_search('Contact Deleted by Merge', $activityTypes['values']);
     parent::__construct();
+
   }
 
   public function alterDisplay(&$rows) {
@@ -87,6 +111,51 @@ class CRM_Extendedreport_Form_Report_Contact_AddressHistory extends CRM_Extended
   public function orderBy() {
     parent::orderBy();
     $this->_orderBy = "ORDER BY address.log_date DESC";
+  }
+
+  /**
+   * Generate where clause.
+   *
+   * This can be overridden in reports for special treatment of a field
+   *
+   * @param array $field Field specifications
+   * @param string $op Query operator (not an exact match to sql)
+   * @param mixed $value
+   * @param float $min
+   * @param float $max
+   *
+   * @return null|string
+   */
+  public function whereClause(&$field, $op, $value, $min, $max) {
+     if ($field['name'] === 'contact_id' && $value) {
+       $this->contactID = (int) $value;
+       $mergedContactIDs = $this->getContactsMergedIntoThisOne($this->contactID);
+       $clause = parent::whereClause($field, 'in', array_merge(array($this->contactID), $mergedContactIDs), $min, $max);
+       return $clause;
+     }
+  }
+
+  /**
+   * @param int $contactID
+   * @return int
+   */
+  protected function getContactsMergedIntoThisOne($contactID) {
+    $result = civicrm_api3('Activity', 'get', array(
+      'target_contact_id' => $contactID,
+      'return' => 'assignee_contact_id',
+      'activity_type_id' => $this->activityTypeID,
+    ));
+    if ($result['count']) {
+      foreach ($result['values'] as $resultRow) {
+        foreach ($resultRow['assignee_contact_id'] as $deletedContact) {
+          if (!in_array($deletedContact, $this->mergedContacts)) {
+            $this->mergedContacts[] = $deletedContact;
+            $this->getContactsMergedIntoThisOne($deletedContact);
+          }
+        }
+      }
+    }
+    return $this->mergedContacts;
   }
 
 }
