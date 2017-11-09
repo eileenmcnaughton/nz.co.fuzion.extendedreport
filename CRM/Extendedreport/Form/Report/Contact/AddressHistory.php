@@ -140,17 +140,21 @@ class CRM_Extendedreport_Form_Report_Contact_AddressHistory extends CRM_Extended
    * @return int
    */
   protected function getContactsMergedIntoThisOne($contactID) {
+    // @todo get api joins working properly.
     $result = civicrm_api3('Activity', 'get', array(
       'assignee_contact_id' => $contactID,
-      'return' => 'target_contact_id',
+      'return' => 'id',
       'activity_type_id' => $this->activityTypeID,
+      'api.ActivityContact.get' => array('record_type_id' => 'Activity Targets', 'return' => 'contact_id')
     ));
     if ($result['count']) {
       foreach ($result['values'] as $resultRow) {
-        foreach ($resultRow['assignee_contact_id'] as $deletedContact) {
-          if (!in_array($deletedContact, $this->mergedContacts)) {
-            $this->mergedContacts[] = $deletedContact;
-            $this->getContactsMergedIntoThisOne($deletedContact);
+        if (!empty($resultRow['api.ActivityContact.get'])) {
+          foreach ($resultRow['api.ActivityContact.get']['values'] as $deletedContact) {
+            if (!in_array($deletedContact['contact_id'], $this->mergedContacts)) {
+              $this->mergedContacts[] = $deletedContact['contact_id'];
+              $this->getContactsMergedIntoThisOne($deletedContact['contact_id']);
+            }
           }
         }
       }
