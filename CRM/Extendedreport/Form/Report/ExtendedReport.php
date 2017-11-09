@@ -249,12 +249,29 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   protected $isForceGroupBy = FALSE;
 
   /**
+   * Can this report be used on a contact tab.
+   *
+   * The report must support contact_id in the url for this to work.
+   *
+   * @var bool
+   */
+  protected $isSupportsContactTab = FALSE;
+
+  /**
    * Class constructor.
    */
   public function __construct() {
     parent::__construct();
     $this->addSelectableCustomFields();
     $this->addTemplateSelector();
+    if ($this->isSupportsContactTab) {
+      $this->_options = array(
+        'contact_dashboard_tab' => array(
+          'title' => ts('Display as tab on contact record'),
+          'type' => 'checkbox',
+        ),
+      );
+    }
   }
 
   /**
@@ -487,21 +504,20 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     $this->unsetBaseTableStatsFieldsWhereNoGroupBy();
     foreach ($this->_params['fields'] as $fieldName => $field) {
       foreach ($this->_columns as $table => $specs) {
-          if (CRM_Utils_Array::value($fieldName, $specs['fields'])) {
-            if (!empty($specs['metadata'][$fieldName]['requires'])) {
-              foreach ($specs['metadata'][$fieldName]['requires'] as $requiredField) {
-                if (empty($this->_params['fields'][$requiredField])) {
-                  $this->_params['fields'][$requiredField] = 1;
-                  //civicrm_address_address_su....
-                  $this->_columns[$table]['fields'][$requiredField]['no_display'] = 1;
-                  $this->_noDisplay[] = $table . '_' . $requiredField;
-                }
+        if (CRM_Utils_Array::value($fieldName, $specs['fields'])) {
+          if (!empty($specs['metadata'][$fieldName]['requires'])) {
+            foreach ($specs['metadata'][$fieldName]['requires'] as $requiredField) {
+              if (empty($this->_params['fields'][$requiredField])) {
+                $this->_params['fields'][$requiredField] = 1;
+                $this->_columns[$table]['fields'][$requiredField]['no_display'] = 1;
+                $this->_noDisplay[] = $table . '_' . $requiredField;
               }
             }
-            if (substr($fieldName, 0, 7) == 'custom_') {
-              if (empty($specs['fields'])) {
-                continue;
-              }
+          }
+          if (substr($fieldName, 0, 7) == 'custom_') {
+            if (empty($specs['fields'])) {
+              continue;
+            }
             if ($specs['fields'][$fieldName]['dataType'] == 'ContactReference') {
               $this->_columns[$table]['fields'][$fieldName . '_id'] = $specs['fields'][$fieldName];
               $this->_columns[$table]['fields'][$fieldName . '_id']['name'] = 'id';
@@ -517,7 +533,8 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     }
     parent::select();
 
-    // CRM-21412 Do not give fatal error on report when no fields selected
+    // CRM-21412 Do not give fatal error on report when no fields selected. Upstream in progress as at
+    // 4.7.28
     if (empty($this->_select) || strtolower(trim($this->_select)) == 'select') {
       $this->_select = " SELECT 1 ";
     }

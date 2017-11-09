@@ -83,3 +83,22 @@ function extendedreport_version_at_least($version) {
   }
   return FALSE;
 }
+
+function extendedreport_civicrm_tabset($tabsetName, &$tabs, $context) {
+  $reports = civicrm_api3('ReportInstance', 'get', array('form_values' => array('LIKE' => '%contact_dashboard_tab";s:1:"1";%')));
+
+  foreach ($reports['values'] as $report) {
+    $tabs['report_' . $report['id']] = array(
+      'title' => ts($report['title']),
+      'url' => CRM_Utils_System::url( 'civicrm/report/contact/addresshistory', array(
+          'log_civicrm_address_op' => 'in',
+          'contact_id_value' => $context['contact_id'],
+          'output' => 'html',
+          'force' => 1,
+          'section' => 2,
+        )
+      )
+    );
+  }
+
+}
