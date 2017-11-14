@@ -1896,29 +1896,32 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    * $this->_custom_fields_filters
    */
   protected function storeParametersOnForm() {
-    foreach ($this->_columns as $tableName => &$table) {
+    foreach (array_keys($this->_columns) as $tableName) {
       foreach (array('filters', 'fields') as $fieldSet) {
         if (!isset($this->_columns[$tableName][$fieldSet])) {
-          $table[$fieldSet] = array();
+          $this->_columns[$tableName][$fieldSet] = array();
         }
       }
-      foreach ($table['filters'] as $fieldName => $field) {
+      foreach ($this->_columns[$tableName]['filters'] as $fieldName => $field) {
         if (!empty($table['extends'])) {
-          $table[$fieldName]['metadata'] = $table['extends'];
+          $this->_columns[$tableName][$fieldName]['metadata'] = $table['extends'];
         }
-        if (empty($table['metadata'])) {
-          $table = $this->setMetaDataForTable($tableName);
+        if (empty($this->_columns[$tableName]['metadata'])) {
+          $this->_columns[$tableName] = $this->setMetaDataForTable($tableName);
         }
-        if (!isset($table['metadata']) || !isset($table['metadata'][$fieldName])) {
+        if (!isset($this->_columns[$tableName]['metadata']) || !isset($this->_columns[$tableName]['metadata'][$fieldName])) {
           // Need to get this down to none but for now...
           continue;
         }
-        $this->availableFilters[$fieldName] = $table['metadata'][$fieldName];
+        $this->availableFilters[$fieldName] = $this->_columns[$tableName]['metadata'][$fieldName];
       }
     }
 
     $this->_custom_fields_selected = CRM_Utils_Array::value('custom_fields', $this->_params, array());
 
+    if ($this->_params === NULL) {
+      $this->_params = array();
+    }
     foreach ($this->_params as $key => $param) {
       if (substr($key, 0, 7) == 'custom_') {
         $splitField = explode('_', $key);
