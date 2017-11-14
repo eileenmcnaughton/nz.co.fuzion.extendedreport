@@ -2988,6 +2988,13 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
                 $alterSpecs[$tableName . '_' . $field]['field_name'] = $specs['name'];
               }
             }
+            // Add any alters that can be intuited from the field specs.
+            // So far only boolean but a lot more could be.
+            if (empty($alterSpecs[$tableName . '_' . $field]) && $specs['type'] == CRM_Utils_Type::T_BOOLEAN) {
+              $alterFunctions[$tableName . '_' . $field] = 'alterBoolean';
+              $alterMap[$tableName . '_' . $field] = $field;
+              $alterSpecs[$tableName . '_' . $field] = NULL;
+            }
           }
           if (substr($pivotRowField, 0, 7) == 'custom_' && isset($specs['id']) && $specs['id'] == substr($pivotRowField, 7) && $specs['dataType'] != 'String') {
             $alterFunctions[$this->getPivotRowTableAlias() . '_' . $pivotRowField] = 'alterFromOptions';
@@ -5354,208 +5361,202 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     $options = array_merge($defaultOptions, $options);
     $defaults = $this->getDefaultsFromOptions($options);
 
-    $addressFields = array(
-      $options['prefix'] . 'civicrm_address' => array(
-        'dao' => 'CRM_Core_DAO_Address',
-        'name' => 'civicrm_address',
-        'alias' => $options['prefix'] . 'civicrm_address',
-        'fields' => array(
-          $options['prefix'] . 'name' => array(
-            'title' => ts($options['prefix_label'] . 'Address Name'),
-            'name' => 'name',
-            'is_fields' => TRUE,
-          ),
-          $options['prefix'] . 'display_address' => array(
-            'title' => ts($options['prefix_label'] . 'Display Address'),
-            'pseudofield' => TRUE,
-            'is_fields' => TRUE,
-            'requires' => array(
-              $options['prefix'] . 'address_name',
-              $options['prefix'] . 'address_supplemental_address_1',
-              $options['prefix'] . 'address_supplemental_address_2',
-              $options['prefix'] . 'address_supplemental_address_3',
-              $options['prefix'] . 'address_street_address',
-              $options['prefix'] . 'address_city',
-              $options['prefix'] . 'address_postal_code',
-              $options['prefix'] . 'address_postal_code_suffix',
-              $options['prefix'] . 'address_county_id',
-              $options['prefix'] . 'address_country_id',
-              $options['prefix'] . 'address_state_province_id',
-              $options['prefix'] . 'address_is_primary',
-              $options['prefix'] . 'address_location_type_id',
-            ),
-            'alter_display' => 'alterDisplayAddress',
-          ),
-          $options['prefix'] . 'street_number' => array(
-            'name' => 'street_number',
-            'title' => ts($options['prefix_label'] . 'Street Number'),
-            'type' => 1,
-            'crm_editable' => array(
-              'id_table' => 'civicrm_address',
-              'id_field' => 'id',
-              'entity' => 'address',
-            ),
-            'is_fields' => TRUE,
-          ),
-          $options['prefix'] . 'street_name' => array(
-            'name' => 'street_name',
-            'title' => ts($options['prefix_label'] . 'Street Name'),
-            'type' => 1,
-            'crm_editable' => array(
-              'id_table' => 'civicrm_address',
-              'id_field' => 'id',
-              'entity' => 'address',
-            ),
-            'is_fields' => TRUE,
-            'is_filters' => TRUE,
-            'operator' => 'like',
-            'is_order_bys' => TRUE,
-          ),
-          $options['prefix'] . 'street_address' => array(
-            'title' => ts($options['prefix_label'] . 'Street Address'),
-            'name' => 'street_address',
-            'is_fields' => TRUE,
-            'is_filters' => TRUE,
-            'is_group_bys' => TRUE,
-
-          ),
-          $options['prefix'] . 'supplemental_address_1' => array(
-            'title' => ts($options['prefix_label'] . 'Supplementary Address Field 1'),
-            'name' => 'supplemental_address_1',
-            'crm_editable' => array(
-              'id_table' => 'civicrm_address',
-              'id_field' => 'id',
-              'entity' => 'address',
-            ),
-            'is_fields' => TRUE,
-          ),
-          $options['prefix'] . 'supplemental_address_2' => array(
-            'title' => ts($options['prefix_label'] . 'Supplementary Address Field 2'),
-            'name' => 'supplemental_address_2',
-            'crm_editable' => array(
-              'id_table' => 'civicrm_address',
-              'id_field' => 'id',
-              'entity' => 'address',
-            ),
-            'is_fields' => TRUE,
-          ),
-          $options['prefix'] . 'supplemental_address_3' => array(
-            'title' => ts($options['prefix_label'] . 'Supplementary Address Field 3'),
-            'name' => 'supplemental_address_3',
-            'crm_editable' => array(
-              'id_table' => 'civicrm_address',
-              'id_field' => 'id',
-              'entity' => 'address',
-            ),
-            'is_fields' => TRUE,
-          ),
-          $options['prefix'] . 'street_number' => array(
-            'name' => 'street_number',
-            'title' => ts($options['prefix_label'] . 'Street Number'),
-            'type' => 1,
-            'is_order_bys' => TRUE,
-            'is_filters' => TRUE,
-            'is_fields' => TRUE,
-          ),
-          $options['prefix'] . 'street_name' => array(
-            'name' => 'street_name',
-            'title' => ts($options['prefix_label'] . 'Street Name'),
-            'type' => 1,
-            'is_fields' => TRUE,
-          ),
-          $options['prefix'] . 'street_unit' => array(
-            'name' => 'street_unit',
-            'title' => ts($options['prefix_label'] . 'Street Unit'),
-            'type' => 1,
-            'is_fields' => TRUE,
-          ),
-          $options['prefix'] . 'city' => array(
-            'title' => ts($options['prefix_label'] . 'City'),
-            'name' => 'city',
-            'operator' => 'like',
-            'crm_editable' => array(
-              'id_table' => 'civicrm_address',
-              'id_field' => 'id',
-              'entity' => 'address',
-            ),
-            'is_fields' => TRUE,
-            'is_filters' => TRUE,
-            'is_group_bys' => TRUE,
-            'is_order_bys' => TRUE,
-          ),
-          $options['prefix'] . 'postal_code' => array(
-            'title' => ts($options['prefix_label'] . 'Postal Code'),
-            'name' => 'postal_code',
-            'type' => 1,
-            'is_fields' => TRUE,
-            'is_filters' => TRUE,
-            'is_group_bys' => TRUE,
-            'is_order_bys' => TRUE,
-          ),
-          $options['prefix'] . 'postal_code_suffix' => array(
-            'title' => ts($options['prefix_label'] . 'Postal Code Suffix'),
-            'name' => 'postal_code',
-            'type' => 1,
-            'is_fields' => TRUE,
-            'is_filters' => TRUE,
-            'is_group_bys' => TRUE,
-            'is_order_bys' => TRUE,
-          ),
-          $options['prefix'] . 'county_id' => array(
-            'title' => ts($options['prefix_label'] . 'County'),
-            'alter_display' => 'alterCountyID',
-            'name' => 'county_id',
-            'type' => CRM_Utils_Type::T_INT,
-            'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-            'options' => CRM_Core_PseudoConstant::county(),
-            'is_fields' => TRUE,
-            'is_filters' => TRUE,
-            'is_group_bys' => TRUE,
-          ),
-          $options['prefix'] . 'state_province_id' => array(
-            'title' => ts($options['prefix_label'] . 'State/Province'),
-            'alter_display' => 'alterStateProvinceID',
-            'name' => 'state_province_id',
-            'type' => CRM_Utils_Type::T_INT,
-            'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-            'options' => CRM_Core_PseudoConstant::stateProvince(),
-            'is_fields' => TRUE,
-            'is_filters' => TRUE,
-            'is_group_bys' => TRUE,
-          ),
-          $options['prefix'] . 'country_id' => array(
-            'title' => ts($options['prefix_label'] . 'Country'),
-            'alter_display' => 'alterCountryID',
-            'name' => 'country_id',
-            'is_fields' => TRUE,
-            'is_filters' => TRUE,
-            'is_group_bys' => TRUE,
-            'type' => CRM_Utils_Type::T_INT,
-            'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-            'options' => CRM_Core_PseudoConstant::country(),
-          ),
-          $options['prefix'] . 'location_type_id' => array(
-            'name' => 'is_primary',
-            'title' => ts($options['prefix_label'] . 'Location Type'),
-            'type' => CRM_Utils_Type::T_INT,
-            'is_fields' => TRUE,
-          ),
-          $options['prefix'] . 'id' => array(
-            'title' => ts($options['prefix_label'] . 'ID'),
-            'name' => 'id',
-            'is_fields' => TRUE,
-          ),
-          $options['prefix'] . 'is_primary' => array(
-            'name' => 'is_primary',
-            'title' => ts($options['prefix_label'] . 'Primary Address?'),
-            'type' => CRM_Utils_Type::T_BOOLEAN,
-            'is_fields' => TRUE,
-          ),
+    $spec = array(
+      $options['prefix'] . 'name' => array(
+        'title' => ts($options['prefix_label'] . 'Address Name'),
+        'name' => 'name',
+        'is_fields' => TRUE,
+      ),
+      $options['prefix'] . 'display_address' => array(
+        'title' => ts($options['prefix_label'] . 'Display Address'),
+        'pseudofield' => TRUE,
+        'is_fields' => TRUE,
+        'type' => CRM_Utils_Type::T_STRING,
+        'requires' => array(
+          $options['prefix'] . 'address_name',
+          $options['prefix'] . 'address_supplemental_address_1',
+          $options['prefix'] . 'address_supplemental_address_2',
+          $options['prefix'] . 'address_supplemental_address_3',
+          $options['prefix'] . 'address_street_address',
+          $options['prefix'] . 'address_city',
+          $options['prefix'] . 'address_postal_code',
+          $options['prefix'] . 'address_postal_code_suffix',
+          $options['prefix'] . 'address_county_id',
+          $options['prefix'] . 'address_country_id',
+          $options['prefix'] . 'address_state_province_id',
+          $options['prefix'] . 'address_is_primary',
+          $options['prefix'] . 'address_location_type_id',
         ),
-        'grouping' => 'location-fields',
+        'alter_display' => 'alterDisplayAddress',
+      ),
+      $options['prefix'] . 'street_number' => array(
+        'name' => 'street_number',
+        'title' => ts($options['prefix_label'] . 'Street Number'),
+        'type' => 1,
+        'crm_editable' => array(
+          'id_table' => 'civicrm_address',
+          'id_field' => 'id',
+          'entity' => 'address',
+        ),
+        'is_fields' => TRUE,
+      ),
+      $options['prefix'] . 'street_name' => array(
+        'name' => 'street_name',
+        'title' => ts($options['prefix_label'] . 'Street Name'),
+        'type' => 1,
+        'crm_editable' => array(
+          'id_table' => 'civicrm_address',
+          'id_field' => 'id',
+          'entity' => 'address',
+        ),
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+        'operator' => 'like',
+        'is_order_bys' => TRUE,
+      ),
+      $options['prefix'] . 'street_address' => array(
+        'title' => ts($options['prefix_label'] . 'Street Address'),
+        'name' => 'street_address',
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+        'is_group_bys' => TRUE,
+
+      ),
+      $options['prefix'] . 'supplemental_address_1' => array(
+        'title' => ts($options['prefix_label'] . 'Supplementary Address Field 1'),
+        'name' => 'supplemental_address_1',
+        'crm_editable' => array(
+          'id_table' => 'civicrm_address',
+          'id_field' => 'id',
+          'entity' => 'address',
+        ),
+        'is_fields' => TRUE,
+      ),
+      $options['prefix'] . 'supplemental_address_2' => array(
+        'title' => ts($options['prefix_label'] . 'Supplementary Address Field 2'),
+        'name' => 'supplemental_address_2',
+        'crm_editable' => array(
+          'id_table' => 'civicrm_address',
+          'id_field' => 'id',
+          'entity' => 'address',
+        ),
+        'is_fields' => TRUE,
+      ),
+      $options['prefix'] . 'supplemental_address_3' => array(
+        'title' => ts($options['prefix_label'] . 'Supplementary Address Field 3'),
+        'name' => 'supplemental_address_3',
+        'crm_editable' => array(
+          'id_table' => 'civicrm_address',
+          'id_field' => 'id',
+          'entity' => 'address',
+        ),
+        'is_fields' => TRUE,
+      ),
+      $options['prefix'] . 'street_number' => array(
+        'name' => 'street_number',
+        'title' => ts($options['prefix_label'] . 'Street Number'),
+        'type' => 1,
+        'is_order_bys' => TRUE,
+        'is_filters' => TRUE,
+        'is_fields' => TRUE,
+      ),
+      $options['prefix'] . 'street_name' => array(
+        'name' => 'street_name',
+        'title' => ts($options['prefix_label'] . 'Street Name'),
+        'type' => 1,
+        'is_fields' => TRUE,
+      ),
+      $options['prefix'] . 'street_unit' => array(
+        'name' => 'street_unit',
+        'title' => ts($options['prefix_label'] . 'Street Unit'),
+        'type' => 1,
+        'is_fields' => TRUE,
+      ),
+      $options['prefix'] . 'city' => array(
+        'title' => ts($options['prefix_label'] . 'City'),
+        'name' => 'city',
+        'operator' => 'like',
+        'crm_editable' => array(
+          'id_table' => 'civicrm_address',
+          'id_field' => 'id',
+          'entity' => 'address',
+        ),
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+        'is_group_bys' => TRUE,
+        'is_order_bys' => TRUE,
+      ),
+      $options['prefix'] . 'postal_code' => array(
+        'title' => ts($options['prefix_label'] . 'Postal Code'),
+        'name' => 'postal_code',
+        'type' => 1,
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+        'is_group_bys' => TRUE,
+        'is_order_bys' => TRUE,
+      ),
+      $options['prefix'] . 'postal_code_suffix' => array(
+        'title' => ts($options['prefix_label'] . 'Postal Code Suffix'),
+        'name' => 'postal_code',
+        'type' => 1,
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+        'is_group_bys' => TRUE,
+        'is_order_bys' => TRUE,
+      ),
+      $options['prefix'] . 'county_id' => array(
+        'title' => ts($options['prefix_label'] . 'County'),
+        'alter_display' => 'alterCountyID',
+        'name' => 'county_id',
+        'type' => CRM_Utils_Type::T_INT,
+        'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+        'options' => CRM_Core_PseudoConstant::county(),
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+        'is_group_bys' => TRUE,
+      ),
+      $options['prefix'] . 'state_province_id' => array(
+        'title' => ts($options['prefix_label'] . 'State/Province'),
+        'alter_display' => 'alterStateProvinceID',
+        'name' => 'state_province_id',
+        'type' => CRM_Utils_Type::T_INT,
+        'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+        'options' => CRM_Core_PseudoConstant::stateProvince(),
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+        'is_group_bys' => TRUE,
+      ),
+      $options['prefix'] . 'country_id' => array(
+        'title' => ts($options['prefix_label'] . 'Country'),
+        'alter_display' => 'alterCountryID',
+        'name' => 'country_id',
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+        'is_group_bys' => TRUE,
+        'type' => CRM_Utils_Type::T_INT,
+        'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+        'options' => CRM_Core_PseudoConstant::country(),
+      ),
+      $options['prefix'] . 'location_type_id' => array(
+        'name' => 'is_primary',
+        'title' => ts($options['prefix_label'] . 'Location Type'),
+        'type' => CRM_Utils_Type::T_INT,
+        'is_fields' => TRUE,
+        'alter_display' => 'alterLocationTypeID',
+      ),
+      $options['prefix'] . 'id' => array(
+        'title' => ts($options['prefix_label'] . 'ID'),
+        'name' => 'id',
+        'is_fields' => TRUE,
+      ),
+      $options['prefix'] . 'is_primary' => array(
+        'name' => 'is_primary',
+        'title' => ts($options['prefix_label'] . 'Primary Address?'),
+        'type' => CRM_Utils_Type::T_BOOLEAN,
+        'is_fields' => TRUE,
       ),
     );
-    return $this->buildColumns($addressFields[$options['prefix'] . 'civicrm_address']['fields'], $options['prefix'] . 'civicrm_address', 'CRM_Core_DAO_Address', NULL, $defaults);
+    return $this->buildColumns($spec, $options['prefix'] . 'civicrm_address', 'CRM_Core_DAO_Address', NULL, $defaults);
   }
 
   /**
@@ -6945,6 +6946,19 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    *
    * @return mixed
    */
+  function alterLocationTypeID($value, &$row, $selectedfield, $criteriaFieldName) {
+    $values = $this->getLocationTypeOptions();
+    return CRM_Utils_Array::value($value, $values);
+  }
+
+  /**
+   * @param $value
+   * @param $row
+   * @param $selectedfield
+   * @param $criteriaFieldName
+   *
+   * @return mixed
+   */
   function alterGenderID($value, &$row, $selectedfield, $criteriaFieldName) {
     $values = CRM_Contact_BAO_Contact::buildOptions('gender_id');
     return CRM_Utils_Array::value($value, $values);
@@ -7091,6 +7105,19 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
     }
     $values = CRM_Batch_BAO_Batch::buildOptions('status_id');
     return $values[$value];
+  }
+
+  /**
+   * @param $value
+   *
+   * @return mixed
+   */
+  function alterBoolean($value) {
+    $options = array(0 => ts('No'), 1 => ts('Yes'));
+    if (isset($options[$value])) {
+      return $options[$value];
+    }
+    return $value;
   }
 
   /**

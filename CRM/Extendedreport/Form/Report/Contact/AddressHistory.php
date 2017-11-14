@@ -94,6 +94,7 @@ class CRM_Extendedreport_Form_Report_Contact_AddressHistory extends CRM_Extended
 
   }
 
+  /**
   public function alterDisplay(&$rows) {
     parent::alterDisplay($rows);
     // Process rows in reverse order.
@@ -103,7 +104,7 @@ class CRM_Extendedreport_Form_Report_Contact_AddressHistory extends CRM_Extended
       $oldestUnprocessedRowIndex--;
     }
     return $rows;
-  }
+  }*/
 
   /**
    * Build order by clause.
