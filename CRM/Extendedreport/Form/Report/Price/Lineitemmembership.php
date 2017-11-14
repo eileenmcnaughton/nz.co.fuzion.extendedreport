@@ -44,6 +44,7 @@ class CRM_Extendedreport_Form_Report_Price_Lineitemmembership extends CRM_Extend
       'membership_from_lineItem',
       'contact_from_membership',
       'address_from_contact',
+      'contribution_from_lineItem',
     );
   }
 
