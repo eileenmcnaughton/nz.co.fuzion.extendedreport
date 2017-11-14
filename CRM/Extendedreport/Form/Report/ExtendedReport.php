@@ -1229,7 +1229,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    * (still pondering how to deal with turned totaling on & off appropriately)
    *
    **/
-  function unsetBaseTableStatsFieldsWhereNoGroupBy() {
+  protected function unsetBaseTableStatsFieldsWhereNoGroupBy() {
     if (empty($this->_groupByArray) && !empty($this->_columns[$this->_baseTable]['fields'])) {
       foreach ($this->_columns[$this->_baseTable]['fields'] as $fieldname => $field) {
         if (isset($field['statistics'])) {
@@ -1896,24 +1896,24 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    * $this->_custom_fields_filters
    */
   protected function storeParametersOnForm() {
-    foreach ($this->_columns as $tableName => $table) {
+    foreach ($this->_columns as $tableName => &$table) {
       foreach (array('filters', 'fields') as $fieldSet) {
         if (!isset($this->_columns[$tableName][$fieldSet])) {
-          $this->_columns[$tableName][$fieldSet] = array();
+          $table[$fieldSet] = array();
         }
       }
       foreach ($table['filters'] as $fieldName => $field) {
         if (!empty($table['extends'])) {
-          $this->_columns[$tableName][$fieldName]['metadata'] = $table['extends'];
+          $table[$fieldName]['metadata'] = $table['extends'];
         }
         if (empty($table['metadata'])) {
           $table = $this->setMetaDataForTable($tableName);
         }
-        if (!isset($this->_columns[$tableName]['metadata']) || !isset($this->_columns[$tableName]['metadata'][$fieldName])) {
+        if (!isset($table['metadata']) || !isset($table['metadata'][$fieldName])) {
           // Need to get this down to none but for now...
           continue;
         }
-        $this->availableFilters[$fieldName] = $this->_columns[$tableName]['metadata'][$fieldName];
+        $this->availableFilters[$fieldName] = $table['metadata'][$fieldName];
       }
     }
 
@@ -3603,12 +3603,11 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    *
    * @param string $type
    * @param array $options
-   * @param array $defaults
    *
    * @return
    */
-  function getColumns($type, $options = array(), $defaults = array()) {
-    $defaultOptions = array(
+   protected function getColumns($type, $options = array()) {
+     $defaultOptions = array(
       'prefix' => '',
       'prefix_label' => '',
       'fields' => TRUE,
@@ -3675,7 +3674,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    *
    * @return array
    */
-  function buildColumns($specs, $tableName, $daoName = NULL, $tableAlias = NULL, $defaults = array(), $options = array()) {
+  protected function buildColumns($specs, $tableName, $daoName = NULL, $tableAlias = NULL, $defaults = array(), $options = array()) {
     if (!$tableAlias) {
       $tableAlias = str_replace('civicrm_', '', $tableName);
     }
@@ -3729,7 +3728,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    *
    * @return array
    */
-  function getLineItemColumns($options) {
+  protected function getLineItemColumns($options) {
     $defaultOptions = array(
       'prefix' => '',
       'prefix_label' => '',
@@ -3861,7 +3860,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    *
    * @return array
    */
-  function getPriceFieldColumns() {
+  protected function getPriceFieldColumns() {
     $specs = array(
       'price_field_label' => array(
         'title' => ts('Price Field Label'),
@@ -3882,7 +3881,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    *
    * @return array
    */
-  function getParticipantColumns($options = array()) {
+  protected function getParticipantColumns($options = array()) {
     static $_events = array();
     if (!isset($_events['all'])) {
       CRM_Core_PseudoConstant::populate($_events['all'], 'CRM_Event_DAO_Event', FALSE, 'title', 'is_active', "is_template IS NULL OR is_template = 0", 'title');
@@ -3952,7 +3951,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    *
    * @return array
    */
-  function getMembershipColumns($options) {
+  protected function getMembershipColumns($options) {
     $columns = array(
       'civicrm_membership' => array(
         'grouping' => 'member-fields',
