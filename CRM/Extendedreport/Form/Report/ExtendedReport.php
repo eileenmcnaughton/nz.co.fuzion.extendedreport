@@ -7081,6 +7081,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
     }
     $row[$selectedField . '_link'] = CRM_Utils_System::url('civicrm/contact/view/contribution', 'reset=1&action=add&cid=' . $contactID . '&context=pledge&ppid=' . $value);
     $row[$selectedField . '_hover'] = ts('Record a payment received for this pledged payment');
+    $row[$selectedField . '_class'] = "action-item crm-hover-button popup";
     return ts('Record Payment');
   }
 
