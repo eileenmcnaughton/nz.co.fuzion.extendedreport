@@ -1,6 +1,6 @@
 <?php
 
-require_once __DIR__ . '/BaseTestClass.php';
+require_once __DIR__ . '../../BaseTestClass.php';
 
 use Civi\Test\HeadlessInterface;
 use Civi\Test\HookInterface;
@@ -20,7 +20,7 @@ use Civi\Test\TransactionalInterface;
  *
  * @group headless
  */
-class ContributionDetailExtendedTest extends BaseTestClass implements HeadlessInterface, HookInterface, TransactionalInterface {
+class ContributionOverviewExtendedTest extends BaseTestClass implements HeadlessInterface, HookInterface, TransactionalInterface {
 
   protected $contacts = array();
 
@@ -42,6 +42,25 @@ class ContributionDetailExtendedTest extends BaseTestClass implements HeadlessIn
     civicrm_api3('Setting', 'create', array('enable_components' => $components));
     $contact = $this->callAPISuccess('Contact', 'create', array('first_name' => 'Wonder', 'last_name' => 'Woman', 'contact_type' => 'Individual'));
     $this->contacts[] = $contact['id'];
+
+    $contribution = $this->callAPISuccess('Contribution', 'create', array(
+      'contact_id' => $contact['id'],
+      'received_date' => '2 months ago',
+      'total_amount' => 5,
+      'financial_type_id' => 'Donation',
+    ));
+    $contribution = $this->callAPISuccess('Contribution', 'create', array(
+      'contact_id' => $contact['id'],
+      'received_date' => '1 month ago',
+      'total_amount' => 500,
+      'financial_type_id' => 'Donation',
+    ));
+    $contribution = $this->callAPISuccess('Contribution', 'create', array(
+      'contact_id' => $contact['id'],
+      'received_date' => '1 month ago',
+      'total_amount' => 10,
+      'financial_type_id' => 'Member Dues',
+    ));
   }
 
   public function tearDown() {
@@ -49,24 +68,27 @@ class ContributionDetailExtendedTest extends BaseTestClass implements HeadlessIn
   }
 
   /**
-   * Test the ContributionDetailExtended report with order by.
+   * Test the ContributionOverviewExtended report with group by.
    */
   public function testContributionExtendedReport() {
     $this->callAPISuccess('Order', 'create', array('contact_id' => $this->contacts[0], 'total_amount' => 5, 'financial_type_id' => 2));
     $params = array(
-      'report_id' => 'contribution/detailextended',
+      'report_id' => 'contribution/overview',
       'fields' => array (
-        'civicrm_contact_display_name' => '1',
+        'contribution_financial_type_id' => '1',
+        'contribution_total_amount' => '1',
       ),
       'order_bys' => array(
         1 => array(
-          'column' => 'contribution_financial_type_id',
-          'order' => 'ASC',
+          'column' => '-',
         ),
+      ),
+      'group_bys' => array(
+        'contribution_financial_type_id' => 1,
       ),
     );
     $rows = $this->getRows($params);
-    $this->assertEquals('USD', $rows[0]['civicrm_contribution_currency']);
+    $this->assertEquals('Member Dues', $rows[1]['civicrm_contribution_contribution_financial_type_id']);
   }
 
 }

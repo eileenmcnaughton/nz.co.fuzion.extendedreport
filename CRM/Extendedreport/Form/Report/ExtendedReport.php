@@ -2937,16 +2937,6 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
       $this->assignSubTotalLines($rows);
     }
 
-    if (!empty($this->_rollup) && count($rows) > 1) {
-      $lastIndex = key(array_slice($rows, -1, 1, TRUE));
-      //Do not concat non-stat field in the last row.
-      foreach ($rows[$lastIndex] as $key => &$val) {
-        if (!in_array($key, $this->_statFields)) {
-          $val = NULL;
-        }
-      }
-    }
-
     if (empty($rows)) {
       return;
     }
