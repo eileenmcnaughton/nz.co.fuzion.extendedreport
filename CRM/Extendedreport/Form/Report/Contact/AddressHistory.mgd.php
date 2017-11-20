@@ -8,6 +8,7 @@ return array (
     array (
       'name' => 'Address History Report',
       'entity' => 'ReportTemplate',
+      'is_require_logging' => TRUE,
       'params' =>
         array (
           'version' => 3,
