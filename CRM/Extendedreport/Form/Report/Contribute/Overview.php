@@ -111,7 +111,7 @@ class CRM_Extendedreport_Form_Report_Contribute_Overview extends CRM_Extendedrep
           'grouping' => 'contact-fields',
         ),
         ) + $this->getColumns('Contribution', array('group_by' => TRUE))
-         + $this->addAddressFields();
+         + $this->getColumns('Address');
 
     // If we have a campaign, build out the relevant elements
     if ($campaignEnabled && !empty($this->activeCampaigns)) {
