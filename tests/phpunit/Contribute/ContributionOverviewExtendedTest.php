@@ -88,7 +88,7 @@ class ContributionOverviewExtendedTest extends BaseTestClass implements Headless
       ),
     );
     $rows = $this->getRows($params);
-    $this->assertEquals('Member Dues', $rows[1]['civicrm_contribution_contribution_financial_type_id']);
+    $this->assertEquals('Member Dues', $rows[1]['civicrm_contribution_contribution_financial_type_id'], $this->sql);
   }
 
 }

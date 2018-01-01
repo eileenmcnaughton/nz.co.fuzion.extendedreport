@@ -29,6 +29,13 @@ class BaseTestClass extends \PHPUnit_Framework_TestCase implements HeadlessInter
   }
 
   private $_apiversion = 3;
+
+  /**
+   * @var string
+   *   SQL returned from the report.
+   */
+  protected $sql;
+
   /**
    * wrap api functions.
    * so we can ensure they succeed & throw exceptions without litterering the test with checks
@@ -196,6 +203,7 @@ class BaseTestClass extends \PHPUnit_Framework_TestCase implements HeadlessInter
   protected function getRows($params) {
     $params['options']['metadata'] = array('title', 'label', 'sql');
     $rows = $this->callAPISuccess('ReportTemplate', 'getrows', $params);
+    $this->sql = $rows['metadata']['sql'];
     $rows = $rows['values'];
     return $rows;
   }
