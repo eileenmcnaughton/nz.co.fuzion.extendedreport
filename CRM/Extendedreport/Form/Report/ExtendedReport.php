@@ -3067,32 +3067,22 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
     if (count($this->_statFields) == 0) {
       return;
     }
-    if ($statLayers == 1) {
-      return;
-      /*we don't want to show the summary rows as they are a distraction - we will unset every second one
-      foreach (array_keys($rows)  as $rowNumber) {
-        if ($rowNumber % 2 != 0) {
-          unset ($rows[$rowNumber]);
-        }
-      }
-      */
+
+    $unsetAllRollupRows = TRUE;
+    $rowsSinceLastRollup = 0;
+    foreach ($rows as $rowNumber => $row) {
+      $this->alterRowForRollup($rows[$rowNumber], CRM_Utils_Array::value($rowNumber +1, $rows), $groupBys, $rowNumber, $statLayers, $groupByLabels, $altered, $fieldsToUnSetForSubtotalLines);
+    }
+    if (empty($row['is_rollup'])) {
+      $rowsSinceLastRollup = 0;
     }
     else {
-      $unsetAllRollupRows = TRUE;
-      $rowsSinceLastRollup = 0;
-      foreach ($rows as $rowNumber => $row) {
-        $this->alterRowForRollup($rows[$rowNumber], CRM_Utils_Array::value($rowNumber +1, $rows), $groupBys, $rowNumber, $statLayers, $groupByLabels, $altered, $fieldsToUnSetForSubtotalLines);
-      }
-      if (empty($row['is_rollup'])) {
-        $rowsSinceLastRollup = 0;
-      }
-      else {
-        $rowsSinceLastRollup++;
-      }
-      if ($rowsSinceLastRollup > 1) {
-        $unsetAllRollupRows = FALSE;
-      }
+      $rowsSinceLastRollup++;
     }
+    if ($rowsSinceLastRollup > 1) {
+      $unsetAllRollupRows = FALSE;
+    }
+
     // If every row has a rollup then is't just ugly.
     // clean them out.
     if ($unsetAllRollupRows) {
