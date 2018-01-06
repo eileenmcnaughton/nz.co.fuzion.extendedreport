@@ -7560,7 +7560,11 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
         continue;
       }
       if (empty($row[$field]) && empty($row['is_rollup'])) {
-        $groupedValue = $groupByLabels[array_search($field, $groupBys) + 1];
+        $valueIndex = array_search($field, $groupBys) + 1;
+        if (!isset($groupByLabels[$valueIndex])) {
+          return;
+        }
+        $groupedValue = $groupByLabels[$valueIndex];
         if (!($nextRow) || $nextRow[$groupedValue] != $row[$groupedValue]) {
           //we set altered because we are started from the lowest grouping & working up & if both have changed only want to act on the lowest
           //(I think)
