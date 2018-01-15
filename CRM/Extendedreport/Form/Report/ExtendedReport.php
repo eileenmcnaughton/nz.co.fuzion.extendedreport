@@ -3790,6 +3790,15 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'is_filters' => TRUE,
         'type' => CRM_Utils_Type::T_INT,
       ),
+      'contribution_id' => array(
+        'title' => ts('Contribution Count'),
+        'type' => CRM_Utils_Type::T_INT,
+        'statistics' => array(
+          'count' => ts('Count of Contributions')
+        ),
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+      ),
       'line_total' => array(
         'title' => ts('Line Total'),
         'type' => CRM_Utils_Type::T_MONEY,
