@@ -1687,6 +1687,19 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
         'from' => ts('From Date'),
       );
     }
+    if ($type === self::OP_STRING) {
+      return [
+        'has' => ts('Contains'),
+        'sw' => ts('Starts with'),
+        'ew' => ts('Ends with'),
+        'nhas' => ts('Does not contain'),
+        'eq' => ts('Is equal to'),
+        'neq' => ts('Is not equal to'),
+        'nll' => ts('Is empty (Null)'),
+        'nnll' => ts('Is not empty (Null)'),
+        'rlike' => ts('Regex is true')
+      ];
+    }
     return parent::getOperationPair($type, $fieldName);
 
   }
@@ -5105,6 +5118,11 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'title' => ts($options['prefix_label'] . 'Email'),
         'name' => 'email',
         'is_fields' => TRUE,
+        'is_filters' => TRUE,
+        'is_group_bys' => TRUE,
+        'is_order_bys' => TRUE,
+        'type' => CRM_Utils_Type::T_STRING,
+        'operatorType' => CRM_Report_Form::OP_STRING,
       ),
     );
     return $this->buildColumns($fields, $options['prefix'] . 'civicrm_email', 'CRM_Core_DAO_Email', NULL, $defaults);
@@ -7681,6 +7699,20 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
     $this->_columnHeaders["{$tableName}_{$fieldName}"]['type'] = CRM_Utils_Array::value('type', $field);
     $this->_selectAliases[] = $alias;
     return $select;
+  }
+
+  /**
+   * Get SQL operator from form text version.
+   *
+   * @param string $operator
+   *
+   * @return string
+   */
+  public function getSQLOperator($operator = "like") {
+    if ($operator === 'rlike') {
+      return 'RLIKE';
+    }
+    return parent::getSQLOperator($operator);
   }
 
 }
