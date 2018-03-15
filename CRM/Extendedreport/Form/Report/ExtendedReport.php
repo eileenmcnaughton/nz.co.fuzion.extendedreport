@@ -6076,15 +6076,16 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    * Prefix will be added to both tables as it's assumed you are using it to get address of a secondary contact.
    *
    * @param string $prefix
+   * @param array $extra
    */
-  protected function joinEmailFromContact($prefix = '') {
+  protected function joinEmailFromContact($prefix = '', $extra = array()) {
     $this->_from .= " LEFT JOIN civicrm_email {$this->_aliases[$prefix . 'civicrm_email']}
    ON {$this->_aliases[$prefix . 'civicrm_email']}.contact_id = {$this->_aliases[$prefix . 'civicrm_contact']}.id
    AND {$this->_aliases[$prefix . 'civicrm_email']}.is_primary = 1
 ";
   }
 
-   protected function joinCampaignFromPledge($prefix = '') {
+   protected function joinCampaignFromPledge($prefix = '', $extra = array()) {
     $this->_from .= " LEFT JOIN civicrm_campaign {$this->_aliases[$prefix . 'civicrm_campaign']}
      ON {$this->_aliases[$prefix . 'civicrm_campaign']}.id = {$this->_aliases[$prefix . 'civicrm_pledge']}.campaign_id
     ";
@@ -6095,8 +6096,9 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    * This join may include multiple phones & should be used when displaying the phone block.
    *
    * @param string $prefix
+   * @param array $extra
    */
-  function joinPhoneFromContact($prefix = '') {
+  function joinPhoneFromContact($prefix = '', $extra = array()) {
     $this->_from .= " LEFT JOIN civicrm_phone {$this->_aliases[$prefix . 'civicrm_phone']}
     ON {$this->_aliases[$prefix . 'civicrm_phone']}.contact_id = {$this->_aliases[$prefix . 'civicrm_contact']}.id
     ";
@@ -6107,7 +6109,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    *
    * @param string $prefix
    */
-  function joinPrimaryPhoneFromContact($prefix = '') {
+  function joinPrimaryPhoneFromContact($prefix = '', $extra = array()) {
     $this->_from .= " LEFT JOIN civicrm_phone {$this->_aliases[$prefix . 'civicrm_phone']}
     ON {$this->_aliases[$prefix . 'civicrm_phone']}.contact_id = {$this->_aliases[$prefix . 'civicrm_contact']}.id
     AND {$this->_aliases[$prefix . 'civicrm_phone']}.is_primary = 1
@@ -6120,7 +6122,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
   /**
    * @param string $prefix
    */
-  function joinEntityTagFromContact($prefix = '') {
+  function joinEntityTagFromContact($prefix = '', $extra = array()) {
     if (!$this->isTableSelected($prefix . 'civicrm_tag')) {
       return;
     }
