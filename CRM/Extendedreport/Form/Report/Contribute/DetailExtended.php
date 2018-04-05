@@ -230,21 +230,9 @@ class CRM_Extendedreport_Form_Report_Contribute_DetailExtended extends CRM_Exten
                       ON {$this->_aliases['civicrm_contribution_ordinality']}.id = {$this->_aliases['civicrm_contribution']}.id";
     }
 
-    $this->addPhoneFromClause();
-
-    if ($this->_addressField OR (!empty($this->_params['state_province_id_value']) OR !empty($this->_params['country_id_value']))) {
-      $this->_from .= "
-            LEFT JOIN civicrm_address {$this->_aliases['civicrm_address']}
-                   ON {$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_address']}.contact_id AND
-                      {$this->_aliases['civicrm_address']}.is_primary = 1\n";
-    }
-
-    if ($this->_emailField) {
-      $this->_from .= "
-            LEFT JOIN civicrm_email {$this->_aliases['civicrm_email']}
-                   ON {$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_email']}.contact_id AND
-                      {$this->_aliases['civicrm_email']}.is_primary = 1\n";
-    }
+    $this->joinPhoneFromContact();
+    $this->joinAddressFromContact();
+    $this->joinEmailFromContact();
 
     // include contribution note
     if (CRM_Utils_Array::value('contribution_note', $this->_params['fields']) ||
