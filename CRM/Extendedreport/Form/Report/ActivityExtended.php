@@ -109,7 +109,7 @@ class CRM_Extendedreport_Form_Report_ActivityExtended extends CRM_Extendedreport
         AND civicrm_email_assignee.is_deleted = 0
         ";
     }
-    $this->addAddressFromClause();
+    $this->joinAddressFromContact();
     $this->selectableCustomDataFrom();
   }
 
