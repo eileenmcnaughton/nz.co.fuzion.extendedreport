@@ -345,7 +345,7 @@ class CRM_Extendedreport_Form_Report_Contribute_BookkeepingExtended extends CRM_
     $this->_selectAliases[] = $alias;
   }
 
-  public function groupBy() {
+  public function storeGroupByArray() {
     parent::storeGroupByArray();
     if (empty($this->_groupByArray)) {
       $this->_groupByArray = array(
@@ -354,7 +354,6 @@ class CRM_Extendedreport_Form_Report_Contribute_BookkeepingExtended extends CRM_
       );
       $this->_rollup = FALSE;
     }
-    parent::groupBy();
   }
 
 }
