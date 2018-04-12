@@ -15,7 +15,7 @@
         <email>eileen@fuzion.co.nz</email>
     </maintainer>
     <releaseDate>2016-06-17</releaseDate>
-    <version>3.2</version>
+    <version>3.3</version>
     <develStage>stable</develStage>
     <compatibility>
         <ver>5.0</ver>
