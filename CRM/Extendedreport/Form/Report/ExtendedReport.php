@@ -495,6 +495,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       return;
     }
     $this->storeGroupByArray();
+    $this->storeOrderByArray();
     $this->unsetBaseTableStatsFieldsWhereNoGroupBy();
     foreach ($this->_params['fields'] as $fieldName => $field) {
       foreach ($this->_columns as $table => $specs) {
@@ -526,12 +527,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       }
     }
     parent::select();
-
-    // CRM-21412 Do not give fatal error on report when no fields selected. Upstream in progress as at
-    // 4.7.28
-    if (empty($this->_select) || strtolower(trim($this->_select)) == 'select') {
-      $this->_select = " SELECT 1 ";
-    }
   }
 
   /**
@@ -1043,7 +1038,18 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
 
         if (!empty($orderByField)) {
           $this->_orderByFields[] = $orderByField;
-          $orderBys[] = "({$table['metadata'][$orderBy['column']]['dbAlias']}) {$orderBy['order']}";
+          if (empty($this->_groupByArray)) {
+            $orderBys[] = "({$table['metadata'][$orderBy['column']]['dbAlias']}) {$orderBy['order']}";
+          }
+          else {
+            // Ensure order bys are in the select. Use alias
+            $orderBys[] = "({$orderByField['tplField']}) {$orderBy['order']}";
+            if (!isset($this->_params['fields'][$orderByField['column']])) {
+              // We will select it if not selected.
+              $this->_params['fields'][$orderByField['column']] = 1;
+              $this->_columns[$tableName][$orderByField['column']]['no_display'] = 1;
+            }
+          }
           // Record any section headers for assignment to the template
           if (CRM_Utils_Array::value('section', $orderBy)) {
             $this->_sections[$orderByField['tplField']] = $orderByField;
