@@ -2998,6 +2998,99 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
   }
 
   /**
+   * Format display output.
+   *
+   * Overriding this as the alterDisplay functionality from extended reports has recently been
+   * upstreamed & we need more time to reconcile to that - it's been running twice
+   * and causing some mis-fires.
+   *
+   * @param array $rows
+   * @param bool $pager
+   */
+  public function formatDisplay(&$rows, $pager = TRUE) {
+    // set pager based on if any limit was applied in the query.
+    if ($pager) {
+      $this->setPager();
+    }
+
+    // allow building charts if any
+    if (!empty($this->_params['charts']) && !empty($rows)) {
+      $this->buildChart($rows);
+      $this->assign('chartEnabled', TRUE);
+      $this->_chartId = "{$this->_params['charts']}_" .
+        ($this->_id ? $this->_id : substr(get_class($this), 16)) . '_' .
+        session_id();
+      $this->assign('chartId', $this->_chartId);
+    }
+
+    // unset columns not to be displayed.
+    foreach ($this->_columnHeaders as $key => $value) {
+      if (!empty($value['no_display'])) {
+        unset($this->_columnHeaders[$key]);
+      }
+    }
+
+    // unset columns not to be displayed.
+    if (!empty($rows)) {
+      foreach ($this->_noDisplay as $noDisplayField) {
+        foreach ($rows as $rowNum => $row) {
+          unset($this->_columnHeaders[$noDisplayField]);
+        }
+      }
+    }
+
+    // build array of section totals
+    $this->sectionTotals();
+
+    // process grand-total row
+    $this->grandTotal($rows);
+
+    // Find alter display functions.
+    $firstRow = reset($rows);
+    if ($firstRow) {
+      $selectedFields = array_keys($firstRow);
+      $alterFunctions = $alterMap = $alterSpecs = array();
+      foreach ($this->_columns as $tableName => $table) {
+        if (array_key_exists('metadata', $table)) {
+          foreach ($table['metadata'] as $field => $specs) {
+            if (in_array($tableName . '_' . $field, $selectedFields)) {
+              if (array_key_exists('alter_display', $specs)) {
+                $alterFunctions[$tableName . '_' . $field] = $specs['alter_display'];
+                $alterMap[$tableName . '_' . $field] = $field;
+                $alterSpecs[$tableName . '_' . $field] = NULL;
+              }
+              // Add any alters that can be intuited from the field specs.
+              // So far only boolean but a lot more could be.
+              if (empty($alterSpecs[$tableName . '_' . $field]) && isset($specs['type']) && $specs['type'] == CRM_Utils_Type::T_BOOLEAN) {
+                $alterFunctions[$tableName . '_' . $field] = 'alterBoolean';
+                $alterMap[$tableName . '_' . $field] = $field;
+                $alterSpecs[$tableName . '_' . $field] = NULL;
+              }
+            }
+          }
+        }
+      }
+
+      /* Run the alter display functions
+      foreach ($rows as $index => & $row) {
+        foreach ($row as $selectedField => $value) {
+          if (array_key_exists($selectedField, $alterFunctions)) {
+            $rows[$index][$selectedField] = $this->{$alterFunctions[$selectedField]}($value, $row, $selectedField, $alterMap[$selectedField], $alterSpecs[$selectedField]);
+          }
+        }
+      }
+      */
+    }
+
+    // use this method for formatting rows for display purpose.
+    $this->alterDisplay($rows);
+    CRM_Utils_Hook::alterReportVar('rows', $rows, $this);
+
+    // use this method for formatting custom rows for display purpose.
+    $this->alterCustomDataDisplay($rows);
+  }
+
+  /**
    * If rollup is in use we want to dmarcarate rollou rows.
    *
    * With rollup the very last row will be a summary row.
