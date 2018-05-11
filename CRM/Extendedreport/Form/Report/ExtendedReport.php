@@ -5773,6 +5773,15 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'options' => array('1' => 'Yes', '0' => 'No',),
         'is_filters' => TRUE,
       ),
+      'is_deleted' => array(
+        'type' => CRM_Report_Form::OP_INT,
+        'operatorType' => CRM_Report_Form::OP_SELECT,
+        'title' => ts("Is activity deleted"),
+        'default' => array(0),
+        'name' => 'is_deleted',
+        'options' => array('0' => 'No', '1' => 'Yes',),
+        'is_filters' => TRUE,
+      ),
 
     );
     return $this->buildColumns($spec, $options['prefix'] . 'civicrm_activity', 'CRM_Activity_DAO_Activity', NULL, $defaults);
