@@ -183,15 +183,4 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
 
   }
 
-  /**
-   * @param $params
-   * @return array|int
-   */
-  protected function getRows($params) {
-    $params['options']['metadata'] = array('title', 'label', 'sql');
-    $rows = $this->callAPISuccess('ReportTemplate', 'getrows', $params);
-    $rows = $rows['values'];
-    return $rows;
-  }
-
 }

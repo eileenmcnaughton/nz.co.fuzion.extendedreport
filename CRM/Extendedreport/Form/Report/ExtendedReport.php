@@ -882,68 +882,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
 
   }
 
-  /**
-   * over-ridden to include clause if specified, also to allow for unset meaning null
-   * e.g membership_end_date > now
-   * also, parent was giving incorrect results without the single quotes
-   *
-   * @param string $fieldName
-   * @param $relative
-   * @param string $from
-   * @param string $to
-   * @param null $field
-   * @param null $fromTime
-   * @param null $toTime
-   * @param bool $includeUnset
-   *
-   * @return null|string
-   */
-  function dateClause($fieldName,
-                      $relative, $from, $to, $field = NULL, $fromTime = NULL, $toTime = NULL, $includeUnset = FALSE
-  ) {
-    $type = $field['type'];
-    $clauses = array();
-    list($from, $to) = self::getFromTo($relative, $from, $to, $fromTime, $toTime);
-
-    if (!empty($field['clause'])) {
-      $clause = '';
-      eval("\$clause = \"{$field['clause']}\";");
-      $clauses[] = $clause;
-      if (!empty($clauses)) {
-        return implode(' AND ', $clauses);
-      }
-      return NULL;
-    }
-    else {
-      if (in_array($relative, array_keys($this->getOperationPair(CRM_Report_Form::OP_DATE)))) {
-        $sqlOP = $this->getSQLOperator($relative);
-        return "( {$fieldName} {$sqlOP} )";
-      }
-
-      if ($from) {
-        $from = ($type == CRM_Utils_Type::T_DATE) ? substr($from, 0, 8) : $from;
-        if (empty($to)) {
-          $clauses[] = "( {$fieldName} >= '{$from}'  OR ISNULL($fieldName))";
-        }
-        else {
-          $clauses[] = "( {$fieldName} >= '{$from}')";
-        }
-      }
-
-      if ($to) {
-        $to = ($type == CRM_Utils_Type::T_DATE) ? substr($to, 0, 8) : $to;
-        $clauses[] = "( {$fieldName} <= '{$to}' )";
-      }
-
-      if (!empty($clauses)) {
-        return implode(' AND ', $clauses);
-      }
-      return NULL;
-    }
-  }
-
-
-
   /*
 * Define any from clauses in use (child classes to override)
 */
@@ -7490,6 +7428,15 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
         $fromTime = CRM_Utils_Array::value("{$fieldName}_from_time", $this->_params);
         $toTime = CRM_Utils_Array::value("{$fieldName}_to_time", $this->_params);
         // next line is the changed one
+        if (!empty($field['clause'])) {
+          $clause = '';
+          eval("\$clause = \"{$field['clause']}\";");
+          $clauses[] = $clause;
+          if (!empty($clauses)) {
+            return implode(' AND ', $clauses);
+          }
+          return NULL;
+        }
         $clause = $this->dateClause($field['dbAlias'], $relative, $from, $to, $field, $fromTime, $toTime);
         return $clause;
       }
