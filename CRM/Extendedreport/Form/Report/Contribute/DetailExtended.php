@@ -52,6 +52,8 @@ class CRM_Extendedreport_Form_Report_Contribute_DetailExtended extends CRM_Exten
     'Household',
   );
 
+  protected $isTempTableBuilt = FALSE;
+
   /**
    * Class constructor.
    */
@@ -322,12 +324,8 @@ GROUP BY {$this->_aliases['civicrm_contribution']}.currency";
     return $statistics;
   }
 
-  function postProcess() {
-    // get the acl clauses built before we assemble the query
-    $this->buildACLClause($this->_aliases['civicrm_contact']);
-
-    $this->beginPostProcess();
-
+  function beginPostProcessCommon() {
+    parent::beginPostProcessCommon();
     // 1. use main contribution query to build temp table 1
     $sql = $this->buildQuery();
 
@@ -382,20 +380,21 @@ UNION ALL
     $this->addToDeveloperTab($sql);
     CRM_Core_DAO::executeQuery($sql);
 
-    // 6. show result set from temp table 3
-    $rows = array();
-    $sql = "SELECT * FROM civireport_contribution_detail_temp3";
-    $this->addToDeveloperTab($sql);
-    $this->buildRows($sql, $rows);
+    $this->isTempTableBuilt = TRUE;
+  }
 
-    // format result set.
-    $this->formatDisplay($rows, FALSE);
-
-    // assign variables to templates
-    $this->doTemplateAssignment($rows);
-
-    // do print / pdf / instance stuff if needed
-    $this->endPostProcess($rows);
+  /**
+   * Build the report query.
+   *
+   * @param bool $applyLimit
+   *
+   * @return string
+   */
+  public function buildQuery($applyLimit = TRUE) {
+    if ($this->isTempTableBuilt) {
+      return "SELECT * FROM civireport_contribution_detail_temp3 $this->_orderBy";
+    }
+    return parent::buildQuery($applyLimit);
   }
 
   function alterDisplay(&$rows) {

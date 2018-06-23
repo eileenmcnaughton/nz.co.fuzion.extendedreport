@@ -59,10 +59,8 @@ class ContributionDetailExtendedTest extends BaseTestClass implements HeadlessIn
         'civicrm_contact_display_name' => '1',
       ),
       'order_bys' => array(
-        1 => array(
-          'column' => 'contribution_financial_type_id',
-          'order' => 'ASC',
-        ),
+        1 => ['column' => 'contribution_financial_type_id', 'order' => 'ASC'],
+        2 => ['column' => 'contribution_total_amount', 'order' => 'DESC'],
       ),
     );
     $rows = $this->getRows($params);

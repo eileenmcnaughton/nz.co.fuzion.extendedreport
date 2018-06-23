@@ -944,6 +944,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   function storeOrderByArray() {
     $orderBys = array();
 
+    $isGroupBy = !empty($this->_groupByArray);
     if (CRM_Utils_Array::value('order_bys', $this->_params) &&
       is_array($this->_params['order_bys']) &&
       !empty($this->_params['order_bys'])
@@ -968,6 +969,9 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
               if ($fieldName == $orderBy['column']) {
                 $orderByField = array_merge($table['metadata'][$fieldName], $field, $orderBy);
                 $orderByField['tplField'] = "{$tableName}_{$fieldName}";
+                if ($isGroupBy && !empty($field['statistics']) && !empty($field['statistics']['sum'])) {
+                  $orderByField['tplField'] .= '_sum';
+                }
                 break 2;
               }
             }
