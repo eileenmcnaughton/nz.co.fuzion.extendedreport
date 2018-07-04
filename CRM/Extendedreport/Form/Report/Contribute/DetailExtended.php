@@ -329,6 +329,8 @@ GROUP BY {$this->_aliases['civicrm_contribution']}.currency";
     // 1. use main contribution query to build temp table 1
     $sql = $this->buildQuery();
 
+    // Let's revist for 5.4.
+    CRM_Core_DAO::executeQuery('DROP TEMPORARY TABLE IF EXISTS civireport_contribution_detail_temp1');
     $tempQuery = 'CREATE TEMPORARY TABLE civireport_contribution_detail_temp1 AS ' . $sql;
     $this->addToDeveloperTab($tempQuery);
     CRM_Core_DAO::executeQuery($tempQuery);
@@ -345,6 +347,8 @@ GROUP BY {$this->_aliases['civicrm_contribution']}.currency";
     $select = str_ireplace("'Contribution' as", "'Soft Credit' as", $select);
     // we inner join with temp1 to restrict soft contributions to those in temp1 table
     $sql = "{$select} {$this->_from} {$this->_groupBy}";
+    // Let's revist for 5.4.
+    CRM_Core_DAO::executeQuery('DROP TEMPORARY TABLE IF EXISTS civireport_contribution_detail_temp2');
     $tempQuery = 'CREATE TEMPORARY TABLE civireport_contribution_detail_temp2 AS ' . $sql;
     $this->addToDeveloperTab($tempQuery);
     CRM_Core_DAO::executeQuery($tempQuery);
@@ -376,6 +380,8 @@ UNION ALL
     }
 
     // 4. build temp table 3
+    // Let's revist for 5.4.
+    CRM_Core_DAO::executeQuery('DROP TEMPORARY TABLE IF EXISTS civireport_contribution_detail_temp3');
     $sql = "CREATE TEMPORARY TABLE civireport_contribution_detail_temp3 AS {$tempQuery}";
     $this->addToDeveloperTab($sql);
     CRM_Core_DAO::executeQuery($sql);
