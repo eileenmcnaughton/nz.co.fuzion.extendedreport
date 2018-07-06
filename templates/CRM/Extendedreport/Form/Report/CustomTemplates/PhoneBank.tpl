@@ -12,7 +12,7 @@
                   <strong>Name</strong>
                 </td>
                 <td>
-                  {$row.civicrm_contact_civicrm_contact_first_name}{if $row.civicrm_contact_civicrm_contact_nick_name}   '{$row.civicrm_contact_civicrm_contact_nick_name}' {/if} {$row.civicrm_contact_civicrm_contact_last_name}
+                  {$row.civicrm_contact_civicrm_contact_first_name|escape}{if $row.civicrm_contact_civicrm_contact_nick_name|escape}   '{$row.civicrm_contact_civicrm_contact_nick_name}' {/if} {$row.civicrm_contact_civicrm_contact_last_name|escape}
                 </td>
               </tr>
               <tr>
@@ -20,7 +20,7 @@
                   City
                 </td>
                 <td>
-                  {$row.civicrm_address_address_city}
+                  {$row.civicrm_address_address_city|escape}
                 </td>
               </tr>
               <tr>
@@ -28,7 +28,7 @@
                   Email
                 </td>
                 <td>
-                  {$row.civicrm_email_email_email}
+                  {$row.civicrm_email_email_email|escape}
                 </td>
               </tr>
               <tr>
@@ -40,7 +40,7 @@
                     </tr>
                     <tr>
                       <td>
-                        {$row.civicrm_activity_activity_activity_type_id}
+                        {$row.civicrm_activity_activity_activity_type_id|escape}
                       </td>
                       <td>{$row.civicrm_activity_activity_activity_date_time|date_format}</td>
                     </tr>
@@ -94,7 +94,7 @@
               <tr>
                 {foreach from=$row.civicrm_phone_phone_phone key=phonekey item=phone}
               <tr>
-                <td>{$phonekey} : {$phone}</td>
+                <td>{$phonekey|escape} : {$phone|escape}</td>
                 <td></td>
                 <td></td>
                 <td></td>
@@ -110,13 +110,13 @@
         <tr>
           <td class='td-tags' style='width:100%' colspan=3>
             <b>Tags</b>
-            {$row.civicrm_tag_tag_name}  </td>
+            {$row.civicrm_tag_tag_name|escape}  </td>
         </tr>
 
       </table>
-      Printed {$reportDate} Contact ID : {$row.civicrm_contact_civicrm_contact_contact_id}
+      Printed {$reportDate} Contact ID : {$row.civicrm_contact_civicrm_contact_contact_id|escape}
       {foreach from=$statistics.filters key=filterkey item=filter}
-        Report Criteria:  {$filter.title} {$filter.value}
+        Report Criteria:  {$filter.title|escape} {$filter.value|escape}
       {/foreach}
     </div>
   {/foreach}

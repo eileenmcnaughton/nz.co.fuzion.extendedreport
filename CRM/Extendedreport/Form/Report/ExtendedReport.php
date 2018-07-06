@@ -1226,8 +1226,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   /**
    * Function to assign the tabs to the template in the correct order.
    *
-   * Backported 4.6 function. No change.
-   *
    * We want the tabs to wind up in this order (if not overridden).
    *
    *   - Field Selection
