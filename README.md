@@ -1,7 +1,14 @@
 # nz.co.fuzion.extendedreport
 Extended Reports for CiviCRM
 
-(DO NOT USE ON CIVICRM VERSIONS EARLIER THAN 5.3.1 - see not at end)
+# TEMPORARY NOTICE - As of 18 Jul 2018 If you are using a CiviCRM version earlier than 5.3.1 with this extension your site will be insecure.
+
+A security release of CiviCRM has gone out. One of the issues in the release affects earlier versions of this extension specifically all versions of this extension that are compatible with 4.6 have a security bug. There is no intent to fix this as 4.6 support in this extension ended 18 months ago.
+
+If you are using a CiviCRM starting with 4.7 or 5.x that is lower than 5.3.1 then this extension does not have a security bug - but you need to upgrade to 5.3.1 to get your CiviCRM site secured
+
+
+-----------------------------------------
 
 Once installed you need to go to Administer/CiviReport/Create Reports from template to create a report.
 
@@ -44,6 +51,6 @@ If you hit an issue please create an issue against this repo. I do look at these
 This extension is supported for the 5.x series as of the release of 5.0 and there is no intention to issue further
 releases for CiviCRM 4.x. That applies to bug fixes, new features and security patches.
 
-# As of 18 Jul 2018 a security release of CiviCRM has gone out. One of the issues in the release affects earlier versions of this extension. If you are using a CiviCRM version earlier than 5.3.1 with this extension your site will be insecure. If you do not choose to upgrade to 5.3.1 you are advised to uninstall this extension.
+
 
 
