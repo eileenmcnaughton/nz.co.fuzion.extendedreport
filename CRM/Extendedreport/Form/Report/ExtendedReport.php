@@ -3762,24 +3762,27 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       ),
       'id' => array(
         'title' => ts('Individual Line Item'),
+        'type' => CRM_Utils_Type::T_INT,
         'is_order_bys' => TRUE,
         'is_group_bys' => TRUE,
       ),
       'participant_count' => array(
         'title' => ts('Participant Count'),
+        'type' => CRM_Utils_Type::T_INT,
         'statistics' => array(
           'sum' => ts('Total Participants')
         ),
         'is_fields' => TRUE,
-        'type' => CRM_Utils_Type::T_INT,
       ),
       'price_field_id' => array(
         'title' => ts('Price Field (line item)'),
+        'type' => CRM_Utils_Type::T_INT,
         'is_order_bys' => TRUE,
         'is_group_bys' => TRUE,
       ),
       'price_field_value_id' => array(
         'title' => ts('Price Field Option (line item)'),
+        'type' => CRM_Utils_Type::T_INT,
         'is_order_bys' => TRUE,
         'is_group_bys' => TRUE,
       ),
@@ -3796,9 +3799,9 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       ),
       'unit_price' => array(
         'title' => ts('Unit Price'),
+        'type' => CRM_Utils_Type::T_MONEY,
         'is_fields' => TRUE,
         'is_filters' => TRUE,
-        'type' => CRM_Utils_Type::T_INT,
       ),
       'contribution_id' => array(
         'title' => ts('Contribution Count'),
@@ -3850,6 +3853,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       ),
       'max_value' => array(
         'title' => 'Price Option Maximum',
+        'type' => CRM_Utils_Type::T_INT,
         'is_fields' => TRUE,
       ),
       'financial_type_id' => array(
@@ -3873,12 +3877,12 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     $specs = array(
       'price_field_label' => array(
         'title' => ts('Price Field Label'),
+        'type' => CRM_Utils_Type::T_STRING,
         'name' => 'label',
         'is_fields' => TRUE,
         'is_filters' => TRUE,
         'is_order_bys' => TRUE,
         'is_group_bys' => TRUE,
-        'type' => CRM_Utils_Type::T_STRING,
         'operator' => 'like',
       ),
     );
