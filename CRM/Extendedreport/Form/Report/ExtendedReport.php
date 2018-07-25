@@ -3949,7 +3949,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       ),
       'participant_fee_amount' => NULL,
       'participant_register_date' => array(
-        'title' => ' Registration Date',
+        'title' => 'Registration Date',
         'operatorType' => CRM_Report_Form::OP_DATE,
         'is_fields' => TRUE,
         'is_filters' => TRUE,
