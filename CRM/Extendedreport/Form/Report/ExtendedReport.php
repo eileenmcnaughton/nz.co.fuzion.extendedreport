@@ -1253,9 +1253,8 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     $this->assign('tabs', $order);
   }
 
+
   /**
-   * Backport of 4.6.
-   *
    * Add columns to report.
    */
   public function addColumns() {
@@ -1283,7 +1282,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
             if (!$groupTitle && isset($table['group_title'])) {
               $groupTitle = $table['group_title'];
               // Having a group_title is secret code for being a custom group
-              // which cryptically translates to needing an accordian.
+              // which cryptically translates to needing an accordion.
               // here we make that explicit.
               $colGroups[$tableName]['use_accordian_for_field_selection'] = TRUE;
             }
