@@ -157,10 +157,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    * array of extended custom data fields. this is populated by functions like getContactColumns
    */
   protected $_customGroupExtended = array();
-  /**
-   * Change time filters to time date filters by setting this to 1
-   */
-  protected $_timeDateFilters = FALSE;
+
   /**
    * Use $temporary to choose whether to generate permanent or temporary tables
    * ie. for debugging it's good to set to ''
@@ -1993,29 +1990,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   }
 
   /**
-   * We are overriding this so that we can add time if required
-   * Note that in 4.4 we could call the parent function setting $displayTime as appropriate
-   * - not sure when this became an option - ie what version
-   *
-   * @param $name
-   * @param string $from
-   * @param string $to
-   * @param string $label
-   * @param string $dateFormat
-   * @param bool $required
-   * @param bool $displayTime
-   */
-  function addDateRange($name, $from = '_from', $to = '_to', $label = 'From:', $dateFormat = 'searchDate', $required = FALSE, $displayTime = FALSE) {
-    if ($this->_timeDateFilters) {
-      $this->addDateTime($name . '_from', $label, $required, array('formatType' => $dateFormat));
-      $this->addDateTime($name . '_to', ts('To:'), $required, array('formatType' => $dateFormat));
-    }
-    else {
-      parent::addDateRange($name, $from, $to, $label, $dateFormat, $required, $displayTime);
-    }
-  }
-
-  /**
    * Over-ridden to handle order_bys.
    *
    * @param bool $addFields
@@ -3363,7 +3337,6 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
             $value = $options[$value];
           }
           if (!empty($entity_field)) {
-            //$
             $retValue = "<div id={$entity}-{$entityID} class='crm-entity'>" .
               "<span class='crm-editable crmf-custom_{$customField['id']} crm-editable' data-action='create' $extra >" . $value . "</span></div>";
           }
