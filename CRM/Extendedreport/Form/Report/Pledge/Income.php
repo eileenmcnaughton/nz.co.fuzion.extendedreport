@@ -15,6 +15,7 @@ class CRM_Extendedreport_Form_Report_Pledge_Income extends CRM_Extendedreport_Fo
     'Household',
   );
 
+  protected $_rollup = FALSE;
   /**
    * Class constructor.
    */
