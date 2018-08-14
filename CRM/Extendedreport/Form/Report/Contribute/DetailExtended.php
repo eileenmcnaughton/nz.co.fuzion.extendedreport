@@ -280,20 +280,6 @@ GROUP BY {$this->_aliases['civicrm_contribution']}.currency";
     return $statistics;
   }
 
-  /**
-   * Build the report query.
-   *
-   * @param bool $applyLimit
-   *
-   * @return string
-   */
-  public function buildQuery($applyLimit = TRUE) {
-    if ($this->isTempTableBuilt) {
-      return "SELECT * FROM civireport_contribution_detail_temp3 $this->_orderBy";
-    }
-    return parent::buildQuery($applyLimit);
-  }
-
   function alterDisplay(&$rows) {
     $entryFound = FALSE;
     $display_flag = $prev_cid = $cid = 0;

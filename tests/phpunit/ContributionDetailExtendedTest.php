@@ -94,4 +94,54 @@ class ContributionDetailExtendedTest extends BaseTestClass implements HeadlessIn
     ]);
   }
 
+  public function testReportWithMoreThanTwentyFiveContributions() {
+    $this->createMoreThanTwentyFiveContributions();
+    $params = [
+      'report_id' => 'contribution/detailextended',
+      'fields' => [
+        'civicrm_contact_display_name' => '1',
+        'civicrm_contact_contact_id' => '1',
+        'contribution_id' => '1',
+        'contribution_receive_date' => '1',
+        'contribution_total_amount' => '1',
+        'id' => '1',
+      ],
+    ];
+    $rows = $this->getRows($params);
+    $this->assertEquals(32, count($rows));
+    $total = 0;
+    foreach ($rows as $row) {
+      $total += $row['civicrm_contribution_contribution_total_amount_sum'];
+    }
+    $this->assertEquals(2640, $total);
+    $stats = $this->callAPISuccess('ReportTemplate', 'getstatistics', $params)['values'];
+    //$this->assertEquals(32, $stats['counts']['rowCount']['value']);
+  }
+
+  public function createMoreThanTwentyFiveContributions() {
+    $amount = 5;
+    $contactData = array_merge(
+      $this->getContactData('Organization', 5),
+      $this->getContactData('Individual', 6),
+      $this->getContactData('Household', 5)
+    );
+    foreach ($contactData as $contactParams) {
+      $contact = $this->callAPISuccess('Contact', 'create', $contactParams);
+      $this->callAPISuccess('Contribution', 'create', [
+        'contact_id' => $contact['id'],
+        'total_amount' => $amount,
+        'financial_type_id' => 'Donation',
+        'receive_date' => '2018-12-09',
+      ]);
+      $amount = $amount + 5;
+      $this->callAPISuccess('Contribution', 'create', [
+        'contact_id' => $contact['id'],
+        'total_amount' => $amount,
+        'financial_type_id' => 'Donation',
+        'receive_date' => '2018-11-09',
+      ]);
+      $amount = $amount + 5;
+    }
+  }
+
 }
