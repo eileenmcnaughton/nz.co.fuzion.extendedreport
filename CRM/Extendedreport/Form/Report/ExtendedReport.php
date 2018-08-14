@@ -3012,6 +3012,10 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
    * @param $rows
    */
   function alterRollupRows(&$rows) {
+    if (count($rows) === 1) {
+      // If the report only returns one row there is no rollup.
+      return;
+    }
     $groupBys = array_reverse(array_fill_keys(array_keys($this->_groupByArray), NULL));
     $firstRow = reset($rows);
     foreach ($groupBys as $field => $groupBy) {
@@ -3042,28 +3046,13 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
       return;
     }
 
-    $unsetAllRollupRows = TRUE;
-    $rowsSinceLastRollup = 0;
-    foreach ($rows as $rowNumber => $row) {
-      $this->alterRowForRollup($rows[$rowNumber], CRM_Utils_Array::value($rowNumber +1, $rows), $groupBys, $rowNumber, $statLayers, $groupByLabels, $altered, $fieldsToUnSetForSubtotalLines);
-    }
-    if (empty($row['is_rollup'])) {
-      $rowsSinceLastRollup = 0;
-    }
-    else {
-      $rowsSinceLastRollup++;
-    }
-    if ($rowsSinceLastRollup > 1) {
-      $unsetAllRollupRows = FALSE;
-    }
-
-    // If every row has a rollup then is't just ugly.
-    // clean them out.
-    if ($unsetAllRollupRows) {
-      foreach ($rows as $rowNumber => $row) {
-        if (!empty($row['is_rollup'])) {
-          unset($rows[$rowNumber]);
-        }
+    foreach (array_keys($rows) as $rowNumber) {
+      $nextRow = CRM_Utils_Array::value($rowNumber +1, $rows);
+      if ($nextRow === NULL) {
+        $this->updateRollupRow($rows[$rowNumber], $fieldsToUnSetForSubtotalLines);
+      }
+      else {
+        $this->alterRowForRollup($rows[$rowNumber], $nextRow, $groupBys, $rowNumber, $statLayers, $groupByLabels, $altered, $fieldsToUnSetForSubtotalLines);
       }
     }
   }
@@ -3495,7 +3484,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       'join_fields' => FALSE,
       'fields_defaults' => array(),
       'filters_defaults' => array(),
-      'group_by_defaults' => array(),
+      'group_bys_defaults' => array(),
       'order_by_defaults' => array(),
     );
     $options = array_merge($defaultOptions, $options);
@@ -3616,7 +3605,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       'custom_fields' => array('Individual', 'Contact', 'Organization'),
       'fields_defaults' => array('display_name', 'id'),
       'filters_defaults' => array(),
-      'group_by_defaults' => array(),
+      'group_bys_defaults' => array(),
       'order_by_defaults' => array('sort_name ASC'),
       'contact_type' => NULL,
     );
@@ -3966,7 +3955,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       'custom_fields' => array('Individual', 'Contact', 'Organization'),
       'fields_defaults' => array('display_name', 'id'),
       'filters_defaults' => array(),
-      'group_by_defaults' => array(),
+      'group_bys_defaults' => array(),
       'order_by_defaults' => array('sort_name ASC'),
       'contact_type' => NULL,
     );
@@ -4320,7 +4309,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       'filters' => TRUE,
       'fields_defaults' => array(),
       'filters_defaults' => array(),
-      'group_by_defaults' => array(),
+      'group_bys_defaults' => array(),
       'order_by_defaults' => array(),
     );
     $options = array_merge($defaultOptions, $options);
@@ -4552,7 +4541,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       'filters' => TRUE,
       'fields_defaults' => array(),
       'filters_defaults' => array(),
-      'group_by_defaults' => array(),
+      'group_bys_defaults' => array(),
       'order_by_defaults' => array(),
     );
     $options = array_merge($defaultOptions, $options);
@@ -4625,7 +4614,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       'custom_fields' => array('Individual', 'Contact', 'Organization'),
       'fields_defaults' => array('display_name', 'id'),
       'filters_defaults' => array(),
-      'group_by_defaults' => array(),
+      'group_bys_defaults' => array(),
       'order_by_defaults' => array('sort_name ASC'),
       'contact_type' => NULL,
     );
@@ -4859,7 +4848,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       'subquery' => TRUE,
       'fields_defaults' => array(),
       'filters_defaults' => array(),
-      'group_by_defaults' => array(),
+      'group_bys_defaults' => array(),
       'order_by_defaults' => array(),
     );
 
@@ -4985,7 +4974,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       'filters' => TRUE,
       'fields_defaults' => array('display_name', 'id'),
       'filters_defaults' => array(),
-      'group_by_defaults' => array(),
+      'group_bys_defaults' => array(),
       'order_by_defaults' => array('sort_name ASC'),
     );
     $options = array_merge($defaultOptions, $options);
@@ -5051,7 +5040,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       'filters' => TRUE,
       'fields_defaults' => array('display_name', 'id'),
       'filters_defaults' => array(),
-      'group_by_defaults' => array(),
+      'group_bys_defaults' => array(),
       'order_by_defaults' => array('sort_name ASC'),
     );
 
@@ -5141,7 +5130,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       'filters' => TRUE,
       'fields_defaults' => array('display_name', 'id'),
       'filters_defaults' => array(),
-      'group_by_defaults' => array(),
+      'group_bys_defaults' => array(),
       'order_by_defaults' => array('sort_name ASC'),
     );
 
@@ -5240,7 +5229,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       'filters' => TRUE,
       'fields_defaults' => array(),
       'filters_defaults' => array(),
-      'group_by_defaults' => array(),
+      'group_bys_defaults' => array(),
       'order_by_defaults' => array(),
     );
 
@@ -5462,7 +5451,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       'filters' => TRUE,
       'fields_defaults' => array(),
       'filters_defaults' => array(),
-      'group_by_defaults' => array(),
+      'group_bys_defaults' => array(),
       'order_by_defaults' => array(),
     );
 
@@ -5539,7 +5528,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       'filters' => TRUE,
       'fields_defaults' => array(),
       'filters_defaults' => array(),
-      'group_by_defaults' => array(),
+      'group_bys_defaults' => array(),
       'order_by_defaults' => array(),
     );
 
@@ -7461,7 +7450,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
     $defaults = array(
       'fields_defaults' => $options['fields_defaults'],
       'filters_defaults' => $options['filters_defaults'],
-      'group_by_defaults' => $options['group_by_defaults'],
+      'group_bys_defaults' => $options['group_bys_defaults'],
       'order_by_defaults' => $options['order_by_defaults'],
     );
     return $defaults;
@@ -7496,15 +7485,26 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
           //(I think)
           $altered[$rowNumber] = TRUE;
 //          $row[$groupedValue] = "<span class= 'report-label'> {$row[$groupedValue]} (Subtotal)</span> ";
-          foreach ($fieldsToUnSetForSubtotalLines as $unsetField) {
-            $row[$unsetField] = '';
-          }
-          $row['is_rollup'] = TRUE;
-          $row['summary_field'] = $groupedValue;
+          $this->updateRollupRow($row, $fieldsToUnSetForSubtotalLines);
         }
       }
       $groupBys[$field] = $row[$field];
     }
+  }
+
+  /**
+   * Update a row identified as a rollup row.
+   *
+   * @param $row
+   * @param $fieldsToUnSetForSubtotalLines
+   *
+   * @return mixed
+   */
+  protected function updateRollupRow(&$row, $fieldsToUnSetForSubtotalLines) {
+    foreach ($fieldsToUnSetForSubtotalLines as $unsetField) {
+      $row[$unsetField] = '';
+    }
+    $row['is_rollup'] = TRUE;
   }
 
   /**
@@ -7615,7 +7615,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
   }
 
   protected function isInProcessOfPreconstraining() {
-    $isInProcessOfPreconstraining = $this->_preConstrain && !$this->_preConstrained;
+    return $this->_preConstrain && !$this->_preConstrained;
   }
 
 }

@@ -76,7 +76,7 @@ class CRM_Extendedreport_Form_Report_Contribute_DetailExtended extends CRM_Exten
     + $this->getColumns('Contribution', array(
       'fields_defaults' => array('receive_date', 'id', 'total_amount'),
       'filters_defaults' => array('contribution_status_id' => array(1), 'is_test' => 0),
-      'group_by_defaults' => ['id'],
+      'group_bys_defaults' => ['id' => TRUE],
     ))
     + $this->getColumns('Address');
 

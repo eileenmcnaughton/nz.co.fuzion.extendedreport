@@ -184,6 +184,10 @@ class BaseTestClass extends \PHPUnit_Framework_TestCase implements HeadlessInter
       ['first_name' => 'Snow', 'last_name' => 'White'],
       ['first_name' => 'Roger', 'last_name' => 'Rabbit'],
       ['first_name' => 'Jessica', 'last_name' => 'Rabbit'],
+      ['first_name' => 'Master', 'last_name' => 'Of the universe'],
+      ['first_name' => 'Bilbo', 'last_name' => 'Baggins'],
+      ['first_name' => 'Simon', 'last_name' => 'Cowell'],
+      ['first_name' => 'Danger', 'last_name' => 'Mouse'],
     ];
   }
 
@@ -194,6 +198,11 @@ class BaseTestClass extends \PHPUnit_Framework_TestCase implements HeadlessInter
       ['household_name' => 'Home sweet home'],
       ['household_name' => 'Our castle'],
       ['household_name' => 'The Shire'],
+      ['household_name' => 'Ronald MacDonald House'],
+      ['household_name' => 'Adams family household'],
+      ['household_name' => 'The Royal household'],
+      ['household_name' => 'The Royle household'],
+      ['household_name' => 'The vickerage'],
     ];
   }
 
@@ -204,6 +213,11 @@ class BaseTestClass extends \PHPUnit_Framework_TestCase implements HeadlessInter
       ['organization_name' => 'Sleazy Ltd'],
       ['organization_name' => 'Dubious LLC'],
       ['organization_name' => 'Underhand Trust'],
+      ['organization_name' => 'Acme Inc'],
+      ['organization_name' => 'Denizens Incorporated'],
+      ['organization_name' => '45 Incorporated'],
+      ['organization_name' => 'Rascals Group'],
+      ['organization_name' => 'Cheats Ltd'],
     ];
   }
 
