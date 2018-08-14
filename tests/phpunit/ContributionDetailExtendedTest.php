@@ -83,7 +83,7 @@ class ContributionDetailExtendedTest extends BaseTestClass implements HeadlessIn
       'order_bys' => [['column' => '-'],
       ],
     ];
-    $rows = $this->getRows($params);
+    $this->getRows($params);
   }
 
   protected function setupData() {

@@ -54,6 +54,8 @@ class CRM_Extendedreport_Form_Report_Contribute_DetailExtended extends CRM_Exten
 
   protected $isTempTableBuilt = FALSE;
 
+  protected $_baseTable = 'civicrm_contribution';
+
   /**
    * Class constructor.
    */
