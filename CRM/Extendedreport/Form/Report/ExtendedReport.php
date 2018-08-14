@@ -42,20 +42,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   protected $linkedReportID;
 
   /**
-   * CiviCRM major version - e.g. 4.6
-   *
-   * @var string
-   */
-  protected $majorVersion = '';
-
-  /**
-   * CiviCRM major version - e.g. 4.6
-   *
-   * @var string
-   */
-  protected $fullVersion = '';
-
-  /**
    * Available templates.
    *
    * @var array
@@ -157,10 +143,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    * array of extended custom data fields. this is populated by functions like getContactColumns
    */
   protected $_customGroupExtended = array();
-  /**
-   * Change time filters to time date filters by setting this to 1
-   */
-  protected $_timeDateFilters = FALSE;
+
   /**
    * Use $temporary to choose whether to generate permanent or temporary tables
    * ie. for debugging it's good to set to ''
@@ -222,8 +205,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    */
   protected $_caseActivityTable = 'civicrm_case_activity';
 
-  protected $financialTypeField = 'financial_type_id';
-  protected $financialTypeLabel = 'Financial Type';
   protected $financialTypePseudoConstant = 'financialType';
   /**
    * The contact_is deleted clause gets added whenever we call the ACL clause - if we don't want
@@ -798,7 +779,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
           // we might be adding the same join more than once (should have made it an array from the start)
           $fn = $availableClauses[$clauseKey]['callback'];
           foreach ($fromClause as $fromTable => $fromSpec) {
-            $append = $this->$fn($fromTable, $fromSpec);
+            $this->$fn($fromTable, $fromSpec);
           }
         }
         else {
@@ -1990,29 +1971,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       //
     }
     return $defaultTpl;
-  }
-
-  /**
-   * We are overriding this so that we can add time if required
-   * Note that in 4.4 we could call the parent function setting $displayTime as appropriate
-   * - not sure when this became an option - ie what version
-   *
-   * @param $name
-   * @param string $from
-   * @param string $to
-   * @param string $label
-   * @param string $dateFormat
-   * @param bool $required
-   * @param bool $displayTime
-   */
-  function addDateRange($name, $from = '_from', $to = '_to', $label = 'From:', $dateFormat = 'searchDate', $required = FALSE, $displayTime = FALSE) {
-    if ($this->_timeDateFilters) {
-      $this->addDateTime($name . '_from', $label, $required, array('formatType' => $dateFormat));
-      $this->addDateTime($name . '_to', ts('To:'), $required, array('formatType' => $dateFormat));
-    }
-    else {
-      parent::addDateRange($name, $from, $to, $label, $dateFormat, $required, $displayTime);
-    }
   }
 
   /**
@@ -3363,7 +3321,6 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
             $value = $options[$value];
           }
           if (!empty($entity_field)) {
-            //$
             $retValue = "<div id={$entity}-{$entityID} class='crm-entity'>" .
               "<span class='crm-editable crmf-custom_{$customField['id']} crm-editable' data-action='create' $extra >" . $value . "</span></div>";
           }
@@ -3432,86 +3389,6 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     }
 
     return $retValue;
-  }
-
-  /**
-   * We are experiencing CRM_Utils_Get to be broken on handling date defaults but 'fixing' doesn't seem to
-   * work well on core reports - running fn from here
-   *
-   * @param array $fieldGrp
-   * @param array $defaults
-   */
-  function processFilter(&$fieldGrp, &$defaults) {
-    // process only filters for now
-    foreach ($fieldGrp as $tableName => $fields) {
-      foreach ($fields as $fieldName => $field) {
-        switch (CRM_Utils_Array::value('type', $field)) {
-          case CRM_Utils_Type::T_INT:
-          case CRM_Utils_Type::T_MONEY:
-            CRM_Report_Utils_Get::intParam($fieldName, $field, $defaults);
-            break;
-
-          case CRM_Utils_Type::T_DATE:
-          case CRM_Utils_Type::T_DATE | CRM_Utils_Type::T_TIME:
-            $this->dateParam($fieldName, $field, $defaults);
-            break;
-
-          case CRM_Utils_Type::T_STRING:
-          default:
-            CRM_Report_Utils_Get::stringParam($fieldName, $field, $defaults);
-            break;
-        }
-      }
-    }
-  }
-
-  /**
-   * see notes on processfilter - 'fixing' this doesn't seem to work across the board
-   *
-   * @param string $fieldName
-   * @param array $field
-   * @param array $defaults
-   *
-   * @return boolean
-   */
-  function dateParam($fieldName, &$field, &$defaults) {
-    // type = 12 (datetime) is not recognized by Utils_Type::escape() method,
-    // and therefore the below hack
-    $type = 4;
-
-    $from = CRM_Report_Utils_Get::getTypedValue("{$fieldName}_from", $type);
-    $to = CRM_Report_Utils_Get::getTypedValue("{$fieldName}_to", $type);
-
-    $relative = CRM_Utils_Array::value("{$fieldName}_relative", $_GET);
-    if ($relative) {
-      list($from, $to) = CRM_Report_Form::getFromTo($relative, NULL, NULL);
-      $from = substr($from, 0, 8);
-      $to = substr($to, 0, 8);
-    }
-
-    if (!($from || $to)) {
-      return FALSE;
-    }
-
-    if ($from !== NULL) {
-      $dateFrom = CRM_Utils_Date::setDateDefaults($from);
-      if ($dateFrom !== NULL &&
-        !empty($dateFrom[0])
-      ) {
-        $defaults["{$fieldName}_from"] = date('m/d/Y', strtotime($dateFrom[0]));
-        $defaults["{$fieldName}_relative"] = 0;
-      }
-    }
-
-    if ($to !== NULL) {
-      $dateTo = CRM_Utils_Date::setDateDefaults($to);
-      if ($dateTo !== NULL &&
-        !empty($dateTo[0])
-      ) {
-        $defaults["{$fieldName}_to"] = $dateTo[0];
-        $defaults["{$fieldName}_relative"] = 0;
-      }
-    }
   }
 
   /**
@@ -6635,9 +6512,9 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
       ,'</tr></table>') as contributions{$prefix}
       FROM (SELECT contact_id, receive_date, total_amount, name as financial_type_name
         FROM civicrm_contribution {$this->_aliases['civicrm_contribution']}
-        LEFT JOIN civicrm_" . substr($this->financialTypeField, 0, -3) . " financial_type
-        ON financial_type.id = {$this->_aliases['civicrm_contribution']}.{$this->financialTypeField}
-        WHERE $criteria
+        LEFT JOIN civicrm_financial_type financial_type
+        ON financial_type.id = {$this->_aliases['civicrm_contribution']}.financial_type_id
+      WHERE $criteria
         ORDER BY receive_date DESC ) as conts
       GROUP BY contact_id
       ORDER BY NULL
@@ -7422,12 +7299,11 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    *
    * @param array $field
    * @param string $fieldName
-   * @param string $tableName
    *
    * @return string
    *   Relevant where clause.
    */
-  protected function generateFilterClause($field, $fieldName, $tableName) {
+  protected function generateFilterClause($field, $fieldName) {
     if (CRM_Utils_Array::value('type', $field) & CRM_Utils_Type::T_DATE) {
       if (CRM_Utils_Array::value('operatorType', $field) == CRM_Report_Form::OP_MONTH) {
         $op = CRM_Utils_Array::value("{$fieldName}_op", $this->_params);
