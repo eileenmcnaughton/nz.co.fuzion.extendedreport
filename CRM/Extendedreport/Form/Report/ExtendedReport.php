@@ -42,20 +42,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   protected $linkedReportID;
 
   /**
-   * CiviCRM major version - e.g. 4.6
-   *
-   * @var string
-   */
-  protected $majorVersion = '';
-
-  /**
-   * CiviCRM major version - e.g. 4.6
-   *
-   * @var string
-   */
-  protected $fullVersion = '';
-
-  /**
    * Available templates.
    *
    * @var array
@@ -219,8 +205,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    */
   protected $_caseActivityTable = 'civicrm_case_activity';
 
-  protected $financialTypeField = 'financial_type_id';
-  protected $financialTypeLabel = 'Financial Type';
   protected $financialTypePseudoConstant = 'financialType';
   /**
    * The contact_is deleted clause gets added whenever we call the ACL clause - if we don't want
@@ -6524,9 +6508,9 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
       ,'</tr></table>') as contributions{$prefix}
       FROM (SELECT contact_id, receive_date, total_amount, name as financial_type_name
         FROM civicrm_contribution {$this->_aliases['civicrm_contribution']}
-        LEFT JOIN civicrm_" . substr($this->financialTypeField, 0, -3) . " financial_type
-        ON financial_type.id = {$this->_aliases['civicrm_contribution']}.{$this->financialTypeField}
-        WHERE $criteria
+        LEFT JOIN civicrm_financial_type financial_type
+        ON financial_type.id = {$this->_aliases['civicrm_contribution']}.financial_type_id
+      WHERE $criteria
         ORDER BY receive_date DESC ) as conts
       GROUP BY contact_id
       ORDER BY NULL
