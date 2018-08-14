@@ -795,7 +795,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
           // we might be adding the same join more than once (should have made it an array from the start)
           $fn = $availableClauses[$clauseKey]['callback'];
           foreach ($fromClause as $fromTable => $fromSpec) {
-            $append = $this->$fn($fromTable, $fromSpec);
+            $this->$fn($fromTable, $fromSpec);
           }
         }
         else {
@@ -7391,12 +7391,11 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    *
    * @param array $field
    * @param string $fieldName
-   * @param string $tableName
    *
    * @return string
    *   Relevant where clause.
    */
-  protected function generateFilterClause($field, $fieldName, $tableName) {
+  protected function generateFilterClause($field, $fieldName) {
     if (CRM_Utils_Array::value('type', $field) & CRM_Utils_Type::T_DATE) {
       if (CRM_Utils_Array::value('operatorType', $field) == CRM_Report_Form::OP_MONTH) {
         $op = CRM_Utils_Array::value("{$fieldName}_op", $this->_params);
