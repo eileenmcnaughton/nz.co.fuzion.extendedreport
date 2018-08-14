@@ -920,6 +920,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       if (!empty($this->_statFields) && empty($this->_orderByArray) &&
         (count($this->_groupBy) <= 1 || !$this->_having)
         && $this->_rollup !== FALSE
+        && !$this->isInProcessOfPreconstraining()
       ) {
         $this->_rollup = " WITH ROLLUP";
       }
@@ -1892,7 +1893,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     $this->aggregateSelect();
     $this->extendedCustomDataFrom();
 
-    if ($this->_preConstrain && !$this->_preConstrained) {
+    if ($this->isInProcessOfPreconstraining()) {
       $this->generateTempTable();
       $this->_preConstrained = TRUE;
       $this->select();
@@ -7731,6 +7732,10 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
       return 'RLIKE';
     }
     return parent::getSQLOperator($operator);
+  }
+
+  protected function isInProcessOfPreconstraining() {
+    $isInProcessOfPreconstraining = $this->_preConstrain && !$this->_preConstrained;
   }
 
 }
