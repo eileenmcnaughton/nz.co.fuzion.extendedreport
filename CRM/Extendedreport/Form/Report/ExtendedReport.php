@@ -997,7 +997,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
             continue;
           }
           $clause = NULL;
-          $clause = $this->generateFilterClause($field, $fieldName, $tableName);
+          $clause = $this->generateFilterClause($field, $fieldName);
           if (!empty($clause)) {
             $this->joinClauses[$tableName][] = $clause;
             if ($field['name'] == 'relationship_type_id') {
