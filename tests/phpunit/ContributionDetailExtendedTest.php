@@ -52,7 +52,7 @@ class ContributionDetailExtendedTest extends BaseTestClass implements HeadlessIn
    * Test the ContributionDetailExtended report with order by.
    */
   public function testContributionExtendedReport() {
-    $this->callAPISuccess('Order', 'create', array('contact_id' => $this->contacts[0], 'total_amount' => 5, 'financial_type_id' => 2));
+    $this->setupData();
     $params = array(
       'report_id' => 'contribution/detailextended',
       'fields' => array (
@@ -65,6 +65,33 @@ class ContributionDetailExtendedTest extends BaseTestClass implements HeadlessIn
     );
     $rows = $this->getRows($params);
     $this->assertEquals('USD', $rows[0]['civicrm_contribution_currency']);
+  }
+
+  public function testDetailExtendedGroupByContact() {
+    $this->setupData();
+    $params = [
+      'report_id' => 'contribution/detailextended',
+      'fields' => [
+        'civicrm_contact_display_name' => '1',
+        'civicrm_contact_contact_id' => '1',
+        'contribution_id' => '1',
+        'contribution_receive_date' => '1',
+        'contribution_total_amount' => '1',
+        'id' => '1',
+      ],
+      'group_bys' =>['civicrm_contact_contact_id' => '1'],
+      'order_bys' => [['column' => '-'],
+      ],
+    ];
+    $rows = $this->getRows($params);
+  }
+
+  protected function setupData() {
+    $this->callAPISuccess('Order', 'create', [
+      'contact_id' => $this->contacts[0],
+      'total_amount' => 5,
+      'financial_type_id' => 2
+    ]);
   }
 
 }
