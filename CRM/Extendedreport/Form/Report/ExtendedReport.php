@@ -18,6 +18,8 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   protected $_fieldSpecs = array();
   public $_defaults = array();
 
+  protected $metaData = [];
+
   /**
    * All available filter fields with metadata.
    *
@@ -247,6 +249,24 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
         ),
       );
     }
+  }
+
+  /**
+   * Get metadata for the report.
+   *
+   * @return array
+   */
+  public function getMetadata() {
+    if (empty($this->metaData)) {
+      foreach ($this->_columns as $table => $spec) {
+        $this->metaData[$table]['metadata'] = $spec['metadata'];
+        foreach (['fields', 'filters', 'join_filters', 'group_bys', 'order_bys'] as $type) {
+          $this->metaData[$type] = array_keys($spec[$type]);
+        }
+
+      }
+    }
+    return $this->metaData;
   }
 
   /**
