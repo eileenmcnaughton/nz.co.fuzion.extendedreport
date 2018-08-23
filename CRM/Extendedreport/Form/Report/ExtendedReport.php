@@ -244,12 +244,16 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     $this->addSelectableCustomFields();
     $this->addTemplateSelector();
     if ($this->isSupportsContactTab) {
-      $this->_options = array(
-        'contact_dashboard_tab' => array(
+      $this->_options = [
+        'contact_dashboard_tab' => [
           'title' => ts('Display as tab on contact record'),
           'type' => 'checkbox',
-        ),
-      );
+        ],
+        'contact_reportlet' => [
+          'title' => ts('Make available for contact summary page (requires contact layout editor extension)'),
+          'type' => 'checkbox',
+        ],
+      ];
     }
   }
 
@@ -465,13 +469,17 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     if ($this->_force) {
       $this->setDefaultValues(FALSE);
     }
+    elseif (($contact_id = $this->getContactIdFilter()) !== FALSE) {
+      $this->_params[$this->contactIDField . '_value'] = $contact_id;
+      $this->_params[$this->contactIDField . '_op'] = $contact_id;
+    }
 
     CRM_Report_Utils_Get::processFilter($this->_filters, $this->_defaults);
     CRM_Report_Utils_Get::processGroupBy($groupBys, $this->_defaults);
     CRM_Report_Utils_Get::processFields($reportFields, $this->_defaults);
     CRM_Report_Utils_Get::processChart($this->_defaults);
 
-    if ($this->_force) {
+    if ($this->_force && !$this->noController) {
       $this->_formValues = $this->_defaults;
       $this->postProcess();
     }
@@ -1329,8 +1337,8 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       // FIXME: For now lets build all elements as checkboxes.
       // Once we clear with the format we can build elements based on type
 
-      $options = array();
       foreach ($this->_options as $fieldName => $field) {
+        $options = array();
         if ($field['type'] == 'select') {
           $this->addElement('select', "{$fieldName}", $field['title'], $field['options']);
         }
@@ -1470,6 +1478,8 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    */
   public function setDefaultValues($freeze = TRUE) {
     $freezeGroup = array();
+    $contact_id = $this->getContactIdFilter();
+    $overrides = [];
 
     // FIXME: generalizing form field naming conventions would reduce
     // Lots of lines below.
@@ -1509,7 +1519,11 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       }
       if (array_key_exists('filters', $table)) {
         foreach ($table['filters'] as $fieldName => $field) {
-          if (isset($field['default'])) {
+          if ($contact_id && $fieldName === $this->contactIDField) {
+            $overrides["{$fieldName}_value"] = $contact_id;
+            $overrides["{$fieldName}_op"] = 'in';
+          }
+          elseif (isset($field['default'])) {
             if (CRM_Utils_Array::value('type', $field) & CRM_Utils_Type::T_DATE
               // This is the overriden part.
               && !(CRM_Utils_Array::value('operatorType', $field) == self::OP_SINGLEDATE)
@@ -1602,7 +1616,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     }
 
     if ($this->_formValues) {
-      $this->_defaults = array_merge($this->_defaults, $this->_formValues);
+      $this->_defaults = array_merge($this->_defaults, $this->_formValues, $overrides);
     }
 
     if ($this->_instanceValues) {
@@ -4543,6 +4557,11 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'options' => array('' => '--select--') + CRM_Contribute_BAO_Contribution::buildOptions('is_test'),
         'default' => NULL,
         'type' => CRM_Utils_Type::T_STRING,
+      ),
+      'contact_id' => array(
+        'title' => ts('Contribution Contact ID'),
+        'name' => 'contact_id',
+        'is_filters' => TRUE,
       ),
     );
     return $this->buildColumns($specs, 'civicrm_contribution', 'CRM_Contribute_BAO_Contribution', NULL, $this->getDefaultsFromOptions($options));
@@ -7640,6 +7659,31 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
 
   protected function isInProcessOfPreconstraining() {
     return $this->_preConstrain && !$this->_preConstrained;
+  }
+
+  /**
+   * Parse contact_id from the url or api input params.
+   *
+   * This is an extended reports feature which supports reports on contact records as tabs or reportlets.
+   * The report must set $this->isSupportsContactTab to show in those places
+   * and parse contact_id in params or cid in the url- either like this or otherwise.
+   * The report can rely on this mechanism or it's own method in the whereClause.
+   * See address history for the latter option & LineitemMembership for the former.
+   *
+   * @return int|null
+   */
+  protected function getContactIdFilter() {
+    if (empty($this->contactIDField)) {
+      return NULL;
+    }
+
+    if (!empty($this->contactIDField)) {
+      if (CRM_Utils_Array::value('contact_id', $this->_params)) {
+        return $this->_params['contact_id'];
+      }
+      return CRM_Utils_Request::retrieveValue('cid', 'Int', CRM_Utils_Request::retrieveValue('contact_id', 'Int'));
+    }
+    return NULL;
   }
 
 }
