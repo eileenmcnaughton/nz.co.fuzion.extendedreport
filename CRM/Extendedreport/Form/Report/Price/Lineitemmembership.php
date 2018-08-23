@@ -3,11 +3,6 @@
  * Class CRM_Extendedreport_Form_Report_Price_Lineitemmembership
  */
 class CRM_Extendedreport_Form_Report_Price_Lineitemmembership extends CRM_Extendedreport_Form_Report_ExtendedReport {
-  protected $_addressField = FALSE;
-
-  protected $_emailField = FALSE;
-
-  protected $_summary = NULL;
 
   protected $_customGroupExtends = array('Membership', 'Individual', 'Contact');
 

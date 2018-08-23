@@ -1,5 +1,7 @@
 <?php
 
+use CRM_Extendedreport_ExtensionUtil as E;
+
 /**
  * @property mixed _aliases
  * @property mixed deleted_labels
@@ -17,6 +19,8 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   protected $_rollup = '';
   protected $_fieldSpecs = array();
   public $_defaults = array();
+
+  protected $metaData = [];
 
   /**
    * All available filter fields with metadata.
@@ -247,6 +251,24 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
         ),
       );
     }
+  }
+
+  /**
+   * Get metadata for the report.
+   *
+   * @return array
+   */
+  public function getMetadata() {
+    if (empty($this->metaData)) {
+      foreach ($this->_columns as $table => $spec) {
+        $this->metaData[$table]['metadata'] = $spec['metadata'];
+        foreach (['fields', 'filters', 'join_filters', 'group_bys', 'order_bys'] as $type) {
+          $this->metaData[$type] = array_keys($spec[$type]);
+        }
+
+      }
+    }
+    return $this->metaData;
   }
 
   /**
@@ -3831,62 +3853,64 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    * @return array
    */
   protected function getMembershipColumns($options) {
-    $columns = array(
-      'civicrm_membership' => array(
-        'grouping' => 'member-fields',
-        'fields' => array(
-          'membership_type_id' => array(
-            'title' => 'Membership Type',
-            'alter_display' => 'alterMembershipTypeID',
-            'options' => $this->_getOptions('membership', 'membership_type_id', $action = 'get'),
-            'is_fields' => TRUE,
-            'is_filters' => TRUE,
-            'is_group_bys' => TRUE,
-            'name' => 'membership_type_id',
-            'type' => CRM_Utils_Type::T_INT,
-            'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-          ),
-          'membership_status_id' => array(
-            'name' => 'status_id',
-            'title' => 'Membership Status',
-            'alter_display' => 'alterMembershipStatusID',
-            'options' => $this->_getOptions('membership', 'status_id', $action = 'get'),
-            'is_fields' => TRUE,
-            'is_filters' => TRUE,
-            'is_group_bys' => TRUE,
-            'type' => CRM_Utils_Type::T_INT,
-            'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-          ),
-          'join_date' => array(
-            'is_fields' => TRUE,
-            'is_filters' => TRUE,
-            'type' => CRM_Utils_Type::T_DATE,
-            'operatorType' => CRM_Report_Form::OP_DATE,
-          ),
-          'start_date' => array(
-            'name' => 'start_date',
-            'is_fields' => TRUE,
-            'is_filters' => TRUE,
-            'title' => ts('Current Cycle Start Date'),
-            'type' => CRM_Utils_Type::T_DATE,
-            'operatorType' => CRM_Report_Form::OP_DATE,
-          ),
-          'end_date' => array(
-            'name' => 'end_date',
-            'is_fields' => TRUE,
-            'title' => ts('Current Membership Cycle End Date'),
-            'include_null' => TRUE,
-            'is_group_bys' => TRUE,
-            'type' => CRM_Utils_Type::T_DATE,
-            'operatorType' => CRM_Report_Form::OP_DATE,
-          ),
-          'id' => array(
-            'title' => 'Membership ID / Count',
-            'name' => 'id',
-            'statistics' => array('count' => ts('Number of Memberships')),
-          ),
-    )));
-    return $this->buildColumns($columns['civicrm_membership']['fields'], $options['prefix'] . 'civicrm_membership', 'CRM_Member_DAO_Membership');
+    $specs = [
+      'membership_type_id' => array(
+        'title' => 'Membership Type',
+        'alter_display' => 'alterMembershipTypeID',
+        'options' => $this->_getOptions('membership', 'membership_type_id', $action = 'get'),
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+        'is_group_bys' => TRUE,
+        'name' => 'membership_type_id',
+        'type' => CRM_Utils_Type::T_INT,
+        'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+      ),
+      'membership_status_id' => array(
+        'name' => 'status_id',
+        'title' => 'Membership Status',
+        'alter_display' => 'alterMembershipStatusID',
+        'options' => $this->_getOptions('membership', 'status_id', $action = 'get'),
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+        'is_group_bys' => TRUE,
+        'type' => CRM_Utils_Type::T_INT,
+        'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+      ),
+      'join_date' => array(
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+        'type' => CRM_Utils_Type::T_DATE,
+        'operatorType' => CRM_Report_Form::OP_DATE,
+      ),
+      'start_date' => array(
+        'name' => 'start_date',
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+        'title' => ts('Current Cycle Start Date'),
+        'type' => CRM_Utils_Type::T_DATE,
+        'operatorType' => CRM_Report_Form::OP_DATE,
+      ),
+      'end_date' => array(
+        'name' => 'end_date',
+        'is_fields' => TRUE,
+        'title' => ts('Current Membership Cycle End Date'),
+        'include_null' => TRUE,
+        'is_group_bys' => TRUE,
+        'type' => CRM_Utils_Type::T_DATE,
+        'operatorType' => CRM_Report_Form::OP_DATE,
+      ),
+      'id' => array(
+        'title' => 'Membership ID / Count',
+        'name' => 'id',
+        'statistics' => array('count' => ts('Number of Memberships')),
+      ),
+      'contact_id' => array(
+        'title' => 'Membership Contact ID',
+        'name' => 'contact_id',
+        'is_filters' => TRUE,
+      ),
+    ];
+    return $this->buildColumns($specs, $options['prefix'] . 'civicrm_membership', 'CRM_Member_DAO_Membership');
   }
 
   /**

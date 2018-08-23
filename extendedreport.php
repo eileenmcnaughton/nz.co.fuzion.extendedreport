@@ -1,6 +1,7 @@
 <?php
 
 require_once 'extendedreport.civix.php';
+use CRM_Extendedreport_ExtensionUtil as E;
 
 /**
  * Implementation of hook_civicrm_config
@@ -57,6 +58,17 @@ function extendedreport_civicrm_disable() {
  */
 function extendedreport_civicrm_upgrade($op, CRM_Queue_Queue $queue = NULL) {
   return _extendedreport_civix_civicrm_upgrade($op, $queue);
+}
+
+/**
+ * Implements hook_civicrm_angularModules().
+ *
+ * Generate a list of Angular modules.
+ *
+ * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_caseTypes
+ */
+function extendedreport_civicrm_angularModules(&$angularModules) {
+  _extendedreport_civix_civicrm_angularModules($angularModules);
 }
 
 /**
