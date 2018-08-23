@@ -32,6 +32,22 @@
  */
 class CRM_Extendedreport_Form_Report_Contribute_Contributions extends CRM_Extendedreport_Form_Report_ExtendedReport {
 
+  /**
+   * Can this report be used on a contact tab.
+   *
+   * The report must support contact_id in the url for this to work.
+   *
+   * @var bool
+   */
+  protected $isSupportsContactTab = TRUE;
+
+  /**
+   * Support contact tabs by specifying which filter to map the contact id field to.
+   *
+   * @var string
+   */
+  protected $contactIDField = 'contribution_contact_id';
+
   protected $_baseTable = 'civicrm_contribution';
   /**
    * Class constructor.

@@ -10,6 +10,15 @@ class CRM_Extendedreport_Form_Report_Price_Lineitemmembership extends CRM_Extend
 
   protected $_aclTable = 'civicrm_contact';
 
+  protected $isSupportsContactTab = TRUE;
+
+  /**
+   * Support contact tabs by specifying which filter to map the contact id field to.
+   *
+   * @var string
+   */
+  protected $contactIDField = 'membership_contact_id';
+
   /**
    * Class constructor.
    */
