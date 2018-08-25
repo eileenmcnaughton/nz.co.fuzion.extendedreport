@@ -33,14 +33,9 @@
  * Like contribution detail but with more custom fields.
  */
 class CRM_Extendedreport_Form_Report_Contribute_DetailExtended extends CRM_Extendedreport_Form_Report_ExtendedReport {
-  protected $_addressField = FALSE;
-
-  protected $_nameFieldHonor = FALSE;
 
   protected $_summary = NULL;
   protected $_allBatches = NULL;
-
-  protected $_softFrom = NULL;
 
   protected $groupConcatTested = TRUE;
 

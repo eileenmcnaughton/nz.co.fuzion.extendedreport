@@ -31,7 +31,6 @@
  * @copyright CiviCRM LLC (c) 2004-2015
  */
 class CRM_Extendedreport_Form_Report_Contribute_Overview extends CRM_Extendedreport_Form_Report_ExtendedReport {
-  protected $_addressField = FALSE;
 
   protected $_charts = array(
     '' => 'Tabular',
@@ -183,7 +182,7 @@ class CRM_Extendedreport_Form_Report_Contribute_Overview extends CRM_Extendedrep
                      ON ({$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_phone']}.contact_id AND
                         {$this->_aliases['civicrm_phone']}.is_primary = 1)";
 
-    if ($this->_addressField) {
+    if ($this->isTableSelected('civicrm_address')) {
       $this->_from .= "
                   LEFT JOIN civicrm_address {$this->_aliases['civicrm_address']}
                          ON {$this->_aliases['civicrm_contact']}.id =
