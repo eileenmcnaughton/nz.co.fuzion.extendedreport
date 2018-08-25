@@ -37,8 +37,6 @@ class CRM_Extendedreport_Form_Report_Contribute_DetailExtended extends CRM_Exten
   protected $_summary = NULL;
   protected $_allBatches = NULL;
 
-  protected $_softFrom = NULL;
-
   protected $groupConcatTested = TRUE;
 
   protected $_customGroupExtends = array(
