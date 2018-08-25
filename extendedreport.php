@@ -155,12 +155,12 @@ function extendedreport_civicrm_contactSummaryBlocks(&$blocks) {
   $blocks += [
     'extendedreports' => [
       'title' => ts('Extended report dashlets'),
-      'icon' => 'fa-user-circle',
+      'icon' => 'fa-table',
       'blocks' => [],
     ]
   ];
   foreach ($reports as $report) {
-    $blocks['extendedreports']['blocks'][$report['id']] = [
+    $blocks['extendedreports']['blocks']['report_' . $report['id']] = [
       'title' => ts('Report: ') . $report['title'],
       'tpl_file' => 'CRM/ExtendedReport/Page/Inline/ExtendedReport.tpl',
       'edit' => FALSE,
