@@ -42,6 +42,25 @@ class CRM_Extendedreport_Form_Report_Contribute_Contributions extends CRM_Extend
   protected $isSupportsContactTab = TRUE;
 
   /**
+   * Add order bys for custom fields.
+   *
+   * @var bool
+   */
+  protected $_customGroupOrderBy = TRUE;
+
+  /**
+   * Add group bys for custom fields.
+   *
+   * @var bool
+   */
+  protected $_customGroupGroupBy = TRUE;
+
+  /**
+   * @var array
+   */
+  protected $_customGroupExtends = array('Contribution', 'Contact', 'Individual', 'Organization', 'Household');
+
+  /**
    * Support contact tabs by specifying which filter to map the contact id field to.
    *
    * @var string
@@ -49,12 +68,33 @@ class CRM_Extendedreport_Form_Report_Contribute_Contributions extends CRM_Extend
   protected $contactIDField = 'contribution_contact_id';
 
   protected $_baseTable = 'civicrm_contribution';
+
+  protected $joinFiltersTab  = TRUE;
+
   /**
    * Class constructor.
    */
   public function __construct() {
-    $this->_columns = $this->getColumns('Contribution');
+    $this->_columns = $this->getColumns('Contribution', ['group_by' => TRUE])
+    + $this->getColumns('Contact', ['group_by' => TRUE])
+    + $this->getColumns('Email', ['group_by' => TRUE])
+    + $this->getColumns('Address', ['group_by' => TRUE])
+    + $this->getColumns('Phone', ['group_by' => TRUE])
+    + $this->getColumns('Website', ['group_by' => TRUE, 'join_filters' => TRUE]);
     parent::__construct();
+  }
+
+  /**
+   * @return array
+   */
+  function fromClauses() {
+    return array(
+      'contact_from_contribution',
+      'email_from_contact',
+      'phone_from_contact',
+      'address_from_contact',
+      'website_from_contact',
+    );
   }
 
 }

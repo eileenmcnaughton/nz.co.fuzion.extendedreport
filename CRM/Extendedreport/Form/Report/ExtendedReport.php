@@ -57,7 +57,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    *
    * @var bool
    */
-  protected $_relationship_tab = FALSE;
+  protected $joinFiltersTab  = FALSE;
 
   protected $_customFields = array();
 
@@ -463,8 +463,8 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       }
     }
 
-    if ($this->_relationship_tab) {
-      $this->addRelationshipTab();
+    if ($this->joinFiltersTab ) {
+      $this->addJoinFiltersTab();
     }
     if ($this->_force) {
       $this->setDefaultValues(FALSE);
@@ -3611,8 +3611,21 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         $columns[$tableName]['fields'][$fieldAlias]['no_display'] = TRUE;
       }
 
+      if (!empty($spec['is_filters']) && !empty($spec['statistics']) && !empty($options) && !empty($options['group_by'])) {
+        foreach ($spec['statistics'] as $statisticName => $statisticLabel) {
+          $columns[$tableName]['filters'][$fieldAlias . '_' .  $statisticName] = array_merge($spec, [
+            'title' => E::ts('Aggregate filter : ') . $statisticLabel,
+            'having' => TRUE,
+            'dbAlias' => $tableName . '_' . $fieldAlias . '_' .  $statisticName,
+          ]);
+        }
+      }
+
       foreach ($types as $type) {
         if (!empty($spec['is_' . $type])) {
+          if ($type === 'join_filters') {
+            $fieldAlias = 'join__' . $fieldAlias;
+          }
           $columns[$tableName][$type][$fieldAlias] = $spec;
           if (isset($defaults[$type . '_defaults']) && isset($defaults[$type . '_defaults'][$spec['name']])) {
             $columns[$tableName][$type][$fieldAlias]['default'] = $defaults[$type . '_defaults'][$spec['name']];
@@ -4564,7 +4577,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'is_filters' => TRUE,
       ),
     );
-    return $this->buildColumns($specs, 'civicrm_contribution', 'CRM_Contribute_BAO_Contribution', NULL, $this->getDefaultsFromOptions($options));
+    return $this->buildColumns($specs, 'civicrm_contribution', 'CRM_Contribute_BAO_Contribution', NULL, $this->getDefaultsFromOptions($options), $options);
   }
 
   /**
@@ -5038,6 +5051,58 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     return $this->buildColumns($fields, $options['prefix'] . 'civicrm_email', 'CRM_Core_DAO_Email', NULL, $defaults);
   }
 
+  /**
+   * Get email columns.
+   *
+   * @param array $options column options
+
+   * @param array $options
+   *
+   * @return array
+   */
+  function getWebsiteColumns($options = array()) {
+    $defaultOptions = array(
+      'prefix' => '',
+      'prefix_label' => '',
+      'group_by' => FALSE,
+      'order_by' => TRUE,
+      'filters' => TRUE,
+      'fields_defaults' => array('display_name', 'id'),
+      'filters_defaults' => array(),
+      'group_bys_defaults' => array(),
+      'order_by_defaults' => array('sort_name ASC'),
+    );
+    $options = array_merge($defaultOptions, $options);
+    $defaults = $this->getDefaultsFromOptions($options);
+
+    $fields = array(
+      'url' => array(
+        'title' => $options['prefix_label'] . ts('Website'),
+        'name' => 'url',
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+        'is_group_bys' => TRUE,
+        'is_order_bys' => TRUE,
+        'type' => CRM_Utils_Type::T_STRING,
+        'operatorType' => CRM_Report_Form::OP_STRING,
+      ),
+      'website_type_id' => array(
+        'title' => $options['prefix_label'] . ts('Website Type'),
+        'name' => 'website_type_id',
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+        'is_group_bys' => TRUE,
+        'is_order_bys' => TRUE,
+        'type' => CRM_Utils_Type::T_STRING,
+        'is_join_filters' => TRUE,
+        'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+        'options' => CRM_Core_BAO_Website::buildOptions('website_type_id'),
+        'alter_display' => 'alterWebsiteTypeId',
+      ),
+    );
+    return $this->buildColumns($fields, $options['prefix'] . 'civicrm_website', 'CRM_Core_DAO_Website', NULL, $defaults, $options);
+  }
+
   /*
    * Get note columns
    * @param array $options column options
@@ -5234,9 +5299,9 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
   /**
    * Add tab to report allowing a relationship to be chosen for extension.
    */
-  protected function addRelationshipTab() {
+  protected function addJoinFiltersTab() {
     $this->tabs['Relationships'] = array(
-      'title' => ts('Relationships'),
+      'title' => ts('Join Filters'),
       'tpl' => 'Relationships',
       'div_label' => 'set-relationships',
     );
@@ -5845,6 +5910,11 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'rightTable' => 'civicrm_email',
         'callback' => 'joinEmailFromContact',
       ),
+      'website_from_contact' => array(
+        'leftTable' => 'civicrm_contact',
+        'rightTable' => 'civicrm_website',
+        'callback' => 'joinWebsiteFromContact',
+      ),
       'primary_phone_from_contact' => array(
         'leftTable' => 'civicrm_contact',
         'rightTable' => 'civicrm_phone',
@@ -6003,6 +6073,23 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    ON {$this->_aliases[$prefix . 'civicrm_email']}.contact_id = {$this->_aliases[$prefix . 'civicrm_contact']}.id
    AND {$this->_aliases[$prefix . 'civicrm_email']}.is_primary = 1
 ";
+  }
+
+  /**
+   * Add join from contact table to email.
+   *
+   * Prefix will be added to both tables as it's assumed you are using it to get address of a secondary contact.
+   *
+   * @param string $prefix
+   * @param array $extra
+   */
+  protected function joinWebsiteFromContact($prefix = '', $extra = array()) {
+    $this->_from .= " LEFT JOIN civicrm_website {$this->_aliases[$prefix . 'civicrm_website']}
+   ON {$this->_aliases[$prefix . 'civicrm_website']}.contact_id = {$this->_aliases[$prefix . 'civicrm_contact']}.id
+";
+    if (!empty($this->joinClauses['civicrm_website'])) {
+      $this->_from .= ' AND ' . implode(',', $this->joinClauses['civicrm_website']);
+    }
   }
 
    protected function joinCampaignFromPledge($prefix = '', $extra = array()) {
@@ -7059,6 +7146,15 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
   function alterActivityStatus($value) {
     $activityStatuses = CRM_Core_PseudoConstant::activityStatus();
     return $activityStatuses[$value];
+  }
+
+  /**
+   * @param $value
+   *
+   * @return mixed
+   */
+  function alterWebsiteTypeId($value) {
+    return CRM_Core_PseudoConstant::getLabel('CRM_Core_BAO_Website', 'website_type_id', $value);
   }
 
   /**
