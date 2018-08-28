@@ -114,17 +114,6 @@ function extendedreport_civicrm_tabset($tabsetName, &$tabs, $context) {
       )
     );
   }
-
-}
-
-function extendedreport_civicrm_pageRun(&$page) {
-
-  if (get_class($page) === 'CRM_Contact_Page_View_Summary') {
-    if (($contactID = $page->getVar('_contactId')) !== FALSE) {
-      $page->assign('apiOptions', ['metadata' => ['labels']]);
-      $page->assign('contactID', $contactID);
-    }
-  }
 }
 
 /**
