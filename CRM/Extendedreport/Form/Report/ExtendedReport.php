@@ -2194,15 +2194,8 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
       if (!array_key_exists('type', $curFields[$fieldName])) {
         $curFields[$fieldName]['type'] = CRM_Utils_Array::value('type', $curFilters[$fieldName], array());
       }
+      $this->_columns[$curTable]['fields'] = array_merge($this->_columns[$curTable]['fields'], $curFields);
 
-      if ($addFields) {
-        // Add totals field
-        $curFields[$fieldName . '_qty'] = $curFields[$fieldName];
-        $curFields[$fieldName . '_qty']['title'] = "$customDAO->label Quantity";
-        $curFields[$fieldName . '_qty']['statistics'] = array('count' => ts("Quantity Selected"));
-        // Merge new fields into list
-        $this->_columns[$curTable]['fields'] = array_merge($this->_columns[$curTable]['fields'], $curFields);
-      }
       if ($this->_customGroupFilters) {
         $this->_columns[$curTable]['filters'] = array_merge($this->_columns[$curTable]['filters'], $curFilters);
       }
@@ -2215,6 +2208,14 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
           $this->_columns[$curTable]['order_bys'] = array();
         }
         $this->_columns[$curTable]['order_bys'] = array_merge($this->_columns[$curTable]['order_bys'], $curFields);
+      }
+      // Add totals field
+      if ($curFields[$fieldName]['type'] === CRM_Utils_Type::T_INT) {
+        $curFields[$fieldName . '_qty'] = $curFields[$fieldName];
+        $curFields[$fieldName . '_qty']['title'] = "$customDAO->label Quantity";
+        $curFields[$fieldName . '_qty']['statistics'] = array('count' => ts("Quantity Selected"));
+        // Merge additional fields into list
+        $this->_columns[$curTable]['fields'] = array_merge($this->_columns[$curTable]['fields'], $curFields);
       }
     }
 
