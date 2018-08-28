@@ -12,7 +12,7 @@ class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Exten
   protected $_lineitemField = FALSE;
   protected $_groupFilter = TRUE;
   protected $_tagFilter = TRUE;
-  protected $_relationship_tab = TRUE;
+  protected $joinFiltersTab = TRUE;
 
   protected $_customGroupExtends = array(
     'Participant',

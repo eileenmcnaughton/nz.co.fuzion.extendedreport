@@ -1,4 +1,6 @@
 <div id="report-tab-set-relationships" class="civireport-criteria">
+  <p>{ts}Filters defined on this tab restrict what data is brought in for that join. For example if you filter by website type it
+    will restrict the websites in the website column but contacts with that type will not be filtered out.{/ts}</p>
   <table class="report-layout">
     {assign var="counter" value=1}
     {foreach from=$join_filters item=table key=tableName}
