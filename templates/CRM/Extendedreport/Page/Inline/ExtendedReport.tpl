@@ -1,5 +1,5 @@
 <table>
-  {crmAPI var='result' entity='ReportTemplate' action='getrows' instance_id=$blockVariables.id options=$apiOptions contact_id=$contactID}
+  {crmAPI var='result' entity='ReportTemplate' action='getrows' instance_id=$block.report_id options=$apiOptions contact_id=$contactID}
   <tr>
     {assign var='metadata' value=$result.metadata}
     {assign var='reportLabels' value=$metadata.labels}
