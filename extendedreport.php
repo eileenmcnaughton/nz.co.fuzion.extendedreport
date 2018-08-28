@@ -165,6 +165,7 @@ function extendedreport_civicrm_contactSummaryBlocks(&$blocks) {
       'tpl_file' => 'CRM/ExtendedReport/Page/Inline/ExtendedReport.tpl',
       'edit' => FALSE,
       'template_variables' => ['id' => $report['id']],
+      'collapsible' => TRUE,
     ];
   }
 
