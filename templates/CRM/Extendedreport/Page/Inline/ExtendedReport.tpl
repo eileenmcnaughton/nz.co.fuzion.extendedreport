@@ -1,8 +1,10 @@
 <table>
-  {crmAPI var='result' entity='ReportTemplate' action='getrows' instance_id=$blockVariables.id options=$apiOptions contact_id=$contactID}
+  {php}
+    $this->assign("apiOptions", array('metadata' => array("labels")));
+  {/php}
+  {crmAPI var='result' entity='ReportTemplate' action='getrows' instance_id=$block.report_id options=$apiOptions contact_id=$contactId}
   <tr>
-    {assign var='metadata' value=$result.metadata}
-    {assign var='reportLabels' value=$metadata.labels}
+    {assign var='reportLabels' value=$result.metadata.labels}
     {foreach from=$reportLabels item=header}
       <th>{$header|escape}</th>
     {/foreach}

@@ -114,17 +114,6 @@ function extendedreport_civicrm_tabset($tabsetName, &$tabs, $context) {
       )
     );
   }
-
-}
-
-function extendedreport_civicrm_pageRun(&$page) {
-
-  if (get_class($page) === 'CRM_Contact_Page_View_Summary') {
-    if (($contactID = $page->getVar('_contactId')) !== FALSE) {
-      $page->assign('apiOptions', ['metadata' => ['labels']]);
-      $page->assign('contactID', $contactID);
-    }
-  }
 }
 
 /**
@@ -154,17 +143,17 @@ function extendedreport_civicrm_contactSummaryBlocks(&$blocks) {
   // Provide our own group for this block to visually distinguish it on the contact summary editor palette.
   $blocks += [
     'extendedreports' => [
-      'title' => ts('Extended report dashlets'),
+      'title' => ts('Extended report'),
       'icon' => 'fa-table',
       'blocks' => [],
     ]
   ];
   foreach ($reports as $report) {
     $blocks['extendedreports']['blocks']['report_' . $report['id']] = [
-      'title' => ts('Report: ') . $report['title'],
-      'tpl_file' => 'CRM/ExtendedReport/Page/Inline/ExtendedReport.tpl',
+      'title' => $report['title'],
+      'tpl_file' => 'CRM/Extendedreport/Page/Inline/ExtendedReport.tpl',
       'edit' => FALSE,
-      'template_variables' => ['id' => $report['id']],
+      'report_id' => $report['id'],
       'collapsible' => TRUE,
     ];
   }
