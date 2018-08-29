@@ -264,10 +264,12 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    */
   public function getMetadata() {
     if (empty($this->metaData)) {
+      $definitionTypes = ['fields', 'filters', 'join_filters', 'group_bys', 'order_bys'];
+      $this->metaData = array_fill_keys($definitionTypes, []);
       foreach ($this->_columns as $table => $spec) {
         $this->metaData[$table]['metadata'] = $spec['metadata'];
-        foreach (['fields', 'filters', 'join_filters', 'group_bys', 'order_bys'] as $type) {
-          $this->metaData[$type] = array_keys($spec[$type]);
+        foreach ($definitionTypes as $type) {
+          $this->metaData[$type] = array_merge($this->metaData[$type], array_keys($spec[$type]));
         }
 
       }
