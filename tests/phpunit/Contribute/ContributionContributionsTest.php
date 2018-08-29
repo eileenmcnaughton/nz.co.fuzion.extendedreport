@@ -37,8 +37,8 @@ class ContributionContributionsTest extends BaseTestClass implements HeadlessInt
    */
   public function testGetMetadata() {
     $metadata = $this->callAPISuccess('ReportTemplate', 'getmetadata', ['report_id' => 'contribution/contributions'])['values'];
-    $this->assertEquals('Contribution ID', $metadata['civicrm_contribution']['metadata']['contribution_id']['title']);
-    $this->assertTrue(in_array('contribution_id', $metadata['fields']));
+    $this->assertEquals('Contribution ID', $metadata['fields']['contribution_id']['title']);
+    $this->assertTrue(is_array($metadata['fields']['contribution_id']));
   }
 
   /**

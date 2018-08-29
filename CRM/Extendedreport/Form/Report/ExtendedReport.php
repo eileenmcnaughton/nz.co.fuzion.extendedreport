@@ -264,12 +264,14 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     if (empty($this->metaData)) {
       $definitionTypes = ['fields', 'filters', 'join_filters', 'group_bys', 'order_bys'];
       $this->metaData = array_fill_keys($definitionTypes, []);
-      foreach ($this->_columns as $table => $spec) {
-        $this->metaData[$table]['metadata'] = $spec['metadata'];
+      foreach ($this->_columns as $table => $tableSpec) {
         foreach ($definitionTypes as $type) {
-          $this->metaData[$type] = array_merge($this->metaData[$type], array_keys($spec[$type]));
+          foreach ($tableSpec['metadata'] as $fieldName => $fieldSpec) {
+            if ($fieldSpec['is_' . $type]) {
+              $this->metaData[$type][$fieldName] = array_merge($fieldSpec, ['table' => $table]);
+            }
+          }
         }
-
       }
     }
     return $this->metaData;
@@ -3501,12 +3503,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     $types = array('filters', 'group_bys', 'order_bys', 'join_filters');
     $columns = array($tableName => array_fill_keys($types, array()));
     if (!empty($daoName)) {
-      if (stristr($daoName, 'BAO')) {
-        $columns[$tableName]['bao'] = $daoName;
-      }
-      else {
-        $columns[$tableName]['dao'] = $daoName;
-      }
+      $columns[$tableName]['bao'] = $daoName;
     }
     if ($tableAlias) {
       $columns[$tableName]['alias'] = $tableAlias;
@@ -3516,6 +3513,11 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       unset($spec['default']);
       if (empty($spec['name'])) {
         $spec['name'] = $specName;
+      }
+      foreach (array_merge($types, ['fields']) as $type) {
+        if (!isset($spec['is_' . $type])) {
+          $spec['is_' . $type] = FALSE;
+        }
       }
 
       $fieldAlias = $tableAlias . '_' . $specName;
