@@ -59,4 +59,21 @@ class ContributionContributionsTest extends BaseTestClass implements HeadlessInt
     $this->callAPISuccess('ReportTemplate', 'getrows', $params)['values'];
   }
 
+  /**
+   * Test that is doesn't matter if the having filter is selected.
+   */
+  public function testGetRowsHavingFilterNotSelected() {
+    $params = [
+      'report_id' => 'contribution/contributions',
+      'contribution_total_amount_sum_op' => 'lte',
+      'contribution_total_amount_sum_value' => '1000',
+      'group_bys' => [
+          'contribution_financial_type_id' => '1',
+          'contribution_campaign_id' => '1',
+      ],
+      'order_bys' => [['column' => 'contribution_source', 'order' => 'ASC']],
+    ];
+    $this->callAPISuccess('ReportTemplate', 'getrows', $params)['values'];
+  }
+
 }

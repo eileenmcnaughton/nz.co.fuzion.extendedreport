@@ -264,11 +264,15 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     if (empty($this->metaData)) {
       $definitionTypes = ['fields', 'filters', 'join_filters', 'group_bys', 'order_bys'];
       $this->metaData = array_fill_keys($definitionTypes, []);
+      $this->metaData['having'] = [];
       foreach ($this->_columns as $table => $tableSpec) {
         foreach ($definitionTypes as $type) {
           foreach ($tableSpec['metadata'] as $fieldName => $fieldSpec) {
             if ($fieldSpec['is_' . $type]) {
               $this->metaData[$type][$fieldName] = array_merge($fieldSpec, ['table' => $table]);
+            }
+            if ($type === 'filters' && !empty($fieldSpec['having'])) {
+              $this->metaData['having'][$fieldName] = array_merge($fieldSpec, ['table' => $table]);
             }
           }
         }
@@ -504,116 +508,107 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
 
     $selectedFields = $this->getSelectedFields();
 
-    foreach ($selectedFields as $fieldName => $spec) {
-      $table = $spec['table'];
-      $this->addAdditionalRequiredFields($spec, $table);
-      if (substr($fieldName, 0, 7) == 'custom_') {
-        if ($spec['dataType'] == 'ContactReference') {
-          $this->_columns[$table]['fields'][$fieldName . '_id'] = $spec;
-          $this->_columns[$table]['fields'][$fieldName . '_id']['name'] = 'id';
-          $this->_columns[$table]['fields'][$fieldName . '_id']['title'] .= ' Id';
-          $this->_columns[$table]['fields'][$fieldName . '_id']['dbAlias'] = $this->_columns[$table]['fields'][$fieldName]['alias'] . '.id';
-          $this->_columns[$table]['fields'][$fieldName . '_id']['dataType'] = 'Text';
-          $this->_columns[$table]['fields'][$fieldName . '_id']['hidden'] = 'TRUE';
-          $this->_params['fields'][$fieldName . '_id'] = 1;
+    // Where we need fields for a having clause & the are not selected we
+    // add them to the select clause (but not to headers because - hey
+    // you didn't ask for them).
+    $havingFields = $this->getSelectedHavings();
+    $havingsToAdd = array_diff_key($havingFields, $selectedFields);
+    foreach ($havingsToAdd as $fieldName => $spec) {
+      $select[$fieldName] = "{$spec['selectAlias']} as {$spec['table']}_{$fieldName}";
+    }
+
+    foreach ($selectedFields as $fieldName => $field) {
+      $this->addAdditionalRequiredFields($field, $field['table']);
+      $tableName = $field['table'];
+      // 1. In many cases we want select clause to be built in slightly different way
+      // for a particular field of a particular type.
+      // 2. This method when used should receive params by reference and modify $this->_columnHeaders
+      // as needed.
+      $selectClause = $this->selectClause($tableName, 'fields', $fieldName, $field);
+      if ($selectClause) {
+        $select[$fieldName] = $selectClause;
+        continue;
+      }
+
+      // include statistics columns only if set
+      if (!empty($field['statistics']) && !empty($this->_groupByArray)) {
+        $select = $this->addStatisticsToSelect($field, $tableName, $fieldName, $select);
+      }
+      else {
+
+        $selectClause = $this->getSelectClauseWithGroupConcatIfNotGroupedBy($tableName, $fieldName, $field);
+        if ($selectClause) {
+          $select[$fieldName] = $selectClause;
+        }
+        else {
+          $select = $this->addBasicFieldToSelect($tableName, $fieldName, $field, $select);
         }
       }
     }
-    $select = $this->_selectAliases = array();
 
-    foreach ($this->_columns as $tableName => $table) {
-      foreach ($table['fields'] as $fieldName => $field) {
+    foreach (array_keys($this->_columns) as $tableName) {
+      foreach ($this->_columns[$tableName] as $fieldName => $field) {
 
-        if (!empty($field['required']) ||
-          !empty($selectedFields[$fieldName])
-        ) {
-
-        // 1. In many cases we want select clause to be built in slightly different way
-        // for a particular field of a particular type.
-        // 2. This method when used should receive params by reference and modify $this->_columnHeaders
-        // as needed.
-        $selectClause = $this->selectClause($tableName, 'fields', $fieldName, $field);
-        if ($selectClause) {
-          $select[$fieldName] = $selectClause;
-          continue;
-        }
-
-          // include statistics columns only if set
-          if (!empty($field['statistics']) && !empty($this->_groupByArray)) {
-            $select = $this->addStatisticsToSelect($field, $tableName, $fieldName, $select);
-          }
-          else {
-
-            $selectClause = $this->getSelectClauseWithGroupConcatIfNotGroupedBy($tableName, $fieldName, $field);
+        // select for group bys
+        if (array_key_exists('group_bys', $this->_columns[$tableName])) {
+          foreach ($this->_columns[$tableName]['group_bys'] as $fieldName => $field) {
+            // 1. In many cases we want select clause to be built in slightly different way
+            // for a particular field of a particular type.
+            // 2. This method when used should receive params by reference and modify $this->_columnHeaders
+            // as needed.
+            $selectClause = $this->selectClause($tableName, 'group_bys', $fieldName, $field);
             if ($selectClause) {
-              $select[$fieldName] = $selectClause;
+              $select[] = $selectClause;
+              continue;
             }
-            else {
-              $select = $this->addBasicFieldToSelect($tableName, $fieldName, $field, $select);
-            }
-          }
-        }
-      }
 
-      // select for group bys
-      if (array_key_exists('group_bys', $table)) {
-        foreach ($table['group_bys'] as $fieldName => $field) {
-          // 1. In many cases we want select clause to be built in slightly different way
-          // for a particular field of a particular type.
-          // 2. This method when used should receive params by reference and modify $this->_columnHeaders
-          // as needed.
-          $selectClause = $this->selectClause($tableName, 'group_bys', $fieldName, $field);
-          if ($selectClause) {
-            $select[] = $selectClause;
-            continue;
-          }
+            if (!empty($this->_params['group_bys']) &&
+              !empty($this->_params['group_bys'][$fieldName]) &&
+              !empty($this->_params['group_bys_freq'])
+            ) {
+              switch (CRM_Utils_Array::value($fieldName, $this->_params['group_bys_freq'])) {
+                case 'YEARWEEK':
+                  $select[] = "DATE_SUB({$field['dbAlias']}, INTERVAL WEEKDAY({$field['dbAlias']}) DAY) AS {$tableName}_{$fieldName}_start";
+                  $select[] = "YEARWEEK({$field['dbAlias']}) AS {$tableName}_{$fieldName}_subtotal";
+                  $select[] = "WEEKOFYEAR({$field['dbAlias']}) AS {$tableName}_{$fieldName}_interval";
+                  $field['title'] = 'Week';
+                  break;
 
-          if (!empty($this->_params['group_bys']) &&
-            !empty($this->_params['group_bys'][$fieldName]) &&
-            !empty($this->_params['group_bys_freq'])
-          ) {
-            switch (CRM_Utils_Array::value($fieldName, $this->_params['group_bys_freq'])) {
-              case 'YEARWEEK':
-                $select[] = "DATE_SUB({$field['dbAlias']}, INTERVAL WEEKDAY({$field['dbAlias']}) DAY) AS {$tableName}_{$fieldName}_start";
-                $select[] = "YEARWEEK({$field['dbAlias']}) AS {$tableName}_{$fieldName}_subtotal";
-                $select[] = "WEEKOFYEAR({$field['dbAlias']}) AS {$tableName}_{$fieldName}_interval";
-                $field['title'] = 'Week';
-                break;
+                case 'YEAR':
+                  $select[] = "MAKEDATE(YEAR({$field['dbAlias']}), 1)  AS {$tableName}_{$fieldName}_start";
+                  $select[] = "YEAR({$field['dbAlias']}) AS {$tableName}_{$fieldName}_subtotal";
+                  $select[] = "YEAR({$field['dbAlias']}) AS {$tableName}_{$fieldName}_interval";
+                  $field['title'] = 'Year';
+                  break;
 
-              case 'YEAR':
-                $select[] = "MAKEDATE(YEAR({$field['dbAlias']}), 1)  AS {$tableName}_{$fieldName}_start";
-                $select[] = "YEAR({$field['dbAlias']}) AS {$tableName}_{$fieldName}_subtotal";
-                $select[] = "YEAR({$field['dbAlias']}) AS {$tableName}_{$fieldName}_interval";
-                $field['title'] = 'Year';
-                break;
+                case 'MONTH':
+                  $select[] = "DATE_SUB({$field['dbAlias']}, INTERVAL (DAYOFMONTH({$field['dbAlias']})-1) DAY) as {$tableName}_{$fieldName}_start";
+                  $select[] = "MONTH({$field['dbAlias']}) AS {$tableName}_{$fieldName}_subtotal";
+                  $select[] = "MONTHNAME({$field['dbAlias']}) AS {$tableName}_{$fieldName}_interval";
+                  $field['title'] = 'Month';
+                  break;
 
-              case 'MONTH':
-                $select[] = "DATE_SUB({$field['dbAlias']}, INTERVAL (DAYOFMONTH({$field['dbAlias']})-1) DAY) as {$tableName}_{$fieldName}_start";
-                $select[] = "MONTH({$field['dbAlias']}) AS {$tableName}_{$fieldName}_subtotal";
-                $select[] = "MONTHNAME({$field['dbAlias']}) AS {$tableName}_{$fieldName}_interval";
-                $field['title'] = 'Month';
-                break;
+                case 'QUARTER':
+                  $select[] = "STR_TO_DATE(CONCAT( 3 * QUARTER( {$field['dbAlias']} ) -2 , '/', '1', '/', YEAR( {$field['dbAlias']} ) ), '%m/%d/%Y') AS {$tableName}_{$fieldName}_start";
+                  $select[] = "QUARTER({$field['dbAlias']}) AS {$tableName}_{$fieldName}_subtotal";
+                  $select[] = "QUARTER({$field['dbAlias']}) AS {$tableName}_{$fieldName}_interval";
+                  $field['title'] = 'Quarter';
+                  break;
+              }
+              // for graphs and charts -
+              if (!empty($this->_params['group_bys_freq'][$fieldName])) {
+                $this->_interval = $field['title'];
+                $this->_columnHeaders["{$tableName}_{$fieldName}_start"]['title']
+                  = $field['title'] . ' Beginning';
+                $this->_columnHeaders["{$tableName}_{$fieldName}_start"]['type'] = $field['type'];
+                $this->_columnHeaders["{$tableName}_{$fieldName}_start"]['group_by'] = $this->_params['group_bys_freq'][$fieldName];
 
-              case 'QUARTER':
-                $select[] = "STR_TO_DATE(CONCAT( 3 * QUARTER( {$field['dbAlias']} ) -2 , '/', '1', '/', YEAR( {$field['dbAlias']} ) ), '%m/%d/%Y') AS {$tableName}_{$fieldName}_start";
-                $select[] = "QUARTER({$field['dbAlias']}) AS {$tableName}_{$fieldName}_subtotal";
-                $select[] = "QUARTER({$field['dbAlias']}) AS {$tableName}_{$fieldName}_interval";
-                $field['title'] = 'Quarter';
-                break;
-            }
-            // for graphs and charts -
-            if (!empty($this->_params['group_bys_freq'][$fieldName])) {
-              $this->_interval = $field['title'];
-              $this->_columnHeaders["{$tableName}_{$fieldName}_start"]['title']
-                = $field['title'] . ' Beginning';
-              $this->_columnHeaders["{$tableName}_{$fieldName}_start"]['type'] = $field['type'];
-              $this->_columnHeaders["{$tableName}_{$fieldName}_start"]['group_by'] = $this->_params['group_bys_freq'][$fieldName];
-
-              // just to make sure these values are transferred to rows.
-              // since we 'll need them for calculation purpose,
-              // e.g making subtotals look nicer or graphs
-              $this->_columnHeaders["{$tableName}_{$fieldName}_interval"] = array('no_display' => TRUE);
-              $this->_columnHeaders["{$tableName}_{$fieldName}_subtotal"] = array('no_display' => TRUE);
+                // just to make sure these values are transferred to rows.
+                // since we 'll need them for calculation purpose,
+                // e.g making subtotals look nicer or graphs
+                $this->_columnHeaders["{$tableName}_{$fieldName}_interval"] = array('no_display' => TRUE);
+                $this->_columnHeaders["{$tableName}_{$fieldName}_subtotal"] = array('no_display' => TRUE);
+              }
             }
           }
         }
@@ -627,8 +622,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
 
     $this->_selectClauses = $select;
     $this->_select = "SELECT " . implode(', ', $select) . " ";
-    $r = $this->_selectClauses;
-    $h = $this->_havingClauses;
   }
 
   /**
@@ -3662,7 +3655,9 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
             'title' => E::ts('Aggregate filter : ') . $statisticLabel,
             'having' => TRUE,
             'dbAlias' => $tableName . '_' . $fieldAlias . '_' .  $statisticName,
+            'selectAlias' => "{$statisticName}({$tableAlias}.{$spec['name']})",
           ]);
+          $columns[$tableName]['metadata'][$fieldAlias . '_' .  $statisticName] = $columns[$tableName]['filters'][$fieldAlias . '_' .  $statisticName];
         }
       }
 
@@ -7934,6 +7929,22 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
       }
     }
     return $selectedFields;
+  }
+
+  /**
+   * @return array
+   */
+  protected function getSelectedHavings() {
+    $havings = $this->getMetadataByType('having');
+    $selectedHavings = [];
+    foreach ($havings as $field => $spec) {
+      if (isset($this->_params[$field . '_value']) && (
+        $this->_params[$field . '_value'] === 0 || !empty($this->_params[$field . '_value'])
+        )) {
+        $selectedHavings[$field] = $spec;
+      }
+    }
+    return $selectedHavings;
   }
 
 }
