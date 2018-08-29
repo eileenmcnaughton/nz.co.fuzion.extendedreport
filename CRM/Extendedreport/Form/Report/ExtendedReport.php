@@ -488,15 +488,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     foreach ($this->_params['fields'] as $fieldName => $field) {
       foreach ($this->_columns as $table => $specs) {
         if (CRM_Utils_Array::value($fieldName, $specs['fields'])) {
-          if (!empty($specs['metadata'][$fieldName]['requires'])) {
-            foreach ($specs['metadata'][$fieldName]['requires'] as $requiredField) {
-              if (empty($this->_params['fields'][$requiredField])) {
-                $this->_params['fields'][$requiredField] = 1;
-                $this->_columns[$table]['fields'][$requiredField]['no_display'] = 1;
-                $this->_noDisplay[] = $table . '_' . $requiredField;
-              }
-            }
-          }
+          $specs = $this->addAdditionalRequiredFields($specs['metadata'][$fieldName], $table);
           if (substr($fieldName, 0, 7) == 'custom_') {
             if (empty($specs['fields'])) {
               continue;
@@ -7782,6 +7774,25 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
           }
 
         }
+      }
+    }
+  }
+
+  /**
+   * Add any additional fields reqired to support the specified field.
+   *
+   * @param array $specs
+   * @param string $table
+   */
+  protected function addAdditionalRequiredFields($specs, $table) {
+    if (empty($specs['requires'])) {
+      return;
+    }
+    foreach ($specs['requires'] as $requiredField) {
+      if (empty($this->_params['fields'][$requiredField])) {
+        $this->_params['fields'][$requiredField] = 1;
+        $this->_columns[$table]['fields'][$requiredField]['no_display'] = 1;
+        $this->_noDisplay[] = $table . '_' . $requiredField;
       }
     }
   }
