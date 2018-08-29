@@ -3,9 +3,6 @@
  * Class CRM_Extendedreport_Form_Report_Price_Lineitemparticipant
  */
 class CRM_Extendedreport_Form_Report_Price_Lineitemparticipant extends CRM_Extendedreport_Form_Report_ExtendedReport {
-  protected $_addressField = FALSE;
-
-  protected $_emailField = FALSE;
 
   protected $_summary = NULL;
 
