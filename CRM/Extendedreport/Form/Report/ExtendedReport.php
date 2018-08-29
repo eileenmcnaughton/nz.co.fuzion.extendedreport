@@ -298,41 +298,16 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    * https://github.com/eileenmcnaughton/nz.co.fuzion.extendedreport/issues/12
    */
   public function preProcess() {
-    $this->setVersion();
-    $this->assign('civicrm_major_version', $this->majorVersion);
     $this->preProcessCommon();
 
     if (!$this->_id) {
       $this->addBreadCrumb();
     }
+    $this->ensureBaoIsSetIfPossible();
 
     foreach ($this->_columns as $tableName => $table) {
-
       $this->_aliases[$tableName] = $this->setTableAlias($table, $tableName);
-      $expFields = array();
-      // higher preference to bao object
-      $daoOrBaoName = CRM_Utils_Array::value('bao', $table, CRM_Utils_Array::value('dao', $table));
-
-      if ($daoOrBaoName) {
-        if (method_exists($daoOrBaoName, 'exportableFields')) {
-          $expFields = $daoOrBaoName::exportableFields();
-        }
-        else {
-          $expFields = $daoOrBaoName::export();
-        }
-      }
-
-
-      foreach ($expFields as $fieldName => $field) {
-        // Double index any unique fields to ensure we find a match
-        // later on. For example the metadata keys
-        // contribution_campaign_id rather than campaign_id
-        // this is not super predictable so we ensure that they are keyed by
-        // both possibilities
-        if (!empty($field['name']) && $field['name'] != $fieldName) {
-          $expFields[$field['name']] = $field;
-        }
-      }
+      $expFields = $this->getMetadataForFields($table);
       $doNotCopy = array('required', 'default');
 
       // Extended reports customisation starts ==
@@ -430,14 +405,14 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
                     break;
 
                   default:
-                    if ($daoOrBaoName &&
+                    if (!empty($table['bao']) &&
                       array_key_exists('pseudoconstant', $this->_columns[$tableName][$fieldGrp][$fieldName])
                     ) {
                       // with multiple options operator-type is generally multi-select
                       $this->_columns[$tableName][$fieldGrp][$fieldName]['operatorType'] = CRM_Report_Form::OP_MULTISELECT;
                       if (!array_key_exists('options', $this->_columns[$tableName][$fieldGrp][$fieldName])) {
                         // fill options
-                        $this->_columns[$tableName][$fieldGrp][$fieldName]['options'] = CRM_Core_PseudoConstant::get($daoOrBaoName, $fieldName);
+                        $this->_columns[$tableName][$fieldGrp][$fieldName]['options'] = CRM_Core_PseudoConstant::get($table['bao'], $fieldName);
                       }
                     }
                     break;
@@ -7783,6 +7758,51 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
       return CRM_Utils_Request::retrieveValue('cid', 'Int', CRM_Utils_Request::retrieveValue('contact_id', 'Int'));
     }
     return NULL;
+  }
+
+  /**
+   * @param $table
+   *
+   * @return array
+   */
+  protected function getMetadataForFields($table) {
+    $expFields = array();
+    // higher preference to bao object
+    $daoOrBaoName = CRM_Utils_Array::value('bao', $table, CRM_Utils_Array::value('dao', $table));
+
+    if ($daoOrBaoName) {
+      if (method_exists($daoOrBaoName, 'exportableFields')) {
+        $expFields = $daoOrBaoName::exportableFields();
+      }
+      else {
+        $expFields = $daoOrBaoName::export();
+      }
+    }
+
+    foreach ($expFields as $fieldName => $field) {
+      // Double index any unique fields to ensure we find a match
+      // later on. For example the metadata keys
+      // contribution_campaign_id rather than campaign_id
+      // this is not super predictable so we ensure that they are keyed by
+      // both possibilities
+      if (!empty($field['name']) && $field['name'] != $fieldName) {
+        $expFields[$field['name']] = $field;
+      }
+    }
+    return $expFields;
+  }
+
+  /**
+   * Ensure 'bao' is set if available.
+   *
+   * Resolve ambiguity with 'dao' option.
+   */
+  protected function ensureBaoIsSetIfPossible() {
+    foreach ($this->_columns as $tableName => $table) {
+      if (empty($table['bao']) && !empty($table['dao'])) {
+        $this->_columns[$tableName]['bao'] = $table['dao'];
+      }
+    }
   }
 
 }
