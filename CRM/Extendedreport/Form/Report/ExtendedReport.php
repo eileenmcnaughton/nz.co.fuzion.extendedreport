@@ -824,56 +824,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   }
 
   /**
-   * Override exists purely to handle unusual date fields by passing field metadata to date clause
-   * Also store where clauses to an array
-   */
-  function where() {
-    $whereClauses = $havingClauses = array();
-    foreach ($this->_columns as $tableName => $table) {
-      if (array_key_exists('filters', $table)) {
-        foreach ($table['filters'] as $fieldName => $field) {
-          if (!empty($field['pseudofield'])) {
-            continue;
-          }
-          $clause = NULL;
-          $clause = $this->generateFilterClause($field, $fieldName, $tableName);
-          if (!empty($clause)) {
-            $this->whereClauses[$tableName][] = $clause;
-            if (CRM_Utils_Array::value('having', $field)) {
-              $havingClauses[] = $clause;
-            }
-            else {
-              $whereClauses[] = $clause;
-            }
-          }
-
-        }
-      }
-    }
-
-    if (empty($whereClauses)) {
-      $this->_where = "WHERE ( 1 ) ";
-      $this->_having = "";
-    }
-    else {
-      $this->_where = "WHERE " . implode(' AND ', $whereClauses);
-    }
-
-    if ($this->_aclWhere) {
-      $this->_where .= " AND {$this->_aclWhere} ";
-    }
-
-    if (!empty($havingClauses)) {
-      // use this clause to construct group by clause.
-      $this->_having = "HAVING " . implode(' AND ', $havingClauses);
-    }
-
-  }
-
-  /*
-* Define any from clauses in use (child classes to override)
-*/
-  /**
    * @return array
    */
   function fromClauses() {
@@ -7801,6 +7751,37 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
     foreach ($this->_columns as $tableName => $table) {
       if (empty($table['bao']) && !empty($table['dao'])) {
         $this->_columns[$tableName]['bao'] = $table['dao'];
+      }
+    }
+  }
+
+  /**
+   * Store Where clauses into an array.
+   *
+   * Breaking out this step makes over-riding more flexible as the clauses can be used in constructing a
+   * temp table that may not be part of the final where clause or added
+   * in other functions
+   */
+  public function storeWhereHavingClauseArray() {
+    foreach ($this->_columns as $tableName => $table) {
+      if (array_key_exists('filters', $table)) {
+        foreach ($table['filters'] as $fieldName => $field) {
+          if (!empty($field['pseudofield'])) {
+            continue;
+          }
+          $clause = NULL;
+          $clause = $this->generateFilterClause($field, $fieldName, $tableName);
+          if (!empty($clause)) {
+            $this->whereClauses[$tableName][] = $clause;
+            if (CRM_Utils_Array::value('having', $field)) {
+              $this->_havingClauses[] = $clause;
+            }
+            else {
+              $this->_whereClauses[] = $clause;
+            }
+          }
+
+        }
       }
     }
   }
