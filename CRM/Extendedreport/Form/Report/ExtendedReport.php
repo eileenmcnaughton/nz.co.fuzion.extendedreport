@@ -18,6 +18,8 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   protected $_fieldSpecs = array();
   public $_defaults = array();
 
+  protected $contactIDField;
+
   protected $metaData = [];
 
   /**
@@ -239,7 +241,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    */
   public function __construct() {
     parent::__construct();
-    $this->addSelectableCustomFields();
     $this->addTemplateSelector();
     if ($this->isSupportsContactTab) {
       $this->_options = [
@@ -279,6 +280,80 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       }
     }
     return $this->metaData;
+  }
+
+  /**
+   * Build the tag filter field to display on the filters tab.
+   */
+  public function buildTagFilter() {
+    $contactTags = CRM_Core_BAO_Tag::getTags($this->_tagFilterTable);
+    if (!empty($contactTags)) {
+      $this->_columns['civicrm_tag'] = array(
+        'metadata' => [
+          'tagid' => array(
+            'name' => 'tag_id',
+            'title' => ts('Tag'),
+            'type' => CRM_Utils_Type::T_INT,
+            'tag' => TRUE,
+            'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+            'options' => $contactTags,
+            'is_filters' => TRUE,
+            'is_fields' => FALSE,
+            'is_group_bys' => FALSE,
+            'is_order_bys' => FALSE,
+            'is_join_filters' => FALSE,
+          ),
+        ],
+        'dao' => 'CRM_Core_DAO_Tag',
+        'filters' => array(
+          'tagid' => array(
+            'name' => 'tag_id',
+            'title' => ts('Tag'),
+            'type' => CRM_Utils_Type::T_INT,
+            'tag' => TRUE,
+            'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+            'options' => $contactTags,
+          ),
+        ),
+      );
+    }
+  }
+
+  /**
+   * Adds group filters to _columns (called from _Construct).
+   */
+  public function buildGroupFilter() {
+    $this->_columns['civicrm_group']['filters'] = array(
+      'gid' => array(
+        'name' => 'group_id',
+        'title' => ts('Group'),
+        'type' => CRM_Utils_Type::T_INT,
+        'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+        'group' => TRUE,
+        'options' => CRM_Core_PseudoConstant::nestedGroup(),
+      ),
+    );
+    if (empty($this->_columns['civicrm_group']['dao'])) {
+      $this->_columns['civicrm_group']['dao'] = 'CRM_Contact_DAO_GroupContact';
+    }
+    if (empty($this->_columns['civicrm_group']['alias'])) {
+      $this->_columns['civicrm_group']['alias'] = 'cgroup';
+    }
+    $this->_columns['civicrm_group']['metadata'] = array(
+      'gid' => array(
+        'name' => 'group_id',
+        'title' => ts('Group'),
+        'type' => CRM_Utils_Type::T_INT,
+        'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+        'group' => TRUE,
+        'options' => CRM_Core_PseudoConstant::nestedGroup(),
+        'is_filters' => TRUE,
+        'is_fields' => FALSE,
+        'is_group_bys' => FALSE,
+        'is_order_bys' => FALSE,
+        'is_join_filters' => FALSE,
+      ),
+    );
   }
 
   /**
@@ -508,6 +583,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
 
     $selectedFields = $this->getSelectedFields();
 
+    $select = [];
     // Where we need fields for a having clause & the are not selected we
     // add them to the select clause (but not to headers because - hey
     // you didn't ask for them).
@@ -1397,46 +1473,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   }
 
   /**
-   * Backport of 4.6
-   *
-   * Add group by options to the report.
-   */
-  public function addGroupBys() {
-    $options = $freqElements = array();
-
-    foreach ($this->_columns as $tableName => $table) {
-      if (array_key_exists('group_bys', $table)) {
-        foreach ($table['group_bys'] as $fieldName => $field) {
-          if (!empty($field)) {
-            $options[$field['title']] = $fieldName;
-            if (!empty($field['frequency'])) {
-              $freqElements[$field['title']] = $fieldName;
-            }
-          }
-        }
-      }
-    }
-    $this->addCheckBox("group_bys", ts('Group by columns'), $options, NULL,
-      NULL, NULL, NULL, $this->_fourColumnAttribute
-    );
-    $this->assign('groupByElements', $options);
-    if (!empty($options)) {
-      $this->tabs['GroupBy'] = array(
-        'title' => ts('Grouping'),
-        'tpl' => 'GroupBy',
-        'div_label' => 'group-by-elements',
-      );
-    }
-
-    foreach ($freqElements as $name) {
-      $this->addElement('select', "group_bys_freq[$name]",
-        ts('Frequency'), $this->_groupByDateFreq
-      );
-    }
-    $this->assignTabs();
-  }
-
-  /**
    * Backport of 4.6.
    *
    * Add data for order by tab.
@@ -2092,10 +2128,11 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
         foreach (array(
                    'fields',
                    'filters',
-                   'group_bys'
+                   'group_bys',
+                   'join_filters',
                  ) as $colKey) {
           if (!array_key_exists($colKey, $this->_columns[$curTable])) {
-            $this->_columns[$curTable][$colKey] = array();
+            $this->_columns[$curTable][$colKey] = [];
           }
         }
       }
@@ -2108,6 +2145,7 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
           'title' => $customDAO->label,
           'dataType' => $customDAO->data_type,
           'htmlType' => $customDAO->html_type,
+          'is_fields' => TRUE,
           //'alterDisplay' =>
         );
       }
@@ -2117,7 +2155,8 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
           'name' => $customDAO->column_name,
           'title' => $customDAO->label,
           'dataType' => $customDAO->data_type,
-          'htmlType' => $customDAO->html_type
+          'htmlType' => $customDAO->html_type,
+          'is_filters' => TRUE,
         );
       }
 
@@ -2237,12 +2276,18 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
         $this->_columns[$curTable]['filters'] = array_merge($this->_columns[$curTable]['filters'], $curFilters);
       }
       if ($this->_customGroupGroupBy) {
+        foreach (array_keys($curFields) as $currentFieldName) {
+          $curFields[$currentFieldName]['is_group_bys'] = TRUE;
+        }
         $this->_columns[$curTable]['group_bys'] = array_merge($this->_columns[$curTable]['group_bys'], $curFields);
       }
 
       if ($this->_customGroupOrderBy) {
         if (!isset($this->_columns[$curTable]['order_bys'])) {
           $this->_columns[$curTable]['order_bys'] = array();
+        }
+        foreach (array_keys($curFields) as $currentFieldName) {
+          $curFields[$currentFieldName]['is_order_bys'] = TRUE;
         }
         $this->_columns[$curTable]['order_bys'] = array_merge($this->_columns[$curTable]['order_bys'], $curFields);
       }
@@ -2253,6 +2298,15 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
         $curFields[$fieldName . '_qty']['statistics'] = array('count' => ts("Quantity Selected"));
         // Merge additional fields into list
         $this->_columns[$curTable]['fields'] = array_merge($this->_columns[$curTable]['fields'], $curFields);
+      }
+      $this->_columns[$curTable]['metadata'] = $this->_columns[$curTable]['fields'];
+      foreach ($this->_columns[$curTable]['metadata'] as $fieldName => $spec) {
+        foreach (['filters', 'join_filters', 'group_bys', 'order_bys'] as $type) {
+          $this->_columns[$curTable]['metadata'][$fieldName]['is_' . $type] = 0;
+          if (isset($this->_columns[$curTable][$type][$fieldName]['is_' . $type])) {
+            $this->_columns[$curTable]['metadata'][$fieldName]['is_' . $type] = $this->_columns[$curTable][$type][$fieldName]['is_' . $type];
+          }
+        }
       }
     }
 

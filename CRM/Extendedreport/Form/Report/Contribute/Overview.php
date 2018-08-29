@@ -69,48 +69,11 @@ class CRM_Extendedreport_Form_Report_Contribute_Overview extends CRM_Extendedrep
       asort($this->activeCampaigns);
     }
 
-    $this->_columns = array(
-        'civicrm_contact' => array(
-          'dao' => 'CRM_Contact_DAO_Contact',
-          'fields' => array_merge(
-            $this->getBasicContactFields(),
-            array(
-              'sort_name' => array(
-                'title' => ts('Contact Name'),
-                'no_repeat' => TRUE,
-              ),
-            )
-          ),
-          'grouping' => 'contact-fields',
-          'group_bys' => array(
-            'id' => array('title' => ts('Contact ID')),
-            'sort_name' => array(
-              'title' => ts('Contact Name'),
-            ),
-          ),
-        ),
-        'civicrm_email' => array(
-          'dao' => 'CRM_Core_DAO_Email',
-          'fields' => array(
-            'email' => array(
-              'title' => ts('Email'),
-              'no_repeat' => TRUE,
-            ),
-          ),
-          'grouping' => 'contact-fields',
-        ),
-        'civicrm_phone' => array(
-          'dao' => 'CRM_Core_DAO_Phone',
-          'fields' => array(
-            'phone' => array(
-              'title' => ts('Phone'),
-              'no_repeat' => TRUE,
-            ),
-          ),
-          'grouping' => 'contact-fields',
-        ),
-        ) + $this->getColumns('Contribution', array('group_by' => TRUE))
-         + $this->getColumns('Address');
+    $this->_columns = $this->getColumns('Contact', array('group_by' => TRUE))
+     + $this->getColumns('Email', array('group_by' => TRUE))
+     + $this->getColumns('Phone', array('group_by' => TRUE))
+     + $this->getColumns('Contribution', array('group_by' => TRUE))
+     + $this->getColumns('Address');
 
     // If we have a campaign, build out the relevant elements
     if ($campaignEnabled && !empty($this->activeCampaigns)) {
