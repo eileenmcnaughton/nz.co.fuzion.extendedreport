@@ -16,14 +16,6 @@ class CRM_Extendedreport_Form_Report_ActivityExtended extends CRM_Extendedreport
     ),
   );
   /**
-   * @var bool
-   */
-  protected $_addressField = FALSE;
-  /**
-   * @var bool
-   */
-  protected $_emailField = FALSE;
-  /**
    * @var null
    */
   protected $_summary = NULL;
@@ -109,7 +101,6 @@ class CRM_Extendedreport_Form_Report_ActivityExtended extends CRM_Extendedreport
         AND civicrm_email_assignee.is_deleted = 0
         ";
     }
-    $this->selectableCustomDataFrom();
   }
 
   /**

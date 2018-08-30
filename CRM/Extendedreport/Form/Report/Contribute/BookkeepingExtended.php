@@ -67,6 +67,19 @@ class CRM_Extendedreport_Form_Report_Contribute_BookkeepingExtended extends CRM_
     + array(
       'civicrm_entity_financial_trxn' => array(
         'dao' => 'CRM_Financial_DAO_EntityFinancialTrxn',
+        'metadata' => [
+          'amount' => array(
+            'title' => ts('Amount'),
+            'default' => TRUE,
+            'type' => CRM_Utils_Type::T_MONEY,
+            'statistics' => array('sum'),
+            'is_fields' => TRUE,
+            'is_filters' => TRUE,
+            'is_group_bys' => FALSE,
+            'is_order_bys' => FALSE,
+            'is_join_filters' => FALSE,
+          ),
+        ],
         'fields' => array(
           'amount' => array(
             'title' => ts('Amount'),

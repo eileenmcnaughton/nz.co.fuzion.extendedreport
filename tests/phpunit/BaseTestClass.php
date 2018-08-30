@@ -22,6 +22,17 @@ class BaseTestClass extends \PHPUnit_Framework_TestCase implements HeadlessInter
 
   use \Civi\Test\Api3TestTrait;
 
+  /**
+   * @var int
+   */
+  protected $customFieldID;
+
+
+  /**
+   * @var int
+   */
+  protected $customGroupID;
+
   public function setUpHeadless() {
     // Civi\Test has many helpers, like install(), uninstall(), sql(), and sqlFile().
     // See: https://github.com/civicrm/org.civicrm.testapalooza/blob/master/civi-test.md
@@ -54,13 +65,13 @@ class BaseTestClass extends \PHPUnit_Framework_TestCase implements HeadlessInter
    * This is breaking my heart - do it with traits - but not until next month
    * when 5.3 gets removed.
    *
-   * @param array $params
+   * @param array $inputParams
    * @param string $entity
    *
    * @return array
    *   ids of created objects
    */
-  protected function createCustomGroupWithField($params = array(), $entity = 'Contact') {
+  protected function createCustomGroupWithField($inputParams = array(), $entity = 'Contact') {
     $params = array('title' => $entity);
     $params['extends'] = $entity;
     CRM_Core_PseudoConstant::flush();
@@ -76,7 +87,7 @@ class BaseTestClass extends \PHPUnit_Framework_TestCase implements HeadlessInter
         $this->callAPISuccess('CustomGroup', 'delete', array('id' => $group['id']));
       }
       else {
-        CRM_Core_DAO::executeQuery('DELETE FROM civicrm_group WHERE id = ' . $group['id']);
+        CRM_Core_DAO::executeQuery('DELETE FROM civicrm_custom_group WHERE id = ' . $group['id']);
       }
 
     }
@@ -84,7 +95,11 @@ class BaseTestClass extends \PHPUnit_Framework_TestCase implements HeadlessInter
     CRM_Core_PseudoConstant::flush();
 
     $customGroup = $this->CustomGroupCreate($params);
-    $customField = $this->customFieldCreate(array('custom_group_id' => $customGroup['id'], 'label' => $entity));
+    $customFieldParams = ['custom_group_id' => $customGroup['id'], 'label' => $entity];
+    if (!empty($inputParams['CustomField'])) {
+      $customFieldParams = array_merge($customFieldParams, $inputParams['CustomField']);
+    }
+    $customField = $this->customFieldCreate($customFieldParams);
     $this->customGroupID = $customGroup['id'];
     $this->customGroup = $customGroup['values'][$customGroup['id']];
     $this->customFieldID = $customField['id'];

@@ -10,12 +10,14 @@ class CRM_Extendedreport_Form_Report_RelationshipExtended extends CRM_Extendedre
   protected $_baseTable = 'civicrm_relationship';
   protected $_primaryContactPrefix = 'contact_a_';
   protected $groupFilterNotOptimised = FALSE;
+  protected $_customGroupExtends = ['Relationship', 'Contact', 'Individual', 'Household', 'Organization'];
 
   /**
    * Class constructor.
    */
   public function __construct() {
     $this->_tagFilter = TRUE;
+    $this->_groupFilter = TRUE;
     $this->_customGroupExtended['civicrm_relationship'] = array(
       'extends' => array('Relationship'),
       'title' => ts('Relationship'),
@@ -58,22 +60,6 @@ class CRM_Extendedreport_Form_Report_RelationshipExtended extends CRM_Extendedre
       ))
       + $this->getColumns('Relationship')
       + $this->getColumns('RelationshipType')
-      + array(
-        'civicrm_group' => array(
-          'dao' => 'CRM_Contact_DAO_Group',
-          'alias' => 'cgroup',
-          'filters' => array(
-            'gid' => array(
-              'name' => 'group_id',
-              'title' => ts('Group'),
-              'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-              'group' => TRUE,
-              'type' => CRM_Utils_Type::T_INT,
-              'options' => CRM_Core_PseudoConstant::group()
-            ),
-          ),
-        ),
-      )
       + $this->getColumns('Case');
     parent::__construct();
   }
@@ -141,8 +127,6 @@ class CRM_Extendedreport_Form_Report_RelationshipExtended extends CRM_Extendedre
         {$this->_aliases['contact_b_civicrm_address']}.contact_id
         AND {$this->_aliases['contact_b_civicrm_address']}.is_primary = 1 )";
     }
-
-    $this->selectableCustomDataFrom();
   }
 
   /**

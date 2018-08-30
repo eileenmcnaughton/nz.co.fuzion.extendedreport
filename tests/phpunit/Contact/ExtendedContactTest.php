@@ -1,6 +1,6 @@
 <?php
 
-require_once __DIR__ . '/BaseTestClass.php';
+require_once __DIR__ . '../../BaseTestClass.php';
 
 use Civi\Test\HeadlessInterface;
 use Civi\Test\HookInterface;
@@ -20,20 +20,17 @@ use Civi\Test\TransactionalInterface;
  *
  * @group headless
  */
-class RelationshipExtendedTest extends BaseTestClass implements HeadlessInterface, HookInterface {
+class Contact_ExtendedContactTest extends BaseTestClass implements HeadlessInterface, HookInterface, TransactionalInterface {
 
   protected $contacts = array();
 
-  /**
-   * @return \Civi\Test\CiviEnvBuilder
-   */
   public function setUpHeadless() {
     // Civi\Test has many helpers, like install(), uninstall(), sql(), and sqlFile().
     // See: https://github.com/civicrm/org.civicrm.testapalooza/blob/master/civi-test.md
     $env = \Civi\Test::headless()
       ->installMe(__DIR__)
       ->apply();
-    $this->createCustomGroupWithField();
+    $this->createCustomGroupWithField(['CustomField' => ['html_type' => 'CheckBox', 'option_values' => ['two' => 'A couple', 'three' => 'A few', 'four' => 'Too Many']]]);
     return $env;
   }
 
@@ -45,9 +42,11 @@ class RelationshipExtendedTest extends BaseTestClass implements HeadlessInterfac
       $components[$dao->id] = $dao->name;
     }
     civicrm_api3('Setting', 'create', array('enable_components' => $components));
-    $contact = $this->callAPISuccess('Contact', 'create', array('organization_name' => 'Amazons', 'last_name' => 'Woman', 'contact_type' => 'Organization', 'custom_' . $this->customFieldID => 'super org'));
+
+    $contact = $this->callAPISuccess('Contact', 'create', array('organization_name' => 'Amazons', 'last_name' => 'Woman', 'contact_type' => 'Organization', 'custom_' . $this->customFieldID => 'three'));
+
     $this->contacts[] = $contact['id'];
-    $contact = $this->callAPISuccess('Contact', 'create', array('first_name' => 'Wonder', 'last_name' => 'Woman', 'contact_type' => 'Individual', 'employer_id' => $contact['id'], 'custom_' . $this->customFieldID => 'just a gal'));
+    $contact = $this->callAPISuccess('Contact', 'create', array('first_name' => 'Wonder', 'last_name' => 'Woman', 'contact_type' => 'Individual', 'employer_id' => $contact['id'], 'custom_' . $this->customFieldID => 'two'));
     $this->contacts[] = $contact['id'];
   }
 
@@ -63,39 +62,25 @@ class RelationshipExtendedTest extends BaseTestClass implements HeadlessInterfac
   }
 
   /**
-   * Test the report with group filter.
+   * Test rows retrieval.
    */
-  public function testReport() {
-    $customFieldPrefix = 'custom_contact_a__' . $this->customFieldID;
-    $params = array(
-      'report_id' => 'relationshipextended',
-      'fields' => array (
-        'relationship_type_label_a_b' => '1',
-      ),
-      $customFieldPrefix . '_op' => "like",
-      $customFieldPrefix .  '_value' => '%g%',
-    );
-    $rows = $this->getRows($params);
-    $this->assertEquals(1, count($rows));
-    $this->assertEquals('Employee of', $rows[0]['civicrm_relationship_type_relationship_type_label_a_b']);
-  }
+  public function testGetRows() {
+    $params = [
+      'report_id' => 'contact/contactextended',
+      'aggregate_column_headers' => 'civicrm_contact:gender_id',
+      'aggregate_row_headers' => 'civicrm_contact:custom_' . $this->customFieldID,
+    ];
+    $this->callAPISuccess('ReportTemplate', 'getrows', $params)['values'];
 
-  /**
-   * Test the report with group filter.
-   */
-  public function testReportWithGroupFilter() {
-    $params = array(
-      'report_id' => 'relationshipextended',
-      'fields' => array (
-        'relationship_type_label_a_b' => '1',
-      ),
-      'gid_op' => 'in',
-      'gid_value' => array(1),
-      'contact_a_civicrm_contact_civicrm_value_' . $this->customGroup['table_name'] . 'custom_ ' . $this->customFieldID . '_op' => "like",
-      'contact_a_civicrm_contact_civicrm_value_' . $this->customGroup['table_name'] . 'custom_ ' . $this->customFieldID . '_value' => 'h',
-    );
-    $rows = $this->getRows($params);
-    $this->assertEquals(array(), $rows);
+    $params = [
+      'report_id' => 'contact/contactextended',
+      'aggregate_column_headers' => 'civicrm_contact:custom_' . $this->customFieldID,
+      'aggregate_row_headers' => 'civicrm_contact:gender_id',
+    ];
+    $this->callAPISuccess('ReportTemplate', 'getrows', $params)['values'];
+
+
+
   }
 
 }
