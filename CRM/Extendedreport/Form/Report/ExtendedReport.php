@@ -993,7 +993,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       }
       $this->_from .= $this->_extraFrom;
     }
-    $this->selectableCustomDataFrom();
   }
 
   /**
@@ -2125,168 +2124,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   }
 
   /**
-   * This is all just copied from the addCustomFields function -
-   * The point of this is to
-   * 1) put together the selection of fields using a prefix so that we can use multiple instances of the
-   *    same custom fields in a report - ie. so we can use the fields for 2 different contacts
-   * 2) we assign these fields as a flat list to the multiple select - might move to json later
-   *
-   * @param bool $addFields
-   *
-   * @throws \CiviCRM_API3_Exception
-   */
-  function addSelectableCustomFields($addFields = TRUE) {
-    $customFieldsTable = array();
-    $extends = $customTableMapping = $validColumnHeaderFields = $foundTables = array();
-    if (!empty($this->_customGroupExtended)) {
-      //lets try to assign custom data select fields
-      foreach ($this->_customGroupExtended as $spec) {
-        //@todo this array_merge looks dodgey here - maybe should be +
-        $extends = array_merge($extends, $spec['extends']);
-      }
-    }
-    if (empty($extends)) {
-      return;
-    }
-
-    $customGroups = civicrm_api3('CustomGroup', 'get', array(
-      'is_active' => 1,
-      'extends' => array('IN' => $extends),
-      'options' => array('sort' => 'weight', 'limit' => 500)
-    ));
-
-    if (!$customGroups['count']) {
-      $this->addAggregateSelectorsToForm(array(), array());
-      return;
-    }
-    $customGroups = $customGroups['values'];
-
-    $customFields = civicrm_api3('CustomField', 'get', array(
-      'is_active' => 1,
-      'is_searchable' => 1,
-      'custom_group_id' => array('IN' => array_keys($customGroups)),
-      'options' => array('sort' => 'weight', 'limit' => 500),
-    ));
-    if (!$customFields['count']) {
-      $this->addAggregateSelectorsToForm(array(), array());
-      return;
-    }
-    $customFields = $customFields['values'];
-
-    foreach ($customFields as $id => &$field) {
-      $customGroup = $customGroups[$field['custom_group_id']];
-      $foundGroups[$customGroup['id']] = TRUE; // we will unset those not found
-      $fieldName = 'custom_' . $id;
-      $tableName = $customGroup['table_name'];
-
-      $label = $customGroup['extends'] . " (" . $customGroup['title'] . ") " . $field['label'];
-      $field['selectBoxLabel'] = $customFieldsFlat[$fieldName . ':' . $fieldName] = $label;
-      if (!empty($field['option_group_id']) || $field['data_type'] == 'Boolean') {
-        $validColumnHeaderFields[$fieldName] = TRUE;
-      }
-      $customFieldsTableFields[$customGroup['extends']][$fieldName] = $field['label'];
-
-      $fieldTableMapping[$fieldName] = $customGroup['table_name'];
-      $this->getCustomFieldDetails($field);
-      $filters = $field;
-      $this->_customFields[$tableName]['fields'][$fieldName] = $this->extractFieldsAndFilters($field, $fieldName, $filters);
-      $this->_customFields[$tableName]['filters'][$fieldName] = $filters;
-    }
-
-    $customGroups = array_intersect_key($customGroups, $foundGroups);
-    foreach ($customGroups as $id => $group) {
-      $currentTable = $group['table_name'];
-      $customTableMapping[$group['extends']][] = $currentTable;
-      if (!isset($this->_customFields[$currentTable])) {
-        $this->_customFields[$currentTable] = array();
-      }
-      $this->_customFields[$currentTable] = array_merge(array(
-        'extends' => $group['extends'],
-        'grouping' => $currentTable,
-        'group_title' => $group['title'],
-        'name' => $currentTable,
-      ), $this->_customFields[$currentTable]);
-    }
-    /*
-     * so, now we have all the information about the custom fields - let's apply it once per
-     * entity
-     */
-    $customFieldsFlat = array();
-    if (!empty($this->_customGroupExtended)) {
-      //lets try to assign custom data select fields
-      foreach ($this->_customGroupExtended as $table => $spec) {
-        $customFieldsTable[$table] = $spec['title'];
-        foreach ($spec['extends'] as $extendedEntity) {
-          if (array_key_exists($extendedEntity, $customTableMapping)) {
-            foreach ($customTableMapping[$extendedEntity] as $customTable) {
-              $tableName = $this->_customFields[$customTable]['name'];
-              $tableAlias = $table . "_" . $this->_customFields[$customTable]['name'];
-              $this->_columns[$tableAlias] = $this->_customFields[$tableName];
-              $this->_columns[$tableAlias]['alias'] = $tableAlias;
-              if (empty($spec['filters']) && isset($this->_columns[$tableAlias]['filters'])) {
-                unset($this->_columns[$tableAlias]['filters']);
-              }
-              else {
-                foreach ($this->_columns[$tableAlias]['filters'] as $filterKey => $filter) {
-                  $filter['title'] = $spec['title'] . " " . $filter['title'];
-                  $this->_columns[$tableAlias]['filters'][$tableAlias . $filterKey] = $filter;
-                  unset($this->_columns[$tableAlias]['filters'][$filterKey]);
-                }
-              }
-              unset ($this->_columns[$tableAlias]['fields']);
-            }
-
-            foreach ($customFieldsTableFields[$extendedEntity] as $customFieldName => $customFieldLabel) {
-              //@todo - pretty long winded - extract of make easier to access
-              $customFieldParts = explode('_', $customFieldName);
-              $customFieldID = $customFieldParts[1];
-              $customGroupID = $customFields[$customFieldID]['custom_group_id'];
-              $customGroupTitle = $customGroups[$customGroupID]['title'];
-              $label = $spec['title'] . " (" . $customGroupTitle . ") " . $customFieldLabel;
-              $customFields[$table][$table . ':' . $customFieldName]
-                = $customFieldsFlat[$table . ':' . $customFieldName] = $label;
-              if (!empty($validColumnHeaderFields[$customFieldName])) {
-                $validColumnHeaderFields[$customFieldName] = $table . ':' . $customFieldName;
-              }
-            }
-          }
-        }
-      }
-    }
-    asort($customFieldsFlat);
-    if ($this->_customGroupAggregates) {
-      $this->addAggregateSelectorsToForm($customFieldsFlat, $validColumnHeaderFields);
-    }
-
-    else {
-      $this->add('select', 'custom_tables', ts('Custom Columns'), $customFieldsTable, FALSE,
-        array(
-          'id' => 'custom_tables',
-          'multiple' => 'multiple',
-          'title' => ts('- select -')
-        )
-      );
-
-      $this->add('select', 'custom_fields', ts('Custom Columns'), $customFieldsFlat, FALSE,
-        array(
-          'id' => 'custom_fields',
-          'multiple' => 'multiple',
-          'title' => ts('- select -'),
-          'hierarchy' => json_encode($customFields)
-        )
-      );
-
-      $this->tabs['CustomFieldSelection'] = array(
-        'title' => ts('Custom Field Display'),
-        'tpl' => 'CustomFieldSelection',
-        'div_label' => 'set-custom-fields',
-      );
-
-      $this->assignTabs();
-    }
-  }
-
-  /**
    * Take API Styled field and add extra params required in report class
    *
    * @param string $field
@@ -2460,7 +2297,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
         if (!stristr($this->_from, $this->_aliases[$table])) {
           // Protect against conflict with selectableCustomFrom.
           $this->_from .= "
-{$customJoin} {$prop['grouping']} {$this->_aliases[$table]} ON {$this->_aliases[$table]}.entity_id = {$baseJoin}";
+{$customJoin} {$prop['table']} {$this->_aliases[$table]} ON {$this->_aliases[$table]}.entity_id = {$baseJoin}";
         }
         // handle for ContactReference
         if (array_key_exists('fields', $prop)) {
@@ -2493,67 +2330,6 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
     if (!empty($selectedFilters)) {
       return TRUE;
     }
-  }
-
-
-  /**
-   * Add the SELECT AND From clauses for the extensible CustomData
-   * Still refactoring this from original copy & paste code to something simpler
-   *
-   * @todo the way this is done is actually awful. After trying to figure out who to blame I realised it would
-   * be hard to avoid blaming the person who wrote it :-)
-   * However, I also finally remembered why it is so awful. When I wrote it I was trying to over-write as few classes as possible
-   * Over time I have, however, overwritten a lot of classes & I think the avoiding of over-writing is perhaps less important
-   * than improving the code - so this should be set up so that the select & the FROM are not BOTH done from the from function
-   */
-  function selectableCustomDataFrom() {
-    $customFields = $this->_custom_fields_filters + $this->_custom_fields_selected;
-    // Format for the aggregate fields is civicrm_contact:custom_45.
-    $otherFields = array(
-      'aggregate_column_headers',
-      'aggregate_row_headers',
-    );
-    foreach ($otherFields as $fieldName) {
-      if (isset($this->_params[$fieldName]) && stristr($this->_params[$fieldName], ':custom_')) {
-        $customFields[] = $this->_params[$fieldName];
-      }
-    }
-
-    if (empty($customFields)) {
-      // No custom fields and no custom joins required.
-      return;
-    }
-
-    $tables = array();
-    foreach ($customFields as $customField) {
-      $fieldArr = explode(":", $customField);
-      $tables[$fieldArr[0]] = 1;
-      $formattedCustomFields[$fieldArr[1]][] = $fieldArr[0];
-    }
-
-    $selectedTables = array();
-    $myColumns = $this->extractCustomFields($formattedCustomFields, $selectedTables);
-
-    if (isset($this->_params['custom_fields'])) {
-      foreach ($this->_params['custom_fields'] as $fieldName) {
-        $name = $myColumns[$fieldName]['name'];
-        $this->_columnHeaders[$name] = $myColumns[$fieldName][$name];
-      }
-    }
-    foreach ($selectedTables as $selectedTable => $properties) {
-      $extendsTable = $properties['extends_table'];
-      if (strpos($this->_from, " $selectedTable ON") == 0) {
-        //hacky handling to prevent same alias being added twice - problem is
-        // customDataFrom in parent adds this
-        // solution is to back up a lot & really break up the parts of the report formation - extracting variables
-        //, constructing arrays of the various clauses & then compiling into sql
-        // this class has sufferred from not wanting to over-write too many functions & hence putting things
-        // in inappropriate places
-        $this->_from .= "
-          LEFT JOIN {$properties['name']} $selectedTable ON {$selectedTable}.entity_id = {$this->_aliases[$extendsTable]}.id";
-      }
-    }
-
   }
 
   /**
@@ -7834,9 +7610,13 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
       $entity = 'Contact';
     }
 
+    if ($prefixLabel) {
+      $prefixLabel = trim($prefixLabel) . ' ';
+    }
+
     if (!isset($this->_columns[$tableKey])) {
       $this->_columns[$tableKey]['extends'] = $customDAO->extends;
-      $this->_columns[$tableKey]['grouping'] = $customDAO->table_name;
+      $this->_columns[$tableKey]['grouping'] = $prefix . $customDAO->table_name;
       $this->_columns[$tableKey]['group_title'] = $prefixLabel . $customDAO->title;
       $this->_columns[$tableKey]['name'] = $customDAO->table_name;
       $this->_columns[$tableKey]['fields'] = [];

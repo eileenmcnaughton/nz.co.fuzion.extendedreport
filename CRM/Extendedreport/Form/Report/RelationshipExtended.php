@@ -127,8 +127,6 @@ class CRM_Extendedreport_Form_Report_RelationshipExtended extends CRM_Extendedre
         {$this->_aliases['contact_b_civicrm_address']}.contact_id
         AND {$this->_aliases['contact_b_civicrm_address']}.is_primary = 1 )";
     }
-
-    $this->selectableCustomDataFrom();
   }
 
   /**
