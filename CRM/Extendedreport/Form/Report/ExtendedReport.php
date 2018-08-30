@@ -242,6 +242,9 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   public function __construct() {
     parent::__construct();
     $this->addTemplateSelector();
+    if ($this->_customGroupAggregates) {
+      $this->addAggregateSelectorsToForm();
+    }
     if ($this->isSupportsContactTab) {
       $this->_options = [
         'contact_dashboard_tab' => [
@@ -6234,9 +6237,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    * @param $prefix
    */
   function joinEventSummaryFromEvent($prefix) {
-    $temporary = $this->_temporary;
     $tempTable = 'civicrm_report_temp_contsumm' . $prefix . date('d_H_I') . rand(1, 10000);
-    $dropSql = "DROP TABLE IF EXISTS $tempTable";
     $registeredStatuses = CRM_Event_PseudoConstant::participantStatus(NULL, "class = 'Positive'");
     $registeredStatuses = implode(', ', array_keys($registeredStatuses));
     $pendingStatuses = CRM_Event_PseudoConstant::participantStatus(NULL, "class = 'Pending'");
@@ -7196,13 +7197,12 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    * @param array $customFieldsFlat
    * @param array $validColumnHeaderFields
    */
-  protected function addAggregateSelectorsToForm($customFieldsFlat, $validColumnHeaderFields) {
+  protected function addAggregateSelectorsToForm() {
     if (!$this->isPivot) {
       return;
     }
-    $columnHeaderFields = array_intersect_key($customFieldsFlat, array_flip($validColumnHeaderFields));
-    $this->_aggregateColumnHeaderFields = array('' => ts('--Select--')) + $this->_aggregateColumnHeaderFields + $columnHeaderFields;
-    $this->_aggregateRowFields = array('' => ts('--Select--')) + $this->_aggregateRowFields + $customFieldsFlat;
+    $this->_aggregateColumnHeaderFields = array('' => ts('--Select--')) + $this->_aggregateColumnHeaderFields;
+    $this->_aggregateRowFields = array('' => ts('--Select--')) + $this->_aggregateRowFields;
     $this->add('select', 'aggregate_column_headers', ts('Aggregate Report Column Headers'), $this->_aggregateColumnHeaderFields, FALSE,
       array('id' => 'aggregate_column_headers', 'title' => ts('- select -'))
     );
@@ -7537,7 +7537,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
             continue;
           }
           $clause = NULL;
-          $clause = $this->generateFilterClause($field, $fieldName, $tableName);
+          $clause = $this->generateFilterClause($field, $fieldName);
           if (!empty($clause)) {
             $this->whereClauses[$tableName][] = $clause;
             if (CRM_Utils_Array::value('having', $field)) {
