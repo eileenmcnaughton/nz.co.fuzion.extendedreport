@@ -10,7 +10,7 @@ class CRM_Extendedreport_Form_Report_RelationshipExtended extends CRM_Extendedre
   protected $_baseTable = 'civicrm_relationship';
   protected $_primaryContactPrefix = 'contact_a_';
   protected $groupFilterNotOptimised = FALSE;
-  protected $_customGroupExtends = ['Relationship'];
+  protected $_customGroupExtends = ['Relationship', 'Contact', 'Individual', 'Household', 'Organization'];
 
   /**
    * Class constructor.

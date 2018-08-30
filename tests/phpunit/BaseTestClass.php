@@ -76,7 +76,7 @@ class BaseTestClass extends \PHPUnit_Framework_TestCase implements HeadlessInter
         $this->callAPISuccess('CustomGroup', 'delete', array('id' => $group['id']));
       }
       else {
-        CRM_Core_DAO::executeQuery('DELETE FROM civicrm_group WHERE id = ' . $group['id']);
+        CRM_Core_DAO::executeQuery('DELETE FROM civicrm_custom_group WHERE id = ' . $group['id']);
       }
 
     }
