@@ -237,6 +237,14 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   protected $isSupportsContactTab = FALSE;
 
   /**
+   * DAOs for custom data fields to use.
+   *
+   * The format is more a refactoring stage than an end result.
+   *
+   * @var array
+   */
+  protected $customDataDAOs = [];
+  /**
    * Class constructor.
    */
   public function __construct() {
@@ -7638,9 +7646,9 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    * @param string $prefix
    * @param string $prefixLabel
    */
-  protected function addCustomDataTable($customDAO, $currentTable, $prefix = '', $prefixLabel) {
+  protected function addCustomDataTable($field, $currentTable, $prefix = '', $prefixLabel) {
     $tableKey = $prefix . $currentTable;
-    $entity = $customDAO->extends;
+    $entity = $field['extends'];
     if (in_array($entity, ['Individual', 'Organization', 'Household'])) {
       $entity = 'Contact';
     }
@@ -7650,31 +7658,32 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
     }
 
     if (!isset($this->_columns[$tableKey])) {
-      $this->_columns[$tableKey]['extends'] = $customDAO->extends;
-      $this->_columns[$tableKey]['grouping'] = $prefix . $customDAO->table_name;
-      $this->_columns[$tableKey]['group_title'] = $prefixLabel . $customDAO->title;
-      $this->_columns[$tableKey]['name'] = $customDAO->table_name;
+      $this->_columns[$tableKey]['extends'] = $field['extends'];
+      $this->_columns[$tableKey]['grouping'] = $prefix . $field['table_name'];
+      $this->_columns[$tableKey]['group_title'] = $prefixLabel . $field['title'];
+      $this->_columns[$tableKey]['name'] = $field['table_name'];
       $this->_columns[$tableKey]['fields'] = [];
       $this->_columns[$tableKey]['filters'] = [];
       $this->_columns[$tableKey]['join_filters'] = [];
       $this->_columns[$tableKey]['group_bys'] = [];
       $this->_columns[$tableKey]['order_bys'] = [];
+      $this->_columns[$tableKey]['aggregates'] = [];
       $this->_columns[$tableKey]['prefix'] = $prefix;
       $this->_columns[$tableKey]['table'] = $currentTable;
       $this->_columns[$tableKey]['extends_table'] = $prefix . CRM_Core_DAO_AllCoreTables::getTableForClass(CRM_Core_DAO_AllCoreTables::getFullName($entity));
     }
-    $fieldName = 'custom_' . ($prefix ? $prefix . '_' : '') . $customDAO->cf_id;
+    $fieldName = 'custom_' . ($prefix ? $prefix . '_' : '') . $field['field_id'];
 
     $curFields[$fieldName] = array(
-      'name' => $customDAO->column_name,
-      'title' => $prefixLabel . $customDAO->label,
-      'dataType' => $customDAO->data_type,
-      'htmlType' => $customDAO->html_type,
+      'name' => $field['field_column_name'],
+      'title' => $prefixLabel . $field['field_label'],
+      'dataType' => $field['field_data_type'],
+      'htmlType' => $field['field_html_type'],
       'is_fields' => TRUE,
     );
 
     if ($this->_customGroupFilters) {
-      $curFilters = $this->addCustomDataFilters($customDAO, $fieldName);
+      $curFilters = $this->addCustomDataFilters($field, $fieldName);
     }
 
     if (!array_key_exists('type', $curFields[$fieldName])) {
@@ -7704,7 +7713,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
     // Add totals field
     if ($curFields[$fieldName]['type'] === CRM_Utils_Type::T_INT) {
       $curFields[$fieldName . '_qty'] = $curFields[$fieldName];
-      $curFields[$fieldName . '_qty']['title'] = "$customDAO->label Quantity";
+      $curFields[$fieldName . '_qty']['title'] = "{$field['field_label']} Quantity";
       $curFields[$fieldName . '_qty']['statistics'] = array('count' => ts("Quantity Selected"));
       // Merge additional fields into list
       $this->_columns[$tableKey]['fields'] = array_merge($this->_columns[$tableKey]['fields'], $curFields);
@@ -7721,29 +7730,29 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
   }
 
   /**
-   * @param Civi\Core\DAO $customDAO
+   * @param array $field
    * @param string $fieldName
    *
    * @return array
    */
-  protected function addCustomDataFilters($customDAO, $fieldName) {
+  protected function addCustomDataFilters($field, $fieldName) {
 
       // this makes aliasing work in favor
       $curFilters[$fieldName] = array(
-        'name' => $customDAO->column_name,
-        'title' => $customDAO->label,
-        'dataType' => $customDAO->data_type,
-        'htmlType' => $customDAO->html_type,
+        'name' => $field['field_column_name'],
+        'title' => $field['field_label'],
+        'dataType' => $field['field_data_type'],
+        'htmlType' => $field['field_html_type'],
         'is_filters' => TRUE,
       );
 
-    switch ($customDAO->data_type) {
+    switch ($field['field_data_type']) {
       case 'Date':
         // filters
         $curFilters[$fieldName]['operatorType'] = CRM_Report_Form::OP_DATE;
         $curFilters[$fieldName]['type'] = CRM_Utils_Type::T_DATE;
         // CRM-6946, show time part for datetime date fields
-        if ($customDAO->time_format) {
+        if ($field['field_time_format']) {
           $curFilters[$fieldName]['type'] = CRM_Utils_Type::T_TIMESTAMP;
         }
         break;
@@ -7776,8 +7785,8 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
       case 'String':
         $curFilters[$fieldName]['type'] = CRM_Utils_Type::T_STRING;
 
-        if (!empty($customDAO->option_group_id)) {
-          if (in_array($customDAO->html_type, array(
+        if (!empty($field['field_option_group_id'])) {
+          if (in_array($field['field_html_type'], array(
             'Multi-Select',
             'AdvMulti-Select',
             'CheckBox'
@@ -7792,7 +7801,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
             $curFilters[$fieldName]['options'] = array();
             $ogDAO = CRM_Core_DAO::executeQuery("SELECT ov.value, ov.label FROM civicrm_option_value ov WHERE ov.option_group_id = %1 ORDER BY ov.weight", array(
               1 => array(
-                $customDAO->option_group_id,
+                $field['field_option_group_id'],
                 'Integer'
               )
             ));
@@ -7804,7 +7813,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
         break;
 
       case 'StateProvince':
-        if (in_array($customDAO->html_type, array(
+        if (in_array($field['field_html_type'], array(
           'Multi-Select State/Province'
         ))
         ) {
@@ -7817,7 +7826,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
         break;
 
       case 'Country':
-        if (in_array($customDAO->html_type, array(
+        if (in_array($field['field_html_type'], array(
           'Multi-Select Country'
         ))
         ) {
@@ -7849,18 +7858,38 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    * @param array $extends
    */
   protected function addCustomDataForEntities($extends) {
+    $fields = $this->getCustomDataDAOs($extends);
+    foreach ($fields as $field) {
+      $this->addCustomDataTable($field, $field['table_name'], $field['prefix'], $field['label']);
+    }
+  }
+
+  /**
+   * @param $extends
+   *
+   * @return array
+   */
+  protected function getCustomDataDAOs($extends) {
+    $extendsKey = implode(',', $extends);
+    if (isset($this->customDataDAOs[$extendsKey])) {
+      return $this->customDataDAOs[$extendsKey];
+    }
     $customGroupWhere = '';
     if (!$this->userHasAllCustomGroupAccess()) {
       $permissionedCustomGroupIDs = CRM_ACL_API::group(CRM_Core_Permission::VIEW, NULL, 'civicrm_custom_group', NULL, NULL);
       if (empty($permCustomGroupIds)) {
-        return;
+        return [];
       }
       $customGroupWhere = "cg.id IN (" . implode(',', $permissionedCustomGroupIDs) . ") AND";
     }
     $extendsMap = [];
     $extendsEntities = array_flip($extends);
     foreach (array_keys($extendsEntities) as $extendsEntity) {
-      if (in_array($extendsEntity, ['Individual', 'Household', 'Organziation'])) {
+      if (in_array($extendsEntity, [
+        'Individual',
+        'Household',
+        'Organziation'
+      ])) {
         $extendsEntities['Contact'] = TRUE;
         unset($extendsEntities[$extendsEntity]);
       }
@@ -7877,7 +7906,7 @@ SELECT cg.table_name, cg.title, cg.extends, cf.id as cf_id, cf.label,
        cf.column_name, cf.data_type, cf.html_type, cf.option_group_id, cf.time_format
 FROM   civicrm_custom_group cg
 INNER  JOIN civicrm_custom_field cf ON cg.id = cf.custom_group_id
-WHERE cg.extends IN ('" . $extendsString  . "') AND
+WHERE cg.extends IN ('" . $extendsString . "') AND
   {$customGroupWhere}
   cg.is_active = 1 AND
   cf.is_active = 1 AND
@@ -7886,15 +7915,32 @@ WHERE cg.extends IN ('" . $extendsString  . "') AND
     $customDAO = CRM_Core_DAO::executeQuery($sql);
 
     $curTable = NULL;
+    $fields = [];
     while ($customDAO->fetch()) {
       $entityName = $customDAO->extends;
       if (in_array($entityName, ['Individual', 'Household', 'Organization'])) {
         $entityName = 'Contact';
       }
       foreach ($extendsMap[$entityName] as $prefix => $label) {
-        $this->addCustomDataTable($customDAO, $customDAO->table_name, $prefix, $label);
+        $fields[$prefix . $customDAO->column_name] = [
+          'dao' => $customDAO,
+          'title' => $customDAO->title,
+          'extends' => $customDAO->extends,
+          'field_id' => $customDAO->cf_id,
+          'field_label' => $customDAO->label,
+          'field_column_name' => $customDAO->column_name,
+          'field_data_type' => $customDAO->data_type,
+          'field_html_type' => $customDAO->html_type,
+          'field_option_group_id' => $customDAO->option_group_id,
+          'field_time_format' => $customDAO->time_format,
+          'prefix' => $prefix,
+          'label' => $label,
+          'table_name' => $customDAO->table_name
+        ];
       }
     }
+    $this->customDataDAOs[$extendsKey] = $fields;
+    return $fields;
   }
 
 }
