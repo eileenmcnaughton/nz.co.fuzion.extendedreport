@@ -829,38 +829,10 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       $this->addAggregateTotal($fieldName);
       return;
     }
-    $options = array();
-
-    // Data type is set for custom fields but not core fields.
-    if (CRM_Utils_Array::value('data_type', $spec) == 'Boolean') {
-      $options = array(
-        'values' => array(
-          0 => array('label' => 'No', 'value' => 0),
-          1 => array('label' => 'Yes', 'value' => 1)
-        )
-      );
-    }
-    elseif (!empty($spec['options'])) {
-      foreach ($spec['options'] as $option => $label) {
-        $options['values'][$option] = array(
-          'label' => $label,
-          'value' => $option
-        );
-      }
-    }
-    else {
-      if (empty($spec['option_group_id'])) {
-        throw new Exception('currently column headers need to be radio or select');
-      }
-      $options = civicrm_api('option_value', 'get', array(
-        'version' => 3,
-        'options' => array('limit' => 50,),
-        'option_group_id' => $spec['option_group_id'],
-      ));
-    }
+    $options = $this->getCustomFieldOptions($spec);
 
     if (!empty($this->_params[$fieldName . '_value']) && CRM_Utils_Array::value($fieldName . '_op', $this->_params) == 'in') {
-      $options['values'] = array_intersect_key($options['values'], array_flip($this->_params[$fieldName . '_value']));
+      $options['values'] = array_intersect_key($options, array_flip($this->_params[$fieldName . '_value']));
     }
 
     $filterSpec = array(
@@ -871,12 +843,12 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     if ($this->getFilterFieldValue($spec)) {
       // for now we will literally just handle IN
       if ($filterSpec['field']['op'] == 'in') {
-        $options['values'] = array_intersect_key($options['values'], array_flip($filterSpec['field']['value']));
+        $options = array_intersect_key($options, array_flip($filterSpec['field']['value']));
         $this->_aggregatesIncludeNULL = FALSE;
       }
     }
 
-    foreach ($options['values'] as $option) {
+    foreach ($options as $option) {
       $fieldAlias = str_replace(array(
         '-',
         '+',
@@ -2543,11 +2515,20 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
 
     $selectedFields = array_keys($firstRow);
     $alterFunctions = $alterMap = array();
-    $pivotRowField = $this->getPivotRowFieldName();
+
+    foreach ($this->getSelectedAggregateRows() as $pivotRowField => $pivotRowFieldSpec) {
+      $pivotRowIsCustomField = substr($pivotRowField, 0, 7) == 'custom_';
+      if ($pivotRowIsCustomField && $pivotRowFieldSpec['html_type'] != 'Text') {
+        $alias = $pivotRowFieldSpec['alias'];
+        $alterFunctions[$alias] = 'alterFromOptions';
+        $alterMap[$alias] = $pivotRowField;
+        $alterSpecs[$alias] = $pivotRowFieldSpec;
+      }
+    }
 
     foreach ($this->_columns as $tableName => $table) {
       if (array_key_exists('metadata', $table)) {
-        foreach ($table['metadata'] as $field => $specs) {
+        foreach ($this->getMetadataByType('metadata') as $field => $specs) {
           if (in_array($tableName . '_' . $field . '_sum', $selectedFields)
             && !empty($this->_groupByArray) && isset($specs['statistics']) && isset($specs['statistics']['cumulative'])) {
             $this->_columnHeaders[$tableName . '_' . $field . '_cumulative']['title'] = $specs['statistics']['cumulative'];
@@ -2580,11 +2561,6 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
               $alterMap[$tableName . '_' . $field] = $field;
               $alterSpecs[$tableName . '_' . $field] = NULL;
             }
-          }
-          if (substr($pivotRowField, 0, 7) == 'custom_' && isset($specs['id']) && $specs['id'] == substr($pivotRowField, 7) && $specs['dataType'] != 'String') {
-            $alterFunctions[$this->getPivotRowTableAlias() . '_' . $pivotRowField] = 'alterFromOptions';
-            $alterMap[$this->getPivotRowTableAlias() . '_' . $pivotRowField] = $field;
-            $alterSpecs[$this->getPivotRowTableAlias() . '_' . $pivotRowField] = $specs;
           }
         }
       }
@@ -2784,14 +2760,20 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
    * @return string
    */
   function alterFromOptions($value, &$row, $selectedField, $criteriaFieldName, $specs) {
-    if ($specs['dataType'] == 'ContactReference') {
+    if ($specs['data_type'] == 'ContactReference') {
       if (!empty($row[$selectedField])) {
         return CRM_Contact_BAO_Contact::displayName($row[$selectedField]);
       }
       return NULL;
     }
     $value = trim($value, CRM_Core_DAO::VALUE_SEPARATOR);
-    return CRM_Utils_Array::value($value, $specs['options']);
+    $options = $this->getCustomFieldOptions($specs);
+    foreach ($options as $option) {
+      if ($option['value'] === $value) {
+        return $option['label'];
+      }
+    }
+    return $value;
   }
 
   /**
@@ -7980,7 +7962,7 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
    * @return mixed
    */
   protected function getCustomFieldMetadata($field, $prefixLabel) {
-    return [
+    return array_merge($field, [
       'name' => $field['column_name'],
       'title' => $prefixLabel . $field['label'],
       'dataType' => $field['data_type'],
@@ -7990,10 +7972,50 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
       'is_group_bys' => FALSE,
       'is_order_bys' => FALSE,
       'is_join_filters' => FALSE,
-      'option_group_id' => $field['option_group_id'],
       'type' => $this->getFieldType($field),
+    ]);
+  }
 
-    ];
+  /**
+   * @param $spec
+   *
+   * @return array
+   * @throws \Exception
+   */
+  protected function getCustomFieldOptions($spec) {
+    $options = array();
+    if (!empty($spec['options'])) {
+      return $options;
+    }
+
+    // Data type is set for custom fields but not core fields.
+    if (CRM_Utils_Array::value('data_type', $spec) == 'Boolean') {
+      $options = array(
+        'values' => array(
+          0 => array('label' => 'No', 'value' => 0),
+          1 => array('label' => 'Yes', 'value' => 1)
+        )
+      );
+    }
+    elseif (!empty($spec['options'])) {
+      foreach ($spec['options'] as $option => $label) {
+        $options['values'][$option] = array(
+          'label' => $label,
+          'value' => $option
+        );
+      }
+    }
+    else {
+      if (empty($spec['option_group_id'])) {
+        throw new Exception('currently column headers need to be radio or select');
+      }
+      $options = civicrm_api('option_value', 'get', array(
+        'version' => 3,
+        'options' => array('limit' => 50,),
+        'option_group_id' => $spec['option_group_id'],
+      ));
+    }
+    return $options['values'];
   }
 
 }
