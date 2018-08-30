@@ -2320,6 +2320,15 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
     }
   }
 
+  /**
+   * Is the custom table selected for any purpose.
+   *
+   * If we retrieve fields from it, filter on it etc we need to join it in.
+   *
+   * @param string $table
+   *
+   * @return bool
+   */
   protected function isCustomTableSelected($table) {
     $spec = $this->_columns[$table];
     $selectedFields = array_intersect_key($this->getSelectedFields(), $spec['fields']);
@@ -2328,6 +2337,16 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
     }
     $selectedFilters = array_intersect_key($this->getSelectedFilters(), $spec['filters']);
     if (!empty($selectedFilters)) {
+      return TRUE;
+    }
+
+    $selectedGroupBys = array_intersect_key($this->getSelectedGroupBys(), $spec['group_bys']);
+    if (!empty($selectedGroupBys)) {
+      return TRUE;
+    }
+
+    $selectedOrderBys = array_intersect_key($this->getSelectedGroupBys(), $spec['order_bys']);
+    if (!empty($selectedOrderBys)) {
       return TRUE;
     }
   }
@@ -7565,6 +7584,22 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
       }
     }
     return $selectedFields;
+  }
+
+  /**
+   * @return array
+   */
+  protected function getSelectedGroupBys() {
+    $groupBys = $this->getMetadataByType('group_bys');
+    return array_intersect_key($groupBys, CRM_Utils_Array::value('group_bys', $this->_params, []));
+  }
+
+  /**
+   * @return array
+   */
+  protected function getSelectedOrderBys() {
+    $orderBys = $this->getMetadataByType('order_bys');
+    return array_intersect_key($orderBys, $this->_params['order_bys']);
   }
 
   /**
