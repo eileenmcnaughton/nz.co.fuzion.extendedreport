@@ -67,6 +67,11 @@ class CRM_Extendedreport_Form_Report_Pledge_Lybuns extends CRM_Extendedreport_Fo
       'type'    => CRM_Utils_Type::T_INT,
       'options' => $optionYear,
       'default' => date('Y'),
+      'is_filters' => TRUE,
+      'is_join_filters' => TRUE,
+      'is_fields' => FALSE,
+      'is_group_bys' => FALSE,
+      'is_order_bys' => FALSE,
     ];
     $this->_groupFilter = TRUE;
     $this->_tagFilter = TRUE;
