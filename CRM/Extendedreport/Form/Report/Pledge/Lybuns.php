@@ -62,21 +62,10 @@ class CRM_Extendedreport_Form_Report_Pledge_Lybuns extends CRM_Extendedreport_Fo
     $this->_columns['civicrm_pledge']['filters']['yid'] =
     $this->_columns['civicrm_pledge']['metadata']['yid'] = [
       'name' => 'start_date',
-      'title' => ts('Last Pledge Start Date'),
-      'type' => CRM_Utils_Type::T_DATE,
-      'operatorType' => CRM_Report_Form::OP_DATE,
-      'clause' => "pledge.contact_id IN
-              (SELECT distinct pledge.contact_id FROM civicrm_pledge pledge
-               WHERE pledge.start_date  BETWEEN '\$from' AND '\$to' AND pledge.is_test = 0
-            )
-            AND pledge.contact_id NOT IN
-            (SELECT distinct pledge.contact_id FROM civicrm_pledge pledge
-             WHERE pledge.start_date >=  ('\$to') AND pledge.is_test = 0) ",
-      'is_filters' => TRUE,
-      'is_join_filters' => TRUE,
-      'is_fields' => FALSE,
-      'is_group_bys' => FALSE,
-      'is_order_bys' => FALSE,
+      'title' => ts('This Year'),
+      'operatorType' => CRM_Report_Form::OP_SELECT,
+      'type'    => CRM_Utils_Type::T_INT,
+      'options' => $optionYear,
       'default' => date('Y'),
     ];
     $this->_groupFilter = TRUE;
