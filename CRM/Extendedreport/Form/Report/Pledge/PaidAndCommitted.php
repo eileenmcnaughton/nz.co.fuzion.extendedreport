@@ -28,17 +28,29 @@ class CRM_Extendedreport_Form_Report_Pledge_PaidAndCommitted extends CRM_Extende
       ) + $this->getColumns('Contact')
       + $this->getColumns('FinancialType');
 
+    $this->_columns['civicrm_pledge_payment']['metadata']['actual_amount'] =
     $this->_columns['civicrm_pledge_payment']['fields']['actual_amount'] = array(
       'title' => ts('Amount Paid'),
       'statistics' => array('sum' => ts('Amount Paid')),
       'type' => CRM_Utils_Type::T_MONEY,
+      'is_fields' => TRUE,
+      'is_filters' => FALSE,
+      'is_join_filters' => FALSE,
+      'is_group_bys' => FALSE,
+      'is_order_bys' => FALSE,
     );
+
     $this->_columns += $this->getColumns('Pledge', array('fields' => TRUE));
 
     $this->_columns['civicrm_pledge']['metadata']['balance_amount'] = array(
       'title' => 'Balance to Pay',
       'type' => CRM_Utils_Type::T_MONEY,
       'dbAlias' => "(COALESCE(sum(pledge.amount), 0) - COALESCE(sum(pledge_payment_civireport.actual_amount), 0))",
+      'is_fields' => TRUE,
+      'is_filters' => FALSE,
+      'is_join_filters' => FALSE,
+      'is_group_bys' => TRUE,
+      'is_order_bys' => FALSE,
     );
 
     $this->_columns['civicrm_pledge']['fields']['balance_amount'] = array(

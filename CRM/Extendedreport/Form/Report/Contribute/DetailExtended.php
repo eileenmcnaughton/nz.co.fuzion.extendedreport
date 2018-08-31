@@ -81,25 +81,19 @@ class CRM_Extendedreport_Form_Report_Contribute_DetailExtended extends CRM_Exten
     $this->_columns['civicrm_contribution']['fields']['currency']['required'] = TRUE;
     $this->_columns['civicrm_contribution']['fields']['currency']['no_display'] = TRUE;
 
-    $this->_columns['civicrm_group'] = array(
-      'dao' => 'CRM_Contact_DAO_GroupContact',
-      'alias' => 'cgroup',
-      'filters' => array(
-        'gid' => array(
-          'name' => 'group_id',
-          'title' => ts('Group'),
-          'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-          'group' => TRUE,
-          'options' => CRM_Core_PseudoConstant::group(),
-          'type' => CRM_Utils_Type::T_INT,
-        ),
-      ),
-    );
     $this->_columns['civicrm_contribution_ordinality'] = array(
       'dao' => 'CRM_Contribute_DAO_Contribution',
       'alias' => 'cordinality',
-      'filters' => array(
-        'ordinality' => array(
+      'metadata' => ['ordinality' => [
+        'is_filters' => TRUE,
+        'is_join_filters' => FALSE,
+        'is_fields' => FALSE,
+        'is_group_bys' => FALSE,
+        'is_order_bys' => FALSE,
+      ]],
+
+      'filters' => [
+        'ordinality' => [
           'title' => ts('Contribution Ordinality'),
           'operatorType' => CRM_Report_Form::OP_MULTISELECT,
           'options' => array(
@@ -107,27 +101,12 @@ class CRM_Extendedreport_Form_Report_Contribute_DetailExtended extends CRM_Exten
             1 => 'Second or Later by Contributor',
           ),
           'type' => CRM_Utils_Type::T_INT,
-        ),
-      ),
+        ],
+      ],
     );
-    $this->_columns['civicrm_note'] = array(
-      'dao' => 'CRM_Core_DAO_Note',
-      'fields' => array(
-        'contribution_note' => array(
-          'name' => 'note',
-          'title' => ts('Contribution Note'),
-        ),
-      ),
-      'filters' => array(
-        'note' => array(
-          'name' => 'note',
-          'title' => ts('Contribution Note'),
-          'operator' => 'like',
-          'type' => CRM_Utils_Type::T_STRING,
-        ),
-      ),
-    );
+    $this->_columns += $this->getColumns('Note');
 
+    $this->_groupFilter = TRUE;
     $this->_tagFilter = TRUE;
 
     // Don't show Batch display column and filter unless batches are being used
