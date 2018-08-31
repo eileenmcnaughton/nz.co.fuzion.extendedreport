@@ -57,6 +57,7 @@ class ContributionDetailExtendedTest extends BaseTestClass implements HeadlessIn
       'report_id' => 'contribution/detailextended',
       'fields' => array (
         'civicrm_contact_display_name' => '1',
+        'contribution_currency' => '1',
       ),
       'order_bys' => array(
         1 => ['column' => 'contribution_financial_type_id', 'order' => 'ASC'],
@@ -64,7 +65,7 @@ class ContributionDetailExtendedTest extends BaseTestClass implements HeadlessIn
       ),
     );
     $rows = $this->getRows($params);
-    $this->assertEquals('USD', $rows[0]['civicrm_contribution_currency']);
+    $this->assertEquals('USD', $rows[0]['civicrm_contribution_contribution_currency']);
   }
 
   public function testDetailExtendedGroupByContact() {
