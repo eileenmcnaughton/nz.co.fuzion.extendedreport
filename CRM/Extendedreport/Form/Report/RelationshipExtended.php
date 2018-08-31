@@ -13,6 +13,15 @@ class CRM_Extendedreport_Form_Report_RelationshipExtended extends CRM_Extendedre
   protected $_customGroupExtends = ['Relationship', 'Contact', 'Individual', 'Household', 'Organization'];
 
   /**
+   * Can this report be used on a contact tab.
+   *
+   * The report must support contact_id in the url for this to work.
+   *
+   * @var bool
+   */
+  protected $isSupportsContactTab = TRUE;
+
+  /**
    * Class constructor.
    */
   public function __construct() {
@@ -60,7 +69,7 @@ class CRM_Extendedreport_Form_Report_RelationshipExtended extends CRM_Extendedre
       ))
       + $this->getColumns('Relationship')
       + $this->getColumns('RelationshipType')
-      + $this->getColumns('Case');
+      + $this->getColumns('Case', ['filters_defaults' => []]);
     parent::__construct();
   }
 
