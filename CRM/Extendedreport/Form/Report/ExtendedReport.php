@@ -1177,46 +1177,35 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       is_array($this->_params['group_bys']) &&
       !empty($this->_params['group_bys'])
     ) {
-      foreach ($this->_columns as $tableName => $table) {
-        if (empty($table['metadata'])) {
-          $this->setMetaDataForTable($tableName);
-        }
-        if (array_key_exists('group_bys', $table)) {
-          foreach ($table['group_bys'] as $fieldName => $fieldData) {
-            $field = $this->_columns[$tableName]['metadata'][$fieldName];
-            if (!empty($this->_params['group_bys'][$fieldName])) {
-              if (!empty($field['chart'])) {
-                $this->assign('chartSupported', TRUE);
-              }
+      foreach ($this->getSelectedGroupBys() as $fieldName => $fieldData) {
+        $groupByKey = $fieldData['table_name'] . '_' . $fieldName;
+        if (!empty($fieldData['frequency']) &&
+          !empty($this->_params['group_bys_freq'][$groupByKey])
+        ) {
 
-              if (!empty($table['group_bys'][$fieldName]['frequency']) &&
-                !empty($this->_params['group_bys_freq'][$fieldName])
-              ) {
+          switch ($this->_params['group_bys_freq'][$groupByKey]) {
+            case 'FISCALYEAR' :
+              $this->_groupByArray[$groupByKey . '_start'] = self::fiscalYearOffset($fieldData['dbAlias']);
+              break;
 
-                switch ($this->_params['group_bys_freq'][$fieldName]) {
-                  case 'FISCALYEAR' :
-                    $this->_groupByArray[$tableName . '_' . $fieldName . '_start'] = self::fiscalYearOffset($field['dbAlias']);
+            case 'YEAR' :
+              $this->_groupByArray[$groupByKey . '_start'] = " {$this->_params['group_bys_freq'][$fieldName]}({$fieldData['dbAlias']})";
+              break;
 
-                  case 'YEAR' :
-                    $this->_groupByArray[$tableName . '_' . $fieldName . '_start'] = " {$this->_params['group_bys_freq'][$fieldName]}({$field['dbAlias']})";
-
-                  default :
-                    $this->_groupByArray[$tableName . '_' . $fieldName . '_start'] =
-                      "EXTRACT(YEAR_{$this->_params['group_bys_freq'][$fieldName]} FROM {$field['dbAlias']})";
-
-                }
-              }
-              else {
-                if (!in_array($field['dbAlias'], $this->_groupByArray)) {
-                  $this->_groupByArray[$tableName . '_' . $fieldName] = $field['dbAlias'];
-                }
-              }
-            }
+            default :
+              $this->_groupByArray[$groupByKey . '_start'] =
+                "EXTRACT(YEAR_{$this->_params['group_bys_freq'][$fieldName]} FROM {$field['dbAlias']})";
+              break;
           }
-
+        }
+        else {
+          if (!in_array($fieldData['dbAlias'], $this->_groupByArray)) {
+            $this->_groupByArray[$groupByKey] = $fieldData['dbAlias'];
+          }
         }
       }
     }
+
     $this->calculateStatsFields();
     $this->isForceGroupBy = (!empty($this->_statFields) && !$this->_noGroupBY && isset($this->_aliases[$this->_baseTable]));
     // if a stat field has been selected then do a group by - this is not in parent
