@@ -2243,9 +2243,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    * Overridden to support custom data for multiple entities of the same type.
    */
   public function extendedCustomDataFrom() {
-    $mapper = CRM_Core_BAO_CustomQuery::$extendsMap;
-
-
     foreach ($this->_columns as $table => $prop) {
       // This is a change - don't rely on table key matching table name.
       if (!empty($prop['extends'])) {
@@ -3247,7 +3244,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       if (empty($spec['dbAlias'])) {
         $spec['dbAlias'] = $tableAlias . '.' . $spec['name'];
       }
-      $daoSpec = CRM_Utils_Array::value($specName, $exportableFields, CRM_Utils_Array::value($tableAlias . '_' . $specName, $exportableFields, []));
+      $daoSpec = CRM_Utils_Array::value($spec['name'], $exportableFields, CRM_Utils_Array::value($tableAlias . '_' . $spec['name'], $exportableFields, []));
       $spec = array_merge($daoSpec , $spec);
       foreach (array_merge($types, ['fields']) as $type) {
         if (!isset($spec['is_' . $type])) {
@@ -4306,238 +4303,6 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       ),
     );
     return $this->buildColumns($specs, 'civicrm_batch', 'CRM_Batch_DAO_Batch');
-  }
-
-  /**
-   * @param array $options
-   *
-   * @return array
-   */
-  function getContactColumns($options = array()) {
-    $defaultOptions = array(
-      'prefix' => '',
-      'prefix_label' => '',
-      'group_by' => TRUE,
-      'order_by' => TRUE,
-      'filters' => TRUE,
-      'fields' => TRUE,
-      'custom_fields' => array('Individual', 'Contact', 'Organization'),
-      'fields_defaults' => array('display_name', 'id'),
-      'filters_defaults' => array(),
-      'group_bys_defaults' => array(),
-      'order_by_defaults' => array('sort_name ASC'),
-      'contact_type' => NULL,
-    );
-
-    $options = array_merge($defaultOptions, $options);
-    $orgOnly = FALSE;
-    if (CRM_Utils_Array::value('contact_type', $options) == 'Organization') {
-      $orgOnly = TRUE;
-    }
-    $tableAlias = $options['prefix'] . 'civicrm_contact';
-
-    $spec = array(
-      $options['prefix'] . 'display_name' => array(
-        'name' => 'display_name',
-        'title' => ts($options['prefix_label'] . 'Contact Name'),
-        'is_fields' => TRUE,
-      ),
-      $options['prefix'] . 'contact_id' => array(
-        'name' => 'id',
-        'title' => ts($options['prefix_label'] . 'Contact ID'),
-        'alter_display' => 'alterContactID',
-        'type' => CRM_Utils_Type::T_INT,
-        'is_order_bys' => TRUE,
-        'is_group_bys' => TRUE,
-        'is_fields' => TRUE,
-        'is_filters' => TRUE,
-        'is_contact_filter' => TRUE,
-      ),
-      $options['prefix'] . 'external_identifier' => array(
-        'name' => 'external_identifier',
-        'title' => ts($options['prefix_label'] . 'External ID'),
-        'type' => CRM_Utils_Type::T_INT,
-        'is_fields' => TRUE,
-      ),
-      $options['prefix'] . 'sort_name' => array(
-        'name' => 'sort_name',
-        'title' => ts($options['prefix_label'] . 'Contact Name (in sort format)'),
-        'is_fields' => TRUE,
-        'is_filters' => TRUE,
-        'is_order_bys' => TRUE,
-      ),
-      $options['prefix'] . 'contact_type' => array(
-        'title' => ts($options['prefix_label'] . 'Contact Type'),
-        'name' => 'contact_type',
-        'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-        'options' => CRM_Contact_BAO_Contact::buildOptions('contact_type'),
-        'is_fields' => TRUE,
-        'is_filters' => TRUE,
-        'is_group_bys' => TRUE,
-      ),
-      $options['prefix'] . 'contact_sub_type' => array(
-        'title' => ts($options['prefix_label'] . 'Contact Sub Type'),
-        'name' => 'contact_sub_type',
-        'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-        'options' => CRM_Contact_BAO_Contact::buildOptions('contact_sub_type'),
-        'is_fields' => TRUE,
-        'is_filters' => TRUE,
-        'is_group_bys' => TRUE,
-      ),
-    );
-    $individualFields = array(
-      $options['prefix'] . 'first_name' => array(
-        'name' => 'first_name',
-        'title' => ts($options['prefix_label'] . 'First Name'),
-        'is_fields' => TRUE,
-        'is_filters' => TRUE,
-        'is_order_bys' => TRUE,
-      ),
-      $options['prefix'] . 'middle_name' => array(
-        'name' => 'middle_name',
-        'title' => ts($options['prefix_label'] . 'Middle Name'),
-        'is_fields' => TRUE,
-      ),
-      $options['prefix'] . 'last_name' => array(
-        'name' => 'last_name',
-        'title' => ts($options['prefix_label'] . 'Last Name'),
-        'default_order' => 'ASC',
-        'is_fields' => TRUE,
-      ),
-      $options['prefix'] . 'nick_name' => array(
-        'name' => 'nick_name',
-        'title' => ts($options['prefix_label'] . 'Nick Name'),
-        'is_fields' => TRUE,
-      ),
-      $options['prefix'] . 'gender_id' => array(
-        'name' => 'gender_id',
-        'title' => ts($options['prefix_label'] . 'Gender'),
-        'options' => CRM_Contact_BAO_Contact::buildOptions('gender_id'),
-        'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-        'alter_display' => 'alterGenderID',
-        'is_fields' => TRUE,
-        'is_filters' => TRUE,
-      ),
-      'birth_date' => array(
-        'title' => ts($options['prefix_label'] . 'Birth Date'),
-        'operatorType' => CRM_Report_Form::OP_DATE,
-        'type' => CRM_Utils_Type::T_DATE,
-        'is_fields' => TRUE,
-        'is_filters' => TRUE,
-      ),
-      'age' => array(
-        'title' => ts($options['prefix_label'] . 'Age'),
-        'dbAlias' => 'TIMESTAMPDIFF(YEAR, ' . $tableAlias . '.birth_date, CURDATE())',
-        'type' => CRM_Utils_Type::T_INT,
-        'is_fields' => TRUE,
-      ),
-    );
-    if (!$orgOnly) {
-      $spec = array_merge($spec, $individualFields);
-    }
-
-    if (!empty($options['custom_fields'])) {
-      $this->_customGroupExtended[$options['prefix'] . 'civicrm_contact'] = array(
-        'extends' => $options['custom_fields'],
-        'title' => $options['prefix_label'],
-        'filters' => $options['filters'],
-        'prefix' => $options['prefix'],
-        'prefix_label' => $options['prefix_label'],
-      );
-    }
-
-    return $this->buildColumns($spec, $options['prefix'] . 'civicrm_contact', 'CRM_Contact_DAO_Contact', $tableAlias, $this->getDefaultsFromOptions($options), $options);
-  }
-
-  /**
-   * Get columns for Case.
-   *
-   * @param $options
-   *
-   * @return array
-   */
-  function getCaseColumns($options) {
-    $config = CRM_Core_Config::singleton();
-    if (!in_array('CiviCase', $config->enableComponents)) {
-      return array('civicrm_case' => array('fields' => array(), 'metadata' => array()));
-    }
-
-    $spec = array(
-      'civicrm_case' => array(
-        'fields' => array(
-          'id' => array(
-            'title' => ts('Case ID'),
-            'name' => 'id',
-            'is_fields' => TRUE,
-          ),
-          'subject' => array(
-            'title' => ts('Case Subject'),
-            'default' => TRUE,
-            'is_fields' => TRUE,
-            'is_filters' => TRUE,
-          ),
-          'status_id' => array(
-            'title' => ts('Case Status'),
-            'default' => TRUE,
-            'name' => 'status_id',
-            'is_fields' => TRUE,
-            'is_filters' => TRUE,
-            'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-            'options' => CRM_Case_BAO_Case::buildOptions('case_status_id'),
-            'type' => CRM_Utils_Type::T_INT,
-          ),
-          'case_type_id' => array(
-            'title' => ts('Case Type'),
-            'default' => TRUE,
-            'is_fields' => TRUE,
-            'is_filters' => TRUE,
-            'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-            'options' => CRM_Case_BAO_Case::buildOptions('case_type_id'),
-            'name' => 'case_type_id',
-            'type' => CRM_Utils_Type::T_INT,
-          ),
-          'start_date' => array(
-            'title' => ts('Case Start Date'),
-            'name' => 'start_date',
-            'operatorType' => CRM_Report_Form::OP_DATE,
-            'type' => CRM_Utils_Type::T_DATE,
-            'default' => TRUE,
-            'is_fields' => TRUE,
-            'is_filters' => TRUE,
-          ),
-          'end_date' => array(
-            'title' => ts('Case End Date'),
-            'name' => 'end_date',
-            'default' => TRUE,
-            'is_fields' => TRUE,
-            'is_filters' => TRUE,
-            'operatorType' => CRM_Report_Form::OP_DATE,
-            'type' => CRM_Utils_Type::T_DATE,
-          ),
-          'duration' => array(
-            'name' => 'duration',
-            'title' => ts('Duration (Days)'),
-            'default' => FALSE,
-            'is_fields' => TRUE,
-            'is_filters' => TRUE,
-            'type' => CRM_Utils_Type::T_INT,
-          ),
-          'is_deleted' => array(
-            'name' => 'is_deleted',
-            'title' => ts('Case Deleted?'),
-            'default' => FALSE,
-            'type' => CRM_Utils_Type::T_BOOLEAN,
-            'is_fields' => TRUE,
-            'is_filters' => TRUE,
-            'operatorType' => CRM_Report_Form::OP_SELECT,
-            'options' => array('' => '--select--') + CRM_Case_BAO_Case::buildOptions('is_deleted'),
-          )
-        )
-      ),
-
-    );
-    // Case is a special word in mysql so pass an alias to prevent it from using case.
-    return $this->buildColumns($spec['civicrm_case']['fields'], $options['prefix'] . 'civicrm_case', 'CRM_Case_DAO_Case', 'case_civireport');
   }
 
   /**
@@ -7287,19 +7052,19 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
     }
 
     foreach ($expFields as $fieldName => $field) {
+      if (isset($field['required'])) {
+        unset($expFields[$fieldName]['required']);
+      }
+      if (isset($field['default'])) {
+        unset($expFields[$fieldName]['default']);
+      }
       // Double index any unique fields to ensure we find a match
       // later on. For example the metadata keys
       // contribution_campaign_id rather than campaign_id
       // this is not super predictable so we ensure that they are keyed by
       // both possibilities
       if (!empty($field['name']) && $field['name'] != $fieldName) {
-        $expFields[$field['name']] = $field;
-      }
-      if (isset($field['required'])) {
-        unset($expFields[$fieldName]['required']);
-      }
-      if (isset($field['default'])) {
-        unset($expFields[$fieldName]['default']);
+        $expFields[$field['name']] = $expFields[$fieldName];
       }
     }
     return $expFields;
@@ -7483,7 +7248,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
 
     $fieldName = 'custom_' . ($prefix ? $prefix . '_' : '') . $field['id'];
 
-    $curFields[$fieldName] = array_merge($this->getCustomFieldMetadata($field, $prefixLabel), ['is_fields' => FALSE]);
+    $curFields[$fieldName] = array_merge($this->getCustomFieldMetadata($field, $prefixLabel, $prefix), ['is_fields' => FALSE]);
 
     if ($this->_customGroupFilters) {
       $curFilters = $this->addCustomDataFilters($field, $fieldName);
@@ -7791,6 +7556,7 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
       $this->_columns[$tableKey]['aggregates'] = [];
       $this->_columns[$tableKey]['prefix'] = $prefix;
       $this->_columns[$tableKey]['table_name'] = $currentTable;
+      $this->_columns[$tableKey]['alias'] = $prefix . $currentTable;
       $this->_columns[$tableKey]['extends_table'] = $prefix . CRM_Core_DAO_AllCoreTables::getTableForClass(CRM_Core_DAO_AllCoreTables::getFullName($entity));
     }
   }
@@ -7798,10 +7564,11 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
   /**
    * @param $field
    * @param $prefixLabel
+   * @param string $prefix
    *
    * @return mixed
    */
-  protected function getCustomFieldMetadata($field, $prefixLabel) {
+  protected function getCustomFieldMetadata($field, $prefixLabel, $prefix = '') {
     return array_merge($field, [
       'name' => $field['column_name'],
       'title' => $prefixLabel . $field['label'],
@@ -7813,6 +7580,7 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
       'is_order_bys' => FALSE,
       'is_join_filters' => FALSE,
       'type' => $this->getFieldType($field),
+      'dbAlias' =>  $prefix . $field['table_name'] . '.' . $field['column_name'],
     ]);
   }
 
