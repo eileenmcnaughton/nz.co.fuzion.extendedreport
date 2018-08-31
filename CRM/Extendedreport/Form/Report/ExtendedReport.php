@@ -7676,6 +7676,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
 
     if ($this->_customGroupFilters) {
       $curFilters = $this->addCustomDataFilters($field, $fieldName);
+      $curFilters[$fieldName]['is_filters'] = TRUE;
     }
 
     if (!array_key_exists('type', $curFields[$fieldName])) {
@@ -7728,7 +7729,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    * @return array
    */
   protected function addCustomDataFilters($field, $fieldName) {
-      $curFilters[$fieldName] = $field;
+    $curFilters[$fieldName] = $field;
 
     switch ($field['data_type']) {
       case 'Date':
