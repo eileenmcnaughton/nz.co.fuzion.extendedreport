@@ -5942,6 +5942,7 @@ AND {$this->_aliases['civicrm_line_item']}.entity_table = 'civicrm_participant')
    * Join the pledge to the next payment due.
    */
   protected function joinNextPaymentFromPledge() {
+    CRM_Core_DAO::executeQuery('DROP TEMPORARY TABLE IF EXISTS next_pledge_payment');
     if (!$this->isTableSelected('next_civicrm_pledge_payment')) {
       $this->_from .= "";
     }

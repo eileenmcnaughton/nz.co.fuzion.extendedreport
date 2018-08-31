@@ -419,7 +419,7 @@ class CRM_Extendedreport_Form_Report_Pledge_Lybunt extends CRM_Extendedreport_Fo
   function whereClause(&$field, $op, $value, $min, $max) {
     if ($field['name'] =='start_date') {
       return(
-      "pledge_civireport.contact_id NOT IN
+      "pledge.contact_id NOT IN
 (SELECT distinct cont.id FROM civicrm_contact cont, civicrm_pledge pledge
  WHERE  cont.id = pledge.contact_id AND YEAR (pledge.start_date) = $value AND pledge.is_test = 0 )"
       );

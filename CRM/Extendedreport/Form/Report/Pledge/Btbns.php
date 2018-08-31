@@ -39,11 +39,11 @@ class CRM_Extendedreport_Form_Report_Pledge_Btbns extends CRM_Extendedreport_For
       'title' => ts('Last Pledge Start Date'),
       'type' => CRM_Utils_Type::T_DATE,
       'operatorType' => CRM_Report_Form::OP_DATE,
-      'clause' => "pledge_civireport.contact_id IN
+      'clause' => "pledge.contact_id IN
               (SELECT distinct pledge.contact_id FROM civicrm_pledge pledge
                WHERE pledge.start_date  BETWEEN '\$from' AND '\$to' AND pledge.is_test = 0
             )
-            AND pledge_civireport.contact_id NOT IN
+            AND pledge.contact_id NOT IN
             (SELECT distinct pledge.contact_id FROM civicrm_pledge pledge
              WHERE pledge.start_date >=  ('\$to') AND pledge.is_test = 0) ",
       'is_filters' => TRUE,
@@ -51,6 +51,7 @@ class CRM_Extendedreport_Form_Report_Pledge_Btbns extends CRM_Extendedreport_For
       'is_fields' => FALSE,
       'is_group_bys' => FALSE,
       'is_order_bys' => FALSE,
+      'default' => date('Y'),
     ];
     $this->_groupFilter = TRUE;
     $this->_tagFilter = TRUE;
