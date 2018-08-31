@@ -7634,6 +7634,9 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
       if (substr($key, -6, 6) === '_value' && ($value !== '' && $value !== NULL && $value !== "NULL")) {
         $selectedFilters[] = substr($key, 0, strlen($key) - 6);
       }
+      if (substr($key, -9, 9) === '_relative' && !empty($value)) {
+        $selectedFilters[] = substr($key, 0, strlen($key) - 9);
+      }
     }
     return array_intersect_key($filters, array_flip($selectedFilters));
   }
