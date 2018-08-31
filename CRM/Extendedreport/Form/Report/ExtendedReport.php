@@ -401,7 +401,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     foreach ($this->_columns as $tableName => $table) {
       $this->_aliases[$tableName] = $this->setTableAlias($table, $tableName);
       $expFields = $this->getMetadataForFields($table);
-      $doNotCopy = array('required', 'default');
 
       // Extended reports customisation starts ==
       // We don't want all the schema data copied onto group_bys or order_bys.
@@ -425,10 +424,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
             unset($field['name']);
 
             if (array_key_exists($name, $expFields)) {
-              foreach ($doNotCopy as $dnc) {
-                // unset the values we don't want to be copied.
-                unset($expFields[$name][$dnc]);
-              }
               if (empty($field)) {
                 $this->_columns[$tableName][$fieldGrp][$fieldName] = $expFields[$name];
               }
@@ -604,7 +599,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     $havingFields = $this->getSelectedHavings();
     $havingsToAdd = array_diff_key($havingFields, $selectedFields);
     foreach ($havingsToAdd as $fieldName => $spec) {
-      $select[$fieldName] = "{$spec['selectAlias']} as {$spec['table']}_{$fieldName}";
+      $select[$fieldName] = "{$spec['selectAlias']} as {$spec['table_name']}_{$fieldName}";
     }
 
     foreach ($selectedFields as $fieldName => $field) {
@@ -3249,6 +3244,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     if ($tableAlias) {
       $columns[$tableName]['alias'] = $tableAlias;
     }
+    $exportableFields = $this->getMetadataForFields(['dao' => $daoName]);
 
     foreach ($specs as $specName => $spec) {
       unset($spec['default']);
@@ -3258,6 +3254,8 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       if (empty($spec['dbAlias'])) {
         $spec['dbAlias'] = $tableAlias . '.' . $spec['name'];
       }
+      $daoSpec = CRM_Utils_Array::value($specName, $exportableFields, CRM_Utils_Array::value($tableAlias . '_' . $specName, $exportableFields, []));
+      $spec = array_merge($daoSpec , $spec);
       foreach (array_merge($types, ['fields']) as $type) {
         if (!isset($spec['is_' . $type])) {
           $spec['is_' . $type] = FALSE;
@@ -7493,6 +7491,12 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
       // both possibilities
       if (!empty($field['name']) && $field['name'] != $fieldName) {
         $expFields[$field['name']] = $field;
+      }
+      if (isset($field['required'])) {
+        unset($expFields[$fieldName]['required']);
+      }
+      if (isset($field['default'])) {
+        unset($expFields[$fieldName]['default']);
       }
     }
     return $expFields;
