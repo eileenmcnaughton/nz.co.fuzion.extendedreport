@@ -37,6 +37,11 @@ class CRM_Extendedreport_Form_Report_Pledge_Detail extends CRM_Extendedreport_Fo
       'title' => ts('Do not consider payments after...'),
       'operatorType' => self::OP_SINGLEDATE,
       'pseudofield' => TRUE,
+      'is_fields' => FALSE,
+      'is_filters' => TRUE,
+      'is_group_bys' => FALSE,
+      'is_order_bys' => FALSE,
+      'is_join_filters' => FALSE,
     );
     $this->_groupFilter = TRUE;
     $this->_tagFilter = TRUE;

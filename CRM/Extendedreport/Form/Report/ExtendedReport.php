@@ -3765,23 +3765,18 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    * @return array
    */
   protected function getFinancialTypeColumns() {
-    return array(
-      'civicrm_financial_type' => array(
-        'dao' => 'CRM_Financial_DAO_FinancialType',
-        'grouping' => 'pledge-fields',
-        'fields' => array(
-          'name' => array(
-            'title' => ts('Financial_type')
-          ),
-          'accounting_code' => array(
-            'title' => ts('Accounting Code')
-          ),
-          'is_deductible' => array(
-            'title' => ts('Tax Deductible')
-          )
-        ),
+    $specs = [
+      'name' => array(
+        'title' => ts('Financial_type')
+      ),
+      'accounting_code' => array(
+        'title' => ts('Accounting Code')
+      ),
+      'is_deductible' => array(
+        'title' => ts('Tax Deductible')
       )
-    );
+    ];
+    return $this->buildColumns($specs, 'civicrm_financial_type', 'CRM_Financial_DAO_FinancialType', NULL);
   }
 
   /**

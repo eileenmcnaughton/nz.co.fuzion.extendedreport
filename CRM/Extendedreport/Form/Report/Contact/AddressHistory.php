@@ -34,7 +34,7 @@ class CRM_Extendedreport_Form_Report_Contact_AddressHistory extends CRM_Extended
         'fields' => TRUE,
         'order_by' => FALSE,
         //'fields_defaults' => array('address_name', 'street_address', 'supplemental_address_1', 'supplemental_address_2', 'city', 'state_province_id', 'country_id', 'postal_code', 'county_id'),
-      'fields_defaults' => array('display_address'),
+        'fields_defaults' => array('display_address'),
       )
     );
 
@@ -84,6 +84,13 @@ class CRM_Extendedreport_Form_Report_Contact_AddressHistory extends CRM_Extended
         'default' => 1,
       ),
     );
+
+    foreach ($logMetaData as $index => $field) {
+      foreach (['filters', 'join_filters', 'group_bys', 'order_bys'] as $type) {
+        $logMetaData[$index]['is_' . $type] = FALSE;
+      }
+      $logMetaData[$index]['dbAlias'] = $this->_columns['log_civicrm_address']['alias'] . '.' . $field['name'];
+    }
     $this->_columns['log_civicrm_address']['metadata'] += $logMetaData;
     $this->_columns['log_civicrm_address']['fields'] += $logMetaData;
     $this->_columns['log_civicrm_address']['filters']['contact_id'] = $logMetaData['contact_id'];
