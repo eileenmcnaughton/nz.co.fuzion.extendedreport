@@ -4,7 +4,6 @@
  * Class CRM_Extendedreport_Form_Report_ActivityExtended
  */
 class CRM_Extendedreport_Form_Report_ActivityExtended extends CRM_Extendedreport_Form_Report_ExtendedReport {
-  //todo move def to getActivityColumns
   /**
    * @var array
    */
@@ -15,10 +14,7 @@ class CRM_Extendedreport_Form_Report_ActivityExtended extends CRM_Extendedreport
       'filters' => TRUE,
     ),
   );
-  /**
-   * @var null
-   */
-  protected $_summary = NULL;
+
   /**
    * @var bool
    */
@@ -34,8 +30,6 @@ class CRM_Extendedreport_Form_Report_ActivityExtended extends CRM_Extendedreport
 
   /**
    * Class constructor.
-   *
-   * @todo allow filtering on other contacts
    */
   public function __construct() {
     $this->_columns = $this->getColumns(
