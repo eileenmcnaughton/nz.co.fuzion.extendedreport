@@ -263,6 +263,11 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
           'title' => ts('Make available for contact summary page (requires contact layout editor extension)'),
           'type' => 'checkbox',
         ],
+        'contact_id_filter_field' => [
+          'title' => ts('Select field to use as contact filter'),
+          'type' => 'select',
+          'options' => $this->getContactFilterFieldOptions(),
+        ],
       ];
     }
   }
@@ -1521,7 +1526,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    */
   public function setDefaultValues($freeze = TRUE) {
     $freezeGroup = array();
-    $contact_id = $this->getContactIdFilter();
     $overrides = [];
 
     // FIXME: generalizing form field naming conventions would reduce
@@ -1562,11 +1566,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       }
       if (array_key_exists('filters', $table)) {
         foreach ($table['filters'] as $fieldName => $field) {
-          if ($contact_id && $fieldName === $this->contactIDField) {
-            $overrides["{$fieldName}_value"] = $contact_id;
-            $overrides["{$fieldName}_op"] = 'in';
-          }
-          elseif (isset($field['default'])) {
+          if (isset($field['default'])) {
             if (CRM_Utils_Array::value('type', $field) & CRM_Utils_Type::T_DATE
               // This is the overriden part.
               && !(CRM_Utils_Array::value('operatorType', $field) == self::OP_SINGLEDATE)
@@ -1667,7 +1667,9 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     }
 
     CRM_Report_Form_Instance::setDefaultValues($this, $this->_defaults);
-
+    $contact_id = $this->getContactIdFilter();
+    $this->_defaults[$this->contactIDField . '_value'] = $contact_id;
+    $this->_defaults[$this->contactIDField . '_op'] = 'in';
     return $this->_defaults;
   }
 
@@ -7451,6 +7453,9 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    * @return int|null
    */
   protected function getContactIdFilter() {
+    if (!empty($this->_defaults['contact_id_filter_field'])) {
+      $this->contactIDField = $this->_defaults['contact_id_filter_field'];
+    }
     if (empty($this->contactIDField)) {
       return NULL;
     }
@@ -7563,6 +7568,34 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
         $this->_noDisplay[] = $table . '_' . $requiredField;
       }
     }
+  }
+
+  /**
+   * Get contact filter field options in a [name => label] array format.
+   * @return array
+   */
+  protected function getContactFilterFieldOptions() {
+    $fields = $this->getContactFilterFields();
+    $options = [];
+    foreach ($fields as $fieldName => $spec) {
+      $options[$fieldName] = $spec['title'];
+    }
+    return $options;
+  }
+
+  /**
+   * Get fields that can be used as a contact filter.
+   *
+   * @return array
+   */
+  protected function getContactFilterFields() {
+    $fields = [];
+    foreach ($this->getMetadataByType('filters') as $fieldName => $spec) {
+      if (!empty($spec['is_contact_filter'])) {
+        $fields[$fieldName] = $spec;
+      }
+    }
+    return $fields;
   }
 
   /**

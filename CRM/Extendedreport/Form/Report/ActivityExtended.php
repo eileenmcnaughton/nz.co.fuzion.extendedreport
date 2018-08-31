@@ -15,6 +15,16 @@ class CRM_Extendedreport_Form_Report_ActivityExtended extends CRM_Extendedreport
     ),
   );
 
+
+  /**
+   * Can this report be used on a contact tab.
+   *
+   * The report must support contact_id in the url for this to work.
+   *
+   * @var bool
+   */
+  protected $isSupportsContactTab = TRUE;
+
   /**
    * @var bool
    */
