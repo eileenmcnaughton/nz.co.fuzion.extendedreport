@@ -608,7 +608,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     }
 
     foreach ($selectedFields as $fieldName => $field) {
-      $this->addAdditionalRequiredFields($field, $field['table']);
+      $this->addAdditionalRequiredFields($field, $field['table_name']);
       $tableName = $field['table_name'];
       // 1. In many cases we want select clause to be built in slightly different way
       // for a particular field of a particular type.
@@ -3255,6 +3255,9 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       if (empty($spec['name'])) {
         $spec['name'] = $specName;
       }
+      if (empty($spec['dbAlias'])) {
+        $spec['dbAlias'] = $tableAlias . '.' . $spec['name'];
+      }
       foreach (array_merge($types, ['fields']) as $type) {
         if (!isset($spec['is_' . $type])) {
           $spec['is_' . $type] = FALSE;
@@ -4361,6 +4364,8 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'is_order_bys' => TRUE,
         'is_group_bys' => TRUE,
         'is_fields' => TRUE,
+        'is_filters' => TRUE,
+        'is_contact_filter' => TRUE,
       ),
       $options['prefix'] . 'external_identifier' => array(
         'name' => 'external_identifier',
@@ -5430,7 +5435,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       ),
 
     );
-    return $this->buildColumns($spec, $options['prefix'] . 'civicrm_activity', 'CRM_Activity_DAO_Activity', NULL, $defaults);
+    return $this->buildColumns($spec, $options['prefix'] . 'civicrm_activity', 'CRM_Activity_DAO_Activity', NULL, $defaults, $options);
   }
 
   /**
