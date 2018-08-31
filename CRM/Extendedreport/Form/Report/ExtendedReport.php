@@ -270,6 +270,10 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
           'type' => 'select',
           'options' => $this->getContactFilterFieldOptions(),
         ],
+        'number_of_rows_to_render' => [
+          'title' => ts('Override default number of rows with'),
+          'type' => 'text',
+        ],
       ];
     }
   }
@@ -1429,6 +1433,9 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
             NULL, NULL, NULL, $this->_fourColumnAttribute
           );
         }
+        else {
+          $this->addElement($field['type'], $fieldName, $field['title']);
+        }
       }
     }
     if (!empty($this->_options)) {
@@ -1968,6 +1975,9 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     }
 
     if ($applyLimit && !CRM_Utils_Array::value('charts', $this->_params)) {
+      if (!empty($this->_params['number_of_rows_to_render'])) {
+        $this->_dashBoardRowCount = $this->_params['number_of_rows_to_render'];
+      }
       $this->limit();
     }
 
