@@ -7528,24 +7528,20 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    * in other functions
    */
   public function storeWhereHavingClauseArray() {
-    foreach ($this->_columns as $tableName => $table) {
-      if (array_key_exists('filters', $table)) {
-        foreach ($table['filters'] as $fieldName => $field) {
-          if (!empty($field['pseudofield'])) {
-            continue;
-          }
-          $clause = NULL;
-          $clause = $this->generateFilterClause($field, $fieldName);
-          if (!empty($clause)) {
-            $this->whereClauses[$tableName][] = $clause;
-            if (CRM_Utils_Array::value('having', $field)) {
-              $this->_havingClauses[$fieldName] = $clause;
-            }
-            else {
-              $this->_whereClauses[] = $clause;
-            }
-          }
-
+    $filters = $this->getSelectedFilters();
+    foreach ($filters as $filterName => $field) {
+      if (!empty($field['pseudofield'])) {
+        continue;
+      }
+      $clause = NULL;
+      $clause = $this->generateFilterClause($field, $filterName);
+      if (!empty($clause)) {
+        $this->whereClauses[$filterName] = $clause;
+        if (CRM_Utils_Array::value('having', $field)) {
+          $this->_havingClauses[$filterName] = $clause;
+        }
+        else {
+          $this->_whereClauses[] = $clause;
         }
       }
     }
@@ -7639,7 +7635,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
         $selectedFilters[] = substr($key, 0, strlen($key) - 6);
       }
     }
-    return array_intersect_key(array_flip($selectedFilters), $filters);
+    return array_intersect_key($filters, array_flip($selectedFilters));
   }
 
   /**
