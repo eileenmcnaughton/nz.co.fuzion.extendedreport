@@ -373,6 +373,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
         'is_group_bys' => FALSE,
         'is_order_bys' => FALSE,
         'is_join_filters' => FALSE,
+        'dbAlias' => 'cgroup.gid',
       ),
     );
   }
