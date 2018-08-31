@@ -28,107 +28,32 @@ class CRM_Extendedreport_Form_Report_Pledge_Btbns extends CRM_Extendedreport_For
       $date['minYear']++;
     }
 
-    $this->_columns = array(
-      'civicrm_contact' => array(
-        'dao' => 'CRM_Contact_DAO_Contact',
-        'grouping' => 'contact-field',
-        'fields' => array(
-          'display_name' => array(
-            'title' => ts('Donor Name'),
-            'default' => TRUE,
-            'required' => TRUE,
-          ),
-        ),
-        'filters' => array(
-          'sort_name' => array(
-            'title' => ts('Donor Name'),
-            'operator' => 'like',
-          ),
-        ),
-      ),
-      'civicrm_email' => array(
-        'dao' => 'CRM_Core_DAO_Email',
-        'grouping' => 'contact-field',
-        'fields' => array(
-          'email' => array(
-            'title' => ts('Email'),
-            'default' => TRUE,
-          ),
-        ),
-      ),
-      'civicrm_phone' => array(
-        'dao' => 'CRM_Core_DAO_Phone',
-        'grouping' => 'contact-field',
-        'fields' => array(
-          'phone' => array(
-            'title' => ts('Phone No'),
-            'default' => TRUE,
-          ),
-        ),
-      ),
-      'civicrm_pledge' => array(
-        'dao' => 'CRM_Pledge_DAO_Pledge',
-        'fields' => array(
-          'contact_id' => array(
-            'title' => ts('contactId'),
-            'required' => TRUE,
-            'no_repeat' => TRUE,
-            'type' => CRM_Utils_Type::T_INT,
-          ),
-          'amount' => array(
-            'title' => ts('Total Amount'),
-            'required' => TRUE,
-            'no_repeat' => TRUE,
-            'type' => CRM_Utils_Type::T_MONEY,
-          ),
-          'start_date' => array(
-            'title' => ts('Start Date (within range)'),
-            'required' => TRUE,
-            'no_repeat' => TRUE,
-            'type' => CRM_Utils_Type::T_DATE,
-          ),
-        ),
-        'filters' => array(
-          'yid' => array(
-            'name' => 'start_date',
-            'title' => ts('Last Pledge Start Date'),
-            'type' => CRM_Utils_Type::T_DATE,
-            'operatorType' => CRM_Report_Form::OP_DATE,
-            'clause' => "pledge_civireport.contact_id IN
+    $this->_columns = $this->getColumns('Contact')
+      + $this->getColumns('Email')
+      + $this->getColumns('Phone')
+      + $this->getColumns('Pledge');
+
+    $this->_columns['civicrm_pledge']['filters']['yid'] =
+    $this->_columns['civicrm_pledge']['metadata']['yid'] = [
+      'name' => 'start_date',
+      'title' => ts('Last Pledge Start Date'),
+      'type' => CRM_Utils_Type::T_DATE,
+      'operatorType' => CRM_Report_Form::OP_DATE,
+      'clause' => "pledge.contact_id IN
               (SELECT distinct pledge.contact_id FROM civicrm_pledge pledge
                WHERE pledge.start_date  BETWEEN '\$from' AND '\$to' AND pledge.is_test = 0
             )
-            AND pledge_civireport.contact_id NOT IN
+            AND pledge.contact_id NOT IN
             (SELECT distinct pledge.contact_id FROM civicrm_pledge pledge
              WHERE pledge.start_date >=  ('\$to') AND pledge.is_test = 0) ",
-          ),
-          'status_id' => array(
-            'title' => 'Pledge Status',
-            'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-            'type' => CRM_Utils_Type::T_INT,
-            'options' => CRM_Contribute_PseudoConstant::contributionStatus(),
-            'default' => array(
-              '1',
-            ),
-          ),
-        ),
-      ),
-      'civicrm_group' => array(
-        'dao' => 'CRM_Contact_DAO_GroupContact',
-        'alias' => 'cgroup',
-        'filters' => array(
-          'gid' => array(
-            'name' => 'group_id',
-            'title' => ts('Group'),
-            'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-            'group' => TRUE,
-            'type' => CRM_Utils_Type::T_INT,
-            'options' => CRM_Core_PseudoConstant::group()
-          )
-        )
-      )
-    );
-
+      'is_filters' => TRUE,
+      'is_join_filters' => TRUE,
+      'is_fields' => FALSE,
+      'is_group_bys' => FALSE,
+      'is_order_bys' => FALSE,
+      'default' => date('Y'),
+    ];
+    $this->_groupFilter = TRUE;
     $this->_tagFilter = TRUE;
     parent::__construct();
   }

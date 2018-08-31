@@ -22,6 +22,7 @@ use Civi\Test\TransactionalInterface;
  */
 class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, HookInterface, TransactionalInterface {
 
+  protected $ids = [];
   public function setUpHeadless() {
     // Civi\Test has many helpers, like install(), uninstall(), sql(), and sqlFile().
     // See: https://github.com/civicrm/org.civicrm.testapalooza/blob/master/civi-test.md
@@ -41,6 +42,7 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
   }
 
   public function tearDown() {
+    CRM_Core_DAO::executeQuery('DELETE FROM civicrm_pledge');
     parent::tearDown();
   }
 
@@ -161,6 +163,10 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
         ),
       ),
     );
+    // Store the ids for later cleanup.
+    $pledges = $this->callAPISuccess('Pledge', 'get', [])['values'];
+    $this->ids['Pledge'] = array_keys($pledges);
+
     foreach ($contacts as $params) {
       $contact = $this->callAPISuccess('Contact', 'create', $params);
       $contributions = $this->callAPISuccess('Contribution', 'get', array('contact_id' => $contact['id']));

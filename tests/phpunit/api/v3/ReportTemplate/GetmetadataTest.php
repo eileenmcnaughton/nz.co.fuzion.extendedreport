@@ -42,8 +42,8 @@ class api_v3_ReportTemplate_GetmetadataTest extends \PHPUnit_Framework_TestCase 
    * Note how the function name begins with the word "test".
    */
   public function testApiExample() {
-    $result = civicrm_api3('ReportTemplate', 'Getmetadata', array('magicword' => 'sesame'));
-    $this->assertEquals('Twelve', $result['values'][12]['name']);
+    $this->markTestIncomplete('not done yet');
+    $result = civicrm_api3('ReportTemplate', 'Getmetadata', array('report_id' => 'pledge/details'));
   }
 
 }

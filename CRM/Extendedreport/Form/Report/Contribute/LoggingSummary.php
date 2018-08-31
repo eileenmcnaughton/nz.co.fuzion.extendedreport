@@ -56,6 +56,8 @@ class CRM_Extendedreport_Form_Report_Contribute_LoggingSummary extends CRM_Exten
       'title' => ts('Changed By'),
       'alter_display' => 'alterContactID',
       'type' => CRM_Utils_Type::T_INT,
+      'is_fields' => TRUE,
+      'no_display' => FALSE,
     );
 
     $this->_columns['civicrm_contribution']['fields']['log_date'] = array(
@@ -87,14 +89,21 @@ class CRM_Extendedreport_Form_Report_Contribute_LoggingSummary extends CRM_Exten
       'title' => ts('Action'),
       'type' => CRM_Utils_Type::T_STRING,
     );
+    foreach ($this->_columns['civicrm_contribution']['metadata'] as $index => $field) {
+      foreach (['filters', 'group_bys', 'order_bys', 'join_filters'] as $type) {
+        if (!isset($this->_columns['civicrm_contribution']['metadata'][$index]['is_' . $type])) {
+          $this->_columns['civicrm_contribution']['metadata'][$index]['is_' . $type] = FALSE;
+        }
+      }
+    }
     $this->_aliases[$this->_baseTable] = 'contribution';
     parent::__construct();
   }
 
   /**
    * @param $value
-   * @param $row
-   * @param $fieldname
+   * @param array $row
+   * @param string $fieldname
    *
    * @return mixed
    */

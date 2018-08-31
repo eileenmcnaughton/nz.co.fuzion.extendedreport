@@ -4,7 +4,6 @@
  * Class CRM_Extendedreport_Form_Report_ActivityExtended
  */
 class CRM_Extendedreport_Form_Report_ActivityExtended extends CRM_Extendedreport_Form_Report_ExtendedReport {
-  //todo move def to getActivityColumns
   /**
    * @var array
    */
@@ -15,10 +14,17 @@ class CRM_Extendedreport_Form_Report_ActivityExtended extends CRM_Extendedreport
       'filters' => TRUE,
     ),
   );
+
+
   /**
-   * @var null
+   * Can this report be used on a contact tab.
+   *
+   * The report must support contact_id in the url for this to work.
+   *
+   * @var bool
    */
-  protected $_summary = NULL;
+  protected $isSupportsContactTab = TRUE;
+
   /**
    * @var bool
    */
@@ -34,8 +40,6 @@ class CRM_Extendedreport_Form_Report_ActivityExtended extends CRM_Extendedreport
 
   /**
    * Class constructor.
-   *
-   * @todo allow filtering on other contacts
    */
   public function __construct() {
     $this->_columns = $this->getColumns(

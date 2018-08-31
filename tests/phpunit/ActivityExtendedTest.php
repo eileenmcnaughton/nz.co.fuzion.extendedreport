@@ -34,4 +34,19 @@ class ActivityExtendedTest extends BaseTestClass implements HeadlessInterface, H
     $this->assertContains('235959', $this->sql[0]);
   }
 
+
+  public function testCidFilter() {
+    $params = [
+      'report_id' => 'activityextended',
+      'fields' =>
+        [
+          'activity_activity_type_id' => '1',
+          'activity_subject' => '1',
+          'activity_activity_date_time' => '1',
+          'activity_status_id' => '1',
+        ],
+    ];
+    $this->getRows($params);
+  }
+
 }

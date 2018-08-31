@@ -54,102 +54,26 @@ class CRM_Extendedreport_Form_Report_Pledge_Lybuns extends CRM_Extendedreport_Fo
       $date['minYear']++;
     }
 
-    $this->_columns = array(
-      'civicrm_contact' => array(
-        'dao' => 'CRM_Contact_DAO_Contact',
-        'grouping' => 'contact-field',
-        'fields' => array(
-          'display_name' => array(
-            'title' => ts('Donor Name'),
-            'default' => TRUE,
-            'required' => TRUE,
-          ),
-        ),
-        'filters' => array(
-          'sort_name' => array(
-            'title' => ts('Donor Name'),
-            'operator' => 'like',
-          ),
-        ),
-      ),
-      'civicrm_email' => array(
-        'dao' => 'CRM_Core_DAO_Email',
-        'grouping' => 'contact-field',
-        'fields' => array(
-          'email' => array(
-            'title' => ts('Email'),
-            'default' => TRUE,
-          ),
-        ),
-      ),
-      'civicrm_phone' => array(
-        'dao' => 'CRM_Core_DAO_Phone',
-        'grouping' => 'contact-field',
-        'fields' => array(
-          'phone' => array(
-            'title' => ts('Phone No'),
-            'default' => TRUE,
-          ),
-        ),
-      ),
-      'civicrm_pledge' => array(
-        'dao' => 'CRM_Pledge_DAO_Pledge',
-        'fields' => array(
-          'contact_id' => array(
-            'title' => ts('contactId'),
-            'no_display' => TRUE,
-            'required' => TRUE,
-            'no_repeat' => TRUE,
-          ),
-          'amount' => array(
-            'title' => ts('Total Amount'),
-            'no_display' => TRUE,
-            'required' => TRUE,
-            'no_repeat' => TRUE,
+    $this->_columns = $this->getColumns('Contact')
+      + $this->getColumns('Email')
+      + $this->getColumns('Phone')
+      + $this->getColumns('Pledge');
 
-          ),
-          'start_date' => array(
-            'title' => ts('Year'),
-            'no_display' => TRUE,
-            'required' => TRUE,
-            'no_repeat' => TRUE,
-            'type' => CRM_Utils_Type::T_INT,
-          ),
-        ),
-        'filters' => array(
-          'yid' => array(
-            'name' => 'start_date',
-            'title' => ts('This Year'),
-            'operatorType' => CRM_Report_Form::OP_SELECT,
-            'type'    => CRM_Utils_Type::T_INT,
-            'options' => $optionYear,
-            'default' => date('Y'),
-          ),
-          'status_id' => array(
-            'title' => ts('Pledge status'),
-            'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-            'options' => CRM_Contribute_PseudoConstant::contributionStatus(),
-            'default' => array('1'),
-            'type' => CRM_Utils_Type::T_INT,
-          ),
-        ),
-      ),
-      'civicrm_group' => array(
-        'dao' => 'CRM_Contact_DAO_GroupContact',
-        'alias' => 'cgroup',
-        'filters' => array(
-          'gid' => array(
-            'name' => 'group_id',
-            'title' => ts('Group'),
-            'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-            'group' => TRUE,
-            'type' => CRM_Utils_Type::T_INT,
-            'options' => CRM_Core_PseudoConstant::group()
-          ),
-        ),
-      ),
-    );
-
+    $this->_columns['civicrm_pledge']['filters']['yid'] =
+    $this->_columns['civicrm_pledge']['metadata']['yid'] = [
+      'name' => 'start_date',
+      'title' => ts('This Year'),
+      'operatorType' => CRM_Report_Form::OP_SELECT,
+      'type'    => CRM_Utils_Type::T_INT,
+      'options' => $optionYear,
+      'default' => date('Y'),
+      'is_filters' => TRUE,
+      'is_join_filters' => FALSE,
+      'is_fields' => FALSE,
+      'is_group_bys' => FALSE,
+      'is_order_bys' => FALSE,
+    ];
+    $this->_groupFilter = TRUE;
     $this->_tagFilter = TRUE;
     parent::__construct();
 
@@ -239,12 +163,12 @@ class CRM_Extendedreport_Form_Report_Pledge_Lybuns extends CRM_Extendedreport_Fo
     if ($field['name'] == 'start_date') {
       $value = CRM_Utils_Type::escape($value, 'Int');
       return "
-        pledge_civireport.contact_id NOT IN (
+        pledge.contact_id NOT IN (
           SELECT distinct pledge.contact_id
           FROM civicrm_pledge pledge
           WHERE YEAR(pledge.start_date) >= $value
           AND pledge.is_test = 0)
-          AND pledge_civireport.contact_id
+          AND pledge.contact_id
           IN (SELECT distinct pledge.contact_id
           FROM civicrm_pledge pledge
           WHERE YEAR(pledge.start_date) = ($value - 1)
@@ -271,8 +195,8 @@ class CRM_Extendedreport_Form_Report_Pledge_Lybuns extends CRM_Extendedreport_Fo
     $statistics = parent::statistics($rows);
     if (!empty($rows)) {
       $select = "
-                      SELECT
-                            SUM({$this->_aliases['civicrm_pledge']}.amount ) as amount ";
+        SELECT
+         SUM({$this->_aliases['civicrm_pledge']}.amount ) as amount ";
 
       $sql = "{$select} {$this->_from } {$this->_where}";
       $dao = CRM_Core_DAO::executeQuery($sql);

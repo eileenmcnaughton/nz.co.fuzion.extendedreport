@@ -14,10 +14,10 @@
         <email>eileen@fuzion.co.nz</email>
     </maintainer>
     <releaseDate>2018-05-01</releaseDate>
-    <version>3.5</version>
+    <version>4</version>
     <develStage>stable</develStage>
     <compatibility>
-        <ver>5.0</ver>
+        <ver>5.5</ver>
     </compatibility>
     <comments>Extended reports create other report options such as crosstab urls, multiple contact custom fields, price
         set reports
