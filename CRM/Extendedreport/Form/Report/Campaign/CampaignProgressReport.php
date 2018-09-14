@@ -31,6 +31,7 @@ class CRM_Extendedreport_Form_Report_Campaign_CampaignProgressReport extends CRM
               'title' => ts('Financial type'),
               'alter_display' => 'alterFinancialType',
               'statistics' => array('GROUP_CONCAT'),
+              'type' => CRM_Utils_Type::T_INT,
               'is_fields' => TRUE,
               'is_filters' => TRUE,
               'is_group_bys' => TRUE,
@@ -191,29 +192,33 @@ class CRM_Extendedreport_Form_Report_Campaign_CampaignProgressReport extends CRM
    */
   protected function joinProgressTable() {
     $until = CRM_Utils_Array::value('effective_date_value', $this->_params);
+    $untilClause = '';
+    if ($until) {
+      $untilClause = ' AND c.receive_date <="' . CRM_Utils_Type::validate(CRM_Utils_Date::processDate($until, 235959), 'Integer') . '"';
+    }
     $this->_from .= " LEFT JOIN
 
     (
     SELECT CONCAT('p', p.id) as id, contact_id, campaign_id, financial_type_id,
-    COALESCE(amount, 0) as total_amount,
+    COALESCE(amount, 0) - COALESCE(cancelled_amount, 0) as total_amount,
     currency,
     COALESCE(paid_amount, 0) as paid_amount,
-    COALESCE(amount - paid_amount, 0) as balance_amount,
+    COALESCE(amount - paid_amount, 0) - COALESCE(cancelled_amount, 0) as balance_amount,
     1 as is_pledge
 
 FROM civicrm_pledge p
 LEFT JOIN
-    (SELECT pledge_id, sum(if(status_id = 1";
-    if ($until) {
-      $this->_from .= ' AND c.receive_date <="' . CRM_Utils_Type::validate(CRM_Utils_Date::processDate($until, 235959), 'Integer') . '"';
-    }
-    $this->_from .= ", actual_amount, 0)) as paid_amount
+    (SELECT pledge_id,
+    sum(if(status_id = 1 $untilClause , actual_amount, 0)) as paid_amount,
+    sum(if(status_id = 3 $untilClause , scheduled_amount, 0)) as cancelled_amount
+
       FROM civicrm_pledge_payment
       LEFT JOIN civicrm_contribution c ON c.id = contribution_id
       GROUP BY pledge_id
      ) as pp
      ON pp.pledge_id = p.id
-     WHERE p.is_test = 0";
+     WHERE p.is_test = 0
+     ";
     if ($until) {
       $this->_from .= ' AND p.create_date <="' . CRM_Utils_Type::validate(CRM_Utils_Date::processDate($until, 235959), 'Integer') . '"';
     }
