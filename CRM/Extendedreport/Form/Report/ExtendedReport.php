@@ -563,14 +563,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   }
 
   /**
-   * Set the code major version.
-   */
-  function setVersion () {
-    $this->fullVersion = CRM_Utils_System::version();
-    $this->majorVersion = str_replace('.', '', substr($this->fullVersion, 0, 3));
-  }
-
-  /**
    * Get metadata for a particular type.
    *
    * @param string $type
@@ -643,69 +635,66 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       }
     }
 
-    foreach (array_keys($this->_columns) as $tableName) {
-      foreach ($this->_columns[$tableName] as $fieldName => $field) {
+    foreach ($this->_columns as $tableName => $table) {
+      // select for group bys
+      if (array_key_exists('group_bys', $table)) {
+        foreach ($this->_columns[$tableName]['group_bys'] as $fieldName => $field) {
+          // 1. In many cases we want select clause to be built in slightly different way
+          // for a particular field of a particular type.
+          // 2. This method when used should receive params by reference and modify $this->_columnHeaders
+          // as needed.
+          $selectClause = $this->selectClause($tableName, 'group_bys', $fieldName, $field);
+          if ($selectClause) {
+            $select[] = $selectClause;
+            continue;
+          }
 
-        // select for group bys
-        if (array_key_exists('group_bys', $this->_columns[$tableName])) {
-          foreach ($this->_columns[$tableName]['group_bys'] as $fieldName => $field) {
-            // 1. In many cases we want select clause to be built in slightly different way
-            // for a particular field of a particular type.
-            // 2. This method when used should receive params by reference and modify $this->_columnHeaders
-            // as needed.
-            $selectClause = $this->selectClause($tableName, 'group_bys', $fieldName, $field);
-            if ($selectClause) {
-              $select[] = $selectClause;
-              continue;
+          if (!empty($this->_params['group_bys']) &&
+            !empty($this->_params['group_bys'][$fieldName]) &&
+            !empty($this->_params['group_bys_freq'])
+          ) {
+            switch (CRM_Utils_Array::value($fieldName, $this->_params['group_bys_freq'])) {
+              case 'YEARWEEK':
+                $select[] = "DATE_SUB({$field['dbAlias']}, INTERVAL WEEKDAY({$field['dbAlias']}) DAY) AS {$tableName}_{$fieldName}_start";
+                $select[] = "YEARWEEK({$field['dbAlias']}) AS {$tableName}_{$fieldName}_subtotal";
+                $select[] = "WEEKOFYEAR({$field['dbAlias']}) AS {$tableName}_{$fieldName}_interval";
+                $field['title'] = 'Week';
+                break;
+
+              case 'YEAR':
+                $select[] = "MAKEDATE(YEAR({$field['dbAlias']}), 1)  AS {$tableName}_{$fieldName}_start";
+                $select[] = "YEAR({$field['dbAlias']}) AS {$tableName}_{$fieldName}_subtotal";
+                $select[] = "YEAR({$field['dbAlias']}) AS {$tableName}_{$fieldName}_interval";
+                $field['title'] = 'Year';
+                break;
+
+              case 'MONTH':
+                $select[] = "DATE_SUB({$field['dbAlias']}, INTERVAL (DAYOFMONTH({$field['dbAlias']})-1) DAY) as {$tableName}_{$fieldName}_start";
+                $select[] = "MONTH({$field['dbAlias']}) AS {$tableName}_{$fieldName}_subtotal";
+                $select[] = "MONTHNAME({$field['dbAlias']}) AS {$tableName}_{$fieldName}_interval";
+                $field['title'] = 'Month';
+                break;
+
+              case 'QUARTER':
+                $select[] = "STR_TO_DATE(CONCAT( 3 * QUARTER( {$field['dbAlias']} ) -2 , '/', '1', '/', YEAR( {$field['dbAlias']} ) ), '%m/%d/%Y') AS {$tableName}_{$fieldName}_start";
+                $select[] = "QUARTER({$field['dbAlias']}) AS {$tableName}_{$fieldName}_subtotal";
+                $select[] = "QUARTER({$field['dbAlias']}) AS {$tableName}_{$fieldName}_interval";
+                $field['title'] = 'Quarter';
+                break;
             }
+            // for graphs and charts -
+            if (!empty($this->_params['group_bys_freq'][$fieldName])) {
+              $this->_interval = $field['title'];
+              $this->_columnHeaders["{$tableName}_{$fieldName}_start"]['title']
+                = $field['title'] . ' Beginning';
+              $this->_columnHeaders["{$tableName}_{$fieldName}_start"]['type'] = $field['type'];
+              $this->_columnHeaders["{$tableName}_{$fieldName}_start"]['group_by'] = $this->_params['group_bys_freq'][$fieldName];
 
-            if (!empty($this->_params['group_bys']) &&
-              !empty($this->_params['group_bys'][$fieldName]) &&
-              !empty($this->_params['group_bys_freq'])
-            ) {
-              switch (CRM_Utils_Array::value($fieldName, $this->_params['group_bys_freq'])) {
-                case 'YEARWEEK':
-                  $select[] = "DATE_SUB({$field['dbAlias']}, INTERVAL WEEKDAY({$field['dbAlias']}) DAY) AS {$tableName}_{$fieldName}_start";
-                  $select[] = "YEARWEEK({$field['dbAlias']}) AS {$tableName}_{$fieldName}_subtotal";
-                  $select[] = "WEEKOFYEAR({$field['dbAlias']}) AS {$tableName}_{$fieldName}_interval";
-                  $field['title'] = 'Week';
-                  break;
-
-                case 'YEAR':
-                  $select[] = "MAKEDATE(YEAR({$field['dbAlias']}), 1)  AS {$tableName}_{$fieldName}_start";
-                  $select[] = "YEAR({$field['dbAlias']}) AS {$tableName}_{$fieldName}_subtotal";
-                  $select[] = "YEAR({$field['dbAlias']}) AS {$tableName}_{$fieldName}_interval";
-                  $field['title'] = 'Year';
-                  break;
-
-                case 'MONTH':
-                  $select[] = "DATE_SUB({$field['dbAlias']}, INTERVAL (DAYOFMONTH({$field['dbAlias']})-1) DAY) as {$tableName}_{$fieldName}_start";
-                  $select[] = "MONTH({$field['dbAlias']}) AS {$tableName}_{$fieldName}_subtotal";
-                  $select[] = "MONTHNAME({$field['dbAlias']}) AS {$tableName}_{$fieldName}_interval";
-                  $field['title'] = 'Month';
-                  break;
-
-                case 'QUARTER':
-                  $select[] = "STR_TO_DATE(CONCAT( 3 * QUARTER( {$field['dbAlias']} ) -2 , '/', '1', '/', YEAR( {$field['dbAlias']} ) ), '%m/%d/%Y') AS {$tableName}_{$fieldName}_start";
-                  $select[] = "QUARTER({$field['dbAlias']}) AS {$tableName}_{$fieldName}_subtotal";
-                  $select[] = "QUARTER({$field['dbAlias']}) AS {$tableName}_{$fieldName}_interval";
-                  $field['title'] = 'Quarter';
-                  break;
-              }
-              // for graphs and charts -
-              if (!empty($this->_params['group_bys_freq'][$fieldName])) {
-                $this->_interval = $field['title'];
-                $this->_columnHeaders["{$tableName}_{$fieldName}_start"]['title']
-                  = $field['title'] . ' Beginning';
-                $this->_columnHeaders["{$tableName}_{$fieldName}_start"]['type'] = $field['type'];
-                $this->_columnHeaders["{$tableName}_{$fieldName}_start"]['group_by'] = $this->_params['group_bys_freq'][$fieldName];
-
-                // just to make sure these values are transferred to rows.
-                // since we 'll need them for calculation purpose,
-                // e.g making subtotals look nicer or graphs
-                $this->_columnHeaders["{$tableName}_{$fieldName}_interval"] = array('no_display' => TRUE);
-                $this->_columnHeaders["{$tableName}_{$fieldName}_subtotal"] = array('no_display' => TRUE);
-              }
+              // just to make sure these values are transferred to rows.
+              // since we 'll need them for calculation purpose,
+              // e.g making subtotals look nicer or graphs
+              $this->_columnHeaders["{$tableName}_{$fieldName}_interval"] = array('no_display' => TRUE);
+              $this->_columnHeaders["{$tableName}_{$fieldName}_subtotal"] = array('no_display' => TRUE);
             }
           }
         }
@@ -740,7 +729,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
 
     if (empty($rowColumns)) {
       if (empty($rowFields)) {
-        $this->addRowHeader(FALSE, FALSE, FALSE);
+        $this->addRowHeader(FALSE, [], FALSE);
       }
       else {
         foreach ($rowFields as $field => $fieldDetails) {
@@ -915,6 +904,8 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    * @param array $spec
    *   Array containing the name descriptors we have.
    *   If a value is found it will be added to the spec.
+   *
+   * @return string
    */
   function getFilterFieldValue(&$spec) {
     $fieldName = $spec['table_name'] . '_' . $spec['name'];
@@ -923,6 +914,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       $spec['field']['op'] = $this->_params[$fieldName . '_op'];
       return $this->_params[$fieldName . '_value'];
     }
+    return '';
   }
 
   /**
@@ -958,7 +950,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
           }
         }
         else {
-          //@todo - basically have separate handling for the string vs array scenarios
           $fn = $availableClauses[$fromClause]['callback'];
           $extra = array();
           if (isset($this->_joinFilters[$fromClause])) {
@@ -1048,18 +1039,14 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    * the order by clause
    */
   function storeOrderByArray() {
-    $orderBys = array();
 
     $isGroupBy = !empty($this->_groupByArray);
-    $ordeBys = $this->getSelectedOrderBys();
-    if (CRM_Utils_Array::value('order_bys', $this->_params) &&
-      is_array($this->_params['order_bys']) &&
-      !empty($this->_params['order_bys'])
-    ) {
+    $orderBys = $this->getSelectedOrderBys();
+    if (!empty($orderBys)) {
 
       // Process order_bys in user-specified order
-      foreach ($this->_params['order_bys'] as $orderBy) {
-        $orderByField = array();
+      foreach ($orderBys as $orderBy) {
+        $orderByField = [];
         foreach ($this->_columns as $tableName => $table) {
           if (array_key_exists('order_bys', $table)) {
             // For DAO columns defined in $this->_columns
@@ -1083,25 +1070,24 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
               }
             }
           }
-        }
-
-        if (!empty($orderByField)) {
-          $this->_orderByFields[] = $orderByField;
-          if (empty($this->_groupByArray)) {
-            $orderBys[] = "({$table['metadata'][$orderBy['column']]['dbAlias']}) {$orderBy['order']}";
-          }
-          else {
-            // Ensure order bys are in the select. Use alias
-            $orderBys[] = "({$orderByField['tplField']}) {$orderBy['order']}";
-            if (!isset($this->_params['fields'][$orderByField['column']])) {
-              // We will select it if not selected.
-              $this->_params['fields'][$orderByField['column']] = 1;
-              $this->_columns[$tableName][$orderByField['column']]['no_display'] = 1;
+          if (!empty($orderByField)) {
+            $this->_orderByFields[] = $orderByField;
+            if (empty($this->_groupByArray)) {
+              $orderBys[] = "({$table['metadata'][$orderBy['column']]['dbAlias']}) {$orderBy['order']}";
             }
-          }
-          // Record any section headers for assignment to the template
-          if (CRM_Utils_Array::value('section', $orderBy)) {
-            $this->_sections[$orderByField['tplField']] = $orderByField;
+            else {
+              // Ensure order bys are in the select. Use alias
+              $orderBys[] = "({$orderByField['tplField']}) {$orderBy['order']}";
+              if (!isset($this->_params['fields'][$orderByField['column']])) {
+                // We will select it if not selected.
+                $this->_params['fields'][$orderByField['column']] = 1;
+                $this->_columns[$tableName][$orderByField['column']]['no_display'] = 1;
+              }
+            }
+            // Record any section headers for assignment to the template
+            if (CRM_Utils_Array::value('section', $orderBy)) {
+              $this->_sections[$orderByField['tplField']] = $orderByField;
+            }
           }
         }
       }
@@ -1201,7 +1187,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
 
             default :
               $this->_groupByArray[$groupByKey . '_start'] =
-                "EXTRACT(YEAR_{$this->_params['group_bys_freq'][$fieldName]} FROM {$field['dbAlias']})";
+                "EXTRACT(YEAR_{$this->_params['group_bys_freq'][$fieldName]} FROM {$fieldData['dbAlias']})";
               break;
           }
         }
@@ -2052,9 +2038,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
 
     if (!CRM_Utils_File::isIncludable('templates/' . $defaultTpl)) {
       $defaultTpl = 'CRM/Report/Form.tpl';
-    }
-    if (CRM_Utils_Array::value('templates', $this->_params) == 1) {
-      //
     }
     return $defaultTpl;
   }
@@ -3482,9 +3465,11 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       CRM_Core_PseudoConstant::populate($_events['all'], 'CRM_Event_DAO_Event', FALSE, 'title', 'is_active', "is_template IS NULL OR is_template = 0", 'title');
     }
     $specs = array(
-      'participant_id' => array(
+      'id' => array(
         'title' => 'Participant ID',
         'is_fields' => TRUE,
+        'name' => 'id',
+        'type' => CRM_Utils_Type::T_INT,
       ),
       'participant_record' => array(
         'name' => 'id',
@@ -3530,7 +3515,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'is_fields' => TRUE,
       ),
       'participant_fee_amount' => NULL,
-      'participant_register_date' => array(
+      'register_date' => array(
         'title' => 'Registration Date',
         'operatorType' => CRM_Report_Form::OP_DATE,
         'is_fields' => TRUE,
@@ -3927,6 +3912,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'name' => 'id',
         'is_fields' => TRUE,
         'title' => ts('Event ID'),
+        'type' => CRM_Utils_Type::T_INT,
       ),
       'title' => array(
         'title' => ts('Event Title'),
@@ -3969,6 +3955,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       'event_end_date' => array(
         'title' => ts('Event End Date'),
         'is_fields' => TRUE,
+        'name' => 'end_date',
       ),
       'max_participants' => array(
         'title' => ts('Capacity'),
@@ -4592,6 +4579,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'name' => 'id',
         'title' => ts('Relationship ID'),
         'is_fields' => TRUE,
+        'type' => CRM_Utils_Type::T_STRING,
       ),
       $prefix . 'relationship_start_date' => array(
         'title' => ts('Relationship Start Date'),
@@ -4781,6 +4769,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'title' => ts($options['prefix_label'] . 'Address Name'),
         'name' => 'name',
         'is_fields' => TRUE,
+        'type' => CRM_Utils_Type::T_STRING,
       ),
       $options['prefix'] . 'display_address' => array(
         'title' => ts($options['prefix_label'] . 'Display Address'),
@@ -4960,9 +4949,10 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'alter_display' => 'alterLocationTypeID',
       ),
       $options['prefix'] . 'id' => array(
-        'title' => ts($options['prefix_label'] . 'ID'),
+        'title' => ts($options['prefix_label'] . ' Address ID'),
         'name' => 'id',
         'is_fields' => TRUE,
+        'type' => CRM_Utils_Type::T_INT,
       ),
       $options['prefix'] . 'is_primary' => array(
         'name' => 'is_primary',
@@ -5003,6 +4993,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'name' => 'name',
         'title' => 'Tags associated with this person',
         'is_fields' => TRUE,
+        'type' => CRM_Utils_Type::T_STRING,
       )
     );
 
@@ -5357,8 +5348,9 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    * Add join from contact table to primary phone.
    *
    * @param string $prefix
+   * @param array $extra
    */
-  function joinPrimaryPhoneFromContact($prefix = '', $extra = array()) {
+  function joinPrimaryPhoneFromContact($prefix = '', $extra = []) {
     $this->_from .= " LEFT JOIN civicrm_phone {$this->_aliases[$prefix . 'civicrm_phone']}
     ON {$this->_aliases[$prefix . 'civicrm_phone']}.contact_id = {$this->_aliases[$prefix . 'civicrm_contact']}.id
     AND {$this->_aliases[$prefix . 'civicrm_phone']}.is_primary = 1
@@ -5418,8 +5410,6 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     if (empty($tmpTableName)) {
 
       $tmpTableName = 'civicrm_report_temp_lastestActivity' . date('his') . rand(1, 1000);
-      $targetTable = 'civicrm_report_temp_target' . date('his') . rand(1, 1000);
-      $assigneeTable = 'civicrm_report_temp_assignee' . date('his') . rand(1, 1000);
       $sql = "CREATE {$this->_temporary} TABLE $tmpTableName
    (
     `contact_id` INT(10) NULL,
@@ -6985,7 +6975,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    * @param string $tableName
    * @param string $fieldName
    * @param array $field
-   * @param string $select
+   * @param array $select
    * @return array
    */
   protected function addBasicFieldToSelect($tableName, $fieldName, $field, $select) {
