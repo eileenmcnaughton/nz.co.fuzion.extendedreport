@@ -141,11 +141,6 @@ class CRM_Extendedreport_Form_Report_Contribute_DetailExtended extends CRM_Exten
         FROM  civicrm_contact      {$this->_aliases['civicrm_contact']} {$this->_aclFrom}
               INNER JOIN civicrm_contribution {$this->_aliases['civicrm_contribution']}
                       ON {$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_contribution']}.contact_id AND {$this->_aliases['civicrm_contribution']}.is_test = 0";
-    if (CRM_Utils_Array::value('contribution_or_soft_value', $this->_params) == 'soft_credits_only') {
-      $this->_from .= "
-               INNER JOIN civicrm_contribution_soft contribution_soft_civireport
-                       ON contribution_soft_civireport.contribution_id = {$this->_aliases['civicrm_contribution']}.id";
-    }
 
     if (!empty($this->_params['ordinality_value'])) {
       $this->_from .= "
@@ -158,9 +153,7 @@ class CRM_Extendedreport_Form_Report_Contribute_DetailExtended extends CRM_Exten
     $this->joinEmailFromContact();
 
     // include contribution note
-    if (CRM_Utils_Array::value('contribution_note', $this->_params['fields']) ||
-      CRM_Utils_Array::value('note_value', $this->_params)
-    ) {
+    if ($this->isTableSelected('civicrm_note')) {
       $this->_from .= "
             LEFT JOIN civicrm_note {$this->_aliases['civicrm_note']}
                       ON ( {$this->_aliases['civicrm_note']}.entity_table = 'civicrm_contribution' AND

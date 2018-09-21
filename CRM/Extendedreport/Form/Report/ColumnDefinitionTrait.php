@@ -73,11 +73,6 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
         ),
 
       ),
-      'source_contact_id' => array(
-        'no_display' => TRUE,
-        'required' => FALSE,
-        'is_fields' => TRUE,
-      ),
       'activity_date_time' => array(
         'title' => ts('Activity Date'),
         'default' => TRUE,
@@ -224,13 +219,6 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
             'is_filters' => TRUE,
             'operatorType' => CRM_Report_Form::OP_DATE,
             'type' => CRM_Utils_Type::T_DATE,
-          ),
-          'duration' => array(
-            'name' => 'duration',
-            'title' => ts('Duration (Days)'),
-            'is_fields' => TRUE,
-            'is_filters' => TRUE,
-            'type' => CRM_Utils_Type::T_INT,
           ),
           'is_deleted' => array(
             'name' => 'is_deleted',

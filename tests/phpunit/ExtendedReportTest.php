@@ -73,7 +73,35 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
       }
 
     }
+  }
 
+  /**
+   * @dataProvider getAllNonLoggingReports
+   *
+   * @param int $reportID
+   */
+  public function testReportsRunAllFields($reportID) {
+    $metadata = $this->callAPISuccess('ReportTemplate', 'getmetadata', ['report_id' => $reportID])['values'];
+    $params = [
+      'report_id' => $reportID,
+      'fields' => array_fill_keys(array_keys($metadata['fields']), 1),
+    ];
+    $this->getRows($params);
+  }
+
+  public function getAllNonLoggingReports() {
+    $reports = $this->getAllReports();
+    $return = [];
+    foreach ($reports as $report) {
+      $return[] = [$report['params']['report_url']];
+    }
+    return $return;
+  }
+
+  public function getAllReports() {
+    $reports = array();
+    extendedreport_civicrm_managed($reports);
+    return $reports;
   }
 
   /**
