@@ -45,6 +45,7 @@ class CRM_Extendedreport_Form_Report_Pledge_Sybunt extends CRM_Extendedreport_Fo
   public function __construct() {
     $yearsInPast = 8;
     $yearsInFuture = 2;
+    $optionYear = NULL;
     $date = CRM_Core_SelectValues::date('custom', NULL, $yearsInPast, $yearsInFuture);
     $count = $date['maxYear'];
     while ($date['minYear'] <= $count) {
@@ -163,18 +164,17 @@ class CRM_Extendedreport_Form_Report_Pledge_Sybunt extends CRM_Extendedreport_Fo
     if ($field['name'] == 'start_date') {
       $value = CRM_Utils_Type::escape($value, 'Int');
       return "
-        pledge_civireport.contact_id NOT IN (
+        {$this->_aliases['civicrm_pledge']}.contact_id NOT IN (
           SELECT distinct pledge.contact_id
           FROM civicrm_pledge pledge
           WHERE YEAR(pledge.start_date) = $value
           AND pledge.is_test = 0
         )";
     }
-    parent::whereClause($field, $op, $value, $min, $max);
+    return parent::whereClause($field, $op, $value, $min, $max);
   }
 
   function groupBy() {
-    $this->assign('chartSupported', TRUE);
     $this->_groupByArray = array($this->_aliases['civicrm_pledge'] . '.contact_id');
     $this->_groupBy = CRM_Contact_BAO_Query::getGroupByFromSelectColumns($this->_selectClauses, $this->_groupByArray) . ", Year({$this->_aliases['civicrm_pledge']}.start_date) WITH ROLLUP ";
   }
@@ -239,35 +239,31 @@ class CRM_Extendedreport_Form_Report_Pledge_Sybunt extends CRM_Extendedreport_Fo
       }
 
       $current_year = $this->_params['yid_value'];
-      $previous_year = $current_year - 1;
-      $previous_pyear = $current_year - 2;
-      $previous_ppyear = $current_year - 3;
       $upTo_year = $current_year - 4;
 
       $rows = $row = array();
       $dao = CRM_Core_DAO::executeQuery($sql);
       $contributionSum = 0;
-      $yearcal = array();
+
       while ($dao->fetch()) {
-        if (!$dao->civicrm_pledge_contact_id) {
+        if (!$dao->civicrm_pledge_pledge_contact_id) {
           continue;
         }
-        $row = array();
         foreach ($this->_columnHeaders as $key => $value) {
           if (property_exists($dao, $key)) {
-            $rows[$dao->civicrm_pledge_contact_id][$key] = $dao->$key;
+            $rows[$dao->civicrm_pledge_pledge_contact_id][$key] = $dao->$key;
           }
         }
-        if ($dao->civicrm_pledge_start_date) {
-          if ($dao->civicrm_pledge_start_date > $upTo_year) {
+        if ($dao->civicrm_pledge_pledge_start_date) {
+          if ($dao->civicrm_pledge_pledge_start_date > $upTo_year) {
             $contributionSum += $dao->civicrm_pledge_amount;
-            $rows[$dao->civicrm_pledge_contact_id][$dao->civicrm_pledge_start_date] = $dao->civicrm_pledge_amount;
+            $rows[$dao->civicrm_pledge_pledge_contact_id][$dao->civicrm_pledge_pledge_start_date] = $dao->civicrm_pledge_amount;
           }
         }
         else {
-          $rows[$dao->civicrm_pledge_contact_id]['civicrm_life_time_total'] = $dao->civicrm_pledge_amount;
+          $rows[$dao->civicrm_pledge_pledge_contact_id]['civicrm_life_time_total'] = $dao->civicrm_pledge_amount;
           if (($dao->civicrm_pledge_amount - $contributionSum) > 0) {
-            $rows[$dao->civicrm_pledge_contact_id]["civicrm_upto_{$upTo_year}"] = $dao->civicrm_pledge_amount - $contributionSum;
+            $rows[$dao->civicrm_pledge_pledge_contact_id]["civicrm_upto_{$upTo_year}"] = $dao->civicrm_pledge_amount - $contributionSum;
           }
           $contributionSum = 0;
         }
@@ -282,45 +278,6 @@ class CRM_Extendedreport_Form_Report_Pledge_Sybunt extends CRM_Extendedreport_Fo
 
     // do print / pdf / instance stuff if needed
     $this->endPostProcess($rows);
-  }
-
-  /**
-   * @param $rows
-   */
-  function buildChart(&$rows) {
-    $graphRows = array();
-    $count = 0;
-    $current_year = $this->_params['yid_value'];
-    $previous_year = $current_year - 1;
-    $previous_two_year = $current_year - 2;
-    $previous_three_year = $current_year - 3;
-    $upto = $current_year - 4;
-
-    $interval[$previous_year] = $previous_year;
-    $interval[$previous_two_year] = $previous_two_year;
-    $interval[$previous_three_year] = $previous_three_year;
-    $interval["upto_{$upto}"] = "Up To {$upto}";
-
-    foreach ($rows as $key => $row) {
-      $display["upto_{$upto}"] = CRM_Utils_Array::value("upto_{$upto}", $display) + CRM_Utils_Array::value("civicrm_upto_{$upto}", $row);
-      $display[$previous_year] = CRM_Utils_Array::value($previous_year, $display) + CRM_Utils_Array::value($previous_year, $row);
-      $display[$previous_two_year] = CRM_Utils_Array::value($previous_two_year, $display) + CRM_Utils_Array::value($previous_two_year, $row);
-      $display[$previous_three_year] = CRM_Utils_Array::value($previous_three_year, $display) + CRM_Utils_Array::value($previous_three_year, $row);
-    }
-
-    $graphRows['value'] = $display;
-    $config = CRM_Core_Config::Singleton();
-    $chartInfo = array(
-      'legend' => 'Sybunt Report',
-      'xname' => 'Year',
-      'yname' => "Amount ({$config->defaultCurrency})"
-    );
-    if ($this->_params['charts']) {
-      // build the chart.
-      require_once 'CRM/Utils/OpenFlashChart.php';
-      CRM_Utils_OpenFlashChart::reportChart($graphRows, $this->_params['charts'], $interval, $chartInfo);
-      $this->assign('chartType', $this->_params['charts']);
-    }
   }
 
   /**

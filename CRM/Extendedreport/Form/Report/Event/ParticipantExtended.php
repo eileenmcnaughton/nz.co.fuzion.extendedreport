@@ -8,8 +8,6 @@ class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Exten
   protected $_summary = NULL;
   protected $_baseTable = 'civicrm_participant';
   protected $skipACL = FALSE;
-  protected $_contribField = FALSE;
-  protected $_lineitemField = FALSE;
   protected $_groupFilter = TRUE;
   protected $_tagFilter = TRUE;
   protected $joinFiltersTab = TRUE;
@@ -119,29 +117,6 @@ class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Exten
   }
 
   /**
-   * Get price levels.
-   *
-   * @return array
-   */
-  protected function getPriceLevels() {
-    $query = "
-SELECT     DISTINCT cv.label, cv.id
-FROM      civicrm_price_field_value cv
-LEFT JOIN civicrm_price_field cf ON cv.price_field_id = cf.id
-LEFT JOIN civicrm_price_set_entity ce ON ce.price_set_id = cf.price_set_id
-WHERE     ce.entity_table = 'civicrm_event'
-GROUP BY  cv.label, cv.id
-";
-    $dao = CRM_Core_DAO::executeQuery($query);
-    $elements = array();
-    while ($dao->fetch()) {
-      $elements[$dao->id] = "$dao->label\n";
-    }
-
-    return $elements;
-  }
-
-  /**
    * Declare from clauses used in the from clause for this report.
    *
    * @return array
@@ -173,9 +148,9 @@ GROUP BY  cv.label, cv.id
     }
     if ($this->isTableSelected('civicrm_line_item')) {
       $this->_from .= "
-            LEFT JOIN civicrm_line_item line_item_civireport
-              ON line_item_civireport.entity_table = 'civicrm_participant'
-              AND line_item_civireport.entity_id = {$this->_aliases['civicrm_participant']}.id
+            LEFT JOIN civicrm_line_item {$this->_aliases['civicrm_line_item']}
+              ON {$this->_aliases['civicrm_line_item']}.entity_table = 'civicrm_participant'
+              AND {$this->_aliases['civicrm_line_item']}.entity_id = {$this->_aliases['civicrm_participant']}.id
       ";
     }
   }
