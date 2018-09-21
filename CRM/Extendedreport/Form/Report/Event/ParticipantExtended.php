@@ -148,9 +148,9 @@ class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Exten
     }
     if ($this->isTableSelected('civicrm_line_item')) {
       $this->_from .= "
-            LEFT JOIN civicrm_line_item line_item_civireport
-              ON line_item_civireport.entity_table = 'civicrm_participant'
-              AND line_item_civireport.entity_id = {$this->_aliases['civicrm_participant']}.id
+            LEFT JOIN civicrm_line_item {$this->_aliases['civicrm_line_item']}
+              ON {$this->_aliases['civicrm_line_item']}.entity_table = 'civicrm_participant'
+              AND {$this->_aliases['civicrm_line_item']}.entity_id = {$this->_aliases['civicrm_participant']}.id
       ";
     }
   }
