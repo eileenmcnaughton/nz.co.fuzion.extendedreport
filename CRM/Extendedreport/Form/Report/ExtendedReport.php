@@ -3471,11 +3471,6 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'name' => 'id',
         'type' => CRM_Utils_Type::T_INT,
       ),
-      'participant_record' => array(
-        'name' => 'id',
-        'title' => 'Participant ID',
-        'is_fields' => TRUE,
-      ),
       'participant_event_id' => array(
         'title' => ts('Event ID'),
         'name' => 'event_id',
