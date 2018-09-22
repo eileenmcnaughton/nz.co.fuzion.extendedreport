@@ -139,6 +139,37 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
     $this->assertEquals(200000, $rows[2]['civicrm_pledge_payment_pledge_payment_scheduled_amount_cumulative']);
   }
 
+  /**
+   * Test the future income report with some data.
+   */
+  public function testPledgeIncomeReportGroupByMonth() {
+    $this->setUpPledgeData();
+    $params = array(
+      'report_id' => 'pledge/income',
+      'group_bys' => array('pledge_payment_scheduled_date' => '1'),
+      'group_bys_freq' => [
+          'pledge_payment_scheduled_date' => 'MONTH',
+          'next_civicrm_pledge_payment_next_scheduled_date' => 'MONTH',
+      ],
+      'fields' => [
+        'pledge_payment_scheduled_date' => '1',
+        'pledge_payment_scheduled_amount' => '1',
+      ],
+    );
+    $pledgePayments = $this->callAPISuccess('PledgePayment', 'get', []);
+    $rows = $this->getRows($params);
+    $this->assertEquals(5, count($rows));
+    $this->assertEquals(14285.74, $rows[0]['civicrm_pledge_payment_pledge_payment_scheduled_amount_sum']);
+    $this->assertEquals(14285.74, $rows[0]['civicrm_pledge_payment_pledge_payment_scheduled_amount_cumulative']);
+    $this->assertEquals(10000, $rows[1]['civicrm_pledge_payment_pledge_payment_scheduled_amount_sum']);
+    $this->assertEquals(24285.74, $rows[1]['civicrm_pledge_payment_pledge_payment_scheduled_amount_cumulative']);
+    $this->assertEquals(10000, $rows[2]['civicrm_pledge_payment_pledge_payment_scheduled_amount_sum']);
+    $this->assertEquals(34285.74, $rows[2]['civicrm_pledge_payment_pledge_payment_scheduled_amount_cumulative']);
+    $this->assertEquals(24285.74, $rows[1]['civicrm_pledge_payment_pledge_payment_scheduled_amount_cumulative']);
+    $this->assertEquals(85714.26, $rows[3]['civicrm_pledge_payment_pledge_payment_scheduled_amount_sum']);
+  }
+
+
   public function setUpPledgeData() {
     $contacts = array(
       array(
