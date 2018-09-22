@@ -1171,7 +1171,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       !empty($this->_params['group_bys'])
     ) {
       foreach ($this->getSelectedGroupBys() as $fieldName => $fieldData) {
-        $groupByKey = $fieldData['table_name'] . '_' . $fieldName;
+        $groupByKey = $fieldName;
         if (!empty($fieldData['frequency']) &&
           !empty($this->_params['group_bys_freq'][$groupByKey])
         ) {
