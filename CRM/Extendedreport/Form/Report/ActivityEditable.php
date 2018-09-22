@@ -31,6 +31,7 @@ class CRM_Extendedreport_Form_Report_ActivityEditable extends CRM_Extendedreport
     $this->_columns['civicrm_activity']['fields']['id'] = array(
       'title' => 'id',
       'required' => TRUE,
+      'type' => CRM_Utils_Type::T_INT,
     );
     parent::__construct();
   }

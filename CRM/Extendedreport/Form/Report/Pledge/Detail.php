@@ -27,12 +27,13 @@ class CRM_Extendedreport_Form_Report_Pledge_Detail extends CRM_Extendedreport_Fo
       + $this->getColumns('Pledge', array('group_bys' => FALSE))
       + $this->getColumns('PledgePayment', array('fields_defaults' => array('actual_amount')))
       + $this->getColumns('FinancialType');
+    unset($this->_columns['civicrm_pledge_payment']['fields']['status_id']);
     $this->_columns['civicrm_pledge_payment']['fields']['balance_amount'] = array(
       'title' => ts('Balance to Pay'),
       'statistics' => array('sum' => ts('Balance')),
       'type' => CRM_Utils_Type::T_MONEY,
     );
-    $this->_columns['civicrm_contribution']['filters']['effective_date'] = array(
+    $this->_columns['civicrm_contribution']['metadata']['effective_date'] = array(
       'type' => CRM_Utils_Type::T_DATE + CRM_Utils_Type::T_TIME,
       'title' => ts('Do not consider payments after...'),
       'operatorType' => self::OP_SINGLEDATE,
@@ -43,6 +44,8 @@ class CRM_Extendedreport_Form_Report_Pledge_Detail extends CRM_Extendedreport_Fo
       'is_order_bys' => FALSE,
       'is_join_filters' => FALSE,
     );
+    $this->_columns['civicrm_contribution']['fitlers'] = $this->_columns['civicrm_contribution']['metadata'];
+
     $this->_groupFilter = TRUE;
     $this->_tagFilter = TRUE;
     $defaults = array(

@@ -4,6 +4,8 @@ use Civi\Test\HeadlessInterface;
 use Civi\Test\HookInterface;
 use Civi\Test\TransactionalInterface;
 
+require_once __DIR__ . '/../../extendedreport.php';
+
 /**
  * FIXME - Add test description.
  *
@@ -26,7 +28,6 @@ class BaseTestClass extends \PHPUnit_Framework_TestCase implements HeadlessInter
    * @var int
    */
   protected $customFieldID;
-
 
   /**
    * @var int

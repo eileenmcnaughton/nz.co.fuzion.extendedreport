@@ -3264,6 +3264,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
             'having' => TRUE,
             'dbAlias' => $tableName . '_' . $fieldAlias . '_' .  $statisticName,
             'selectAlias' => "{$statisticName}({$tableAlias}.{$spec['name']})",
+            'is_fields' => FALSE,
           ]);
           $columns[$tableName]['metadata'][$fieldAlias . '_' .  $statisticName] = $columns[$tableName]['filters'][$fieldAlias . '_' .  $statisticName];
         }
@@ -3793,7 +3794,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       $options['prefix'] . 'status_id' => array(
         'type' => CRM_Utils_Type::T_INT,
         'title' => ts($options['prefix_label'] . 'Payment Status'),
-        'is_fields' => TRUE,
+        'is_fields' => FALSE,
         'is_filters' => TRUE,
         'operatorType' => CRM_Report_Form::OP_MULTISELECT,
         'options' => CRM_Contribute_PseudoConstant::contributionStatus(),
@@ -4380,6 +4381,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       'frequency_unit' => array(
         'title' => ts('Frequency Unit'),
         'is_fields' => TRUE,
+        'type' => CRM_Utils_Type::T_STRING,
       ),
       'installments' => array(
         'title' => ts('Installments'),
@@ -4409,6 +4411,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'options' => CRM_Core_OptionGroup::values('contribution_status'),
         'is_fields' => TRUE,
         'is_group_bys' => TRUE,
+        'type' => CRM_Utils_Type::T_INT,
       ),
       'campaign_id' => array(
         'title' => ts('Campaign'),
