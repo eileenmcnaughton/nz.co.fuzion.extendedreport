@@ -87,7 +87,7 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
         'title' => ts('Activity Status'),
         'name' => 'status_id',
         'type' => CRM_Utils_Type::T_STRING,
-        'alter_display' => 'alterActivityStatus',
+        'alter_display' => 'alterPseudoConstant',
         'is_fields' => TRUE,
         'is_filters' => TRUE,
         'is_order_bys' => TRUE,
