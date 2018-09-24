@@ -90,6 +90,7 @@ class CRM_Extendedreport_Form_Report_Contact_AddressHistory extends CRM_Extended
         $logMetaData[$index]['is_' . $type] = FALSE;
       }
       $logMetaData[$index]['dbAlias'] = $this->_columns['log_civicrm_address']['alias'] . '.' . $field['name'];
+      $logMetaData[$index]['alias'] = $this->_columns['log_civicrm_address']['alias'] . '_' . $field['name'];
     }
     $this->_columns['log_civicrm_address']['metadata'] += $logMetaData;
     $this->_columns['log_civicrm_address']['fields'] += $logMetaData;
