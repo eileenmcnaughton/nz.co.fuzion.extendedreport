@@ -1196,7 +1196,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       !empty($this->_params['group_bys'])
     ) {
       foreach ($this->getSelectedGroupBys() as $fieldName => $fieldData) {
-        $groupByKey = $fieldName;
+        $groupByKey = $fieldData['alias'];
         if (!empty($fieldData['frequency']) &&
           !empty($this->_params['group_bys_freq'][$groupByKey])
         ) {
@@ -2622,43 +2622,6 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
 
     // process grand-total row
     $this->grandTotal($rows);
-
-    // Find alter display functions.
-    $firstRow = reset($rows);
-    if ($firstRow) {
-      $selectedFields = array_keys($firstRow);
-      $alterFunctions = $alterMap = $alterSpecs = array();
-      foreach ($this->_columns as $tableName => $table) {
-        if (array_key_exists('metadata', $table)) {
-          foreach ($table['metadata'] as $field => $specs) {
-            if (in_array($tableName . '_' . $field, $selectedFields)) {
-              if (array_key_exists('alter_display', $specs)) {
-                $alterFunctions[$tableName . '_' . $field] = $specs['alter_display'];
-                $alterMap[$tableName . '_' . $field] = $field;
-                $alterSpecs[$tableName . '_' . $field] = NULL;
-              }
-              // Add any alters that can be intuited from the field specs.
-              // So far only boolean but a lot more could be.
-              if (empty($alterSpecs[$tableName . '_' . $field]) && isset($specs['type']) && $specs['type'] == CRM_Utils_Type::T_BOOLEAN) {
-                $alterFunctions[$tableName . '_' . $field] = 'alterBoolean';
-                $alterMap[$tableName . '_' . $field] = $field;
-                $alterSpecs[$tableName . '_' . $field] = NULL;
-              }
-            }
-          }
-        }
-      }
-
-      /* Run the alter display functions
-      foreach ($rows as $index => & $row) {
-        foreach ($row as $selectedField => $value) {
-          if (array_key_exists($selectedField, $alterFunctions)) {
-            $rows[$index][$selectedField] = $this->{$alterFunctions[$selectedField]}($value, $row, $selectedField, $alterMap[$selectedField], $alterSpecs[$selectedField]);
-          }
-        }
-      }
-      */
-    }
 
     // use this method for formatting rows for display purpose.
     $this->alterDisplay($rows);
