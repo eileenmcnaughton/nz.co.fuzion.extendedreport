@@ -7573,13 +7573,14 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
       'title' => $prefixLabel . $field['label'],
       'dataType' => $field['data_type'],
       'htmlType' => $field['html_type'],
-      'is_fields' => FALSE,
+      'is_fields' => TRUE,
       'is_filters' => FALSE,
       'is_group_bys' => FALSE,
       'is_order_bys' => FALSE,
       'is_join_filters' => FALSE,
       'type' => $this->getFieldType($field),
       'dbAlias' =>  $prefix . $field['table_name'] . '.' . $field['column_name'],
+      'alias' => $prefix . $field['table_name'] . '_' . $field['column_name'],
     ]);
   }
 
