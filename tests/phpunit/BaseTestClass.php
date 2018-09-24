@@ -237,4 +237,16 @@ class BaseTestClass extends \PHPUnit_Framework_TestCase implements HeadlessInter
     ];
   }
 
+  /**
+   * Enable all components.
+   */
+  protected function enableAllComponents() {
+    $components = [];
+    $dao = new CRM_Core_DAO_Component();
+    while ($dao->fetch()) {
+      $components[$dao->id] = $dao->name;
+    }
+    civicrm_api3('Setting', 'create', ['enable_components' => $components]);
+  }
+
 }

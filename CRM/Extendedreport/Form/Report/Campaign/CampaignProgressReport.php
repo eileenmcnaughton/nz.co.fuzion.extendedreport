@@ -259,7 +259,7 @@ LEFT JOIN
       $this->_columnHeaders[$alias]['type'] = CRM_Utils_Array::value('type', $field);
       $this->_columnHeaders[$alias]['dbAlias'] = CRM_Utils_Array::value('dbAlias', $field);
       $this->_selectAliases[] = $alias;
-      return " COALESCE(campaign.goal_revenue, 0) - SUM(COALESCE(progress.total_amount, 0)) as $alias ";
+      return " COALESCE({$this->_aliases['civicrm_campaign']}.goal_revenue, 0) - SUM(COALESCE(progress.total_amount, 0)) as $alias ";
     }
     return parent::selectClause($tableName, $tableKey, $fieldName, $field);
   }
