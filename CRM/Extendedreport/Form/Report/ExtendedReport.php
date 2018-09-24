@@ -2601,16 +2601,6 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
       $this->setPager();
     }
 
-    // allow building charts if any
-    if (!empty($this->_params['charts']) && !empty($rows)) {
-      $this->buildChart($rows);
-      $this->assign('chartEnabled', TRUE);
-      $this->_chartId = "{$this->_params['charts']}_" .
-        ($this->_id ? $this->_id : substr(get_class($this), 16)) . '_' .
-        session_id();
-      $this->assign('chartId', $this->_chartId);
-    }
-
     // unset columns not to be displayed.
     foreach ($this->_columnHeaders as $key => $value) {
       if (!empty($value['no_display'])) {
