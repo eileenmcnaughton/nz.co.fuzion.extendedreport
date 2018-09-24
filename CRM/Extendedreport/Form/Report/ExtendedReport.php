@@ -2532,8 +2532,8 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
 
     $fieldData = $this->getMetadataByAlias('metadata');
     $chosen = array_intersect_key($fieldData, $firstRow);
-    foreach ($chosen as $fieldAlias => $specs) {
-      if (array_key_exists('alter_display', $specs)) {
+    foreach ($fieldData as $fieldAlias => $specs) {
+      if (isset($chosen[$fieldAlias]) && array_key_exists('alter_display', $specs)) {
         $alterFunctions[$fieldAlias] = $specs['alter_display'];
         $alterMap[$fieldAlias] = $fieldAlias;
         $alterSpecs[$fieldAlias] = $specs;
