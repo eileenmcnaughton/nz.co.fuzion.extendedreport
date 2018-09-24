@@ -33,12 +33,7 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
 
   public function setUp() {
     parent::setUp();
-    $components = array();
-    $allComponents = CRM_Core_Component::getComponents();
-    foreach ($allComponents as $component) {
-      $components[$component->componentID] = $component->name;
-    }
-    civicrm_api3('Setting', 'create', array('enable_components' => $components));
+    $this->enableAllComponents();
   }
 
   public function tearDown() {
