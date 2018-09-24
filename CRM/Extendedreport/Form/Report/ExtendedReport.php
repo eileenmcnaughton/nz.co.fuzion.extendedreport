@@ -2520,7 +2520,7 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
             if (array_key_exists('alter_display', $specs)) {
               $alterFunctions[$tableName . '_' . $field] = $specs['alter_display'];
               $alterMap[$tableName . '_' . $field] = $field;
-              $alterSpecs[$tableName . '_' . $field] = NULL;
+              $alterSpecs[$tableName . '_' . $field] = $specs;
             }
             if ($this->_editableFields && array_key_exists('crm_editable', $specs) && !empty($this->_aliases[$specs['crm_editable']['id_table']])) {
               //id key array is what the array would look like if the ONLY group by field is our id field
@@ -6370,12 +6370,12 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
 
   /**
    * @param $value
-   *
-   * @return mixed
+   * @param $bao
+   * @param $fieldName
+   * @return bool|null|string
    */
-  function alterActivityStatus($value) {
-    $activityStatuses = CRM_Core_PseudoConstant::activityStatus();
-    return $activityStatuses[$value];
+  function alterPseudoConstant($value, &$row, $selectedField, $criteriaFieldName, $spec) {
+    return CRM_Core_PseudoConstant::getLabel($spec['bao'], $spec['name'], $value);
   }
 
   /**
