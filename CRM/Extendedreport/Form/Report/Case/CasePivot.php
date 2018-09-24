@@ -39,6 +39,19 @@ class CRM_Extendedreport_Form_Report_Case_CasePivot extends CRM_Extendedreport_F
     $this->_columns['civicrm_case']['fields']['case_civireport_status_id']['no_display'] = TRUE;
     $this->_columns['civicrm_case']['filters']['case_civireport_is_deleted']['default'] = 0;
 
+    $this->_columns['civicrm_case']['metadata']['case_civireport_id'] = array_merge(
+      ['is_fields' => FALSE, 'is_filters' => FALSE, 'is_group_bys' => FALSE, 'is_order_bys' => FALSE, 'is_join_filters' => FALSE],
+      $this->_columns['civicrm_case']['fields']['case_civireport_id']
+    );
+    $this->_columns['civicrm_case']['metadata']['case_civireport_status_id'] = array_merge(
+      ['is_fields' => FALSE, 'is_filters' => FALSE, 'is_group_bys' => FALSE, 'is_order_bys' => FALSE, 'is_join_filters' => FALSE],
+      $this->_columns['civicrm_case']['fields']['case_civireport_status_id']
+    );
+    $this->_columns['civicrm_case']['metadata']['case_civireport_is_deleted'] = array_merge(
+      ['is_fields' => FALSE, 'is_filters' => FALSE, 'is_group_bys' => FALSE, 'is_order_bys' => FALSE, 'is_join_filters' => FALSE],
+      $this->_columns['civicrm_case']['filters']['case_civireport_is_deleted']
+    );
+
     $this->_aggregateRowFields = array(
       'case_civireport:id' => 'Case',
       'case_civireport:status_id' => 'Case Status',
