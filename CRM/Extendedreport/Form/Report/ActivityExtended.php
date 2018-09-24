@@ -4,17 +4,8 @@
  * Class CRM_Extendedreport_Form_Report_ActivityExtended
  */
 class CRM_Extendedreport_Form_Report_ActivityExtended extends CRM_Extendedreport_Form_Report_ExtendedReport {
-  /**
-   * @var array
-   */
-  protected $_customGroupExtended = array(
-    'civicrm_activity' => array(
-      'extends' => array('Activity'),
-      'title' => 'Activity',
-      'filters' => TRUE,
-    ),
-  );
 
+  protected $_customGroupExtends = ['Activity', 'Contact', 'Individual', 'Household', 'Organization'];
 
   /**
    * Can this report be used on a contact tab.
@@ -29,10 +20,7 @@ class CRM_Extendedreport_Form_Report_ActivityExtended extends CRM_Extendedreport
    * @var bool
    */
   protected $_exposeContactID = FALSE;
-  /**
-   * @var bool
-   */
-  protected $_customGroupGroupBy = FALSE;
+
   /**
    * @var string
    */
