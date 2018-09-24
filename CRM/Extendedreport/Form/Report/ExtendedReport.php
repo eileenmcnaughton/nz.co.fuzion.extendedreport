@@ -327,6 +327,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
             'is_group_bys' => FALSE,
             'is_order_bys' => FALSE,
             'is_join_filters' => FALSE,
+            'alias' => 'civicrm_tag_tagid',
           ),
         ],
         'dao' => 'CRM_Core_DAO_Tag',
@@ -338,6 +339,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
             'tag' => TRUE,
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
             'options' => $contactTags,
+            'alias' => 'civicrm_tag_tagid',
           ),
         ),
       );
@@ -356,6 +358,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
         'operatorType' => CRM_Report_Form::OP_MULTISELECT,
         'group' => TRUE,
         'options' => CRM_Core_PseudoConstant::nestedGroup(),
+        'alias' => 'civicrm_group_gid',
       ),
     );
     if (empty($this->_columns['civicrm_group']['dao'])) {
@@ -378,6 +381,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
         'is_order_bys' => FALSE,
         'is_join_filters' => FALSE,
         'dbAlias' => 'cgroup.gid',
+        'alias' => 'civicrm_group_gid',
       ),
     );
   }
@@ -576,6 +580,27 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    */
   protected function getMetadataByType($type) {
     return $this->getMetadata()[$type];
+  }
+
+  /**
+   * Get metadata for a particular type.
+   *
+   * @param string $type
+   *   - fields
+   *   - filters
+   *   - join_filters
+   *   - group_bys
+   *   - order_bys
+   *
+   * @return array
+   */
+  protected function getMetadataByAlias($type) {
+    $metadata = $this->getMetadata()[$type];
+    $return = [];
+    foreach ($metadata as $key => $value) {
+      $return[$value['alias']] = $value;
+    }
+    return $return;
   }
 
   /**
@@ -2505,43 +2530,39 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
       }
     }
 
-    foreach ($this->_columns as $tableName => $table) {
-      if (array_key_exists('metadata', $table)) {
-        foreach ($this->getMetadataByType('metadata') as $field => $specs) {
-          if (in_array($tableName . '_' . $field . '_sum', $selectedFields)
-            && !empty($this->_groupByArray) && isset($specs['statistics']) && isset($specs['statistics']['cumulative'])) {
-            $this->_columnHeaders[$tableName . '_' . $field . '_cumulative']['title'] = $specs['statistics']['cumulative'];
-            $this->_columnHeaders[$tableName . '_' . $field . '_cumulative']['type'] = $specs['type'];
-            $alterFunctions[$tableName . '_' . $field . '_sum'] = 'alterCumulative';
-            $alterMap[$tableName . '_' . $field . '_sum'] = $field;
-            $alterSpecs[$tableName . '_' . $field . '_sum'] = $specs['name'];
-          }
-          if (in_array($tableName . '_' . $field, $selectedFields)) {
-            if (array_key_exists('alter_display', $specs)) {
-              $alterFunctions[$tableName . '_' . $field] = $specs['alter_display'];
-              $alterMap[$tableName . '_' . $field] = $field;
-              $alterSpecs[$tableName . '_' . $field] = $specs;
-            }
-            if ($this->_editableFields && array_key_exists('crm_editable', $specs) && !empty($this->_aliases[$specs['crm_editable']['id_table']])) {
-              //id key array is what the array would look like if the ONLY group by field is our id field
-              // in which case it should be editable - in any other group by scenario it shouldn't be
-              $idKeyArray = array($this->_aliases[$specs['crm_editable']['id_table']] . "." . $specs['crm_editable']['id_field']);
-              if (empty($this->_groupByArray) || $this->_groupByArray == $idKeyArray) {
-                $alterFunctions[$tableName . '_' . $field] = 'alterCrmEditable';
-                $alterMap[$tableName . '_' . $field] = $field;
-                $alterSpecs[$tableName . '_' . $field] = $specs['crm_editable'];
-                $alterSpecs[$tableName . '_' . $field]['field_name'] = $specs['name'];
-              }
-            }
-            // Add any alters that can be intuited from the field specs.
-            // So far only boolean but a lot more could be.
-            if (empty($alterSpecs[$tableName . '_' . $field]) && $specs['type'] == CRM_Utils_Type::T_BOOLEAN) {
-              $alterFunctions[$tableName . '_' . $field] = 'alterBoolean';
-              $alterMap[$tableName . '_' . $field] = $field;
-              $alterSpecs[$tableName . '_' . $field] = NULL;
-            }
-          }
+    $fieldData = $this->getMetadataByAlias('metadata');
+    $chosen = array_intersect_key($fieldData, $firstRow);
+    foreach ($chosen as $fieldAlias => $specs) {
+      if (array_key_exists('alter_display', $specs)) {
+        $alterFunctions[$fieldAlias] = $specs['alter_display'];
+        $alterMap[$fieldAlias] = $fieldAlias;
+        $alterSpecs[$fieldAlias] = $specs;
+      }
+      if (in_array($fieldAlias . '_sum', $selectedFields)
+        && !empty($this->_groupByArray) && isset($specs['statistics']) && isset($specs['statistics']['cumulative'])) {
+        $this->_columnHeaders[$fieldAlias . '_cumulative']['title'] = $specs['statistics']['cumulative'];
+        $this->_columnHeaders[$fieldAlias . '_cumulative']['type'] = $specs['type'];
+        $alterFunctions[$fieldAlias . '_sum'] = 'alterCumulative';
+        $alterMap[$fieldAlias . '_sum'] = $fieldAlias;
+        $alterSpecs[$fieldAlias . '_sum'] = $specs['name'];
+      }
+      if ($this->_editableFields && array_key_exists('crm_editable', $specs) && !empty($this->_aliases[$specs['crm_editable']['id_table']])) {
+        //id key array is what the array would look like if the ONLY group by field is our id field
+        // in which case it should be editable - in any other group by scenario it shouldn't be
+        $idKeyArray = array($this->_aliases[$specs['crm_editable']['id_table']] . "." . $specs['crm_editable']['id_field']);
+        if (empty($this->_groupByArray) || $this->_groupByArray == $idKeyArray) {
+          $alterFunctions[$fieldAlias] = 'alterCrmEditable';
+          $alterMap[$fieldAlias] = $fieldAlias;
+          $alterSpecs[$fieldAlias] = $specs['crm_editable'];
+          $alterSpecs[$fieldAlias]['field_name'] = $specs['name'];
         }
+      }
+      // Add any alters that can be intuited from the field specs.
+      // So far only boolean but a lot more could be.
+      if (empty($alterSpecs[$fieldAlias]) && $specs['type'] == CRM_Utils_Type::T_BOOLEAN) {
+        $alterFunctions[$fieldAlias] = 'alterBoolean';
+        $alterMap[$fieldAlias] = $fieldAlias;
+        $alterSpecs[$fieldAlias] = NULL;
       }
     }
 
@@ -3247,6 +3268,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       }
 
       $fieldAlias = $tableAlias . '_' . $specName;
+      $spec['alias'] = $tableName . '_' . $fieldAlias;
       $columns[$tableName]['metadata'][$fieldAlias] = $spec;
       $columns[$tableName]['fields'][$fieldAlias] = $spec;
       if (isset($defaults['fields_defaults']) && in_array($spec['name'], $defaults['fields_defaults'])) {
@@ -3864,7 +3886,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    */
   function getMembershipTypeColumns($options) {
     $spec = array(
-      'gid' => array(
+      'membership_type_id' => array(
         'name' => 'id',
         'title' => ts('Membership Types'),
         'operatorType' => CRM_Report_Form::OP_MULTISELECT,
@@ -6977,7 +6999,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    * @return array
    */
   protected function addBasicFieldToSelect($tableName, $fieldName, $field, $select) {
-    $alias = "{$tableName}_{$fieldName}";
+    $alias = isset($field['alias']) ? $field['alias'] : "{$tableName}_{$fieldName}";
     $select[] = "{$field['dbAlias']} as $alias";
     $this->_columnHeaders["{$tableName}_{$fieldName}"]['title'] = CRM_Utils_Array::value('title', $field);
     $this->_columnHeaders["{$tableName}_{$fieldName}"]['type'] = CRM_Utils_Array::value('type', $field);
@@ -7247,7 +7269,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
 
     $fieldName = 'custom_' . ($prefix ? $prefix . '_' : '') . $field['id'];
 
-    $curFields[$fieldName] = array_merge($this->getCustomFieldMetadata($field, $prefixLabel, $prefix), ['is_fields' => FALSE]);
+    $curFields[$fieldName] = array_merge($this->getCustomFieldMetadata($field, $prefixLabel, $prefix));
 
     if ($this->_customGroupFilters) {
       $curFilters = $this->addCustomDataFilters($field, $fieldName);
@@ -7574,7 +7596,7 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
       'dataType' => $field['data_type'],
       'htmlType' => $field['html_type'],
       'is_fields' => TRUE,
-      'is_filters' => FALSE,
+      'is_filters' => TRUE,
       'is_group_bys' => FALSE,
       'is_order_bys' => FALSE,
       'is_join_filters' => FALSE,

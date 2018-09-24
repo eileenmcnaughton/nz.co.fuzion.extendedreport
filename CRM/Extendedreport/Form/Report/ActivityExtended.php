@@ -7,6 +7,8 @@ class CRM_Extendedreport_Form_Report_ActivityExtended extends CRM_Extendedreport
 
   protected $_customGroupExtends = ['Activity', 'Contact', 'Individual', 'Household', 'Organization'];
 
+  protected $_editableFields = FALSE;
+
   /**
    * Can this report be used on a contact tab.
    *
