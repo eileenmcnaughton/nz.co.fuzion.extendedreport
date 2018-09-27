@@ -106,6 +106,7 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
     $this->setUpPledgeData();
     $params = array(
       'report_id' => 'pledge/income',
+      'order_bys' => [['column' => 'pledge_payment_scheduled_date', 'order' => 'ASC']]
     );
     $rows = $this->getRows($params);
     // 12 exist, 10 are unpaid.

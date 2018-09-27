@@ -7161,7 +7161,15 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    */
   protected function getSelectedOrderBys() {
     $orderBys = $this->getMetadataByType('order_bys');
-    return array_intersect_key($orderBys, $this->_params['order_bys']);
+    $result = [];
+    foreach ($this->_params['order_bys'] as $order_by) {
+      if (isset($orderBys[$order_by['column']])) {
+        $result[$order_by['column'] . ' ' . $order_by['order']] = array_merge(
+          $order_by, $orderBys[$order_by['column']]
+        );
+      }
+    }
+    return $result;
   }
 
   /**
