@@ -36,12 +36,7 @@ class Contact_ExtendedContactTest extends BaseTestClass implements HeadlessInter
 
   public function setUp() {
     parent::setUp();
-    $components = array();
-    $dao = new CRM_Core_DAO_Component();
-    while ($dao->fetch()) {
-      $components[$dao->id] = $dao->name;
-    }
-    civicrm_api3('Setting', 'create', array('enable_components' => $components));
+    $this->enableAllComponents();
 
     $contact = $this->callAPISuccess('Contact', 'create', array('organization_name' => 'Amazons', 'last_name' => 'Woman', 'contact_type' => 'Organization', 'custom_' . $this->customFieldID => 'three'));
 
