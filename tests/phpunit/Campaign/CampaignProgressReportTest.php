@@ -34,12 +34,7 @@ class CampaignProgressReportTest extends BaseTestClass implements HeadlessInterf
 
   public function setUp() {
     parent::setUp();
-    $components = array();
-    $dao = new CRM_Core_DAO_Component();
-    while ($dao->fetch()) {
-      $components[$dao->id] = $dao->name;
-    }
-    civicrm_api3('Setting', 'create', array('enable_components' => $components));
+    $this->enableAllComponents();
     $contact = $this->callAPISuccess('Contact', 'create', array('first_name' => 'Wonder', 'last_name' => 'Woman', 'contact_type' => 'Individual'));
     $this->contacts[] = $contact['id'];
   }
