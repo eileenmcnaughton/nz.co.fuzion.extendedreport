@@ -242,7 +242,7 @@ class BaseTestClass extends \PHPUnit_Framework_TestCase implements HeadlessInter
    */
   protected function enableAllComponents() {
     $components = [];
-    $dao = new CRM_Core_DAO_Component();
+    $dao = CRM_Core_DAO::executeQuery("SELECT id, name FROM civicrm_component");
     while ($dao->fetch()) {
       $components[$dao->id] = $dao->name;
     }
