@@ -3722,13 +3722,16 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
   protected function getFinancialTypeColumns() {
     $specs = [
       'name' => array(
-        'title' => ts('Financial_type')
+        'title' => ts('Financial_type'),
+        'type' => CRM_Utils_Type::T_STRING,
       ),
       'accounting_code' => array(
-        'title' => ts('Accounting Code')
+        'title' => ts('Accounting Code'),
+        'type' => CRM_Utils_Type::T_STRING,
       ),
       'is_deductible' => array(
-        'title' => ts('Tax Deductible')
+        'title' => ts('Tax Deductible'),
+        'type' => CRM_Utils_Type::T_BOOLEAN,
       )
     ];
     return $this->buildColumns($specs, 'civicrm_financial_type', 'CRM_Financial_DAO_FinancialType', NULL);
