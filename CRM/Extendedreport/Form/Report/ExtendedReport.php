@@ -4047,7 +4047,6 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'is_order_bys' => TRUE,
         'is_fields' => TRUE,
         'type' => CRM_Utils_Type::T_MONEY,
-        'statistics' => ['sum' => ts('Revenue goal')]
       ),
     );
     return $this->buildColumns($specs, 'civicrm_campaign', 'CRM_Campaign_BAO_Campaign');
