@@ -1074,6 +1074,8 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       $this->_columns[$field['table_name']][$field['column']]['no_display'] = 1;
     }
 
+    $orderBys = [];
+
     if (!empty($selectedOrderBys)) {
       // Process order_bys in user-specified order
       foreach ($selectedOrderBys as $orderBy) {
