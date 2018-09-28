@@ -1078,22 +1078,17 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
 
     if (!empty($selectedOrderBys)) {
       // Process order_bys in user-specified order
-      foreach ($selectedOrderBys as $orderBy) {
-        $orderByField = [];
+      foreach ($selectedOrderBys as $SelectedOrderBy) {
+        $fieldAlias = $SelectedOrderBy['alias'];
         // Record any section headers for assignment to the template
-        if (CRM_Utils_Array::value('section', $orderBy)) {
-          $this->_sections[$orderByField['tplField']] = $orderByField;
+        if (CRM_Utils_Array::value('section', $SelectedOrderBy)) {
+          $this->_sections[$SelectedOrderBy['tplField']] = $SelectedOrderBy;
         }
-
-        $tableName = $orderBy['table_name'];
-        $orderByField['tplField'] = $orderBy['alias'];
-        if ($isGroupBy && !empty($field['statistics']) && !empty($field['statistics']['sum'])) {
-          $orderByField['tplField'] .= '_sum';
+        $fieldAlias = $SelectedOrderBy['alias'];
+        if ($isGroupBy && !empty($SelectedOrderBy['statistics']) && !empty($SelectedOrderBy['statistics']['sum'])) {
+          $fieldAlias .= '_sum';
         }
-        if (empty($this->_groupByArray)) {
-          $orderBys[] = "({$orderBy['dbAlias']}) {$orderBy['order']}";
-        }
-        $orderBys[] = "({$orderByField['tplField']}) {$orderBy['order']}";
+        $orderBys[] = "({$fieldAlias}) {$SelectedOrderBy['order']}";
       }
     }
 
