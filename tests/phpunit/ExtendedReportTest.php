@@ -111,9 +111,11 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
     $rows = $this->getRows($params);
     // 12 exist, 10 are unpaid.
     $this->assertEquals(10, count($rows));
-    $this->assertEquals(10000, $rows[0]['civicrm_pledge_payment_pledge_payment_scheduled_amount_sum']);
-    $this->assertEquals(10000, $rows[0]['civicrm_pledge_payment_pledge_payment_scheduled_amount_cumulative']);
-    $this->assertEquals(20000, $rows[1]['civicrm_pledge_payment_pledge_payment_scheduled_amount_cumulative']);
+    $this->assertEquals(date('Y-m-d', strtotime('2 years ago')), date('Y-m-d', strtotime($rows[0]['civicrm_pledge_payment_pledge_payment_scheduled_date'])));
+    $this->assertEquals(14285.74, $rows[0]['civicrm_pledge_payment_pledge_payment_scheduled_amount_sum']);
+    $this->assertEquals(14285.74, $rows[0]['civicrm_pledge_payment_pledge_payment_scheduled_amount_cumulative']);
+    $this->assertEquals(10000, $rows[1]['civicrm_pledge_payment_pledge_payment_scheduled_amount_sum']);
+    $this->assertEquals(24285.74, $rows[1]['civicrm_pledge_payment_pledge_payment_scheduled_amount_cumulative']);
   }
 
   /**

@@ -1066,55 +1066,32 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   function storeOrderByArray() {
 
     $isGroupBy = !empty($this->_groupByArray);
-    $orderBys = $this->getSelectedOrderBys();
-    if (!empty($orderBys)) {
+    $selectedOrderBys = $this->getSelectedOrderBys();
+    $selectedFields = $this->getSelectedFields();
+    $selectedFieldsToAdd = array_diff_key($selectedOrderBys, $selectedFields);
+    foreach ($selectedFieldsToAdd as $fieldName => $field) {
+      $this->_params['fields'][$fieldName] = 1;
+      $this->_columns[$field['table_name']][$field['column']]['no_display'] = 1;
+    }
 
+    if (!empty($selectedOrderBys)) {
       // Process order_bys in user-specified order
-      foreach ($orderBys as $orderBy) {
+      foreach ($selectedOrderBys as $orderBy) {
         $orderByField = [];
-        foreach ($this->_columns as $tableName => $table) {
-          if (array_key_exists('order_bys', $table)) {
-            // For DAO columns defined in $this->_columns
-            $fields = $table['order_bys'];
-          }
-          elseif (array_key_exists('extends', $table)) {
-            // For custom fields referenced in $this->_customGroupExtends
-            $fields = $table['metadata'];
-          }
-
-
-          if (!empty($fields) && is_array($fields)) {
-            foreach ($fields as $fieldName => $field) {
-              if ($fieldName == $orderBy['column']) {
-                $orderByField = array_merge($table['metadata'][$fieldName], $field, $orderBy);
-                $orderByField['tplField'] = "{$tableName}_{$fieldName}";
-                if ($isGroupBy && !empty($field['statistics']) && !empty($field['statistics']['sum'])) {
-                  $orderByField['tplField'] .= '_sum';
-                }
-                break 2;
-              }
-            }
-          }
-          if (!empty($orderByField)) {
-            $this->_orderByFields[] = $orderByField;
-            if (empty($this->_groupByArray)) {
-              $orderBys[] = "({$table['metadata'][$orderBy['column']]['dbAlias']}) {$orderBy['order']}";
-            }
-            else {
-              // Ensure order bys are in the select. Use alias
-              $orderBys[] = "({$orderByField['tplField']}) {$orderBy['order']}";
-              if (!isset($this->_params['fields'][$orderByField['column']])) {
-                // We will select it if not selected.
-                $this->_params['fields'][$orderByField['column']] = 1;
-                $this->_columns[$tableName][$orderByField['column']]['no_display'] = 1;
-              }
-            }
-            // Record any section headers for assignment to the template
-            if (CRM_Utils_Array::value('section', $orderBy)) {
-              $this->_sections[$orderByField['tplField']] = $orderByField;
-            }
-          }
+        // Record any section headers for assignment to the template
+        if (CRM_Utils_Array::value('section', $orderBy)) {
+          $this->_sections[$orderByField['tplField']] = $orderByField;
         }
+
+        $tableName = $orderBy['table_name'];
+        $orderByField['tplField'] = $orderBy['alias'];
+        if ($isGroupBy && !empty($field['statistics']) && !empty($field['statistics']['sum'])) {
+          $orderByField['tplField'] .= '_sum';
+        }
+        if (empty($this->_groupByArray)) {
+          $orderBys[] = "({$orderBy['dbAlias']}) {$orderBy['order']}";
+        }
+        $orderBys[] = "({$orderByField['tplField']}) {$orderBy['order']}";
       }
     }
 
@@ -7164,7 +7141,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
     $result = [];
     foreach ($this->_params['order_bys'] as $order_by) {
       if (isset($orderBys[$order_by['column']])) {
-        $result[$order_by['column'] . ' ' . $order_by['order']] = array_merge(
+        $result[$order_by['column']] = array_merge(
           $order_by, $orderBys[$order_by['column']]
         );
       }
