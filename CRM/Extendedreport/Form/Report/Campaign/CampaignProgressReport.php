@@ -294,19 +294,19 @@ LEFT JOIN
       $this->_columnHeaders['progress_still_to_raise'] = $move;
     }
 
-    $runningTotalRaised = $runningTotalLeft = 0;
-    $grandTotalRaised = $grandTotalLeft = 0;
+    $runningTotalGoal = $runningTotalLeft = 0;
+    $grandTotalGoal = $grandTotalLeft = 0;
     foreach ($rows as $index => $row) {
       if (isset($row['civicrm_campaign_campaign_goal_revenue']) && is_numeric($row['civicrm_campaign_campaign_goal_revenue'])) {
-        $runningTotalRaised += $row['civicrm_campaign_campaign_goal_revenue'];
+        $runningTotalGoal += $row['civicrm_campaign_campaign_goal_revenue'];
         $runningTotalLeft += $row['progress_still_to_raise'];
       }
       else {
-        $rows[$index]['civicrm_campaign_campaign_goal_revenue'] = $runningTotalRaised;
+        $rows[$index]['civicrm_campaign_campaign_goal_revenue'] = $runningTotalGoal;
         $rows[$index]['progress_still_to_raise'] = $runningTotalLeft;
         $grandTotalLeft += $runningTotalLeft;
-        $grandTotalRaised += $runningTotalRaised;
-        $runningTotalRaised = $runningTotalLeft = 0;
+        $grandTotalGoal += $runningTotalGoal;
+        $runningTotalGoal = $runningTotalLeft = 0;
         foreach ($rows[$index] as $field => $value) {
           if (is_numeric($value)) {
             $rows[$index][$field] = '<span class="report-label">' . str_replace('$', '', CRM_Utils_Money::format($value)) . '</span>';
@@ -315,8 +315,8 @@ LEFT JOIN
       }
 
     }
-    $this->rollupRow['civicrm_campaign_campaign_goal_revenue'] = $runningTotalRaised;
-    $this->rollupRow['progress_still_to_raise'] = $runningTotalLeft;
+    $this->rollupRow['civicrm_campaign_campaign_goal_revenue'] = $grandTotalGoal;
+    $this->rollupRow['progress_still_to_raise'] = $grandTotalLeft;
     $this->assign('grandStat', $this->rollupRow);
   }
 
