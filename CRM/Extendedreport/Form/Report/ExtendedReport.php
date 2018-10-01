@@ -7540,7 +7540,7 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
       'is_join_filters' => FALSE,
       'type' => $this->getFieldType($field),
       'dbAlias' =>  $prefix . $field['table_name'] . '.' . $field['column_name'],
-      'alias' => $prefix . $field['table_name'] . '_' . $field['column_name'],
+      'alias' => $prefix . $field['table_name'] . '_' . 'custom_' . $field['id'],
     ]);
   }
 
