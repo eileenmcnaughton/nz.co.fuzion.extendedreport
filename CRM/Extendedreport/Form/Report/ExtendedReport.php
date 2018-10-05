@@ -1171,24 +1171,23 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     ) {
       foreach ($this->getSelectedGroupBys() as $fieldName => $fieldData) {
         $groupByKey = $fieldData['alias'];
-        if (!empty($fieldData['frequency']) &&
-          !empty($this->_params['group_bys_freq'][$groupByKey])
-        ) {
-
-          switch ($this->_params['group_bys_freq'][$groupByKey]) {
+        $groupByFrequency = CRM_Utils_Array::value($fieldName, $this->_params['group_bys_freq']);
+        if (!empty($fieldData['frequency']) && $groupByFrequency) {
+          switch ($groupByFrequency) {
             case 'FISCALYEAR' :
               $this->_groupByArray[$groupByKey . '_start'] = self::fiscalYearOffset($fieldData['dbAlias']);
               break;
 
             case 'YEAR' :
-              $this->_groupByArray[$groupByKey . '_start'] = " {$this->_params['group_bys_freq'][$fieldName]}({$fieldData['dbAlias']})";
+              $this->_groupByArray[$groupByKey . '_start'] = " {$groupByFrequency}({$fieldData['dbAlias']})";
               break;
 
             default :
               $this->_groupByArray[$groupByKey . '_start'] =
-                "EXTRACT(YEAR_{$this->_params['group_bys_freq'][$fieldName]} FROM {$fieldData['dbAlias']})";
+                "EXTRACT(YEAR_{$groupByFrequency} FROM {$fieldData['dbAlias']})";
               break;
           }
+
         }
         else {
           if (!in_array($fieldData['dbAlias'], $this->_groupByArray)) {
