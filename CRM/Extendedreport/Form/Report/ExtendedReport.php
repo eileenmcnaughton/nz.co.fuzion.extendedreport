@@ -3335,6 +3335,12 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'is_fields' => TRUE,
         'is_filters' => TRUE,
       ),
+      'label' => array(
+        'title' => ts('Line Label'),
+        'type' => CRM_Utils_Type::T_STRING,
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+      ),
       'tax_amount' => array(
         'title' => ts('Tax Amount'),
         'type' => CRM_Utils_Type::T_MONEY,
