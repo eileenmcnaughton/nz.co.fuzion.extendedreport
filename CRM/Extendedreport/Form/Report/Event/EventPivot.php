@@ -81,8 +81,6 @@ class CRM_Extendedreport_Form_Report_Event_EventPivot extends CRM_Extendedreport
               $rows[$rowNum]['civicrm_event_id_hover'] = ts("View Event Income Details for this Event");
           }
       }
-      
-      // custom code to alter rows
   }
   }
 }
