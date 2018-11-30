@@ -56,6 +56,7 @@ class CRM_Extendedreport_Form_Report_Pledge_Btbns extends CRM_Extendedreport_For
     $this->_groupFilter = TRUE;
     $this->_tagFilter = TRUE;
     parent::__construct();
+    CRM_Core_DAO::disableFullGroupByMode();
   }
 
   function select() {
@@ -169,7 +170,6 @@ class CRM_Extendedreport_Form_Report_Pledge_Btbns extends CRM_Extendedreport_For
       while ($dao->fetch()) {
         $contactIds[] = $dao->cid;
       }
-      $dao->free();
       $this->setPager();
     }
     if (!empty($contactIds) || CRM_Utils_Array::value('charts', $this->_params)) {
@@ -204,7 +204,6 @@ class CRM_Extendedreport_Form_Report_Pledge_Btbns extends CRM_Extendedreport_For
           $rows[$dao->civicrm_pledge_contact_id]['civicrm_life_time_total'] = $dao->civicrm_pledge_amount;
         }
       }
-      $dao->free();
     }
 
     $this->formatDisplay($rows, FALSE);

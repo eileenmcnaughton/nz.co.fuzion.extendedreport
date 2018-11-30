@@ -1039,7 +1039,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
         }
       }
       if (!empty($this->_statFields) && empty($this->_orderByArray) &&
-        (count($this->_groupBy) <= 1 || !$this->_having)
+        (count($this->_groupByArray) <= 1 || !$this->_having)
         && $this->_rollup !== FALSE
         && !$this->isInProcessOfPreconstraining()
       ) {
@@ -1171,8 +1171,8 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     ) {
       foreach ($this->getSelectedGroupBys() as $fieldName => $fieldData) {
         $groupByKey = $fieldData['alias'];
-        $groupByFrequency = CRM_Utils_Array::value($fieldName, $this->_params['group_bys_freq']);
-        if (!empty($fieldData['frequency']) && $groupByFrequency) {
+        if (!empty($fieldData['frequency']) && !empty($this->_params['group_bys_freq'])) {
+          $groupByFrequency = CRM_Utils_Array::value($fieldName, $this->_params['group_bys_freq']);
           switch ($groupByFrequency) {
             case 'FISCALYEAR' :
               $this->_groupByArray[$groupByKey . '_start'] = self::fiscalYearOffset($fieldData['dbAlias']);
@@ -2782,8 +2782,6 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         $fieldValueMap[$dao->option_group_id][$dao->value] = $dao->label;
       }
     }
-    $dao->free();
-
     $entryFound = FALSE;
     foreach ($rows as $rowNum => $row) {
       foreach ($row as $tableCol => $val) {
@@ -5322,29 +5320,36 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     if (!$this->isTableSelected($prefix . 'civicrm_tag')) {
       return;
     }
-    static $tmpTableName = NULL;
-    if (empty($tmpTableName)) {
-      $tmpTableName = 'civicrm_report_temp_entity_tag' . date('his') . rand(1, 1000);
-    }
-    $sql = "CREATE {$this->_temporary} TABLE $tmpTableName
-    (
-    `contact_id` INT(10) NULL,
-    `name` varchar(255) NULL,
-    PRIMARY KEY (`contact_id`)
-    )
-    ENGINE=MEMORY;";
+    if (!isset($this->temporaryTables['entity_tag'])) {
+      $identifier = 'entity_tag';
+      $columns = '`contact_id` INT(10) NOT NULL, `name` varchar(255) NULL';
+      $isNotTrueTemporary = !$this->_temporary;
+      $tmpTableName = CRM_Utils_SQL_TempTable::build()
+        ->setUtf8(TRUE)
+        ->setId($identifier)
+        ->createWithColumns($columns)
+        ->getName();
 
-    CRM_Core_DAO::executeQuery($sql);
-    $sql = " INSERT INTO $tmpTableName
+      $this->temporaryTables[$identifier] = [
+        'temporary' => !$isNotTrueTemporary,
+        'name' => $tmpTableName
+      ];
+
+      $sql = 'CREATE ' . ($isNotTrueTemporary ? '' : 'TEMPORARY ') . "TABLE $tmpTableName $columns  DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci ";
+      $this->addToDeveloperTab($sql);
+      $this->executeReportQuery("ALTER TABLE $tmpTableName ADD index (contact_id)");
+
+      $sql = " INSERT INTO $tmpTableName
       SELECT entity_id AS contact_id, GROUP_CONCAT(name SEPARATOR ', ') as name
       FROM civicrm_entity_tag et
       LEFT JOIN civicrm_tag t ON et.tag_id = t.id
       GROUP BY et.entity_id
     ";
 
-    CRM_Core_DAO::executeQuery($sql);
+      $this->executeReportQuery($sql);
+    }
     $this->_from .= "
-    LEFT JOIN $tmpTableName {$this->_aliases[$prefix . 'civicrm_tag']}
+    LEFT JOIN {$this->temporaryTables[$identifier]['name']} {$this->_aliases[$prefix . 'civicrm_tag']}
     ON {$this->_aliases[$prefix . 'civicrm_contact']}.id = {$this->_aliases[$prefix . 'civicrm_tag']}.contact_id
     ";
   }
@@ -5367,7 +5372,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       $tmpTableName = 'civicrm_report_temp_lastestActivity' . date('his') . rand(1, 1000);
       $sql = "CREATE {$this->_temporary} TABLE $tmpTableName
    (
-    `contact_id` INT(10) NULL,
+    `contact_id` INT(10) NOT NULL,
     `id` INT(10) NULL,
     `activity_type_id` VARCHAR(50) NULL,
     `activity_date_time` DATETIME NULL,
@@ -5387,6 +5392,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       ) as a
       GROUP BY contact_id
       ";
+      CRM_Core_DAO::disableFullGroupByMode();
       CRM_Core_DAO::executeQuery($sql);
     }
     $this->_from .= " LEFT JOIN $tmpTableName {$this->_aliases['civicrm_activity']}
@@ -5463,7 +5469,6 @@ AND {$this->_aliases['civicrm_line_item']}.entity_table = 'civicrm_participant')
    * Join the pledge to the next payment due.
    */
   protected function joinNextPaymentFromPledge() {
-    CRM_Core_DAO::disableFullGroupByMode();
     CRM_Core_DAO::executeQuery('DROP TEMPORARY TABLE IF EXISTS next_pledge_payment');
     if (!$this->isTableSelected('next_civicrm_pledge_payment')) {
       $this->_from .= "";
@@ -5497,7 +5502,6 @@ AND {$this->_aliases['civicrm_line_item']}.entity_table = 'civicrm_participant')
       ON {$this->_aliases['next_civicrm_pledge_payment']}.pledge_id = {$this->_aliases['civicrm_pledge']}.id
       ";
     }
-    CRM_Core_DAO::reenableFullGroupByMode();
   }
   /**
    * Define conditional join to related contact from participant.

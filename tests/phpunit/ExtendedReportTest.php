@@ -39,6 +39,7 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
   public function tearDown() {
     CRM_Core_DAO::executeQuery('DELETE FROM civicrm_pledge');
     parent::tearDown();
+    CRM_Core_DAO::reenableFullGroupByMode();
   }
 
   /**

@@ -67,6 +67,7 @@ class CRM_Extendedreport_Form_Report_Pledge_PaidAndCommitted extends CRM_Extende
     $this->_groupFilter = TRUE;
     $this->_tagFilter = TRUE;
     parent::__construct();
+    CRM_Core_DAO::disableFullGroupByMode();
   }
 
   function from() {

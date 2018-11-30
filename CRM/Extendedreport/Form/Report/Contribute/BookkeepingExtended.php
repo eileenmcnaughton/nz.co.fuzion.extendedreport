@@ -104,6 +104,7 @@ class CRM_Extendedreport_Form_Report_Contribute_BookkeepingExtended extends CRM_
     $this->_groupFilter = TRUE;
     $this->_tagFilter = TRUE;
     parent::__construct();
+    CRM_Core_DAO::disableFullGroupByMode();
 
   }
 
