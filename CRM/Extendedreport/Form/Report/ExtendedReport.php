@@ -5320,23 +5320,9 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     if (!$this->isTableSelected($prefix . 'civicrm_tag')) {
       return;
     }
-    if (!isset($this->temporaryTables['entity_tag'])) {
-      $identifier = 'entity_tag';
-      $columns = '`contact_id` INT(10) NOT NULL, `name` varchar(255) NULL';
-      $isNotTrueTemporary = !$this->_temporary;
-      $tmpTableName = CRM_Utils_SQL_TempTable::build()
-        ->setUtf8(TRUE)
-        ->setId($identifier)
-        ->createWithColumns($columns)
-        ->getName();
-
-      $this->temporaryTables[$identifier] = [
-        'temporary' => !$isNotTrueTemporary,
-        'name' => $tmpTableName
-      ];
-
-      $sql = 'CREATE ' . ($isNotTrueTemporary ? '' : 'TEMPORARY ') . "TABLE $tmpTableName $columns  DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci ";
-      $this->addToDeveloperTab($sql);
+    $identifier = 'entity_tag';
+    if (!isset($this->temporaryTables[$identifier])) {
+      $tmpTableName = $this->createTemporaryTableFromColumns($identifier, '`contact_id` INT(10) NOT NULL, `name` varchar(255) NULL');
       $this->executeReportQuery("ALTER TABLE $tmpTableName ADD index (contact_id)");
 
       $sql = " INSERT INTO $tmpTableName
@@ -7593,6 +7579,30 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
       ));
     }
     return $options['values'];
+  }
+
+  /**
+   * @param string $identifier
+   * @param string $columns - eg '`contact_id` INT(10) NOT NULL, `name` varchar(255) NULL'
+   *
+   * @return string
+   */
+  protected function createTemporaryTableFromColumns($identifier, $columns) {
+    $isNotTrueTemporary = !$this->_temporary;
+    $tmpTableName = CRM_Utils_SQL_TempTable::build()
+      ->setUtf8(TRUE)
+      ->setId($identifier)
+      ->createWithColumns($columns)
+      ->getName();
+
+    $this->temporaryTables[$identifier] = [
+      'temporary' => !$isNotTrueTemporary,
+      'name' => $tmpTableName
+    ];
+
+    $sql = 'CREATE ' . ($isNotTrueTemporary ? '' : 'TEMPORARY ') . "TABLE $tmpTableName $columns  DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci ";
+    $this->addToDeveloperTab($sql);
+    return $tmpTableName;
   }
 
 }
