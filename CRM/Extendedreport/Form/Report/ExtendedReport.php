@@ -5367,7 +5367,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       $tmpTableName = 'civicrm_report_temp_lastestActivity' . date('his') . rand(1, 1000);
       $sql = "CREATE {$this->_temporary} TABLE $tmpTableName
    (
-    `contact_id` INT(10) NULL,
+    `contact_id` INT(10) NOT NULL,
     `id` INT(10) NULL,
     `activity_type_id` VARCHAR(50) NULL,
     `activity_date_time` DATETIME NULL,
