@@ -5320,29 +5320,36 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     if (!$this->isTableSelected($prefix . 'civicrm_tag')) {
       return;
     }
-    static $tmpTableName = NULL;
-    if (empty($tmpTableName)) {
-      $tmpTableName = 'civicrm_report_temp_entity_tag' . date('his') . rand(1, 1000);
-    }
-    $sql = "CREATE {$this->_temporary} TABLE $tmpTableName
-    (
-    `contact_id` INT(10) NULL,
-    `name` varchar(255) NULL,
-    PRIMARY KEY (`contact_id`)
-    )
-    ENGINE=MEMORY;";
+    if (!isset($this->temporaryTables['entity_tag'])) {
+      $identifier = 'entity_tag';
+      $columns = '`contact_id` INT(10) NOT NULL, `name` varchar(255) NULL';
+      $isNotTrueTemporary = !$this->_temporary;
+      $tmpTableName = CRM_Utils_SQL_TempTable::build()
+        ->setUtf8(TRUE)
+        ->setId($identifier)
+        ->createWithColumns($columns)
+        ->getName();
 
-    CRM_Core_DAO::executeQuery($sql);
-    $sql = " INSERT INTO $tmpTableName
+      $this->temporaryTables[$identifier] = [
+        'temporary' => !$isNotTrueTemporary,
+        'name' => $tmpTableName
+      ];
+
+      $sql = 'CREATE ' . ($isNotTrueTemporary ? '' : 'TEMPORARY ') . "TABLE $tmpTableName $columns  DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci ";
+      $this->addToDeveloperTab($sql);
+      $this->executeReportQuery("ALTER TABLE $tmpTableName ADD index (contact_id)");
+
+      $sql = " INSERT INTO $tmpTableName
       SELECT entity_id AS contact_id, GROUP_CONCAT(name SEPARATOR ', ') as name
       FROM civicrm_entity_tag et
       LEFT JOIN civicrm_tag t ON et.tag_id = t.id
       GROUP BY et.entity_id
     ";
 
-    CRM_Core_DAO::executeQuery($sql);
+      $this->executeReportQuery($sql);
+    }
     $this->_from .= "
-    LEFT JOIN $tmpTableName {$this->_aliases[$prefix . 'civicrm_tag']}
+    LEFT JOIN {$this->temporaryTables[$identifier]['name']} {$this->_aliases[$prefix . 'civicrm_tag']}
     ON {$this->_aliases[$prefix . 'civicrm_contact']}.id = {$this->_aliases[$prefix . 'civicrm_tag']}.contact_id
     ";
   }
