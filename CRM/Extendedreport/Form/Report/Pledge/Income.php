@@ -41,6 +41,7 @@ class CRM_Extendedreport_Form_Report_Pledge_Income extends CRM_Extendedreport_Fo
     + $this->getColumns('Contact')
     + $this->getColumns('Pledge');
     parent::__construct();
+    CRM_Core_DAO::disableFullGroupByMode();
   }
 
   /**

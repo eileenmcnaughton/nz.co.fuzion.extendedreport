@@ -76,10 +76,7 @@ class CRM_Extendedreport_Form_Report_Pledge_Sybunt extends CRM_Extendedreport_Fo
     $this->_groupFilter = TRUE;
     $this->_tagFilter = TRUE;
     parent::__construct();
-  }
-
-  function preProcess() {
-    parent::preProcess();
+    CRM_Core_DAO::disableFullGroupByMode();
   }
 
   function select() {

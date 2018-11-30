@@ -171,6 +171,7 @@ class CRM_Extendedreport_Form_Report_Campaign_CampaignProgressReport extends CRM
     $this->_groupFilter = TRUE;
     $this->_tagFilter = TRUE;
     parent::__construct();
+    CRM_Core_DAO::disableFullGroupByMode();
   }
 
   function from() {

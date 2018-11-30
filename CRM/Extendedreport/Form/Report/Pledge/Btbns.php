@@ -56,6 +56,7 @@ class CRM_Extendedreport_Form_Report_Pledge_Btbns extends CRM_Extendedreport_For
     $this->_groupFilter = TRUE;
     $this->_tagFilter = TRUE;
     parent::__construct();
+    CRM_Core_DAO::disableFullGroupByMode();
   }
 
   function select() {
