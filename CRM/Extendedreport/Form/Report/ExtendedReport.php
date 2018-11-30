@@ -1039,7 +1039,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
         }
       }
       if (!empty($this->_statFields) && empty($this->_orderByArray) &&
-        (count($this->_groupBy) <= 1 || !$this->_having)
+        (count($this->_groupByArray) <= 1 || !$this->_having)
         && $this->_rollup !== FALSE
         && !$this->isInProcessOfPreconstraining()
       ) {
@@ -1171,8 +1171,8 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     ) {
       foreach ($this->getSelectedGroupBys() as $fieldName => $fieldData) {
         $groupByKey = $fieldData['alias'];
-        $groupByFrequency = CRM_Utils_Array::value($fieldName, $this->_params['group_bys_freq']);
-        if (!empty($fieldData['frequency']) && $groupByFrequency) {
+        if (!empty($fieldData['frequency']) && !empty($this->_params['group_bys_freq'])) {
+          $groupByFrequency = CRM_Utils_Array::value($fieldName, $this->_params['group_bys_freq']);
           switch ($groupByFrequency) {
             case 'FISCALYEAR' :
               $this->_groupByArray[$groupByKey . '_start'] = self::fiscalYearOffset($fieldData['dbAlias']);
