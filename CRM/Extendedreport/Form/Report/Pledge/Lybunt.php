@@ -243,7 +243,6 @@ class CRM_Extendedreport_Form_Report_Pledge_Lybunt extends CRM_Extendedreport_Fo
       while ($dao->fetch()) {
         $contactIds[] = $dao->cid;
       }
-      $dao->free();
       $this->setPager();
     }
 
@@ -275,7 +274,6 @@ class CRM_Extendedreport_Form_Report_Pledge_Lybunt extends CRM_Extendedreport_Fo
         $rows[$dao->civicrm_pledge_contact_id]['civicrm_life_time_total'] = $dao->civicrm_pledge_amount;
 
       }
-      $dao->free();
     }
 
     $this->formatDisplay($rows, FALSE);

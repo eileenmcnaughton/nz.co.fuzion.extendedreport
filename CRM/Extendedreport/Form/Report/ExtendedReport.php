@@ -2782,8 +2782,6 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         $fieldValueMap[$dao->option_group_id][$dao->value] = $dao->label;
       }
     }
-    $dao->free();
-
     $entryFound = FALSE;
     foreach ($rows as $rowNum => $row) {
       foreach ($row as $tableCol => $val) {
