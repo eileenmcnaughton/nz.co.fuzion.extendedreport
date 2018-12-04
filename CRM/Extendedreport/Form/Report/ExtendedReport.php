@@ -1264,31 +1264,24 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   /**
    * Add filters to report.
    *
-   * Backported 4.6 function.
-   *
    * Case self::OP_SINGLEDATE added for reports which deal with 'before date x'
    * versus after date x. e.g Sybunt, fundraising reports.
+   *
+   * Handling for join_filters.
    */
   public function addFilters() {
     foreach (array('filters', 'join_filters') as $filterString) {
       $filters = $filterGroups = array();
       $count = 1;
-      $propertyName = "_{$filterString}";
-      foreach ($this->$propertyName as $table => $attributes) {
-        if (isset($this->_columns[$table]['group_title'])) {
-          // The presence of 'group_title' is secret code for 'is_a_custom_table'
-          // which magically means to 'display in an accordian'
-          // here we make this explicit.
+      foreach ($this->getMetadataByType($filterString) as $fieldName => $field) {
+        $table = $field['table_name'];
+        if ($filterString === 'filters') {
           $filterGroups[$table] = array(
             'group_title' => $this->_columns[$table]['group_title'],
             'use_accordian_for_field_selection' => TRUE,
-
           );
         }
-        foreach ($attributes as $fieldName => $field) {
-          $filters = $this->addFilterFieldsToReport($field, $fieldName, $filters, $table, $count);
-
-        }
+        $filters = $this->addFilterFieldsToReport($field, $fieldName, $filters, $table, $count);
       }
 
       if (!empty($filters) && $filterString == 'filters') {
@@ -1297,9 +1290,9 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
           'tpl' => 'Filters',
           'div_label' => 'set-filters',
         );
+        $this->assign('filterGroups', $filterGroups);
       }
       $this->assign($filterString, $filters);
-      $this->assign('filterGroups', $filterGroups);
     }
   }
 
@@ -3156,7 +3149,10 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    * @param string $tableName
    * @param string $tableAlias
    * @param string $daoName
+   * @param string $tableAlias
    * @param array $defaults
+   * @param array $options Options
+   *    - group_title
    *
    * @return array
    */
@@ -3230,6 +3226,15 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     }
     $columns[$tableName]['prefix'] = isset($options['prefix']) ? $options['prefix'] : '';
     $columns[$tableName]['prefix_label'] = isset($options['prefix_label']) ? $options['prefix_label'] : '';
+    if (isset($options['group_title'])) {
+      $groupTitle = $options['group_title'];
+    }
+    else {
+
+      // We can make one up but it won't be translated....
+      $groupTitle = ucfirst(str_replace('_', ' ', str_replace('civicrm_', '', $tableName)));
+    }
+    $columns[$tableName]['group_title'] = $groupTitle;
     return $columns;
   }
 
@@ -4063,6 +4068,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    */
   function getContributionColumns($options) {
 
+    $options = array_merge(['group_title' => E::ts('Contributions')], $options);
     $specs = array(
       'id' => array(
         'title' => ts('Contribution ID'),
@@ -4420,7 +4426,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'operatorType' => CRM_Report_Form::OP_STRING,
       ),
     );
-    return $this->buildColumns($fields, $options['prefix'] . 'civicrm_email', 'CRM_Core_DAO_Email', NULL, $defaults);
+    return $this->buildColumns($fields, $options['prefix'] . 'civicrm_email', 'CRM_Core_DAO_Email', NULL, $defaults, $options);
   }
 
   /**
