@@ -18,7 +18,7 @@ class CRM_Extendedreport_Form_Report_Event_EventPivot extends CRM_Extendedreport
     'rid',
     'sid',
   );
-  
+ 
   /**
    * Class constructor.
    */
@@ -33,6 +33,7 @@ class CRM_Extendedreport_Form_Report_Event_EventPivot extends CRM_Extendedreport
       'filters' => TRUE,
       'title' => ts('Participant'),
     );
+
     $this->_columns = $this->getColumns('Event', array(
           'fields' => FALSE,
         )
@@ -42,9 +43,11 @@ class CRM_Extendedreport_Form_Report_Event_EventPivot extends CRM_Extendedreport
     $this->_columns['civicrm_event']['fields']['id']['required'] = TRUE;
     $this->_columns['civicrm_event']['fields']['id']['alter_display'] = 'alterEventID';
     $this->_columns['civicrm_event']['fields']['id']['title'] = 'Event';
+
     $this->_aggregateRowFields = array(
       'event:id' => 'Event',
     );
+
     $this->_aggregateColumnHeaderFields = array(
       'participant:status_id' => ts('Participant Status'),
     );
