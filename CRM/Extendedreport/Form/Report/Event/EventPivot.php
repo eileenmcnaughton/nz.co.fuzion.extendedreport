@@ -90,19 +90,19 @@ class CRM_Extendedreport_Form_Report_Event_EventPivot extends CRM_Extendedreport
         }
       } else {
         $customfieldId = intval(preg_replace('/[^0-9]+/', '', key($columnColumns)), 10);
-        $CustomField = civicrm_api3('CustomField', 'get', [
+        $customField = civicrm_api3('CustomField', 'get', [
           'sequential' => 1,
           'id' => $customfieldId,
           'options' => ['limit' => 0],
         ]);
-        $title = $CustomField['values'][0]['column_name'];
-        $group = $CustomField['values'][0]['option_group_id'];
-        $OptionValue = civicrm_api3('OptionValue', 'get', [
+        $title = $customField['values'][0]['column_name'];
+        $group = $customField['values'][0]['option_group_id'];
+        $optionValue = civicrm_api3('OptionValue', 'get', [
           'sequential' => 1,
           'option_group_id' => "$group",
           'options' => ['limit' => 0],
         ]);
-        foreach ($OptionValue['values'] as $key => $opt) {
+        foreach ($optionValue['values'] as $key => $opt) {
           $key++;
           $hiddenColumnsLabels[] = $title.'_'.$key;
         }
