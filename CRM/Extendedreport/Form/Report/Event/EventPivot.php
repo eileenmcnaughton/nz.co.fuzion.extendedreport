@@ -19,6 +19,7 @@ class CRM_Extendedreport_Form_Report_Event_EventPivot extends CRM_Extendedreport
     'sid',
   );
   
+  
   /**
    * Class constructor.
    */
