@@ -20,7 +20,7 @@ class CRM_Extendedreport_Form_Report_Event_EventPivot extends CRM_Extendedreport
   );
   
   /**
-   * Class constructor.
+   * Class constructor
    */
   public function __construct() {
     $this->_customGroupExtended['civicrm_event'] = array(
