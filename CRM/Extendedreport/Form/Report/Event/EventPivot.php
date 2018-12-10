@@ -18,7 +18,8 @@ class CRM_Extendedreport_Form_Report_Event_EventPivot extends CRM_Extendedreport
     'rid',
     'sid',
   );
-   /**
+  
+  /**
    * Class constructor.
    */
   public function __construct() {
