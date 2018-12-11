@@ -7095,7 +7095,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
     $selectedFilters = [];
     $filters = $this->getMetadataByType('filters');
     foreach ($this->_params as $key => $value) {
-      if (substr($key, -6, 6) === '_value' && ($value !== '' && $value !== NULL && $value !== "NULL")) {
+      if (substr($key, -6, 6) === '_value' && ($value !== '' && $value !== NULL && $value !== "NULL" && $value !== [])) {
         $selectedFilters[] = substr($key, 0, strlen($key) - 6);
       }
       if (substr($key, -9, 9) === '_relative' && !empty($value)) {

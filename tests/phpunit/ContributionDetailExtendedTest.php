@@ -35,8 +35,8 @@ class ContributionDetailExtendedTest extends BaseTestClass implements HeadlessIn
   public function setUp() {
     parent::setUp();
     $this->enableAllComponents();
-    $contact = $this->callAPISuccess('Contact', 'create', array('first_name' => 'Wonder', 'last_name' => 'Woman', 'contact_type' => 'Individual'));
-    $this->contacts[] = $contact['id'];
+    $contacts = $this->createContacts();
+    $this->contacts[] = reset($contacts)['id'];
   }
 
   public function tearDown() {

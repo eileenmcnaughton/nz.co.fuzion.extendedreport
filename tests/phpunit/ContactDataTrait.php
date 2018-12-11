@@ -8,6 +8,9 @@
 
 trait ContactDataTrait {
 
+  protected function createContacts() {
+
+  }
 
 
 }

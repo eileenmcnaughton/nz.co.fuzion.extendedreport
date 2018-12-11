@@ -274,4 +274,17 @@ class BaseTestClass extends \PHPUnit_Framework_TestCase implements HeadlessInter
     return $reports;
   }
 
+  /**
+   * @return array|int
+   */
+  protected function createContacts($quantity = 1, $type = 'Individual') {
+    $data = $this->getContactData($type, $quantity);
+    $contacts = [];
+    foreach ($data as $params) {
+      $contact = $this->callAPISuccess('Contact', 'create', $params);
+      $contacts[$contact['id']] = $contact['values'][$contact['id']];
+    }
+    return $contacts;
+  }
+
 }

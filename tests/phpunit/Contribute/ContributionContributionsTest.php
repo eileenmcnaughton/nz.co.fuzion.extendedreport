@@ -76,4 +76,30 @@ class ContributionContributionsTest extends BaseTestClass implements HeadlessInt
     $this->callAPISuccess('ReportTemplate', 'getrows', $params)['values'];
   }
 
+  /**
+   * Test that is doesn't matter if the having filter is selected.
+   */
+  public function testGetRowsFilterCustomData() {
+    $this->enableAllComponents();
+    $ids = $this->createCustomGroupWithField([]);
+    $contacts = $this->createContacts(2);
+    foreach ($contacts as $contact) {
+      $contribution = $this->callAPISuccess('Contribution', 'create', [
+        'total_amount' => 4,
+        'financial_type_id' => 'Donation',
+        'contact_id' => $contact['id'],
+      ]);
+      $this->callAPISuccess('Contact', 'create', ['id' => $contact['id'], 'custom_' . $ids['custom_field_id'] => $contribution['id']]);
+    }
+
+    $params = [
+      'report_id' => 'contribution/contributions',
+      'fields' => ['contribution_id'],
+      'custom_' . $ids['custom_field_id'] . '_op' => 'eq',
+      'custom_' . $ids['custom_field_id'] . '_value' => $contribution['id'],
+    ];
+    $rows = $this->callAPISuccess('ReportTemplate', 'getrows', $params)['values'];
+    $this->assertEquals(1, count($rows));
+  }
+
 }
