@@ -100,7 +100,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    */
   protected $_noGroupBY = FALSE;
   protected $_outputMode = array();
-  protected $_customGroupOrderBy = FALSE; // add order bys for custom fields (note reports break after 5 fields exposed due to civi bug
+  protected $_customGroupOrderBy = TRUE;
 
   /**
    * Fields available to be added as Column headers in pivot style report
@@ -1357,39 +1357,13 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   }
 
   /**
-   * Backport of 4.6.
-   *
-   * Add data for order by tab.
+   * Add order bys
    */
   public function addOrderBys() {
     $options = array();
-    foreach ($this->_columns as $tableName => $table) {
-      if (empty($table['metadata'])) {
-        $table = $this->setMetaDataForTable($tableName);
-      }
 
-      // Report developer may define any column to order by; include these as order-by options.
-      if (array_key_exists('order_bys', $table)) {
-        foreach ($table['order_bys'] as $fieldName => $field) {
-          if (!empty($field)) {
-            $options[$fieldName] = $field['title'];
-          }
-        }
-      }
-
-      // Add searchable custom fields as order-by options, if so requested
-      // (These are already indexed, so allowing to order on them is cheap.)
-
-      if ($this->_autoIncludeIndexedFieldsAsOrderBys &&
-        array_key_exists('extends', $table) && !empty($table['extends'])
-      ) {
-
-        foreach ($table['metadata'] as $fieldName => $field) {
-          if (empty($field['no_display'])) {
-            $options[$fieldName] = $field['title'];
-          }
-        }
-      }
+    foreach ($this->getMetadataByType('order_bys') as $fieldName => $field) {
+      $options[$fieldName] = $field['title'];
     }
 
     asort($options);
@@ -6525,7 +6499,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
       default:
         // default type is string
         $this->addElement('select', "{$prefix}{$fieldName}_op", ts('Operator:'), $operations,
-          array('onchange' => "return showHideMaxMinVal( '" . $fieldName . $fieldName. "', this.value );")
+          array('onchange' => "return showHideMaxMinVal( '" . $prefix . $fieldName. "', this.value );")
         );
         // we need text box for value input
         $this->add('text', "{$prefix}{$fieldName}_value", NULL, array('class' => 'huge'));
@@ -7189,6 +7163,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
       );
     }
   }
+
 
   /**
    * @param array $field

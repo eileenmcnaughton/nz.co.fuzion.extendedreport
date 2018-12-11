@@ -28,6 +28,7 @@ class api_v3_ReportTemplate_GetmetadataTest extends BaseTestClass implements Hea
    */
   public function setUp() {
     parent::setUp();
+    $this->callAPISuccess('Setting', 'create', array('logging' => FALSE));
   }
 
   /**
@@ -82,6 +83,7 @@ class api_v3_ReportTemplate_GetmetadataTest extends BaseTestClass implements Hea
 
     $result = civicrm_api3('ReportTemplate', 'Getmetadata', array('report_id' => 'pledge/details'))['values'];
     $filters = $result['filters'];
+
     foreach ($filters as $fieldName => $filter) {
       $this->assertEquals(TRUE, $filter['is_filters']);
       $this->assertEquals($result['metadata'][$fieldName], $filter);
@@ -90,6 +92,8 @@ class api_v3_ReportTemplate_GetmetadataTest extends BaseTestClass implements Hea
         $this->assertEquals($result['fields'][$fieldName], $filter);
       }
     }
+    $this->assertTrue(!empty($result['order_bys'][['custom_' . $ids['custom_field_id']]]));
+    $this->assertTrue(!empty($result['group_bys'][['custom_' . $ids['custom_field_id']]]));
     $this->assertEquals(CRM_Report_Form::OP_INT, $filters['custom_' . $ids['custom_field_id']]['operatorType']);
     $this->assertEquals(CRM_Report_Form::OP_DATE, $filters['custom_' . $dateField['id']]['operatorType']);
     $this->assertEquals(CRM_Report_Form::OP_MULTISELECT, $filters['custom_' . $selectField['id']]['operatorType']);
@@ -108,7 +112,6 @@ class api_v3_ReportTemplate_GetmetadataTest extends BaseTestClass implements Hea
    * @dataProvider getAllNonLoggingReports
    */
   public function testApiMetadataAllReports($reportID) {
-    $reportID = 'campaign/progress';
     $result = civicrm_api3('ReportTemplate', 'Getmetadata', array('report_id' => $reportID))['values'];
     $filters = $result['filters'];
     foreach ($filters as $fieldName => $filter) {
