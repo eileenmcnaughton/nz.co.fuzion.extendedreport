@@ -85,21 +85,6 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
     $this->getRows($params);
   }
 
-  public function getAllNonLoggingReports() {
-    $reports = $this->getAllReports();
-    $return = [];
-    foreach ($reports as $report) {
-      $return[] = [$report['params']['report_url']];
-    }
-    return $return;
-  }
-
-  public function getAllReports() {
-    $reports = array();
-    extendedreport_civicrm_managed($reports);
-    return $reports;
-  }
-
   /**
    * Test the future income report with some data.
    */

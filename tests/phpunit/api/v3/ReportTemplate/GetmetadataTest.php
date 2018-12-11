@@ -102,4 +102,24 @@ class api_v3_ReportTemplate_GetmetadataTest extends BaseTestClass implements Hea
     }
   }
 
+  /**
+   * Test getmetdata works on all reports.
+   *
+   * @dataProvider getAllNonLoggingReports
+   */
+  public function testApiMetadataAllReports($reportID) {
+    $reportID = 'campaign/progress';
+    $result = civicrm_api3('ReportTemplate', 'Getmetadata', array('report_id' => $reportID))['values'];
+    $filters = $result['filters'];
+    foreach ($filters as $fieldName => $filter) {
+      $this->assertEquals(TRUE, $filter['is_filters']);
+      $this->assertEquals($result['metadata'][$fieldName], $filter);
+      $knownNoFieldFilters = ['effective_date', 'tagid', 'gid', 'pledge_payment_status_id'];
+      if (!in_array($fieldName, $knownNoFieldFilters) && $filter['is_fields']) {
+        $this->assertEquals($result['fields'][$fieldName], $filter);
+        $this->assertTrue(!empty($filter['operatorType']), $fieldName . ' has no operator Type');
+      }
+    }
+  }
+
 }

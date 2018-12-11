@@ -249,4 +249,29 @@ class BaseTestClass extends \PHPUnit_Framework_TestCase implements HeadlessInter
     civicrm_api3('Setting', 'create', ['enable_components' => $components]);
   }
 
+  /**
+   * Get all extended reports reports except for ones involving log tables.
+   *
+   * @return array
+   */
+  public function getAllNonLoggingReports() {
+    $reports = $this->getAllReports();
+    $return = [];
+    foreach ($reports as $report) {
+      $return[] = [$report['params']['report_url']];
+    }
+    return $return;
+  }
+
+  /**
+   * Get all extended reports reports.
+   *
+   * @return array
+   */
+  public function getAllReports() {
+    $reports = array();
+    extendedreport_civicrm_managed($reports);
+    return $reports;
+  }
+
 }

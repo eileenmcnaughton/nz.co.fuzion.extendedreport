@@ -477,31 +477,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
                 = $alias . '.' .
                 $this->_columns[$tableName][$fieldGrp][$fieldName]['name'];
             }
-
-            // a few auto fills for filters
-            if ($fieldGrp == 'filters' || $fieldGrp == 'join_filters') {
-              // fill operator types
-              if (!array_key_exists('operatorType', $this->_columns[$tableName][$fieldGrp][$fieldName])) {
-                $type = CRM_Utils_Array::value('type', $this->_columns[$tableName][$fieldGrp][$fieldName]);
-                $spec = $this->_columns[$tableName][$fieldGrp][$fieldName];
-                $this->_columns[$tableName][$fieldGrp][$fieldName]['operatorType'] = $this->getOperatorType($type, $spec, $tableName, $fieldGrp, $fieldName, $table);
-
-                if ($type == CRM_Utils_Type::T_BOOLEAN &&
-                  !array_key_exists('options', $this->_columns[$tableName][$fieldGrp][$fieldName])) {
-                  $this->_columns[$tableName][$fieldGrp][$fieldName]['options']
-                    = array(
-                    '' => ts('Any'),
-                    '0' => ts('No'),
-                    '1' => ts('Yes'),
-                  );
-                }
-
-                if (isset($spec['pseudoconstant'], $table['bao']) && !array_key_exists('options', $spec)) {
-                  // fill options
-                  $this->_columns[$tableName][$fieldGrp][$fieldName]['options'] = CRM_Core_PseudoConstant::get($table['bao'], $fieldName);
-                }
-              }
-            }
           }
         }
       }
@@ -3129,6 +3104,9 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       }
       $daoSpec = CRM_Utils_Array::value($spec['name'], $exportableFields, CRM_Utils_Array::value($tableAlias . '_' . $spec['name'], $exportableFields, []));
       $spec = array_merge($daoSpec , $spec);
+      if (!isset($spec['operatorType'])) {
+        $spec['operatorType'] = $this->getOperatorType($spec['type'], $spec);
+      }
       foreach (array_merge($types, ['fields']) as $type) {
         if (!isset($spec['is_' . $type])) {
           $spec['is_' . $type] = FALSE;
@@ -6939,11 +6917,19 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    * @return array
    */
   protected function getMetadataForFields($table) {
-    $expFields = array();
     // higher preference to bao object
     $daoOrBaoName = CRM_Utils_Array::value('bao', $table, CRM_Utils_Array::value('dao', $table));
+    if (!$daoOrBaoName) {
+      return [];
+    }
 
-    if ($daoOrBaoName) {
+    $entity = CRM_Core_DAO_AllCoreTables::getBriefName(str_replace('BAO', 'DAO', $daoOrBaoName));
+    if ($entity) {
+      $expFields = civicrm_api3($entity, 'getfields', [])['values'];
+    }
+
+
+    if (empty($expFields) && $daoOrBaoName) {
       if (method_exists($daoOrBaoName, 'exportableFields')) {
         $expFields = $daoOrBaoName::exportableFields();
       }
@@ -6958,6 +6944,12 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
       }
       if (isset($field['default'])) {
         unset($expFields[$fieldName]['default']);
+      }
+      if (!isset($field['table_name'])) {
+        $expFields[$fieldName]['table_name'] = CRM_Core_DAO_AllCoreTables::getTableForClass($daoOrBaoName);
+      }
+      if (!empty($field['type'])) {
+        $expFields[$fieldName]['operatorType'] = $this->getOperatorType($field['type'], $field, $expFields[$fieldName]['table_name']);
       }
       // Double index any unique fields to ensure we find a match
       // later on. For example the metadata keys
@@ -7508,22 +7500,21 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
    *
    * @return mixed
    */
-  protected function getOperatorType($type, $spec, $table) {
+  protected function getOperatorType($type, $spec = [], $table = '') {
+    $typeMap = [
+      CRM_Utils_Type::T_INT => CRM_Report_Form::OP_INT,
+      CRM_Utils_Type::T_STRING => CRM_Report_Form::OP_STRING,
+      CRM_Utils_Type::T_MONEY => CRM_Report_Form::OP_FLOAT,
+      CRM_Utils_Type::T_FLOAT => CRM_Utils_Type::T_FLOAT,
+      CRM_Utils_Type::T_DATE => CRM_Report_Form::OP_DATE,
+      (CRM_Utils_Type::T_DATE + CRM_Utils_Type::T_TIME) => CRM_Report_Form::OP_DATE,
+      CRM_Utils_Type::T_BOOLEAN => CRM_Report_Form::OP_SELECT,
+      CRM_Utils_Type::T_LONGTEXT => CRM_Report_Form::OP_STRING,
+      CRM_Utils_Type::T_TIMESTAMP => CRM_Report_Form::OP_DATE,
+    ];
+    return $typeMap[$type];
     switch ($type) {
-      case CRM_Utils_Type::T_MONEY:
-      case CRM_Utils_Type::T_FLOAT:
-        return CRM_Report_Form::OP_FLOAT;
 
-      case CRM_Utils_Type::T_INT:
-        return CRM_Report_Form::OP_INT;
-
-      case CRM_Utils_Type::T_DATE:
-        return CRM_Report_Form::OP_DATE;
-        break;
-
-      case CRM_Utils_Type::T_BOOLEAN:
-        return CRM_Report_Form::OP_SELECT;
-        break;
 
       default:
         if (!empty($table['bao']) &&

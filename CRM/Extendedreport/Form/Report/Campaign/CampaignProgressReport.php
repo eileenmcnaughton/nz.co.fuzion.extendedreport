@@ -32,6 +32,7 @@ class CRM_Extendedreport_Form_Report_Campaign_CampaignProgressReport extends CRM
               'alter_display' => 'alterFinancialType',
               'statistics' => array('GROUP_CONCAT'),
               'type' => CRM_Utils_Type::T_INT,
+              'operatorType' => CRM_Report_Form::OP_FLOAT,
               'is_fields' => TRUE,
               'is_filters' => TRUE,
               'is_group_bys' => TRUE,
@@ -41,6 +42,7 @@ class CRM_Extendedreport_Form_Report_Campaign_CampaignProgressReport extends CRM
             'total_amount' => array(
               'title' => ts('Raised'),
               'type' => CRM_Utils_Type::T_MONEY,
+              'operatorType' => CRM_Report_Form::OP_FLOAT,
               'statistics' => array('sum' => ts('Total Raised')),
               'is_fields' => TRUE,
               'is_filters' => FALSE,
@@ -51,6 +53,7 @@ class CRM_Extendedreport_Form_Report_Campaign_CampaignProgressReport extends CRM
             'paid_amount' => array(
               'title' => ts('Amount received'),
               'type' => CRM_Utils_Type::T_MONEY,
+              'operatorType' => CRM_Report_Form::OP_FLOAT,
               'statistics' => array('sum' => ts('Total Received')),
               'is_fields' => TRUE,
               'is_filters' => FALSE,
@@ -61,6 +64,7 @@ class CRM_Extendedreport_Form_Report_Campaign_CampaignProgressReport extends CRM
             'balance_amount' => array(
               'title' => ts('Amount outstanding'),
               'type' => CRM_Utils_Type::T_MONEY,
+              'operatorType' => CRM_Report_Form::OP_FLOAT,
               'statistics' => array('sum' => ts('Pledges Outstanding')),
               'is_fields' => TRUE,
               'is_filters' => FALSE,
@@ -71,6 +75,7 @@ class CRM_Extendedreport_Form_Report_Campaign_CampaignProgressReport extends CRM
             'is_pledge' => array(
               'title' => ts('Type'),
               'type' => CRM_Utils_Type::T_BOOLEAN,
+              'operatorType' => CRM_Report_Form::OP_SELECT,
               'options' => array(0 => ts('Payment'), 1 => ts('Pledge')),
               'alter_display' => 'alterIsPledge',
               'statistics' => array('GROUP_CONCAT'),
@@ -83,6 +88,7 @@ class CRM_Extendedreport_Form_Report_Campaign_CampaignProgressReport extends CRM
             'still_to_raise' => array(
               'title' => ts('Balance to raise'),
               'type' => CRM_Utils_Type::T_MONEY,
+              'operatorType' => CRM_Report_Form::OP_FLOAT,
               'is_fields' => TRUE,
               'is_filters' => FALSE,
               'is_group_bys' => FALSE,
