@@ -68,18 +68,25 @@ class CRM_Extendedreport_Form_Report_Event_EventPivot extends CRM_Extendedreport
   }
   function alterDisplay(&$rows) {
     parent::alterDisplay($rows);
-    foreach ($rows as $rowNum => $row) {
+
+    $this->_columnHeaders = array_slice($this->_columnHeaders, 0, 1, true) +
+    $this->_columnHeaders = array('civicrm_event_title' => array("title"=> ts('Event Title'))) +
+    array_slice($this->_columnHeaders, 1, NULL, true);
+
+    foreach ($rows as $rowNum => $row) {          
       if (array_key_exists('civicrm_event_id', $row)) {
-        if ($value = $row['civicrm_event_id']) {
-          $rows[$rowNum]['civicrm_event_id'] = CRM_Event_PseudoConstant::event($value, FALSE);
-          $url = CRM_Report_Utils_Report::getNextUrl('event/income',
-           'reset=1&force=1&id_op=in&id_value=' . $value,
-            $this->_absoluteUrl, $this->_id, $this->_drilldownReport
-          );
-          $rows[$rowNum]['civicrm_event_id_link'] = $url;
-          $rows[$rowNum]['civicrm_event_id_hover'] = ts("View Event Income Details for this Event");
+        if ($eventId = $row['civicrm_event_id']) {
+           $eventTitle = CRM_Event_PseudoConstant::event($eventId, FALSE);
+           $eventURL = CRM_Report_Utils_Report::getNextUrl('event/income',
+             'reset=1&force=1&id_op=in&id_value=' . $eventId,
+             $this->_absoluteUrl, $this->_id, $this->_drilldownReport
+            );
+            $titleValue = array ('civicrm_event_title' => $eventTitle,
+              'civicrm_event_title_link' => $eventURL,
+              'civicrm_event_title_hover' => ts("View Event Income Details for this Event"));
+            $rows[$rowNum] = array_merge($rows[$rowNum], $titleValue);
         }
-      }
-    }
-  }
+      }         
+    }       
+  }  
 }
