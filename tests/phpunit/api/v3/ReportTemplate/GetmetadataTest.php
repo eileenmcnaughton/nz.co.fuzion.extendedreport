@@ -28,7 +28,9 @@ class api_v3_ReportTemplate_GetmetadataTest extends BaseTestClass implements Hea
    */
   public function setUp() {
     parent::setUp();
-    $this->callAPISuccess('Setting', 'create', array('logging' => FALSE));
+    if (\Civi::settings()->get('logging')) {
+      \Civi::settings()->set('logging', FALSE);
+    }
   }
 
   /**
