@@ -29,6 +29,9 @@ class api_v3_ReportTemplate_GetmetadataTest extends BaseTestClass implements Hea
   public function setUp() {
     parent::setUp();
     if (\Civi::settings()->get('logging')) {
+      // Hack alert - there is a bug whereby the table is deleted but the row isn't after ActivityExtendedTest.
+      // So far I've failed to solve this properly - probably transaction rollback in some way.
+      CRM_Core_DAO::executeQuery("DELETE FROM civicrm_custom_group WHERE name = 'Contact'");
       \Civi::settings()->set('logging', FALSE);
     }
   }
