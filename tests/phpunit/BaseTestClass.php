@@ -78,9 +78,10 @@ class BaseTestClass extends \PHPUnit_Framework_TestCase implements HeadlessInter
     CRM_Core_PseudoConstant::flush();
 
     // cleanup first to save misery.
-    $fields = $this->callAPISuccess('CustomField', 'get', array('name' => $entity));
+    $fields = $this->callAPISuccess('CustomField', 'get', array('custom_group_id' => $entity));
     foreach ($fields['values'] as $field) {
-      $this->callAPISuccess('CustomField', 'delete', array('id' => $field['id']));
+      // delete from the table as it may be an orphan & if not the group drop will sort out.
+      CRM_Core_DAO::executeQuery('DELETE FROM civicrm_custom_field WHERE id = ' . (int) $field['id']);
     }
     $groups = $this->callAPISuccess('CustomGroup', 'get', array('name' => $entity));
     foreach ($groups['values'] as $group) {
