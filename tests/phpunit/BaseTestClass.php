@@ -78,9 +78,10 @@ class BaseTestClass extends \PHPUnit_Framework_TestCase implements HeadlessInter
     CRM_Core_PseudoConstant::flush();
 
     // cleanup first to save misery.
-    $fields = $this->callAPISuccess('CustomField', 'get', array('name' => $entity));
+    $fields = $this->callAPISuccess('CustomField', 'get', array('custom_group_id' => $entity));
     foreach ($fields['values'] as $field) {
-      $this->callAPISuccess('CustomField', 'delete', array('id' => $field['id']));
+      // delete from the table as it may be an orphan & if not the group drop will sort out.
+      CRM_Core_DAO::executeQuery('DELETE FROM civicrm_custom_field WHERE id = ' . (int) $field['id']);
     }
     $groups = $this->callAPISuccess('CustomGroup', 'get', array('name' => $entity));
     foreach ($groups['values'] as $group) {
@@ -247,6 +248,44 @@ class BaseTestClass extends \PHPUnit_Framework_TestCase implements HeadlessInter
       $components[$dao->id] = $dao->name;
     }
     civicrm_api3('Setting', 'create', ['enable_components' => $components]);
+  }
+
+  /**
+   * Get all extended reports reports except for ones involving log tables.
+   *
+   * @return array
+   */
+  public function getAllNonLoggingReports() {
+    $reports = $this->getAllReports();
+    $return = [];
+    foreach ($reports as $report) {
+      $return[] = [$report['params']['report_url']];
+    }
+    return $return;
+  }
+
+  /**
+   * Get all extended reports reports.
+   *
+   * @return array
+   */
+  public function getAllReports() {
+    $reports = array();
+    extendedreport_civicrm_managed($reports);
+    return $reports;
+  }
+
+  /**
+   * @return array|int
+   */
+  protected function createContacts($quantity = 1, $type = 'Individual') {
+    $data = $this->getContactData($type, $quantity);
+    $contacts = [];
+    foreach ($data as $params) {
+      $contact = $this->callAPISuccess('Contact', 'create', $params);
+      $contacts[$contact['id']] = $contact['values'][$contact['id']];
+    }
+    return $contacts;
   }
 
 }

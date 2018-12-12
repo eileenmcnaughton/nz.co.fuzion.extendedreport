@@ -28,6 +28,12 @@ class api_v3_ReportTemplate_GetmetadataTest extends BaseTestClass implements Hea
    */
   public function setUp() {
     parent::setUp();
+    if (\Civi::settings()->get('logging')) {
+      // Hack alert - there is a bug whereby the table is deleted but the row isn't after ActivityExtendedTest.
+      // So far I've failed to solve this properly - probably transaction rollback in some way.
+      CRM_Core_DAO::executeQuery("DELETE FROM civicrm_custom_group WHERE name = 'Contact'");
+      \Civi::settings()->set('logging', FALSE);
+    }
   }
 
   /**
@@ -82,6 +88,7 @@ class api_v3_ReportTemplate_GetmetadataTest extends BaseTestClass implements Hea
 
     $result = civicrm_api3('ReportTemplate', 'Getmetadata', array('report_id' => 'pledge/details'))['values'];
     $filters = $result['filters'];
+
     foreach ($filters as $fieldName => $filter) {
       $this->assertEquals(TRUE, $filter['is_filters']);
       $this->assertEquals($result['metadata'][$fieldName], $filter);
@@ -90,6 +97,8 @@ class api_v3_ReportTemplate_GetmetadataTest extends BaseTestClass implements Hea
         $this->assertEquals($result['fields'][$fieldName], $filter);
       }
     }
+    $this->assertTrue(!empty($result['order_bys']['custom_' . $ids['custom_field_id']]));
+    $this->assertTrue(!empty($result['group_bys']['custom_' . $ids['custom_field_id']]));
     $this->assertEquals(CRM_Report_Form::OP_INT, $filters['custom_' . $ids['custom_field_id']]['operatorType']);
     $this->assertEquals(CRM_Report_Form::OP_DATE, $filters['custom_' . $dateField['id']]['operatorType']);
     $this->assertEquals(CRM_Report_Form::OP_MULTISELECT, $filters['custom_' . $selectField['id']]['operatorType']);
@@ -99,6 +108,25 @@ class api_v3_ReportTemplate_GetmetadataTest extends BaseTestClass implements Hea
 
     foreach ([$dateField['id'], $ids['custom_field_id'], $selectField['id'], $multiSelectField['id'], $booleanField['id']] as $id) {
       $this->callAPISuccess('CustomField', 'delete', array('id' => $id));
+    }
+  }
+
+  /**
+   * Test getmetdata works on all reports.
+   *
+   * @dataProvider getAllNonLoggingReports
+   */
+  public function testApiMetadataAllReports($reportID) {
+    $result = civicrm_api3('ReportTemplate', 'Getmetadata', array('report_id' => $reportID))['values'];
+    $filters = $result['filters'];
+    foreach ($filters as $fieldName => $filter) {
+      $this->assertEquals(TRUE, $filter['is_filters']);
+      $this->assertEquals($result['metadata'][$fieldName], $filter);
+      $knownNoFieldFilters = ['effective_date', 'tagid', 'gid', 'pledge_payment_status_id'];
+      if (!in_array($fieldName, $knownNoFieldFilters) && $filter['is_fields']) {
+        $this->assertEquals($result['fields'][$fieldName], $filter);
+        $this->assertTrue(!empty($filter['operatorType']), $fieldName . ' has no operator Type');
+      }
     }
   }
 

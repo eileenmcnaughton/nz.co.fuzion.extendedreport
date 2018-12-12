@@ -72,6 +72,7 @@ class CRM_Extendedreport_Form_Report_Contribute_BookkeepingExtended extends CRM_
             'title' => ts('Amount'),
             'default' => TRUE,
             'type' => CRM_Utils_Type::T_MONEY,
+            'operatorType' => CRM_Report_Form::OP_FLOAT,
             'statistics' => array('sum'),
             'is_fields' => TRUE,
             'is_filters' => TRUE,
@@ -80,20 +81,6 @@ class CRM_Extendedreport_Form_Report_Contribute_BookkeepingExtended extends CRM_
             'is_join_filters' => FALSE,
           ),
         ],
-        'fields' => array(
-          'amount' => array(
-            'title' => ts('Amount'),
-            'default' => TRUE,
-            'type' => CRM_Utils_Type::T_STRING,
-            'statistics' => array('sum'),
-          ),
-        ),
-        'filters' => array(
-          'amount' => array(
-            'title' => ts('Amount'),
-            'type' => CRM_Utils_Type::T_MONEY,
-          ),
-        ),
       ),
     ) + $this->getColumns('Batch', array(
       'group_by' => TRUE,
