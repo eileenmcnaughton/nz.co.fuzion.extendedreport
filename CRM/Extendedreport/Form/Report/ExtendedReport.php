@@ -2184,7 +2184,7 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
       $this->getSelectedGroupBys()
     );
     foreach ($selected as $spec) {
-      if ($spec['table_name'] = $table) {
+      if ($spec['table_name'] == $table) {
         return TRUE;
       }
     }
