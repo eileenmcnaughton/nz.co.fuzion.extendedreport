@@ -77,13 +77,15 @@ class BaseTestClass extends \PHPUnit_Framework_TestCase implements HeadlessInter
     $params['extends'] = $entity;
     CRM_Core_PseudoConstant::flush();
 
+    $groups = $this->callAPISuccess('CustomGroup', 'get', array('name' => $entity));
     // cleanup first to save misery.
-    $fields = $this->callAPISuccess('CustomField', 'get', array('custom_group_id' => $entity));
+    $customGroupParams = empty($groups) ? ['custom_group_id' => ['IS NULL' => 1]] : ['custom_group_id' => ['IN' => array_keys($groups['values'])]];
+    $fields = $this->callAPISuccess('CustomField', 'get', $customGroupParams);
     foreach ($fields['values'] as $field) {
       // delete from the table as it may be an orphan & if not the group drop will sort out.
       CRM_Core_DAO::executeQuery('DELETE FROM civicrm_custom_field WHERE id = ' . (int) $field['id']);
     }
-    $groups = $this->callAPISuccess('CustomGroup', 'get', array('name' => $entity));
+
     foreach ($groups['values'] as $group) {
       if (CRM_Core_DAO::singleValueQuery("SHOW TABLES LIKE '" . $group['table_name'] . "'")) {
         $this->callAPISuccess('CustomGroup', 'delete', array('id' => $group['id']));
