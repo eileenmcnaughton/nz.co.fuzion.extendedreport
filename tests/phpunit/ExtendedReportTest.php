@@ -86,6 +86,32 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
   }
 
   /**
+   * Test the group filter does not cause an sql error.
+   */
+  public function testReportsGroupFilter() {
+    $params = [
+      'report_id' => 'contribution/detailextended',
+      'fields' => ['contribution_id' => 1],
+      'gid_op' => 'in',
+      'gid_value' => [1],
+    ];
+    $this->getRows($params);
+  }
+
+  /**
+   * Test the group filter does not cause an sql error.
+   */
+  public function testReportsTagFilter() {
+    $params = [
+      'report_id' => 'contribution/detailextended',
+      'fields' => ['contribution_id' => 1],
+      'tagid_op' => 'in',
+      'tagid_value' => [1],
+    ];
+    $this->getRows($params);
+  }
+
+  /**
    * Test the future income report with some data.
    */
   public function testPledgeIncomeReport() {

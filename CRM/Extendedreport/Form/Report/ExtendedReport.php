@@ -313,9 +313,10 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   public function buildTagFilter() {
     $contactTags = CRM_Core_BAO_Tag::getTags($this->_tagFilterTable);
     if (!empty($contactTags)) {
-      $this->_columns['civicrm_tag'] = array(
+      $this->_columns['civicrm_tag'] = [
+        'dbAlias' => 'civireport_tag',
         'metadata' => [
-          'tagid' => array(
+          'tagid' => [
             'name' => 'tag_id',
             'title' => ts('Tag'),
             'type' => CRM_Utils_Type::T_INT,
@@ -327,22 +328,12 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
             'is_group_bys' => FALSE,
             'is_order_bys' => FALSE,
             'is_join_filters' => FALSE,
-            'alias' => 'civicrm_tag_tagid',
-          ),
+            'alias' => 'tag_civireport',
+          ],
         ],
         'dao' => 'CRM_Core_DAO_Tag',
-        'filters' => array(
-          'tagid' => array(
-            'name' => 'tag_id',
-            'title' => ts('Tag'),
-            'type' => CRM_Utils_Type::T_INT,
-            'tag' => TRUE,
-            'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-            'options' => $contactTags,
-            'alias' => 'civicrm_tag_tagid',
-          ),
-        ),
-      );
+        'group_title' => ts('Tags'),
+      ];
     }
   }
 
@@ -350,6 +341,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    * Adds group filters to _columns (called from _Construct).
    */
   public function buildGroupFilter() {
+    $this->_columns['civicrm_group']['group_title'] = ts('Groups');
     $this->_columns['civicrm_group']['filters'] = array(
       'gid' => array(
         'name' => 'group_id',
@@ -380,7 +372,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
         'is_group_bys' => FALSE,
         'is_order_bys' => FALSE,
         'is_join_filters' => FALSE,
-        'dbAlias' => 'cgroup.gid',
+        'dbAlias' => 'cgroup.group_id',
         'alias' => 'civicrm_group_gid',
       ),
     );

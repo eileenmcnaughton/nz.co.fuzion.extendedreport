@@ -74,8 +74,7 @@ class CRM_Extendedreport_Form_Report_Contribute_DetailExtended extends CRM_Exten
       'fields_defaults' => array('receive_date', 'id', 'total_amount'),
       'filters_defaults' => array('contribution_status_id' => array(1), 'is_test' => 0),
       'group_bys_defaults' => ['id' => TRUE],
-    ))
-    + $this->getColumns('Address');
+    ));
 
     $this->_columns['civicrm_contribution']['fields']['id']['required'] = TRUE;
     $this->_columns['civicrm_contribution']['fields']['currency']['required'] = TRUE;
@@ -93,6 +92,7 @@ class CRM_Extendedreport_Form_Report_Contribute_DetailExtended extends CRM_Exten
         'type' => CRM_Utils_Type::T_INT,
         'alias' => 'cordinality_cordinality'
       ]],
+      'group_title' => ts('Contribution Ordinality'),
 
       'filters' => [
         'ordinality' => [
@@ -106,6 +106,7 @@ class CRM_Extendedreport_Form_Report_Contribute_DetailExtended extends CRM_Exten
         ],
       ],
     );
+    $this->_columns += $this->getColumns('Address');
     $this->_columns += $this->getColumns('Note');
 
     $this->_groupFilter = TRUE;
