@@ -350,6 +350,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    * Adds group filters to _columns (called from _Construct).
    */
   public function buildGroupFilter() {
+    $this->_columns['civicrm_group']['group_title'] = ts('Groups');
     $this->_columns['civicrm_group']['filters'] = array(
       'gid' => array(
         'name' => 'group_id',
@@ -380,7 +381,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
         'is_group_bys' => FALSE,
         'is_order_bys' => FALSE,
         'is_join_filters' => FALSE,
-        'dbAlias' => 'cgroup.gid',
+        'dbAlias' => 'cgroup.group_id',
         'alias' => 'civicrm_group_gid',
       ),
     );
