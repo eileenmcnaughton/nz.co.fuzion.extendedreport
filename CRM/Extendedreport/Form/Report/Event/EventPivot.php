@@ -77,57 +77,61 @@ class CRM_Extendedreport_Form_Report_Event_EventPivot extends CRM_Extendedreport
   function alterDisplay(&$rows) {
     parent::alterDisplay($rows);
 
-    if (isset ($_POST['delete_null'])) {
-      $hiddenColumnsLabels = array();
-      $columnFields = $this->getFieldBreakdownForAggregates('column');
-      $selectedTables = array();
-      $columnColumns = $this->extractCustomFields($columnFields, $selectedTables, 'column_header');
+    if (isset($this->_params['delete_null']['delete_null'])){
+      if ($this->_params['delete_null']['delete_null']=='1'){
+        $hiddenColumnsLabels = array();
+        $columnFields = $this->getFieldBreakdownForAggregates('column');
+        $selectedTables = array();
+        $columnColumns = $this->extractCustomFields($columnFields, $selectedTables, 'column_header');
       
-      if (empty($columnColumns)) {
-        $participantStatuses = CRM_Event_PseudoConstant::participantStatus(NULL, NULL, 'label');
-        foreach ($participantStatuses as $key => $opt) {
-          $hiddenColumnsLabels[] = 'status_id_'.$key;
+        if (empty($columnColumns)) {
+          $participantStatuses = CRM_Event_PseudoConstant::participantStatus(NULL, NULL, 'label');
+          foreach ($participantStatuses as $key => $opt) {
+            $hiddenColumnsLabels[] = 'status_id_'.$key;
+          }
+          $hiddenColumnsLabels[] = 'status_id_null';
+        } else {
+          $customfieldId = intval(preg_replace('/[^0-9]+/', '', key($columnColumns)), 10);
+          $customField = civicrm_api3('CustomField', 'get', [
+            'sequential' => 1,
+            'id' => $customfieldId,
+            'options' => ['limit' => 0],
+          ]);
+          $title = $customField['values'][0]['column_name'];
+          $group = $customField['values'][0]['option_group_id'];
+          $optionValue = civicrm_api3('OptionValue', 'get', [
+            'sequential' => 1,
+            'option_group_id' => "$group",
+            'options' => ['limit' => 0],
+          ]);
+          foreach ($optionValue['values'] as $key => $opt) {
+            $key++;
+            $hiddenColumnsLabels[] = $title.'_'.$key;
+          }
+          $hiddenColumnsLabels[] = $title.'_null';
         }
-      } else {
-        $customfieldId = intval(preg_replace('/[^0-9]+/', '', key($columnColumns)), 10);
-        $customField = civicrm_api3('CustomField', 'get', [
-          'sequential' => 1,
-          'id' => $customfieldId,
-          'options' => ['limit' => 0],
-        ]);
-        $title = $customField['values'][0]['column_name'];
-        $group = $customField['values'][0]['option_group_id'];
-        $optionValue = civicrm_api3('OptionValue', 'get', [
-          'sequential' => 1,
-          'option_group_id' => "$group",
-          'options' => ['limit' => 0],
-        ]);
-        foreach ($optionValue['values'] as $key => $opt) {
-          $key++;
-          $hiddenColumnsLabels[] = $title.'_'.$key;
+      
+        $colVoucher = array();
+        foreach ($hiddenColumnsLabels as $v) {
+          $colVoucher[$v] = 0; 
         }
-      }
       
-      $colVoucher = array();
-      foreach ($hiddenColumnsLabels as $v) {
-        $colVoucher[$v] = 0; 
-      }
-      
-      foreach ($rows as $rowNum => $row) {
-        foreach ($row as $colNum => $col){
-          if (in_array ($colNum,$hiddenColumnsLabels)) {
-            if ($col != 0 ) {
-              $colVoucher[$colNum]++;
+        foreach ($rows as $rowNum => $row) {
+          foreach ($row as $colNum => $col){
+            if (in_array ($colNum,$hiddenColumnsLabels)) {
+              if ($col != 0 ) {
+                $colVoucher[$colNum]++;
+              }
             }
           }
         }
-      }
       
-      foreach ($colVoucher as $collabel => $colcontent) {
-        if ($colVoucher[$collabel] == 0){              
-          unset ($this->_columnHeaders[$collabel]);
-        }
-      }        
+        foreach ($colVoucher as $collabel => $colcontent) {
+          if ($colVoucher[$collabel] == 0){              
+            unset ($this->_columnHeaders[$collabel]);
+          }
+        }        
+      }
     }
   }
 }
