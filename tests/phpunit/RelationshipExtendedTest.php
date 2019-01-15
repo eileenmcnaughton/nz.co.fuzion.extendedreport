@@ -33,7 +33,6 @@ class RelationshipExtendedTest extends BaseTestClass implements HeadlessInterfac
     $env = \Civi\Test::headless()
       ->installMe(__DIR__)
       ->apply();
-    $this->createCustomGroupWithField();
     return $env;
   }
 
@@ -45,10 +44,13 @@ class RelationshipExtendedTest extends BaseTestClass implements HeadlessInterfac
       $components[$dao->id] = $dao->name;
     }
     civicrm_api3('Setting', 'create', array('enable_components' => $components));
+    $this->createCustomGroupWithField();
+
     $contact = $this->callAPISuccess('Contact', 'create', array('organization_name' => 'Amazons', 'last_name' => 'Woman', 'contact_type' => 'Organization', 'custom_' . $this->customFieldID => 'super org'));
     $this->contacts[] = $contact['id'];
     $contact = $this->callAPISuccess('Contact', 'create', array('first_name' => 'Wonder', 'last_name' => 'Woman', 'contact_type' => 'Individual', 'employer_id' => $contact['id'], 'custom_' . $this->customFieldID => 'just a gal'));
     $this->contacts[] = $contact['id'];
+
   }
 
   public function tearDown() {
