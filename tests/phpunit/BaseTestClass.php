@@ -79,7 +79,7 @@ class BaseTestClass extends \PHPUnit_Framework_TestCase implements HeadlessInter
 
     $groups = $this->callAPISuccess('CustomGroup', 'get', array('name' => $entity));
     // cleanup first to save misery.
-    $customGroupParams = empty($groups) ? ['custom_group_id' => ['IS NULL' => 1]] : ['custom_group_id' => ['IN' => array_keys($groups['values'])]];
+    $customGroupParams = empty($groups['count']) ? ['custom_group_id' => ['IS NULL' => 1]] : ['custom_group_id' => ['IN' => array_keys($groups['values'])]];
     $fields = $this->callAPISuccess('CustomField', 'get', $customGroupParams, print_r($groups, 1));
     foreach ($fields['values'] as $field) {
       // delete from the table as it may be an orphan & if not the group drop will sort out.
