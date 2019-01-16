@@ -560,18 +560,23 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     $extendedFieldKeys = $this->getConfiguredFieldsFlatArray();
     if (!empty($params) && !empty($extendedFieldKeys)) {
       $fields = $params['fields'];
-      foreach ($this->_formValues['extended_fields'] as $index => $extended_field) {
-        $fieldName = $extended_field['name'];
-        if (!isset($fields[$fieldName])) {
-          unset($this->_formValues['extended_fields'][$index]);
+      if (isset($this->_formValues['extended_fields'])) {
+        foreach ($this->_formValues['extended_fields'] as $index => $extended_field) {
+          $fieldName = $extended_field['name'];
+          if (!isset($fields[$fieldName])) {
+            unset($this->_formValues['extended_fields'][$index]);
+          }
         }
+        $fieldsToAdd = array_diff_key($fields, $extendedFieldKeys);
+        foreach (array_keys($fieldsToAdd) as $fieldName) {
+          $this->_formValues['extended_fields'][] = [
+            'name' => $fieldName,
+            'title' => $this->getMetadataByType('fields')[$fieldName]['title']
+          ];
+        }
+        // We use array_merge to re-index from 0
+        $params['extended_fields'] = array_merge($this->_formValues['extended_fields']);
       }
-      $fieldsToAdd = array_diff_key($fields, $extendedFieldKeys);
-      foreach (array_keys($fieldsToAdd) as $fieldName) {
-        $this->_formValues['extended_fields'][] = ['name' => $fieldName, 'title' => $this->getMetadataByType('fields')[$fieldName]['title']];
-      }
-      // We use array_merge to re-index from 0
-      $params['extended_fields'] = array_merge($this->_formValues['extended_fields']);
     }
 
     $this->_params = $params;
@@ -1925,6 +1930,20 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       $sql .= $this->_limit;
     }
     return $sql;
+  }
+
+  /**
+   * Determine unselected columns.
+   *
+   * @return array
+   */
+  public function unselectedSectionColumns() {
+    if (is_array($this->_sections)) {
+      return array_diff_key($this->_sections, $this->getSelectedFields());
+    }
+    else {
+      return array();
+    }
   }
 
   /**
