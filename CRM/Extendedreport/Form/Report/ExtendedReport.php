@@ -1089,17 +1089,17 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
 
     if (!empty($selectedOrderBys)) {
       // Process order_bys in user-specified order
-      foreach ($selectedOrderBys as $SelectedOrderBy) {
-        $fieldAlias = $SelectedOrderBy['alias'];
+      foreach ($selectedOrderBys as $selectedOrderBy) {
         // Record any section headers for assignment to the template
-        if (CRM_Utils_Array::value('section', $SelectedOrderBy)) {
+        if (!empty($selectedOrderBy['section'])) {
           $this->_sections[$SelectedOrderBy['alias']] = $SelectedOrderBy;
         }
-        $fieldAlias = $SelectedOrderBy['alias'];
-        if ($isGroupBy && !empty($SelectedOrderBy['statistics']) && !empty($SelectedOrderBy['statistics']['sum'])) {
+        $fieldAlias = $selectedOrderBy['alias'];
+        if ($isGroupBy && !empty($selectedOrderBy['statistics']) && !empty($selectedOrderBy['statistics']['sum'])) {
           $fieldAlias .= '_sum';
         }
-        $orderBys[] = "({$fieldAlias}) {$SelectedOrderBy['order']}";
+        $orderBys[] = "({$fieldAlias}) {$selectedOrderBy['order']}";
+        // Record any section headers for assignment to the template
       }
     }
 
@@ -1909,7 +1909,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     // order_by columns not selected for display need to be included in SELECT
     $unselectedSectionColumns = $this->unselectedSectionColumns();
     foreach ($unselectedSectionColumns as $alias => $section) {
-      $this->_select .= ", {$section['dbAlias']} as {$alias}";
+      $this->_select .= ", {$section['dbAlias']} as {$section['alias']}";
     }
 
     if ($applyLimit && !CRM_Utils_Array::value('charts', $this->_params)) {
@@ -2533,7 +2533,9 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
     }
 
     // build array of section totals
+    CRM_Core_DAO::disableFullGroupByMode();
     $this->sectionTotals();
+    CRM_Core_DAO::reenableFullGroupByMode();
 
     // process grand-total row
     $this->grandTotal($rows);
@@ -7124,10 +7126,26 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
     $result = [];
     foreach ($this->_params['order_bys'] as $order_by) {
       if (isset($orderBys[$order_by['column']])) {
-        $result[$order_by['column']] = array_merge(
+        $order_by = array_merge(
           $order_by, $orderBys[$order_by['column']]
         );
+
+        if (!empty($order_by['section'])) {
+          $order_by['pageBreak'] = CRM_Utils_Array::value('pageBreak', $order_by, 0);
+        }
+        if ($this->groupConcatTested) {
+          $order_by = "{$order_by['tplField']} {$order_by['order']}";
+        }
+        else {
+          // Not sure when this is preferable to using tplField (which has
+          // definitely been tested to work in cases then this does not.
+          // in caution not switching unless report has been tested for
+          // group concat functionality.$order_by
+          $order_by['tplField'] = "{$order_by['dbAlias']} {$order_by['order']}";
+        }
+        $result[$order_by['column']] = $order_by;
       }
+
     }
     return $result;
   }
