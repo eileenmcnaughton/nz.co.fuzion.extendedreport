@@ -419,16 +419,31 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     $this->ensureBaoIsSetIfPossible();
 
     $configuredExtendedFields = empty($this->_formValues['extended_fields']) ? [] :  $this->_formValues['extended_fields'];
-    $sortingArray = [];
+    $sortingArray= $this->getConfiguredFieldsFlatArray();
     foreach ($configuredExtendedFields as $configuredExtendedField) {
-      if (isset($this->metaData['fields'][$configuredExtendedField['name']])) {
-        if (CRM_Utils_Rule::alphanumeric(str_replace(' ', '', $configuredExtendedField['title']))) {
-          $this->metaData['fields'][$configuredExtendedField['name']]['title'] = $configuredExtendedField['title'];
+      $fieldName = $configuredExtendedField['name'];
+      if (isset($this->metaData['fields'][$fieldName])) {
+        if ($this->isValidTitle($configuredExtendedField['title'])) {
+          $this->metaData['fields'][$fieldName]['title'] = $configuredExtendedField['title'];
         }
-        $sortingArray[$configuredExtendedField['name']] = 1;
+        if (!empty($configuredExtendedField['field_on_null'])) {
+          $nullString = [];
+          foreach ($configuredExtendedField['field_on_null'] as $fallbackField) {
+            if ($this->isValidTitle($fallbackField['title'])) {
+              $nullString[] = $fallbackField['title'];
+            }
+          }
+          $this->metaData['fields'][$fieldName]['title'] .= '(' . implode(', ', $nullString) . ')';
+          $this->metaData['fields'][$fieldName]['field_on_null'] = $configuredExtendedField['field_on_null'];
+
+        }
       }
     }
-    $this->metaData['fields'] = array_merge($sortingArray, $this->metaData['fields']);
+    if (!empty($sortingArray)) {
+      // This array merge re-orders them.
+      $this->metaData['fields'] = array_merge($sortingArray, $this->metaData['fields']);
+      $this->_formValues['fields'] = $sortingArray;
+    }
 
     foreach ($this->_columns as $tableName => $table) {
       $this->_aliases[$tableName] = $this->setTableAlias($table, $tableName);
@@ -534,6 +549,32 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       $this->_formValues = $this->_defaults;
       $this->postProcess();
     }
+  }
+
+  /**
+   * Setter for $_params.
+   *
+   * @param array $params
+   */
+  public function setParams($params) {
+    $extendedFieldKeys = $this->getConfiguredFieldsFlatArray();
+    if (!empty($params) && !empty($extendedFieldKeys)) {
+      $fields = $params['fields'];
+      foreach ($this->_formValues['extended_fields'] as $index => $extended_field) {
+        $fieldName = $extended_field['name'];
+        if (!isset($fields[$fieldName])) {
+          unset($this->_formValues['extended_fields'][$index]);
+        }
+      }
+      $fieldsToAdd = array_diff_key($fields, $extendedFieldKeys);
+      foreach (array_keys($fieldsToAdd) as $fieldName) {
+        $this->_formValues['extended_fields'][] = ['name' => $fieldName, 'title' => $this->getMetadataByType('fields')[$fieldName]['title']];
+      }
+      // We use array_merge to re-index from 0
+      $params['extended_fields'] = array_merge($this->_formValues['extended_fields']);
+    }
+
+    $this->_params = $params;
   }
 
   /**
@@ -6853,7 +6894,15 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    */
   protected function addBasicFieldToSelect($tableName, $fieldName, $field, $select) {
     $alias = isset($field['alias']) ? $field['alias'] : "{$tableName}_{$fieldName}";
-    $select[] = "{$field['dbAlias']} as $alias";
+    $fieldString = $field['dbAlias'];
+    if (!empty($field['field_on_null'])) {
+      $fallbacks = [];
+      foreach ($field['field_on_null'] as $fallback) {
+        $fallbacks[] = $this->getMetadataByType('filters')[$fallback['name']]['dbAlias'];
+      }
+      $fieldString = 'COALESCE(' . $fieldString . ',' . implode(',', $fallbacks) . ')';
+    }
+    $select[$fieldName] = "$fieldString as $alias";
     $this->_columnHeaders[$field['alias']]['title'] = CRM_Utils_Array::value('title', $field);
     $this->_columnHeaders[$field['alias']]['type'] = CRM_Utils_Array::value('type', $field);
     $this->_selectAliases[] = $alias;
@@ -7050,7 +7099,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    */
   protected function getSelectedFields() {
     $fields = $this->getMetadataByType('fields');
-    $selectedFields = array_intersect_key($fields, $this->_params['fields']);
+    $selectedFields = array_intersect_key($fields, $this->getConfiguredFieldsFlatArray());
     foreach ($fields as $fieldName => $field) {
       if (!empty($field['required'])) {
         $selectedFields[$fieldName] = $field;
@@ -7650,6 +7699,37 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
       }
     }
     return [];
+  }
+
+  /**
+   * Is the field valid for a title.
+   *
+   * There is no obvious core validation rule to prevent dodginess but still permit spaces
+   * (& possibly other chars) - so let's use this limited offering for now & we can make more permissive
+   * later.
+   *
+   * @param string $string
+   *
+   * @return bool
+   */
+  protected function isValidTitle($string) {
+    return CRM_Utils_Rule::alphanumeric(str_replace(' ', '', $string));
+  }
+
+  /**
+   * Get the configured fields as a flat array
+   *
+   * This is in the same format as 'fields' so is easy to compare.
+   *
+   * @return array
+   */
+  protected function getConfiguredFieldsFlatArray() {
+    $sortingArray = [];
+    $configuredExtendedFields = empty($this->_formValues['extended_fields']) ? [] :  $this->_formValues['extended_fields'];
+    foreach ($configuredExtendedFields as $configuredExtendedField) {
+      $sortingArray[$configuredExtendedField['name']] = 1;
+    }
+    return empty($sortingArray) ? $this->_params['fields'] : $sortingArray;
   }
 
 }
