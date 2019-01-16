@@ -309,6 +309,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       $definitionTypes = ['fields', 'filters', 'join_filters', 'group_bys', 'order_bys'];
       $this->metaData = array_fill_keys($definitionTypes, []);
       $this->metaData['having'] = [];
+
       foreach ($this->_columns as $table => $tableSpec) {
         foreach ($definitionTypes as $type) {
           foreach ($tableSpec['metadata'] as $fieldName => $fieldSpec) {
@@ -416,6 +417,18 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       $this->addBreadCrumb();
     }
     $this->ensureBaoIsSetIfPossible();
+
+    $configuredExtendedFields = empty($this->_formValues['extended_fields']) ? [] :  $this->_formValues['extended_fields'];
+    $sortingArray = [];
+    foreach ($configuredExtendedFields as $configuredExtendedField) {
+      if (isset($this->metaData['fields'][$configuredExtendedField['name']])) {
+        if (CRM_Utils_Rule::alphanumeric(str_replace(' ', '', $configuredExtendedField['title']))) {
+          $this->metaData['fields'][$configuredExtendedField['name']]['title'] = $configuredExtendedField['title'];
+        }
+        $sortingArray[$configuredExtendedField['name']] = 1;
+      }
+    }
+    $this->metaData['fields'] = array_merge($sortingArray, $this->metaData['fields']);
 
     foreach ($this->_columns as $tableName => $table) {
       $this->_aliases[$tableName] = $this->setTableAlias($table, $tableName);
