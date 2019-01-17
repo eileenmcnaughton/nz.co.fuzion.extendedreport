@@ -625,8 +625,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     // you didn't ask for them).
     $havingFields = $this->getSelectedHavings();
     $havingsToAdd = array_diff_key($havingFields, $selectedFields);
-    $orderBysToAdd = $this->getOrderBysNotInSelectedFields();
-    foreach (array_merge($havingsToAdd, $orderBysToAdd) as $fieldName => $spec) {
+    foreach (array_merge($havingsToAdd, $this->getOrderBysNotInSelectedFields()) as $fieldName => $spec) {
       $dbAlias = CRM_Utils_Array::value('selectAlias', $spec, $spec['dbAlias']);
       $select[$fieldName] = "$dbAlias {$spec['table_name']}_{$fieldName}";
     }
@@ -1189,6 +1188,14 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     if ($this->isForceGroupBy && empty($this->_groupByArray)) {
       $this->_groupByArray[$this->_baseTable . '_id'] = $this->_aliases[$this->_baseTable] . ".id";
 
+    }
+    $orderBysToAdd = $this->getOrderBysNotInSelectedFields();
+    if (!empty($this->_groupByArray) && !empty($orderBysToAdd)) {
+      foreach ($orderBysToAdd as $key => $orderBy) {
+        if (empty($orderBy['statistics']) && !isset($this->_groupByArray[$orderBy['alias']])) {
+          $this->_groupByArray[$orderBy['alias']] = $orderBy['alias'];
+        }
+      }
     }
   }
 
