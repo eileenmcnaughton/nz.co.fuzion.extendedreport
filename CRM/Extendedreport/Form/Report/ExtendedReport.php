@@ -643,8 +643,10 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     // you didn't ask for them).
     $havingFields = $this->getSelectedHavings();
     $havingsToAdd = array_diff_key($havingFields, $selectedFields);
-    foreach ($havingsToAdd as $fieldName => $spec) {
-      $select[$fieldName] = "{$spec['selectAlias']} as {$spec['table_name']}_{$fieldName}";
+    $orderBysToAdd = $this->getOrderBysNotInSelectedFields();
+    foreach (array_merge($havingsToAdd, $orderBysToAdd) as $fieldName => $spec) {
+      $dbAlias = CRM_Utils_Array::value('selectAlias', $spec, $spec['dbAlias']);
+      $select[$fieldName] = "$dbAlias {$spec['table_name']}_{$fieldName}";
     }
 
     foreach ($selectedFields as $fieldName => $field) {
@@ -1083,13 +1085,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
 
     $isGroupBy = !empty($this->_groupByArray);
     $selectedOrderBys = $this->getSelectedOrderBys();
-    $selectedFields = $this->getSelectedFields();
-    $selectedFieldsToAdd = array_diff_key($selectedOrderBys, $selectedFields);
-    foreach ($selectedFieldsToAdd as $fieldName => $field) {
-      $this->_params['fields'][$fieldName] = 1;
-      $this->_columns[$field['table_name']][$field['column']]['no_display'] = 1;
-    }
-
     $orderBys = [];
 
     if (!empty($selectedOrderBys)) {
@@ -7162,6 +7157,15 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
 
     }
     return $result;
+  }
+
+  /**
+   * Get any order bys that are not already in the selected fields.
+   *
+   * @return array
+   */
+  public function getOrderBysNotInSelectedFields() {
+    return array_diff_key($this->getSelectedOrderBys(), $this->getSelectedFields());
   }
 
   /**
