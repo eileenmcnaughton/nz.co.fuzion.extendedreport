@@ -140,8 +140,8 @@ class CRM_Extendedreport_Form_Report_Contribute_DetailExtended extends CRM_Exten
   }
 
   function from() {
-    $this->_from = "
-        FROM  civicrm_contact      {$this->_aliases['civicrm_contact']} {$this->_aclFrom}
+    $this->setFromBase('civicrm_contact');
+    $this->_from .= "
               INNER JOIN civicrm_contribution {$this->_aliases['civicrm_contribution']}
                       ON {$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_contribution']}.contact_id AND {$this->_aliases['civicrm_contribution']}.is_test = 0";
 
