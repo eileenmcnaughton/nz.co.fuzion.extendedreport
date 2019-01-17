@@ -55,6 +55,7 @@ class CRM_Extendedreport_Form_Report_Contribute_LoggingSummary extends CRM_Exten
     $this->_columns['civicrm_contribution']['metadata']['log_user_id'] = array(
       'title' => ts('Changed By'),
       'alter_display' => 'alterContactID',
+      'name' => 'log_user_id',
       'type' => CRM_Utils_Type::T_INT,
       'is_fields' => TRUE,
       'no_display' => FALSE,
@@ -90,6 +91,9 @@ class CRM_Extendedreport_Form_Report_Contribute_LoggingSummary extends CRM_Exten
       'type' => CRM_Utils_Type::T_STRING,
     );
     foreach ($this->_columns['civicrm_contribution']['metadata'] as $index => $field) {
+      if (!isset($field['dbAlias'])) {
+        $this->_columns['civicrm_contribution']['metadata'][$index]['dbAlias'] = 'contribution.' . $index;
+      }
       foreach (['filters', 'group_bys', 'order_bys', 'join_filters'] as $type) {
         if (!isset($this->_columns['civicrm_contribution']['metadata'][$index]['is_' . $type])) {
           $this->_columns['civicrm_contribution']['metadata'][$index]['is_' . $type] = FALSE;

@@ -64,25 +64,23 @@ class CRM_Extendedreport_Form_Report_Contribute_BookkeepingExtended extends CRM_
     +  $this->getColumns('FinancialTrxn', array(
       'filters_defaults' => array('status_id' => array('IN' => array(1)),
     )))
-    + array(
-      'civicrm_entity_financial_trxn' => array(
-        'dao' => 'CRM_Financial_DAO_EntityFinancialTrxn',
-        'metadata' => [
+    + $this->buildColumns(
+      [
           'amount' => array(
             'title' => ts('Amount'),
             'default' => TRUE,
             'type' => CRM_Utils_Type::T_MONEY,
             'operatorType' => CRM_Report_Form::OP_FLOAT,
-            'statistics' => array('sum'),
+            'statistics' => ['sum' => ts('Total amount')],
             'is_fields' => TRUE,
             'is_filters' => TRUE,
             'is_group_bys' => FALSE,
             'is_order_bys' => FALSE,
             'is_join_filters' => FALSE,
+            'table_name' => 'civicrm_entity_financial_trxn',
           ),
-        ],
-      ),
-    ) + $this->getColumns('Batch', array(
+      ], 'civicrm_entity_financial_trxn', 'CRM_Financial_DAO_EntityFinancialTrxn')
+     + $this->getColumns('Batch', array(
       'group_by' => TRUE,
       'prefix_label' => ts('Batch '),
       'filters' => TRUE,
