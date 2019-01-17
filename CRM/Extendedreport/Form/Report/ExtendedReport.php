@@ -7761,7 +7761,7 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
     foreach ($configuredExtendedFields as $configuredExtendedField) {
       $sortingArray[$configuredExtendedField['name']] = 1;
     }
-    return empty($sortingArray) ? $this->_params['fields'] : $sortingArray;
+    return empty($sortingArray) ? CRM_Utils_Array::value('fields', $this->_params, []) : $sortingArray;
   }
 
 }
