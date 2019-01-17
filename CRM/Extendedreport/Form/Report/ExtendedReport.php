@@ -418,32 +418,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     }
     $this->ensureBaoIsSetIfPossible();
 
-    $configuredExtendedFields = empty($this->_formValues['extended_fields']) ? [] :  $this->_formValues['extended_fields'];
-    $sortingArray= $this->getConfiguredFieldsFlatArray();
-    foreach ($configuredExtendedFields as $configuredExtendedField) {
-      $fieldName = $configuredExtendedField['name'];
-      if (isset($this->metaData['fields'][$fieldName])) {
-        if ($this->isValidTitle($configuredExtendedField['title'])) {
-          $this->metaData['fields'][$fieldName]['title'] = $configuredExtendedField['title'];
-        }
-        if (!empty($configuredExtendedField['field_on_null'])) {
-          $nullString = [];
-          foreach ($configuredExtendedField['field_on_null'] as $fallbackField) {
-            if ($this->isValidTitle($fallbackField['title'])) {
-              $nullString[] = $fallbackField['title'];
-            }
-          }
-          $this->metaData['fields'][$fieldName]['title'] .= '(' . implode(', ', $nullString) . ')';
-          $this->metaData['fields'][$fieldName]['field_on_null'] = $configuredExtendedField['field_on_null'];
-
-        }
-      }
-    }
-    if (!empty($sortingArray)) {
-      // This array merge re-orders them.
-      $this->metaData['fields'] = array_merge($sortingArray, $this->metaData['fields']);
-      $this->_formValues['fields'] = $sortingArray;
-    }
+    $this->mergeExtendedConfigurationIntoReportData();
 
     foreach ($this->_columns as $tableName => $table) {
       $this->_aliases[$tableName] = $this->setTableAlias($table, $tableName);
@@ -557,8 +532,12 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    * @param array $params
    */
   public function setParams($params) {
+    if (empty($params)) {
+      $this->_params = $params;
+      return;
+    }
     $extendedFieldKeys = $this->getConfiguredFieldsFlatArray();
-    if (!empty($params) && !empty($extendedFieldKeys)) {
+    if(!empty($extendedFieldKeys)) {
       $fields = $params['fields'];
       if (isset($this->_formValues['extended_fields'])) {
         foreach ($this->_formValues['extended_fields'] as $index => $extended_field) {
@@ -578,6 +557,9 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
         $params['extended_fields'] = array_merge($this->_formValues['extended_fields']);
       }
     }
+    $params['order_bys'] = $params['extended_order_bys'] = $this->getConfiguredOrderBys($params);
+    // Renumber from 0
+    $params['extended_order_bys'] = array_merge($params['extended_order_bys']);
 
     $this->_params = $params;
   }
@@ -7146,6 +7128,9 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
           $order_by = "{$order_by['tplField']} {$order_by['order']}";
         }
         else {
+          if (!isset($order_by['order'])) {
+            $order_by['order'] = 'ASC';
+          }
           // Not sure when this is preferable to using tplField (which has
           // definitely been tested to work in cases then this does not.
           // in caution not switching unless report has been tested for
@@ -7766,6 +7751,130 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
       $sortingArray[$configuredExtendedField['name']] = 1;
     }
     return empty($sortingArray) ? CRM_Utils_Array::value('fields', $this->_params, []) : $sortingArray;
+  }
+
+  /**
+   * Merge data configured in angular form into main report data.
+   *
+   * The angular form saves
+   * 1) extended fields data
+   * 2) extended order_bys data
+   *
+   * We save the extended_fields data in it's own key and when loading the report we merge information from it back
+   * into the report metadata - notably
+   *  - changes to field titles
+   *  - re-ordering of fields.
+   *  - fall back option of the field is null (what field to use instead)
+   * These can be unset from the Quickform page but not configured & if unset the config is lost.
+   *
+   * The QF page already saves order by data in an array. However, it may be lost :-(
+   */
+  protected function mergeExtendedConfigurationIntoReportData() {
+    $this->mergeExtendedFieldConfiguration();
+    $this->mergeExtendedOrderByConfiguration();
+  }
+
+  /**
+   * Merge 'extended_order_bys' into fields
+   */
+  protected function mergeExtendedOrderByConfiguration() {
+    $orderBys = CRM_Utils_Array::value('order_bys', $this->_formValues);
+    $extendedOrderBys = CRM_Utils_Array::value('extended_order_bys', $this->_formValues);
+    $count = 1;
+    if (!empty($extendedOrderBys)) {
+      foreach ($extendedOrderBys as $index => $extendedOrderBy) {
+        $extendedOrderBy['column'] = $extendedOrderBy['name'] = CRM_Utils_Array::value('name', $extendedOrderBy, CRM_Utils_Array::value('column', $extendedOrderBy));
+        $extendedOrderBy['title'] = CRM_Utils_Array::value('title', $extendedOrderBy, $this->metaData['order_bys'][$extendedOrderBy['name']]['title']);
+        $orderBys[$count] = [
+          'column' => CRM_Utils_Array::value('name', $extendedOrderBy, $extendedOrderBy['column']),
+        ];
+        $count++;
+        if ($this->isValidTitle($extendedOrderBy['title'])) {
+          $this->metaData['order_bys'][$extendedOrderBy['name']]['title'] = $extendedOrderBy['title'];
+        }
+        if (!empty($extendedOrderBy['field_on_null'])) {
+          $nullString = [];
+          foreach ($extendedOrderBy['field_on_null'] as $fallbackField) {
+            if ($this->isValidTitle($fallbackField['title'])) {
+              $nullString[] = $fallbackField['title'];
+            }
+          }
+          $this->metaData['order_bys'][$extendedOrderBy['name']]['title'] .= '(' . implode(', ', $nullString) . ')';
+          $this->metaData['order_bys'][$extendedOrderBy['name']]['field_on_null'] = $extendedOrderBy['field_on_null'];
+
+        }
+      }
+    }
+    $this->_formValues['order_bys'] = $orderBys;
+  }
+
+  /**
+   * Merge 'extended_fields' into fields
+   */
+  protected function mergeExtendedFieldConfiguration() {
+    $configuredExtendedFields = empty($this->_formValues['extended_fields']) ? [] : $this->_formValues['extended_fields'];
+    $orderedFieldsArray = $this->getConfiguredFieldsFlatArray();
+    foreach ($configuredExtendedFields as $configuredExtendedField) {
+      $fieldName = $configuredExtendedField['name'];
+      if (isset($this->metaData['fields'][$fieldName])) {
+        if ($this->isValidTitle($configuredExtendedField['title'])) {
+          $this->metaData['fields'][$fieldName]['title'] = $configuredExtendedField['title'];
+        }
+        if (!empty($configuredExtendedField['field_on_null'])) {
+          $nullString = [];
+          foreach ($configuredExtendedField['field_on_null'] as $fallbackField) {
+            if ($this->isValidTitle($fallbackField['title'])) {
+              $nullString[] = $fallbackField['title'];
+            }
+          }
+          $this->metaData['fields'][$fieldName]['title'] .= '(' . implode(', ', $nullString) . ')';
+          $this->metaData['fields'][$fieldName]['field_on_null'] = $configuredExtendedField['field_on_null'];
+
+        }
+      }
+    }
+    if (!empty($orderedFieldsArray)) {
+      // This array merge re-orders them.
+      $this->metaData['fields'] = array_merge($orderedFieldsArray, $this->metaData['fields']);
+      $this->_formValues['fields'] = $orderedFieldsArray;
+    }
+  }
+
+  /**
+   * Get configured order by options by combining extended options with normal options.
+   *
+   * In this scenario we are in qf configuration mode so that config wins out where there is
+   * conflict - but extended config is merged in.
+   *
+   * @param array $params
+   *
+   * @return array
+   */
+  protected function getConfiguredOrderBys($params) {
+    $orderBys = [];
+    $quickFormOrderBys = CRM_Utils_Array::value('order_bys', $params);
+    foreach ($quickFormOrderBys as $quickFormOrderBy) {
+      $orderBys[$quickFormOrderBy['column']] = $quickFormOrderBy;
+      $orderBys[$quickFormOrderBy['column']]['title'] = $this->getMetadataByType('order_bys')[$quickFormOrderBy['column']]['title'];
+    }
+    $extendedOrderBys = CRM_Utils_Array::value('extended_order_bys', $params, []);
+    foreach ($extendedOrderBys as $index => $extendedOrderBy) {
+      $orderByName = CRM_Utils_Array::value('name', $extendedOrderBy, CRM_Utils_Array::value('column', $extendedOrderBy));
+      if (!isset($orderBys[$orderByName ])) {
+        unset($extendedOrderBys[$index]);
+      }
+      else {
+        $orderBys[$orderByName] = array_merge($extendedOrderBy, $orderBys[$orderByName]);
+      }
+    }
+
+    $reindexedArray = [];
+    $count = 1;
+    foreach ($orderBys as $orderBy) {
+      $reindexedArray[$count] = $orderBy;
+      $count++;
+    }
+    return $reindexedArray;
   }
 
 }
