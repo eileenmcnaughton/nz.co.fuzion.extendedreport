@@ -7842,6 +7842,7 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
       }
     }
     if (!empty($orderedFieldsArray)) {
+      $orderedFieldsArray = array_intersect_key($orderedFieldsArray, $this->getMetadataByType('fields'));
       // This array merge re-orders them.
       $this->metaData['fields'] = array_merge($orderedFieldsArray, $this->getMetadataByType('fields'));
       $this->_formValues['fields'] = $orderedFieldsArray;
