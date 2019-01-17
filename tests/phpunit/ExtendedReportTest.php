@@ -20,7 +20,7 @@ use Civi\Test\TransactionalInterface;
  *
  * @group headless
  */
-class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, HookInterface, TransactionalInterface {
+class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, HookInterface {
 
   protected $ids = [];
   public function setUpHeadless() {
@@ -38,6 +38,7 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
 
   public function tearDown() {
     CRM_Core_DAO::executeQuery('DELETE FROM civicrm_pledge');
+    CRM_Core_DAO::executeQuery('DELETE FROM civicrm_group');
     parent::tearDown();
     CRM_Core_DAO::reenableFullGroupByMode();
   }
@@ -87,8 +88,27 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
 
   /**
    * Test the group filter does not cause an sql error.
+   *
+   * @param string $reportID
+   *
+   * @dataProvider getAllNonLoggingReports
    */
-  public function testReportsGroupFilter() {
+  public function testReportsGroupFilter($reportID) {
+    $group = $this->callAPISuccess('Group', 'create', ['title' => uniqid()]);
+    $params = [
+      'report_id' => $reportID,
+      'fields' => ['contribution_id' => 1],
+      'gid_op' => 'in',
+      'gid_value' => [$group['id']],
+    ];
+    $this->getRows($params);
+    $this->callAPISuccess('Group', 'delete', ['id' => $group['id']]);
+  }
+
+  /**
+   * Test the group filter ... filters.
+   */
+  public function testReportsGroupFilterWorks() {
     $group = $this->callAPISuccess('Group', 'create', ['title' => 'bob']);
     $badBob = $this->callAPISuccess('Contact', 'create', ['first_name' => 'bob', 'last_name' => 'bob', 'contact_type' => 'Individual']);
     $goodBob = $this->callAPISuccess('Contact', 'create', ['first_name' => 'bob', 'last_name' => 'bob', 'contact_type' => 'Individual']);
@@ -103,10 +123,13 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
       'gid_op' => 'in',
       'gid_value' => [$group['id']],
     ];
-    $this->getRows($params);
     $rows = $this->getRows($params);
     $this->assertEquals(1, count($rows));
+
+
     $this->callAPISuccess('Group', 'delete', ['id' => $group['id']]);
+    $this->callAPISuccess('Contribution', 'get', ['api.Contribution.delete' => 1]);
+    $this->callAPISuccess('Contact', 'get', ['id' => ['IN' => [$goodBob['id'], $badBob['id']], 'api.Contact.delete' => 1]]);
   }
 
   /**
@@ -127,6 +150,12 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
     ];
     $rows = $this->getRows($params);
     $this->assertEquals(1, count($rows));
+
+
+    $this->callAPISuccess('Group', 'delete', ['id' => $tag['id']]);
+    $this->callAPISuccess('Contribution', 'get', ['api.Contribution.delete' => 1]);
+    $this->callAPISuccess('Contact', 'get', ['id' => ['IN' => [$goodBob['id'], $badBob['id']], 'api.Contact.delete' => 1]]);
+
   }
 
   /**
