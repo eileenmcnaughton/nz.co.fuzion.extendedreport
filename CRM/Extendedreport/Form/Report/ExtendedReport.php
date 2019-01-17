@@ -1911,11 +1911,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     }
     $this->orderBy();
     $this->groupBy();
-    // order_by columns not selected for display need to be included in SELECT
-    $unselectedSectionColumns = $this->unselectedSectionColumns();
-    foreach ($unselectedSectionColumns as $alias => $section) {
-      $this->_select .= ", {$section['dbAlias']} as {$section['alias']}";
-    }
 
     if ($applyLimit && !CRM_Utils_Array::value('charts', $this->_params)) {
       if (!empty($this->_params['number_of_rows_to_render'])) {
