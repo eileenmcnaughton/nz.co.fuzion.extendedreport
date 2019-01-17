@@ -7780,11 +7780,12 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
   protected function mergeExtendedOrderByConfiguration() {
     $orderBys = CRM_Utils_Array::value('order_bys', $this->_formValues);
     $extendedOrderBys = CRM_Utils_Array::value('extended_order_bys', $this->_formValues);
+    $metadata = $this->getMetadataByType('order_bys');
     $count = 1;
     if (!empty($extendedOrderBys)) {
       foreach ($extendedOrderBys as $index => $extendedOrderBy) {
         $extendedOrderBy['column'] = $extendedOrderBy['name'] = CRM_Utils_Array::value('name', $extendedOrderBy, CRM_Utils_Array::value('column', $extendedOrderBy));
-        $extendedOrderBy['title'] = CRM_Utils_Array::value('title', $extendedOrderBy, $this->metaData['order_bys'][$extendedOrderBy['name']]['title']);
+        $extendedOrderBy['title'] = CRM_Utils_Array::value('title', $extendedOrderBy, $metadata[$extendedOrderBy['name']]['title']);
         $orderBys[$count] = [
           'column' => CRM_Utils_Array::value('name', $extendedOrderBy, $extendedOrderBy['column']),
         ];
@@ -7835,7 +7836,7 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
     }
     if (!empty($orderedFieldsArray)) {
       // This array merge re-orders them.
-      $this->metaData['fields'] = array_merge($orderedFieldsArray, $this->metaData['fields']);
+      $this->metaData['fields'] = array_merge($orderedFieldsArray, $this->getMetadataByType('fields'));
       $this->_formValues['fields'] = $orderedFieldsArray;
     }
   }
@@ -7852,7 +7853,7 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
    */
   protected function getConfiguredOrderBys($params) {
     $orderBys = [];
-    $quickFormOrderBys = CRM_Utils_Array::value('order_bys', $params);
+    $quickFormOrderBys = (array) CRM_Utils_Array::value('order_bys', $params, []);
     foreach ($quickFormOrderBys as $quickFormOrderBy) {
       $orderBys[$quickFormOrderBy['column']] = $quickFormOrderBy;
       $orderBys[$quickFormOrderBy['column']]['title'] = $this->getMetadataByType('order_bys')[$quickFormOrderBy['column']]['title'];
