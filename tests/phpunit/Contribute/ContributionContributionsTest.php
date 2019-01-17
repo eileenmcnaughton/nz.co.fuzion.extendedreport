@@ -118,6 +118,11 @@ class ContributionContributionsTest extends BaseTestClass implements HeadlessInt
           'extended_order_bys' => [['column' => 'contribution_check_number', 'order' => 'DESC', 'title' => 'special']],
         ]
       ],
+      [
+        [
+          'extended_order_bys' => [['column' => 'contribution_check_number', 'order' => 'DESC', 'title' => 'special']],
+        ]
+      ],
     ];
   }
 
