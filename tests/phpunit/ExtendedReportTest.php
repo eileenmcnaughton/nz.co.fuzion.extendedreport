@@ -99,16 +99,23 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
   }
 
   /**
-   * Test the group filter does not cause an sql error.
+   * Test the tag filter filters by tag
    */
   public function testReportsTagFilter() {
+    $tag = $this->callAPISuccess('Tag', 'create', ['name' => 'bob']);
+    $badBob = $this->callAPISuccess('Contact', 'create', ['first_name' => 'bob', 'last_name' => 'bob', 'contact_type' => 'Individual']);
+    $goodBob = $this->callAPISuccess('Contact', 'create', ['first_name' => 'bob', 'last_name' => 'bob', 'contact_type' => 'Individual']);
+    $this->callAPISuccess('EntityTag', 'create', ['tag_id' => $tag['id'], 'entity_id' => $goodBob['id']]);
+    $this->callAPISuccess('Contribution', 'create', ['financial_type_id' => 'Donation', 'total_amount' => 10, 'contact_id' => $badBob['id']]);
+    $this->callAPISuccess('Contribution', 'create', ['financial_type_id' => 'Donation', 'total_amount' => 10, 'contact_id' => $goodBob['id']]);
     $params = [
       'report_id' => 'contribution/detailextended',
-      'fields' => ['contribution_id' => 1],
-      'tagid_op' => 'in',
-      'tagid_value' => [1],
+      'fields' => ['contribution_id' => 1, 'contribution_contact_id' => 1],
+      'tag_tagid_op' => 'in',
+      'tag_tagid_value' => [$tag['id']],
     ];
-    $this->getRows($params);
+    $rows = $this->getRows($params);
+    $this->assertEquals(1, count($rows));
   }
 
   /**

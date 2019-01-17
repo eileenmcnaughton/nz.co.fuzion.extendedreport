@@ -313,28 +313,23 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   public function buildTagFilter() {
     $contactTags = CRM_Core_BAO_Tag::getTags($this->_tagFilterTable);
     if (!empty($contactTags)) {
-      $this->_columns['civicrm_tag'] = [
-        'dbAlias' => 'civireport_tag',
-        'metadata' => [
-          'tagid' => [
-            'name' => 'tag_id',
-            'title' => ts('Tag'),
-            'type' => CRM_Utils_Type::T_INT,
-            'tag' => TRUE,
-            'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-            'options' => $contactTags,
-            'is_filters' => TRUE,
-            'is_fields' => FALSE,
-            'is_group_bys' => FALSE,
-            'is_order_bys' => FALSE,
-            'is_join_filters' => FALSE,
-            'alias' => 'tag_civireport',
-          ],
+      $this->_columns += $this->buildColumns([
+        'tagid' => [
+          'name' => 'tag_id',
+          'title' => ts('Tag'),
+          'type' => CRM_Utils_Type::T_INT,
+          'tag' => TRUE,
+          'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+          'options' => $contactTags,
+          'is_filters' => TRUE,
+          'is_fields' => FALSE,
+          'is_group_bys' => FALSE,
+          'is_order_bys' => FALSE,
+          'is_join_filters' => FALSE,
         ],
-        'dao' => 'CRM_Core_DAO_Tag',
-        'group_title' => ts('Tags'),
-      ];
+      ], 'civicrm_tag', 'CRM_Core_DAO_Tag', 'tag');
     }
+    $this->_columns['civicrm_tag']['group_title'] = ts('Tags');
   }
 
   /**
