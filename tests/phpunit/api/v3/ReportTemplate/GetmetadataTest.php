@@ -92,7 +92,7 @@ class api_v3_ReportTemplate_GetmetadataTest extends BaseTestClass implements Hea
     foreach ($filters as $fieldName => $filter) {
       $this->assertEquals(TRUE, $filter['is_filters']);
       $this->assertEquals($result['metadata'][$fieldName], $filter);
-      $knownNoFieldFilters = ['effective_date', 'tag_tagid', 'gid', 'pledge_payment_status_id'];
+      $knownNoFieldFilters = ['effective_date', 'tagid', 'gid', 'pledge_payment_status_id'];
       if (!in_array($fieldName, $knownNoFieldFilters)) {
         $this->assertEquals($result['fields'][$fieldName], $filter);
       }

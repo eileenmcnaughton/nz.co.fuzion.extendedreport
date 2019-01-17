@@ -246,6 +246,27 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    * @var array
    */
   protected $customDataDAOs = [];
+
+  /**
+   * Has the report been optimised for group filtering.
+   *
+   * The functionality for group filtering has been improved but not
+   * all reports have been adjusted to take care of it.
+   *
+   * This property exists to highlight the reports which are still using the
+   * slow method & allow group filtering to still work for them until they
+   * can be migrated.
+   *
+   * In order to protect extensions we have to default to TRUE - but I have
+   * separately marked every class with a groupFilter in the hope that will trigger
+   * people to fix them as they touch them.
+   *
+   * CRM-19170
+   *
+   * @var bool
+   */
+  protected $groupFilterNotOptimised = FALSE;
+
   /**
    * Class constructor.
    */
@@ -327,7 +348,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
           'is_order_bys' => FALSE,
           'is_join_filters' => FALSE,
         ],
-      ], 'civicrm_tag', 'CRM_Core_DAO_Tag', 'tag');
+      ], 'civicrm_tag', 'CRM_Core_DAO_Tag', 'tag', [], ['no_field_disambiguation' => TRUE]);
     }
     $this->_columns['civicrm_tag']['group_title'] = ts('Tags');
   }
@@ -336,40 +357,25 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    * Adds group filters to _columns (called from _Construct).
    */
   public function buildGroupFilter() {
-    $this->_columns['civicrm_group']['group_title'] = ts('Groups');
-    $this->_columns['civicrm_group']['filters'] = array(
-      'gid' => array(
-        'name' => 'group_id',
-        'title' => ts('Group'),
-        'type' => CRM_Utils_Type::T_INT,
-        'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-        'group' => TRUE,
-        'options' => CRM_Core_PseudoConstant::nestedGroup(),
-        'alias' => 'civicrm_group_gid',
-      ),
-    );
-    if (empty($this->_columns['civicrm_group']['dao'])) {
-      $this->_columns['civicrm_group']['dao'] = 'CRM_Contact_DAO_GroupContact';
-    }
-    if (empty($this->_columns['civicrm_group']['alias'])) {
-      $this->_columns['civicrm_group']['alias'] = 'cgroup';
-    }
-    $this->_columns['civicrm_group']['metadata'] = array(
-      'gid' => array(
-        'name' => 'group_id',
-        'title' => ts('Group'),
-        'type' => CRM_Utils_Type::T_INT,
-        'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-        'group' => TRUE,
-        'options' => CRM_Core_PseudoConstant::nestedGroup(),
-        'is_filters' => TRUE,
-        'is_fields' => FALSE,
-        'is_group_bys' => FALSE,
-        'is_order_bys' => FALSE,
-        'is_join_filters' => FALSE,
-        'dbAlias' => 'cgroup.group_id',
-        'alias' => 'civicrm_group_gid',
-      ),
+    $this->_columns += $this->buildColumns(
+      [
+        'gid' => [
+          'name' => 'group_id',
+          'title' => ts('Group'),
+          'type' => CRM_Utils_Type::T_INT,
+          'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+          'group' => TRUE,
+          'options' => CRM_Core_PseudoConstant::nestedGroup(),
+          'alias' => 'civicrm_group_gid',
+          'is_filters' => TRUE,
+          'is_fields' => FALSE,
+          'is_group_bys' => FALSE,
+          'is_order_bys' => FALSE,
+          'is_join_filters' => FALSE,
+          'dbAlias' => 'group.group_id',
+        ],
+      ],
+      'civicrm_group', 'CRM_Contact_DAO_GroupContact', 'group', [], ['no_field_disambiguation' => TRUE]
     );
   }
 
@@ -3069,7 +3075,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         }
       }
 
-      $fieldAlias = $tableAlias . '_' . $specName;
+      $fieldAlias = (empty($options['no_field_disambiguation']) ? $tableAlias . '_' : '') . $specName;
       $spec['alias'] = $tableName . '_' . $fieldAlias;
       $columns[$tableName]['metadata'][$fieldAlias] = $spec;
       $columns[$tableName]['fields'][$fieldAlias] = $spec;
