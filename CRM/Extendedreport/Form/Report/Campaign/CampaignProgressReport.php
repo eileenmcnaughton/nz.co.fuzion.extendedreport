@@ -21,158 +21,90 @@ class CRM_Extendedreport_Form_Report_Campaign_CampaignProgressReport extends CRM
    * Class constructor.
    */
   public function __construct() {
-    $this->_columns
-      = $this->getColumns('Campaign') +
-      array(
-        'progress' => array(
-          'alias' => 'progress',
-          'metadata' => array(
-            'financial_type_id' => array(
-              'title' => ts('Financial type'),
-              'alter_display' => 'alterFinancialType',
-              'statistics' => array('GROUP_CONCAT'),
-              'type' => CRM_Utils_Type::T_INT,
-              'operatorType' => CRM_Report_Form::OP_FLOAT,
-              'is_fields' => TRUE,
-              'is_filters' => TRUE,
-              'is_group_bys' => TRUE,
-              'is_order_bys' => FALSE,
-              'is_join_filters' => FALSE,
-            ),
-            'total_amount' => array(
-              'title' => ts('Raised'),
-              'type' => CRM_Utils_Type::T_MONEY,
-              'operatorType' => CRM_Report_Form::OP_FLOAT,
-              'statistics' => array('sum' => ts('Total Raised')),
-              'is_fields' => TRUE,
-              'is_filters' => FALSE,
-              'is_group_bys' => FALSE,
-              'is_order_bys' => FALSE,
-              'is_join_filters' => FALSE,
-            ),
-            'paid_amount' => array(
-              'title' => ts('Amount received'),
-              'type' => CRM_Utils_Type::T_MONEY,
-              'operatorType' => CRM_Report_Form::OP_FLOAT,
-              'statistics' => array('sum' => ts('Total Received')),
-              'is_fields' => TRUE,
-              'is_filters' => FALSE,
-              'is_group_bys' => FALSE,
-              'is_order_bys' => FALSE,
-              'is_join_filters' => FALSE,
-            ),
-            'balance_amount' => array(
-              'title' => ts('Amount outstanding'),
-              'type' => CRM_Utils_Type::T_MONEY,
-              'operatorType' => CRM_Report_Form::OP_FLOAT,
-              'statistics' => array('sum' => ts('Pledges Outstanding')),
-              'is_fields' => TRUE,
-              'is_filters' => FALSE,
-              'is_group_bys' => FALSE,
-              'is_order_bys' => FALSE,
-              'is_join_filters' => FALSE,
-            ),
-            'is_pledge' => array(
-              'title' => ts('Type'),
-              'type' => CRM_Utils_Type::T_BOOLEAN,
-              'operatorType' => CRM_Report_Form::OP_SELECT,
-              'options' => array(0 => ts('Payment'), 1 => ts('Pledge')),
-              'alter_display' => 'alterIsPledge',
-              'statistics' => array('GROUP_CONCAT'),
-              'is_fields' => TRUE,
-              'is_filters' => FALSE,
-              'is_group_bys' => TRUE,
-              'is_order_bys' => FALSE,
-              'is_join_filters' => FALSE,
-            ),
-            'still_to_raise' => array(
-              'title' => ts('Balance to raise'),
-              'type' => CRM_Utils_Type::T_MONEY,
-              'operatorType' => CRM_Report_Form::OP_FLOAT,
-              'is_fields' => TRUE,
-              'is_filters' => FALSE,
-              'is_group_bys' => FALSE,
-              'is_order_bys' => FALSE,
-              'is_join_filters' => FALSE,
-            ),
-            'effective_date' => array(
-              'type' => CRM_Utils_Type::T_DATE + CRM_Utils_Type::T_TIME,
-              'title' => ts('Date range'),
-              'operatorType' => self::OP_SINGLEDATE,
-              'pseudofield' => TRUE,
-              'is_fields' => FALSE,
-              'is_filters' => TRUE,
-              'is_group_bys' => FALSE,
-              'is_order_bys' => FALSE,
-              'is_join_filters' => FALSE,
-            ),
-          ),
-          'fields' => array(
-            'financial_type_id' => array(
-              'title' => ts('Financial type'),
-              'alter_display' => 'alterFinancialType',
-              'statistics' => array('GROUP_CONCAT'),
-            ),
-            'total_amount' => array(
-              'title' => ts('Raised'),
-              'type' => CRM_Utils_Type::T_MONEY,
-              'statistics' => array('sum' => ts('Total Raised')),
-            ),
-            'paid_amount' => array(
-              'title' => ts('Amount received'),
-              'type' => CRM_Utils_Type::T_MONEY,
-              'statistics' => array('sum' => ts('Total Received')),
-            ),
-            'balance_amount' => array(
-              'title' => ts('Amount outstanding'),
-              'type' => CRM_Utils_Type::T_MONEY,
-              'statistics' => array('sum' => ts('Pledges Outstanding')),
-            ),
-            'is_pledge' => array(
-              'title' => ts('Type'),
-              'type' => CRM_Utils_Type::T_BOOLEAN,
-              'options' => array(0 => ts('Payment'), 1 => ts('Pledge')),
-              'alter_display' => 'alterIsPledge',
-              'statistics' => array('GROUP_CONCAT'),
-            ),
-            'still_to_raise' => array(
-              'title' => ts('Balance to raise'),
-              'type' => CRM_Utils_Type::T_MONEY,
-            ),
-          ),
-          'filters' => array(
-            'effective_date' => array(
-              'type' => CRM_Utils_Type::T_DATE + CRM_Utils_Type::T_TIME,
-              'title' => ts('Date range'),
-              'operatorType' => self::OP_SINGLEDATE,
-              'pseudofield' => TRUE,
-            ),
-            'financial_type_id' => array(
-              'title' => ts('Financial type'),
-              'alter_display' => 'alterFinancialType',
-              'type' => CRM_Utils_Type::T_INT,
-              'operatorType' => self::OP_MULTISELECT,
-              'options' => $this->_getOptions('Contribution', 'financial_type_id'),
-            ),
-          ),
-          'group_bys' => array(
-            'financial_type_id' => array(
-              'title' => ts('Financial type'),
-              'alter_display' => 'alterFinancialType',
-              'type' => CRM_Utils_Type::T_INT,
-              'operatorType' => self::OP_MULTISELECT,
-              'options' => $this->_getOptions('Contribution', 'financial_type_id'),
-            ),
-            'is_pledge' => array(
-              'title' => ts('Type'),
-              'type' => CRM_Utils_Type::T_BOOLEAN,
-              'options' => array(0 => ts('Payment'), 1 => ts('Pledge')),
-              'alter_display' => 'alterIsPledge',
-              'statistics' => array('GROUP_CONCAT'),
-            ),
-          ),
-        ),
-      );
+    $progressSpec = [
+      'financial_type_id' => [
+        'title' => ts('Financial type'),
+        'alter_display' => 'alterFinancialType',
+        'statistics' => array('GROUP_CONCAT'),
+        'type' => CRM_Utils_Type::T_INT,
+        'operatorType' => self::OP_MULTISELECT,
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+        'is_group_bys' => TRUE,
+        'is_order_bys' => FALSE,
+        'is_join_filters' => FALSE,
+        'options' => $this->_getOptions('Contribution', 'financial_type_id'),
+      ],
+      'total_amount' => [
+        'title' => ts('Raised'),
+        'type' => CRM_Utils_Type::T_MONEY,
+        'operatorType' => CRM_Report_Form::OP_FLOAT,
+        'statistics' => array('sum' => ts('Total Raised')),
+        'is_fields' => TRUE,
+        'is_filters' => FALSE,
+        'is_group_bys' => FALSE,
+        'is_order_bys' => FALSE,
+        'is_join_filters' => FALSE,
+      ],
+      'paid_amount' => [
+        'title' => ts('Amount received'),
+        'type' => CRM_Utils_Type::T_MONEY,
+        'operatorType' => CRM_Report_Form::OP_FLOAT,
+        'statistics' => array('sum' => ts('Total Received')),
+        'is_fields' => TRUE,
+        'is_filters' => FALSE,
+        'is_group_bys' => FALSE,
+        'is_order_bys' => FALSE,
+        'is_join_filters' => FALSE,
+      ],
+       'balance_amount' => [
+        'title' => ts('Amount outstanding'),
+        'type' => CRM_Utils_Type::T_MONEY,
+        'operatorType' => CRM_Report_Form::OP_FLOAT,
+        'statistics' => array('sum' => ts('Pledges Outstanding')),
+        'is_fields' => TRUE,
+        'is_filters' => FALSE,
+        'is_group_bys' => FALSE,
+        'is_order_bys' => FALSE,
+        'is_join_filters' => FALSE,
+      ],
+      'is_pledge' => [
+        'title' => ts('Type'),
+        'type' => CRM_Utils_Type::T_BOOLEAN,
+        'operatorType' => CRM_Report_Form::OP_SELECT,
+        'options' => array(0 => ts('Payment'), 1 => ts('Pledge')),
+        'alter_display' => 'alterIsPledge',
+        'statistics' => array('GROUP_CONCAT'),
+        'is_fields' => TRUE,
+        'is_filters' => FALSE,
+        'is_group_bys' => TRUE,
+        'is_order_bys' => FALSE,
+        'is_join_filters' => FALSE,
+      ],
+      'still_to_raise' => [
+        'title' => ts('Balance to raise'),
+        'type' => CRM_Utils_Type::T_MONEY,
+        'operatorType' => CRM_Report_Form::OP_FLOAT,
+        'is_fields' => TRUE,
+        'is_filters' => FALSE,
+        'is_group_bys' => FALSE,
+        'is_order_bys' => FALSE,
+        'is_join_filters' => FALSE,
+      ],
+      'effective_date' => [
+        'type' => CRM_Utils_Type::T_DATE + CRM_Utils_Type::T_TIME,
+        'title' => ts('Date range'),
+        'operatorType' => self::OP_SINGLEDATE,
+        'pseudofield' => TRUE,
+        'is_fields' => FALSE,
+        'is_filters' => TRUE,
+        'is_group_bys' => FALSE,
+        'is_order_bys' => FALSE,
+        'is_join_filters' => FALSE,
+      ],
+    ];
+
+    $this->_columns = $this->getColumns('Campaign') + $this->buildColumns($progressSpec, 'progress');
 
     $this->_groupFilter = TRUE;
     $this->_tagFilter = TRUE;
@@ -260,7 +192,7 @@ LEFT JOIN
    * @return string
    */
   function selectClause(&$tableName, $tableKey, &$fieldName, &$field) {
-    if ($fieldName == 'still_to_raise') {
+    if ($fieldName == 'progress_still_to_raise') {
       $alias = "{$tableName}_{$fieldName}";
       $this->_columnHeaders[$alias]['title'] = CRM_Utils_Array::value('title', $field);
       $this->_columnHeaders[$alias]['type'] = CRM_Utils_Array::value('type', $field);

@@ -26,19 +26,20 @@ class CRM_Extendedreport_Form_Report_Pledge_PaidAndCommitted extends CRM_Extende
           'order_by' => TRUE,
         )
       ) + $this->getColumns('Contact')
-      + $this->getColumns('FinancialType');
-
-    $this->_columns['civicrm_pledge_payment']['metadata']['actual_amount'] =
-    $this->_columns['civicrm_pledge_payment']['fields']['actual_amount'] = array(
-      'title' => ts('Amount Paid'),
-      'statistics' => array('sum' => ts('Amount Paid')),
-      'type' => CRM_Utils_Type::T_MONEY,
-      'is_fields' => TRUE,
-      'is_filters' => FALSE,
-      'is_join_filters' => FALSE,
-      'is_group_bys' => FALSE,
-      'is_order_bys' => FALSE,
-    );
+      + $this->getColumns('FinancialType')
+      + $this->buildColumns([
+        'actual_amount' => [
+          'title' => ts('Amount Paid'),
+          'statistics' => array('sum' => ts('Amount Paid')),
+          'type' => CRM_Utils_Type::T_MONEY,
+          'is_fields' => TRUE,
+          'is_filters' => FALSE,
+          'is_join_filters' => FALSE,
+          'is_group_bys' => FALSE,
+          'is_order_bys' => FALSE,
+        ]
+      ],
+    'civicrm_pledge_payment');
 
     $this->_columns += $this->getColumns('Pledge', array('fields' => TRUE));
 
