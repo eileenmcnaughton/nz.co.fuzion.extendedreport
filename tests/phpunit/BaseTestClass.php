@@ -48,14 +48,17 @@ class BaseTestClass extends \PHPUnit_Framework_TestCase implements HeadlessInter
    */
   protected $sql;
 
+  protected $labels = [];
+
   /**
    * @param $params
    * @return array|int
    */
   protected function getRows($params) {
-    $params['options']['metadata'] = array('title', 'label', 'sql');
+    $params['options']['metadata'] = array('title', 'labels', 'sql');
     $rows = $this->callAPISuccess('ReportTemplate', 'getrows', $params);
     $this->sql = $rows['metadata']['sql'];
+    $this->labels = isset($rows['metadata']['labels']) ? $rows['metadata']['labels'] : [];
     $rows = $rows['values'];
     return $rows;
   }
