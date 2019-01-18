@@ -657,6 +657,9 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
             }
             $this->_columnHeaders[$alias]['type'] = $field['type'];
           }
+          if (!in_array($stat, ['cumulative', 'display'])) {
+            $this->_statFields[$label] = $alias;
+          }
           $select[$fieldName . '_' . $stat] = $this->getStatisticsSelectClause($field, $stat, $label, $alias);
         }
       }
@@ -6813,24 +6816,18 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
     switch (strtolower($stat)) {
         case 'max':
         case 'sum':
-          if (!isset($stat['cummulative'])) {
-            $this->_statFields[$label] = $alias;
-          }
           return "$stat({$field['dbAlias']}) as $alias";
 
         case 'cumulative':
           return "SUM({$field['dbAlias']}) as $alias";
 
         case 'count':
-          $this->_statFields[$label] = $alias;
           return "COUNT({$field['dbAlias']}) as $alias";
 
         case 'count_distinct':
-          $this->_statFields[$label] = $alias;
           return "COUNT(DISTINCT {$field['dbAlias']}) as $alias";
 
         case 'avg':
-          $this->_statFields[$label] = $alias;
           return "ROUND(AVG({$field['dbAlias']}),2) as $alias";
 
         case 'display':
