@@ -643,18 +643,11 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
         $select = $this->addStatisticsToSelect($field, $tableName, $fieldName, $select);
       }
       else {
-
-        $selectClause = $this->getSelectClauseWithGroupConcatIfNotGroupedBy($tableName, $fieldName, $field);
-        if ($selectClause) {
-          $select[$fieldName] = $selectClause;
-        }
-        else {
-          $alias = isset($field['alias']) ? $field['alias'] : "{$tableName}_{$fieldName}";
-          $select[$fieldName] = $this->getBasicFieldSelectClause($field, $alias);
-          $this->_selectAliases[] = $alias;
-          $this->_columnHeaders[$field['alias']]['title'] = CRM_Utils_Array::value('title', $field);
-          $this->_columnHeaders[$field['alias']]['type'] = CRM_Utils_Array::value('type', $field);
-        }
+        $alias = isset($field['alias']) ? $field['alias'] : "{$tableName}_{$fieldName}";
+        $this->_columnHeaders[$field['alias']]['title'] = CRM_Utils_Array::value('title', $field);
+        $this->_selectAliases[] = $alias;
+        $this->_columnHeaders[$field['alias']]['type'] = CRM_Utils_Array::value('type', $field);
+        $select[$fieldName] = $this->getBasicFieldSelectClause($field, $alias);
       }
     }
 
@@ -7757,6 +7750,15 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
    */
   protected function getBasicFieldSelectClause($field, $alias) {
     $fieldString = $field['dbAlias'];
+    if ($this->groupConcatTested && (!empty($this->_groupByArray) || $this->isForceGroupBy)) {
+      if ((empty($field['statistics']) || in_array('GROUP_CONCAT', $field['statistics']))) {
+
+        if (empty($this->_groupByArray[$alias])) {
+          return "GROUP_CONCAT(DISTINCT {$field['dbAlias']}) as $alias";
+        }
+        return "({$field['dbAlias']}) as $alias";
+      }
+    }
     if (!empty($field['field_on_null'])) {
       $fallbacks = [];
       foreach ($field['field_on_null'] as $fallback) {
