@@ -11,6 +11,7 @@ class CRM_Extendedreport_Form_Report_RelationshipExtended extends CRM_Extendedre
   protected $_primaryContactPrefix = 'contact_a_';
   protected $groupFilterNotOptimised = FALSE;
   protected $_customGroupExtends = ['Relationship', 'Contact', 'Individual', 'Household', 'Organization'];
+  public $_tagFilterTable = 'contact_a_civicrm_contact';
 
   /**
    * Can this report be used on a contact tab.
@@ -74,7 +75,6 @@ class CRM_Extendedreport_Form_Report_RelationshipExtended extends CRM_Extendedre
   }
 
   function from() {
-    $this->buildACLClause($this->_aliases['contact_a_civicrm_contact']);
     $this->setFromBase('civicrm_contact', 'id', $this->_aliases['contact_a_civicrm_contact']);
     $this->_from .= "
       INNER JOIN civicrm_relationship {$this->_aliases['civicrm_relationship']}

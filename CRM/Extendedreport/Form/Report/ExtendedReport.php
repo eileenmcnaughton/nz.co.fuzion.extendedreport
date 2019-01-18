@@ -332,7 +332,8 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    * Build the tag filter field to display on the filters tab.
    */
   public function buildTagFilter() {
-    $contactTags = CRM_Core_BAO_Tag::getTags($this->_tagFilterTable);
+    $entityTable = $this->_columns[$this->_tagFilterTable]['table_name'];
+    $contactTags = CRM_Core_BAO_Tag::getTags($entityTable);
     if (!empty($contactTags)) {
       $this->_columns += $this->buildColumns([
         'tagid' => [
@@ -3066,6 +3067,10 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       }
       $daoSpec = CRM_Utils_Array::value($spec['name'], $exportableFields, CRM_Utils_Array::value($tableAlias . '_' . $spec['name'], $exportableFields, []));
       $spec = array_merge($daoSpec , $spec);
+      if (!isset($columns[$tableName]['table_name']) && isset($spec['table_name'])) {
+        $columns[$tableName]['table_name'] = $spec['table_name'];
+      }
+
       if (!isset($spec['operatorType'])) {
         $spec['operatorType'] = $this->getOperatorType($spec['type'], $spec);
       }

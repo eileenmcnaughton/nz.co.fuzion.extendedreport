@@ -106,6 +106,25 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
   }
 
   /**
+   * Test the group filter does not cause an sql error.
+   *
+   * @param string $reportID
+   *
+   * @dataProvider getAllNonLoggingReports
+   */
+  public function testReportsTagFilter($reportID) {
+    $tag = $this->callAPISuccess('Tag', 'create', ['name' => uniqid()]);
+    $params = [
+      'report_id' => $reportID,
+      'fields' => ['contribution_id' => 1],
+      'tagid_op' => 'in',
+      'tagid_value' => [$tag['id']],
+    ];
+    $this->getRows($params);
+    $this->callAPISuccess('Tag', 'delete', ['id' => $tag['id']]);
+  }
+
+  /**
    * Test the group filter ... filters.
    */
   public function testReportsGroupFilterWorks() {
@@ -135,7 +154,7 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
   /**
    * Test the tag filter filters by tag
    */
-  public function testReportsTagFilter() {
+  public function testReportsTagFilterWorks() {
     $tag = $this->callAPISuccess('Tag', 'create', ['name' => 'bob']);
     $badBob = $this->callAPISuccess('Contact', 'create', ['first_name' => 'bob', 'last_name' => 'bob', 'contact_type' => 'Individual']);
     $goodBob = $this->callAPISuccess('Contact', 'create', ['first_name' => 'bob', 'last_name' => 'bob', 'contact_type' => 'Individual']);
@@ -151,8 +170,7 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
     $rows = $this->getRows($params);
     $this->assertEquals(1, count($rows));
 
-
-    $this->callAPISuccess('Group', 'delete', ['id' => $tag['id']]);
+    $this->callAPISuccess('Tag', 'delete', ['id' => $tag['id']]);
     $this->callAPISuccess('Contribution', 'get', ['api.Contribution.delete' => 1]);
     $this->callAPISuccess('Contact', 'get', ['id' => ['IN' => [$goodBob['id'], $badBob['id']], 'api.Contact.delete' => 1]]);
 
