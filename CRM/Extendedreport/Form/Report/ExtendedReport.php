@@ -625,6 +625,10 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       $select[$fieldName] = "{$spec['selectAlias']} as {$spec['table_name']}_{$fieldName}";
     }
 
+    foreach ($this->getOrderBysNotInSelectedFields() as $fieldName => $spec) {
+      $select[$fieldName . '_ordering'] = $this->getBasicFieldSelectClause($spec, $spec['alias']);
+    }
+
     foreach ($selectedFields as $fieldName => $field) {
       $this->addAdditionalRequiredFields($field, $field['table_name']);
       $tableName = $field['table_name'];
@@ -7082,6 +7086,15 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
       }
     }
     return $result;
+  }
+
+  /**
+   * Get any order bys that are not already in the selected fields.
+   *
+   * @return array
+   */
+  public function getOrderBysNotInSelectedFields() {
+    return array_diff_key($this->getSelectedOrderBys(), $this->getSelectedFields());
   }
 
   /**
