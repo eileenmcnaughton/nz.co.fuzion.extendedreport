@@ -632,12 +632,16 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     foreach ($selectedFields as $fieldName => $field) {
       $this->addAdditionalRequiredFields($field, $field['table_name']);
       $tableName = $field['table_name'];
+      $alias = isset($field['alias']) ? $field['alias'] : "{$tableName}_{$fieldName}";
+      $this->_columnHeaders[$alias]['title'] = CRM_Utils_Array::value('title', $field);
+      $this->_columnHeaders[$alias]['type'] = CRM_Utils_Array::value('type', $field);
       // 1. In many cases we want select clause to be built in slightly different way
       // for a particular field of a particular type.
       // 2. This method when used should receive params by reference and modify $this->_columnHeaders
       // as needed.
       $selectClause = $this->selectClause($tableName, 'fields', $fieldName, $field);
       if ($selectClause) {
+
         $select[$fieldName] = $selectClause;
         continue;
       }
@@ -647,10 +651,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
         $select = $this->addStatisticsToSelect($field, $tableName, $fieldName, $select);
       }
       else {
-        $alias = isset($field['alias']) ? $field['alias'] : "{$tableName}_{$fieldName}";
-        $this->_columnHeaders[$field['alias']]['title'] = CRM_Utils_Array::value('title', $field);
         $this->_selectAliases[] = $alias;
-        $this->_columnHeaders[$field['alias']]['type'] = CRM_Utils_Array::value('type', $field);
         $select[$fieldName] = $this->getBasicFieldSelectClause($field, $alias);
       }
     }
@@ -2275,16 +2276,12 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
   function selectClause(&$tableName, $tableKey, &$fieldName, &$field) {
     if ($fieldName == 'phone_phone') {
       $alias = "{$tableName}_{$fieldName}";
-      $this->_columnHeaders["{$tableName}_{$fieldName}"]['title'] = CRM_Utils_Array::value('title', $field);
-      $this->_columnHeaders["{$tableName}_{$fieldName}"]['type'] = CRM_Utils_Array::value('type', $field);
       $this->_columnHeaders["{$tableName}_{$fieldName}"]['dbAlias'] = CRM_Utils_Array::value('dbAlias', $field);
       $this->_selectAliases[] = $alias;
       return " GROUP_CONCAT(CONCAT({$field['dbAlias']},':', {$this->_aliases[$tableName]}.location_type_id, ':', {$this->_aliases[$tableName]}.phone_type_id) ) as $alias";
     }
     if (!empty($field['pseudofield'])) {
       $alias = "{$tableName}_{$fieldName}";
-      $this->_columnHeaders["{$tableName}_{$fieldName}"]['title'] = CRM_Utils_Array::value('title', $field);
-      $this->_columnHeaders["{$tableName}_{$fieldName}"]['type'] = CRM_Utils_Array::value('type', $field);
       $this->_columnHeaders["{$tableName}_{$fieldName}"]['dbAlias'] = CRM_Utils_Array::value('dbAlias', $field);
       $this->_selectAliases[] = $alias;
       return ' 1 as  ' . $alias;
@@ -2292,10 +2289,7 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
 
     if ((!empty($this->_groupByArray) || $this->isForceGroupBy)) {
       if ($tableKey === 'fields' && (empty($field['statistics']) || in_array('GROUP_CONCAT', $field['statistics']))) {
-        $label = CRM_Utils_Array::value('title', $field);
         $alias = "{$tableName}_{$fieldName}";
-        $this->_columnHeaders["{$tableName}_{$fieldName}"]['title'] = $label;
-        $this->_columnHeaders["{$tableName}_{$fieldName}"]['type'] = $field['type'];
         $this->_selectAliases[] = $alias;
         if (empty($this->_groupByArray[$tableName . '_' . $fieldName])) {
           return "GROUP_CONCAT(DISTINCT {$field['dbAlias']}) as $alias";
