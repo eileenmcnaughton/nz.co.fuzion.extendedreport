@@ -86,6 +86,38 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
     $this->getRows($params);
   }
 
+  public function testExtendedFields() {
+    $contact = $this->callAPISuccess('Contact', 'create', ['contact_type' => 'Individual', 'first_name' => 'first', 'last_name' => 'last']);
+    $this->ids['Contact'][] = $contact['id'];
+    $this->callAPISuccess('Contribution', 'create', ['financial_type_id' => 'Donation', 'total_amount' => 10, 'contact_id' => $contact['id']]);
+    $rows = $this->getRows([
+      'report_id' => 'contribution/contributions',
+      'extended_fields' => [
+        [
+          'title' =>  'special name',
+          'name' =>  "civicrm_contact_middle_name",
+          'field_on_null' => [
+            [
+              'title' => 'First name',
+              'name' => 'civicrm_contact_first_name',
+            ],
+          ],
+        ],
+        [
+          'title' =>  'boring name',
+          'name' =>  "civicrm_contact_last_name",
+        ],
+      ],
+      'fields' => ['civicrm_contact_first_name' => 1, 'civicrm_contact_middle_name' => 1],
+    ]);
+    $this->assertEquals(['civicrm_contact_civicrm_contact_middle_name', 'civicrm_contact_civicrm_contact_last_name'], array_keys($rows[0]));
+    $this->assertEquals('special name(First name)', $this->labels['civicrm_contact_civicrm_contact_middle_name']);
+    $this->assertEquals('boring name', $this->labels['civicrm_contact_civicrm_contact_last_name']);
+    $this->assertEquals('first', $rows[0]['civicrm_contact_civicrm_contact_middle_name']);
+    $this->assertEquals('last', $rows[0]['civicrm_contact_civicrm_contact_last_name']);
+    $this->callAPISuccess('Contact', 'delete', ['id' => $contact['id']]);
+  }
+
   /**
    * Test the group filter does not cause an sql error.
    *

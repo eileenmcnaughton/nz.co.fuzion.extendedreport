@@ -309,6 +309,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       $definitionTypes = ['fields', 'filters', 'join_filters', 'group_bys', 'order_bys'];
       $this->metaData = array_fill_keys($definitionTypes, []);
       $this->metaData['having'] = [];
+
       foreach ($this->_columns as $table => $tableSpec) {
         foreach ($definitionTypes as $type) {
           foreach ($tableSpec['metadata'] as $fieldName => $fieldSpec) {
