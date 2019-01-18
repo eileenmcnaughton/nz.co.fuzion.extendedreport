@@ -649,7 +649,11 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
           $select[$fieldName] = $selectClause;
         }
         else {
-          $select = $this->addBasicFieldToSelect($tableName, $fieldName, $field, $select);
+          $alias = isset($field['alias']) ? $field['alias'] : "{$tableName}_{$fieldName}";
+          $select[$fieldName] = $this->getBasicFieldSelectClause($field, $alias);
+          $this->_selectAliases[] = $alias;
+          $this->_columnHeaders[$field['alias']]['title'] = CRM_Utils_Array::value('title', $field);
+          $this->_columnHeaders[$field['alias']]['type'] = CRM_Utils_Array::value('type', $field);
         }
       }
     }
@@ -6865,34 +6869,6 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
   }
 
   /**
-   * Add a basic field to the select clause.
-   *
-   * This version should be in 4.7.16+.
-   *
-   * @param string $tableName
-   * @param string $fieldName
-   * @param array $field
-   * @param array $select
-   * @return array
-   */
-  protected function addBasicFieldToSelect($tableName, $fieldName, $field, $select) {
-    $alias = isset($field['alias']) ? $field['alias'] : "{$tableName}_{$fieldName}";
-    $fieldString = $field['dbAlias'];
-    if (!empty($field['field_on_null'])) {
-      $fallbacks = [];
-      foreach ($field['field_on_null'] as $fallback) {
-        $fallbacks[] = $this->getMetadataByType('filters')[$fallback['name']]['dbAlias'];
-      }
-      $fieldString = 'COALESCE(' . $fieldString . ',' . implode(',', $fallbacks) . ')';
-    }
-    $select[$fieldName] = "$fieldString as $alias";
-    $this->_columnHeaders[$field['alias']]['title'] = CRM_Utils_Array::value('title', $field);
-    $this->_columnHeaders[$field['alias']]['type'] = CRM_Utils_Array::value('type', $field);
-    $this->_selectAliases[] = $alias;
-    return $select;
-  }
-
-  /**
    * Get SQL operator from form text version.
    *
    * @param string $operator
@@ -7771,6 +7747,24 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
    */
   protected function getExtendedFieldsSelection() {
     return CRM_Utils_Array::value('extended_fields', $this->_formValues, CRM_Utils_Array::value('extended_fields', $this->_params, []));
+  }
+
+  /**
+   * @param array $field
+   * @param string $alias
+   *
+   * @return string
+   */
+  protected function getBasicFieldSelectClause($field, $alias) {
+    $fieldString = $field['dbAlias'];
+    if (!empty($field['field_on_null'])) {
+      $fallbacks = [];
+      foreach ($field['field_on_null'] as $fallback) {
+        $fallbacks[] = $this->getMetadataByType('filters')[$fallback['name']]['dbAlias'];
+      }
+      $fieldString = 'COALESCE(' . $fieldString . ',' . implode(',', $fallbacks) . ')';
+    }
+    return "$fieldString as $alias";
   }
 
 }
