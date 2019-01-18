@@ -1039,7 +1039,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
         $fieldAlias = $SelectedOrderBy['alias'];
         // Record any section headers for assignment to the template
         if (CRM_Utils_Array::value('section', $SelectedOrderBy)) {
-          $this->_sections[$SelectedOrderBy['tplField']] = $SelectedOrderBy;
+          $this->_sections[$SelectedOrderBy['alias']] = $SelectedOrderBy;
         }
         $fieldAlias = $SelectedOrderBy['alias'];
         if ($isGroupBy && !empty($SelectedOrderBy['statistics']) && !empty($SelectedOrderBy['statistics']['sum'])) {
