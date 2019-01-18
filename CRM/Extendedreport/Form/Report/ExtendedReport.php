@@ -649,6 +649,10 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       if (!empty($field['statistics']) && !empty($this->_groupByArray)) {
         foreach ($field['statistics'] as $stat => $label) {
           $alias = $this->getStatisticsAlias($tableName, $fieldName, $stat);
+          $this->_selectAliases[] = $alias;
+          if ($stat !== 'cumulative') {
+            $this->_columnHeaders[$alias]['title'] = $label;
+          }
           $select[$fieldName . '_' . $stat] = $this->getStatisticsSelectClause($field, $stat, $label, $alias);
         }
       }
@@ -6805,43 +6809,32 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
     switch (strtolower($stat)) {
         case 'max':
         case 'sum':
-          $this->_columnHeaders[$alias]['title'] = $label;
           $this->_columnHeaders[$alias]['type'] = $field['type'];
           if (!isset($stat['cummulative'])) {
             $this->_statFields[$label] = $alias;
           }
-          $this->_selectAliases[] = $alias;
           return "$stat({$field['dbAlias']}) as $alias";
 
         case 'cumulative':
-          $this->_selectAliases[] = $alias;
           return "SUM({$field['dbAlias']}) as $alias";
 
         case 'count':
-          $this->_columnHeaders[$alias]['title'] = $label;
           $this->_columnHeaders[$alias]['type'] = CRM_Utils_Type::T_INT;
           $this->_statFields[$label] = $alias;
-          $this->_selectAliases[] = $alias;
           return "COUNT({$field['dbAlias']}) as $alias";
 
         case 'count_distinct':
-          $this->_columnHeaders[$alias]['title'] = $label;
           $this->_columnHeaders[$alias]['type'] = CRM_Utils_Type::T_INT;
           $this->_statFields[$label] = $alias;
-          $this->_selectAliases[] = $alias;
           return "COUNT(DISTINCT {$field['dbAlias']}) as $alias";
 
         case 'avg':
-          $this->_columnHeaders[$alias]['title'] = $label;
           $this->_columnHeaders[$alias]['type'] = $field['type'];
           $this->_statFields[$label] = $alias;
-          $this->_selectAliases[] = $alias;
           return "ROUND(AVG({$field['dbAlias']}),2) as $alias";
 
         case 'display':
-          $this->_columnHeaders[$alias]['title'] = $label;
           $this->_columnHeaders[$alias]['type'] = $field['type'];
-          $this->_selectAliases[] = $alias;
           return "{$field['dbAlias']} as $alias";
       }
   }
