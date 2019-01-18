@@ -43,9 +43,14 @@ class ContributionContributionsTest extends BaseTestClass implements HeadlessInt
 
   /**
    * Test rows retrieval.
+   *
+   * @param array $overrides
+   *   array to override function parameters
+   *
+   * @dataProvider getRowVariants
    */
-  public function testGetRows() {
-    $params = [
+  public function testGetRows($overrides) {
+    $params = array_merge([
       'report_id' => 'contribution/contributions',
       'fields' => [
         'contribution_id' => '1',
@@ -53,10 +58,67 @@ class ContributionContributionsTest extends BaseTestClass implements HeadlessInt
         'contribution_campaign_id' => '1',
         'contribution_source' => '1',
       ],
-      'group_bys' => ['contribution_campaign_id' => '1'],
-      'order_bys' => [['column' => 'contribution_check_number', 'order' => 'ASC']],
-    ];
+    ], $overrides);
     $this->callAPISuccess('ReportTemplate', 'getrows', $params)['values'];
+  }
+
+  /**
+   * Get variations of data to test against the report.
+   *
+   * @return array
+   */
+  public function getRowVariants() {
+    return [
+      [
+        [
+          'order_bys' => [['column' => 'contribution_check_number', 'order' => 'ASC']],
+          'group_bys' => ['contribution_campaign_id' => '1'],
+        ]
+      ],
+      [
+        [
+          'order_bys' => [['column' => 'contribution_check_number', 'order' => 'DESC']],
+          'group_bys' => ['contribution_campaign_id' => '1'],
+        ]
+      ],
+      [
+        [
+          'order_bys' => [['column' => 'contribution_check_number', 'order' => 'DESC', 'section' => 1]],
+          'group_bys' => ['contribution_campaign_id' => '1'],
+        ]
+      ],
+      [
+        [
+          'order_bys' => [['column' => 'contribution_check_number', 'order' => 'DESC', 'section' => 1, 'pageBreak' => 1]],
+          'group_bys' => ['contribution_campaign_id' => '1'],
+        ]
+      ],
+      [
+        [
+          'order_bys' => [['column' => 'contribution_check_number', 'order' => 'ASC']],
+        ]
+      ],
+      [
+        [
+          'order_bys' => [['column' => 'contribution_check_number', 'order' => 'DESC']],
+        ]
+      ],
+      [
+        [
+          'order_bys' => [['column' => 'contribution_check_number', 'order' => 'DESC', 'section' => 1]],
+        ]
+      ],
+      [
+        [
+          'order_bys' => [['column' => 'contribution_check_number', 'order' => 'DESC', 'section' => 1, 'pageBreak' => 1]],
+        ]
+      ],
+      [
+        [
+          'extended_order_bys' => [['column' => 'contribution_check_number', 'order' => 'DESC', 'title' => 'special']],
+        ]
+      ],
+    ];
   }
 
   /**
