@@ -122,9 +122,20 @@ function extendedreport_civicrm_tabset($tabsetName, &$tabs, $context) {
  * @param $objectId
  * @param $objectRef
  */
-function extendedreport__civicrm_post($op, $objectName, $objectId, &$objectRef) {
+function extendedreport_civicrm_post($op, $objectName, $objectId, &$objectRef) {
   if ($objectName === 'ReportInstance') {
     CRM_Extendedreport_Page_Inline_ExtendedReportlets::flushReports();
+  }
+}
+
+/**
+ * @param string $formName
+ * @param CRM_Extendedreport_Form_Report_ExtendedReport $form
+ */
+function extendedreport_civicrm_preProcess($formName, &$form) {
+  if (is_subclass_of($form, 'CRM_Extendedreport_Form_Report_ExtendedReport') && $form->getInstanceID()) {
+    CRM_Core_Resources::singleton()->addScript("cj('#crm-container').append(
+      '<p><a href=\"" . CRM_Utils_System::url('civicrm/a/#/exreport/report/' . $form->getInstanceID()) .  "\">Report advanced configuration</a> provides options to re-order columnns, change titles & fallback to another field on empty. Once you use them you cannot configure those panes in this view</p>')");
   }
 }
 
