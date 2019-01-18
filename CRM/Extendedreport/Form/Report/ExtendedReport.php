@@ -355,6 +355,15 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   }
 
   /**
+   * Get the report ID if determined.
+   *
+   * @return int
+   */
+  public function getInstanceID() {
+    return $this->_id;
+  }
+
+  /**
    * Adds group filters to _columns (called from _Construct).
    */
   public function buildGroupFilter() {
