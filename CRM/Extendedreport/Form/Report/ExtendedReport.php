@@ -6813,9 +6813,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
     switch (strtolower($stat)) {
         case 'max':
         case 'sum':
-          if (!isset($stat['cummulative'])) {
-            $this->_statFields[$label] = $alias;
-          }
+          $this->_statFields[$label] = $alias;
           return "$stat({$field['dbAlias']}) as $alias";
 
         case 'cumulative':
