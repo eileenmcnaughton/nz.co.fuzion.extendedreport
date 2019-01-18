@@ -330,13 +330,16 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
       $options['prefix'] . 'last_name' => array(
         'name' => 'last_name',
         'title' => ts($options['prefix_label'] . 'Last Name'),
-        'default_order' => 'ASC',
         'is_fields' => TRUE,
+        'is_filters' => TRUE,
+        'is_order_bys' => TRUE,
       ),
       $options['prefix'] . 'nick_name' => array(
         'name' => 'nick_name',
         'title' => ts($options['prefix_label'] . 'Nick Name'),
         'is_fields' => TRUE,
+        'is_filters' => TRUE,
+        'is_order_bys' => TRUE,
       ),
       $options['prefix'] . 'gender_id' => array(
         'name' => 'gender_id',
