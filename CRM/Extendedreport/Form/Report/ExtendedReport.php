@@ -1069,17 +1069,17 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
 
     if (!empty($selectedOrderBys)) {
       // Process order_bys in user-specified order
-      foreach ($selectedOrderBys as $SelectedOrderBy) {
-        $fieldAlias = $SelectedOrderBy['alias'];
+      foreach ($selectedOrderBys as $selectedOrderBy) {
+        $fieldAlias = $selectedOrderBy['alias'];
         // Record any section headers for assignment to the template
-        if (CRM_Utils_Array::value('section', $SelectedOrderBy)) {
-          $this->_sections[$SelectedOrderBy['alias']] = $SelectedOrderBy;
+        if (CRM_Utils_Array::value('section', $selectedOrderBy)) {
+          $this->_sections[$selectedOrderBy['alias']] = $selectedOrderBy;
         }
-        $fieldAlias = $SelectedOrderBy['alias'];
-        if ($isGroupBy && !empty($SelectedOrderBy['statistics']) && !empty($SelectedOrderBy['statistics']['sum'])) {
+        $fieldAlias = $selectedOrderBy['alias'];
+        if ($isGroupBy && !empty($selectedOrderBy['statistics']) && !empty($selectedOrderBy['statistics']['sum'])) {
           $fieldAlias .= '_sum';
         }
-        $orderBys[] = "({$fieldAlias}) {$SelectedOrderBy['order']}";
+        $orderBys[] = "({$fieldAlias}) {$selectedOrderBy['order']}";
       }
     }
 
