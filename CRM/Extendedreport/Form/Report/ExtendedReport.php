@@ -626,7 +626,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     }
 
     foreach ($this->getOrderBysNotInSelectedFields() as $fieldName => $spec) {
-      $select[$fieldName . '_ordering'] = $this->getBasicFieldSelectClause($spec, $spec['alias']);
+      $select[$fieldName . '_ordering'] = $this->getBasicFieldSelectClause($spec, $spec['alias']) . " as  {$spec['alias']} ";
     }
 
     foreach ($selectedFields as $fieldName => $field) {
@@ -666,7 +666,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       else {
         $this->_selectAliases[] = $alias;
         $this->_columnHeaders[$field['alias']]['type'] = CRM_Utils_Array::value('type', $field);
-        $select[$fieldName] = $this->getBasicFieldSelectClause($field, $alias);
+        $select[$fieldName] = $this->getBasicFieldSelectClause($field, $alias) . " as $alias ";
       }
     }
 
@@ -7739,7 +7739,7 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
         if (empty($this->_groupByArray[$alias])) {
           return "GROUP_CONCAT(DISTINCT {$field['dbAlias']}) as $alias";
         }
-        return "({$field['dbAlias']}) as $alias";
+        return "({$field['dbAlias']}) ";
       }
     }
     if (!empty($field['field_on_null'])) {
@@ -7749,7 +7749,7 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
       }
       $fieldString = 'COALESCE(' . $fieldString . ',' . implode(',', $fallbacks) . ')';
     }
-    return "$fieldString as $alias";
+    return "$fieldString ";
   }
 
   /**
