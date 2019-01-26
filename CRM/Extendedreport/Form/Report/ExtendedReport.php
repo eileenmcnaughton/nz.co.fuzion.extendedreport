@@ -660,7 +660,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
           if (!in_array($stat, ['cumulative', 'display'])) {
             $this->_statFields[$label] = $alias;
           }
-          $select[$fieldName . '_' . $stat] = $this->getStatisticsSelectClause($field, $stat, $label, $alias);
+          $select[$fieldName . '_' . $stat] = $this->getStatisticsSelectClause($field, $stat) . " as $alias";
         }
       }
       else {
@@ -6812,26 +6812,26 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    *
    * @return string
    */
-  protected function getStatisticsSelectClause($field, $stat, $label, $alias) {
+  protected function getStatisticsSelectClause($field, $stat) {
     switch (strtolower($stat)) {
         case 'max':
         case 'sum':
-          return "$stat({$field['dbAlias']}) as $alias";
+          return "$stat({$field['dbAlias']})";
 
         case 'cumulative':
-          return "SUM({$field['dbAlias']}) as $alias";
+          return "SUM({$field['dbAlias']})";
 
         case 'count':
-          return "COUNT({$field['dbAlias']}) as $alias";
+          return "COUNT({$field['dbAlias']})";
 
         case 'count_distinct':
-          return "COUNT(DISTINCT {$field['dbAlias']}) as $alias";
+          return "COUNT(DISTINCT {$field['dbAlias']})";
 
         case 'avg':
-          return "ROUND(AVG({$field['dbAlias']}),2) as $alias";
+          return "ROUND(AVG({$field['dbAlias']}),2)";
 
         case 'display':
-          return "{$field['dbAlias']} as $alias";
+          return "{$field['dbAlias']}";
       }
   }
 
