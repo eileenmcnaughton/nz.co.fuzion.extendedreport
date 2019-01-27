@@ -425,7 +425,7 @@ WHERE  civicrm_contribution_contribution_id={$row['civicrm_contribution_contribu
       $sectionAliases = array_keys($this->_sections);
 
       $ifnulls = array();
-      foreach (array_merge($sectionAliases, $this->_selectAliases) as $alias) {
+      foreach (array_merge($sectionAliases, array_keys($this->_selectAliases)) as $alias) {
         $ifnulls[] = "ifnull($alias, '') as $alias";
       }
 
@@ -436,7 +436,7 @@ WHERE  civicrm_contribution_contribution_id={$row['civicrm_contribution_contribu
 
       $addtotals = '';
 
-      if (array_search("civicrm_contribution_total_amount_sum", $this->_selectAliases) !== FALSE) {
+      if (empty($this->_selectAliases["civicrm_contribution_total_amount_sum"]) !== FALSE) {
         $addtotals = ", sum(civicrm_contribution_total_amount_sum) as sumcontribs";
         $showsumcontribs = TRUE;
       }
