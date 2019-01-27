@@ -7832,7 +7832,7 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
       if ((empty($field['statistics']) || in_array('GROUP_CONCAT', $field['statistics']))) {
 
         if (empty($this->_groupByArray[$alias])) {
-          return "GROUP_CONCAT(DISTINCT {$field['dbAlias']}) as $alias";
+          return "GROUP_CONCAT(DISTINCT {$field['dbAlias']})";
         }
         return "({$field['dbAlias']}) ";
       }
