@@ -5503,6 +5503,7 @@ AND {$this->_aliases['civicrm_line_item']}.entity_table = 'civicrm_participant')
       FROM (
         SELECT pledge_id, sum(if(status_id = 1, actual_amount, 0)) as actual_amount,
           IF(
+          #Get the next scheduled payment date, if any.
             MIN(if(status_id IN (" . implode(',', $toPayIDs)  . "), scheduled_date, '2200-01-01')) <> '2200-01-01',
             MIN(if(status_id IN (" . implode(',', $toPayIDs)  . "), scheduled_date, '2200-01-01')),
           '') as scheduled_date,
@@ -6643,7 +6644,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
       case self::OP_SINGLEDATE:
         // build single datetime field
         $this->addElement('select', "{$prefix}{$fieldName}_op", ts('Operator:'), $operations);
-        $this->addDate("{$prefix}{$fieldName}_value", ts(''), FALSE);
+        $this->add('datepicker',"{$prefix}{$fieldName}_value", ts(''), FALSE,  FALSE, ['time' => FALSE]);
         break;
       case CRM_Report_Form::OP_INT:
       case CRM_Report_Form::OP_FLOAT:
