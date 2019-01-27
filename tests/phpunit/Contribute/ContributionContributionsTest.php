@@ -118,6 +118,17 @@ class ContributionContributionsTest extends BaseTestClass implements HeadlessInt
           'extended_order_bys' => [['column' => 'contribution_check_number', 'order' => 'DESC', 'title' => 'special']],
         ]
       ],
+      [
+        [
+          'fields' => [
+            'contribution_financial_type_id' => '1',
+            'contribution_receive_date' => '1',
+            'contribution_total_amount' => '1',
+            'civicrm_contact_display_name' => '1',
+          ],
+          'order_bys' => [1 => ['column' => 'civicrm_contact_sort_name', 'order' => 'DESC', 'section' => 1]],
+        ]
+      ]
     ];
   }
 
