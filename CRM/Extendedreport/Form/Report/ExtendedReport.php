@@ -645,7 +645,16 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       $this->addAdditionalRequiredFields($field, $field['table_name']);
       $tableName = $field['table_name'];
       $alias = isset($field['alias']) ? $field['alias'] : "{$tableName}_{$fieldName}";
-      $this->_selectAliases[] = "{$tableName}_{$fieldName}";
+      $fieldStats = $this->getFieldStatistics($field);
+      if ($fieldStats === []) {
+        $this->_selectAliases[] = "{$tableName}_{$fieldName}";
+      }
+      else {
+        foreach ($fieldStats as $stat => $label) {
+          $alias = $this->getStatisticsAlias($tableName, $fieldName, $stat);
+          $this->_selectAliases[] = $alias;
+        }
+      }
       $this->_columnHeaders[$alias]['title'] = CRM_Utils_Array::value('title', $field);
       // 1. In many cases we want select clause to be built in slightly different way
       // for a particular field of a particular type.
@@ -658,10 +667,9 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       }
 
       // include statistics columns only if set
-      if (($fieldStats = $this->getFieldStatistics($field)) !== []) {
+      if ($fieldStats !== []) {
         foreach ($fieldStats as $stat => $label) {
           $alias = $this->getStatisticsAlias($tableName, $fieldName, $stat);
-          $this->_selectAliases[] = $alias;
           if ($stat !== 'cumulative') {
             $this->_columnHeaders[$alias]['title'] = $label;
             if (in_array($stat, ['count', 'count_distinct'])) {
