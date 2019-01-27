@@ -7746,7 +7746,12 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
   protected function getConfiguredOrderBys($params) {
     $orderBys = [];
     $quickFormOrderBys = isset($params['order_bys']) ? (array) $params['order_bys'] : [];
-    foreach ($quickFormOrderBys as $quickFormOrderBy) {
+    foreach ($quickFormOrderBys as $index => $quickFormOrderBy) {
+      if ($quickFormOrderBy == ['column' => "-"]) {
+        unset($params['order_bys'][$index]);
+        unset($quickFormOrderBys['index']);
+        continue;
+      }
       $orderBys[$quickFormOrderBy['column']] = $quickFormOrderBy;
       $orderBys[$quickFormOrderBy['column']]['title'] = $this->getMetadataByType('order_bys')[$quickFormOrderBy['column']]['title'];
     }
