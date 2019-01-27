@@ -557,6 +557,10 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
         $params['extended_fields'] = array_merge($this->_formValues['extended_fields']);
       }
     }
+    $params['order_bys'] = $params['extended_order_bys'] = $this->getConfiguredOrderBys($params);
+    // Renumber from 0
+    $params['extended_order_bys'] = array_merge($params['extended_order_bys']);
+
     $this->_params = $params;
   }
 
@@ -7727,6 +7731,52 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
    */
   protected function getExtendedFieldsSelection() {
     return CRM_Utils_Array::value('extended_fields', $this->_formValues, CRM_Utils_Array::value('extended_fields', $this->_params, []));
+  }
+
+  /**
+   * Get configured order by options by combining extended options with normal options.
+   *
+   * In this scenario we are in qf configuration mode so that config wins out where there is
+   * conflict - but extended config is merged in.
+   *
+   * @param array $params
+   *
+   * @return array
+   */
+  protected function getConfiguredOrderBys($params) {
+    $orderBys = [];
+    $quickFormOrderBys = isset($params['order_bys']) ? (array) $params['order_bys'] : [];
+    foreach ($quickFormOrderBys as $quickFormOrderBy) {
+      $orderBys[$quickFormOrderBy['column']] = $quickFormOrderBy;
+      $orderBys[$quickFormOrderBy['column']]['title'] = $this->getMetadataByType('order_bys')[$quickFormOrderBy['column']]['title'];
+    }
+    $extendedOrderBys = $this->getExtendedOrderBysSelection($params);
+    foreach ($extendedOrderBys as $index => $extendedOrderBy) {
+      $orderByName = CRM_Utils_Array::value('name', $extendedOrderBy, CRM_Utils_Array::value('column', $extendedOrderBy));
+      // If order_bys have been passed in then we filter out anything not set in them
+      if (!isset($orderBys[$orderByName ]) && isset($params['order_bys'])) {
+        unset($extendedOrderBys[$index]);
+      }
+      else {
+        $orderBys[$orderByName] = array_merge($extendedOrderBy, CRM_Utils_Array::value($orderByName, $orderBys, []));
+      }
+    }
+
+    $reindexedArray = [];
+    $count = 1;
+    foreach ($orderBys as $orderBy) {
+      $reindexedArray[$count] = $orderBy;
+      $count++;
+    }
+    return $reindexedArray;
+  }
+
+  /**
+   * @param $params
+   * @return mixed
+   */
+  protected function getExtendedOrderBysSelection($params) {
+    return CRM_Utils_Array::value('extended_order_bys', $params, []);
   }
 
   /**
