@@ -630,7 +630,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     }
 
     foreach ($this->getOrderBysNotInSelectedFields() as $fieldName => $spec) {
-      $select[$fieldName . '_ordering'] = $this->getBasicFieldSelectClause($spec, $spec['alias']) . " as  {$spec['alias']} ";
+      $select[$fieldName] = $this->getBasicFieldSelectClause($spec, $spec['alias']) . " as  {$spec['alias']} ";
     }
 
     foreach ($selectedFields as $fieldName => $field) {
@@ -1081,12 +1081,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
 
     $isGroupBy = !empty($this->_groupByArray);
     $selectedOrderBys = $this->getSelectedOrderBys();
-    $selectedFields = $this->getSelectedFields();
-    $selectedFieldsToAdd = array_diff_key($selectedOrderBys, $selectedFields);
-    foreach ($selectedFieldsToAdd as $fieldName => $field) {
-      $this->_params['fields'][$fieldName] = 1;
-      $this->_columns[$field['table_name']][$field['column']]['no_display'] = 1;
-    }
 
     $orderBys = [];
 
@@ -1098,7 +1092,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
         if (CRM_Utils_Array::value('section', $selectedOrderBy)) {
           $this->_sections[$selectedOrderBy['alias']] = $selectedOrderBy;
         }
-        $fieldAlias = $selectedOrderBy['alias'];
         if ($isGroupBy && !empty($selectedOrderBy['statistics']) && !empty($selectedOrderBy['statistics']['sum'])) {
           $fieldAlias .= '_sum';
         }
