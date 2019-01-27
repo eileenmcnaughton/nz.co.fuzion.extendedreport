@@ -54,7 +54,6 @@ class CRM_Extendedreport_Form_Report_Pledge_Detail extends CRM_Extendedreport_Fo
       'operations' => ['to' => E::ts('Date')],
       'alias' => 'contribution_effective_date',
     );
-    $this->_columns['civicrm_contribution']['fitlers'] = $this->_columns['civicrm_contribution']['metadata'];
 
     $this->_groupFilter = TRUE;
     $this->_tagFilter = TRUE;
