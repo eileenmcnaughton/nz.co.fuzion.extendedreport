@@ -7692,6 +7692,42 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
    */
   protected function mergeExtendedConfigurationIntoReportData() {
     $this->mergeExtendedFieldConfiguration();
+    $this->mergeExtendedOrderByConfiguration();
+  }
+
+  /**
+   * Merge 'extended_order_bys' into fields
+   */
+  protected function mergeExtendedOrderByConfiguration() {
+    $orderBys = CRM_Utils_Array::value('order_bys', $this->_formValues);
+    $extendedOrderBys = CRM_Utils_Array::value('extended_order_bys', $this->_formValues);
+    $metadata = $this->getMetadataByType('order_bys');
+    $count = 1;
+    if (!empty($extendedOrderBys)) {
+      foreach ($extendedOrderBys as $index => $extendedOrderBy) {
+        $extendedOrderBy['column'] = $extendedOrderBy['name'] = CRM_Utils_Array::value('name', $extendedOrderBy, CRM_Utils_Array::value('column', $extendedOrderBy));
+        $extendedOrderBy['title'] = CRM_Utils_Array::value('title', $extendedOrderBy, $metadata[$extendedOrderBy['name']]['title']);
+        $orderBys[$count] = [
+          'column' => CRM_Utils_Array::value('name', $extendedOrderBy, $extendedOrderBy['column']),
+        ];
+        $count++;
+        if ($this->isValidTitle($extendedOrderBy['title'])) {
+          $this->metaData['order_bys'][$extendedOrderBy['name']]['title'] = $extendedOrderBy['title'];
+        }
+        if (!empty($extendedOrderBy['field_on_null'])) {
+          $nullString = [];
+          foreach ($extendedOrderBy['field_on_null'] as $fallbackField) {
+            if ($this->isValidTitle($fallbackField['title'])) {
+              $nullString[] = $fallbackField['title'];
+            }
+          }
+          $this->metaData['order_bys'][$extendedOrderBy['name']]['title'] .= '(' . implode(', ', $nullString) . ')';
+          $this->metaData['order_bys'][$extendedOrderBy['name']]['field_on_null'] = $extendedOrderBy['field_on_null'];
+
+        }
+      }
+    }
+    $this->_formValues['order_bys'] = $orderBys;
   }
 
   /**

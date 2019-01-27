@@ -94,6 +94,9 @@ class CRM_Extendedreport_Form_Report_Contribute_LoggingSummary extends CRM_Exten
       if (!isset($field['dbAlias'])) {
         $this->_columns['civicrm_contribution']['metadata'][$index]['dbAlias'] = 'contribution.' . $index;
       }
+      if (!isset($field['alias'])) {
+        $this->_columns['civicrm_contribution']['metadata'][$index]['alias'] = 'contribution_' . $index;
+      }
       foreach (['filters', 'group_bys', 'order_bys', 'join_filters'] as $type) {
         if (!isset($this->_columns['civicrm_contribution']['metadata'][$index]['is_' . $type])) {
           $this->_columns['civicrm_contribution']['metadata'][$index]['is_' . $type] = FALSE;
