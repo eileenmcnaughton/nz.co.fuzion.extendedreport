@@ -86,6 +86,11 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
     $this->getRows($params);
   }
 
+  /**
+   * Test extended fields (as configured in angular form) merge the flat fields array.
+   *
+   * We are checking we can re-order fields, change titles & add fallbacks.
+   */
   public function testExtendedFields() {
     $contact = $this->callAPISuccess('Contact', 'create', ['contact_type' => 'Individual', 'first_name' => 'first', 'last_name' => 'last']);
     $this->ids['Contact'][] = $contact['id'];
@@ -116,6 +121,52 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
     $this->assertEquals('first', $rows[0]['civicrm_contact_civicrm_contact_middle_name']);
     $this->assertEquals('last', $rows[0]['civicrm_contact_civicrm_contact_last_name']);
     $this->callAPISuccess('Contact', 'delete', ['id' => $contact['id']]);
+  }
+
+  /**
+   * Test extended order bys (as configured by angular form) result in re-ordered fields and order by fallbacks.
+   */
+  public function testExtendedOrderBys() {
+    $this->ids['Contact'][0] = $this->callAPISuccess('Contact', 'create', ['contact_type' => 'Individual', 'first_name' => 'r', 'last_name' => 'a'])['id'];
+    $this->ids['Contact'][1] = $this->callAPISuccess('Contact', 'create', ['contact_type' => 'Individual', 'first_name' => 'a', 'last_name' => 'b'])['id'];
+    $this->ids['Contact'][2] = $this->callAPISuccess('Contact', 'create', ['contact_type' => 'Individual', 'first_name' => 'r', 'nick_name' => 'b', 'last_name' => 'c'])['id'];
+    $this->ids['Contact'][3] = $this->callAPISuccess('Contact', 'create', ['contact_type' => 'Individual', 'first_name' => 'z', 'nick_name' => 'b', 'last_name' => 'd'])['id'];
+    foreach ($this->ids['Contact'] as $contactID) {
+      $this->callAPISuccess('Contribution', 'create', ['financial_type_id' => 'Donation', 'total_amount' => 10, 'contact_id' => $contactID]);
+    }
+
+    $rows = $this->getRows([
+      'report_id' => 'contribution/contributions',
+      'extended_order_bys' => [
+        [
+          'title' =>  'Nick Name',
+          'column' =>  "civicrm_contact_nick_name",
+          'field_on_null' => [
+            [
+              'title' => 'First name',
+              'name' => 'civicrm_contact_first_name',
+            ],
+          ],
+        ],
+        [
+          'title' =>  'Last Name',
+          'column' =>  "civicrm_contact_last_name",
+          'order' => 'DESC',
+        ],
+      ],
+      'fields' => ['civicrm_contact_first_name' => 1, 'civicrm_contact_last_name' => 1],
+    ]);
+
+    $this->assertEquals('a', $rows[0]['civicrm_contact_civicrm_contact_first_name']);
+    $this->assertEquals('z', $rows[1]['civicrm_contact_civicrm_contact_first_name']);
+    $this->assertEquals('d', $rows[1]['civicrm_contact_civicrm_contact_last_name']);
+    $this->assertEquals('r', $rows[2]['civicrm_contact_civicrm_contact_first_name']);
+    $this->assertEquals('c', $rows[2]['civicrm_contact_civicrm_contact_last_name']);
+    $this->assertEquals('r', $rows[3]['civicrm_contact_civicrm_contact_first_name']);
+
+    foreach ($this->ids['Contact'] as $contactID) {
+      $this->callAPISuccess('Contact', 'delete', ['id' => $contactID]);
+    }
   }
 
   /**
