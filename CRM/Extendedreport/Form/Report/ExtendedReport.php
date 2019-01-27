@@ -630,7 +630,15 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     }
 
     foreach ($this->getOrderBysNotInSelectedFields() as $fieldName => $spec) {
-      $select[$fieldName] = $this->getBasicFieldSelectClause($spec, $spec['alias']) . " as  {$spec['alias']} ";
+      if (($fieldStats = $this->getFieldStatistics($spec)) !== []) {
+        foreach ($fieldStats as $stat => $label) {
+          $alias = $this->getStatisticsAlias($spec['table_name'], $fieldName, $stat);
+          $select[$fieldName . '_' . $stat] = $this->getStatisticsSelectClause($spec, $stat) . " as $alias";
+        }
+      }
+      else {
+        $select[$fieldName] = $this->getBasicFieldSelectClause($spec, $spec['alias']) . " as  {$spec['alias']} ";
+      }
     }
 
     foreach ($selectedFields as $fieldName => $field) {
@@ -650,8 +658,8 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       }
 
       // include statistics columns only if set
-      if (!empty($field['statistics']) && !empty($this->_groupByArray)) {
-        foreach ($field['statistics'] as $stat => $label) {
+      if (($fieldStats = $this->getFieldStatistics($field)) !== []) {
+        foreach ($fieldStats as $stat => $label) {
           $alias = $this->getStatisticsAlias($tableName, $fieldName, $stat);
           $this->_selectAliases[] = $alias;
           if ($stat !== 'cumulative') {
@@ -7821,21 +7829,21 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
    */
   protected function getBasicFieldSelectClause($field, $alias) {
     $fieldString = $field['dbAlias'];
-    if ((!empty($this->_groupByArray) || $this->isForceGroupBy)) {
-      if ((empty($field['statistics']) || in_array('GROUP_CONCAT', $field['statistics']))) {
-
-        if (empty($this->_groupByArray[$alias])) {
-          return "GROUP_CONCAT(DISTINCT {$field['dbAlias']})";
-        }
-        return "({$field['dbAlias']}) ";
-      }
-    }
     if (!empty($field['field_on_null'])) {
       $fallbacks = [];
       foreach ($field['field_on_null'] as $fallback) {
         $fallbacks[] = $this->getMetadataByType('filters')[$fallback['name']]['dbAlias'];
       }
       $fieldString = 'COALESCE(' . $fieldString . ',' . implode(',', $fallbacks) . ')';
+    }
+    if ((!empty($this->_groupByArray) || $this->isForceGroupBy)) {
+      if ((empty($field['statistics']) || in_array('GROUP_CONCAT', $field['statistics']))) {
+
+        if (empty($this->_groupByArray[$alias])) {
+          return "GROUP_CONCAT(DISTINCT {$fieldString})";
+        }
+        return "({$fieldString}) ";
+      }
     }
     return "$fieldString ";
   }
@@ -7851,6 +7859,13 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
       $stat = 'sum';
     }
     return "{$tableName}_{$fieldName}_{$stat}";
+  }
+
+  /**
+   * @param $field
+   */
+  protected function getFieldStatistics($field) {
+    return empty($this->_groupByArray) ? [] : CRM_Utils_Array::value('statistics', $field, []);
   }
 
 }
