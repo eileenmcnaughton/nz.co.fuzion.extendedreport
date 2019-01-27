@@ -7050,9 +7050,13 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
     $result = [];
     foreach ($this->_params['order_bys'] as $order_by) {
       if (isset($orderBys[$order_by['column']])) {
-        $result[$order_by['column']] = array_merge(
+         $order_by = array_merge(
           $order_by, $orderBys[$order_by['column']]
         );
+        if (!isset($order_by['order'])) {
+          $order_by['order'] = 'ASC';
+        }
+        $result[$order_by['column']] = $order_by;
       }
     }
     return $result;
