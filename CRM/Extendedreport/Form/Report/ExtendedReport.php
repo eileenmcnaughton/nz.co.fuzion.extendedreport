@@ -647,12 +647,16 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       $alias = isset($field['alias']) ? $field['alias'] : "{$tableName}_{$fieldName}";
       $fieldStats = $this->getFieldStatistics($field);
       if ($fieldStats === []) {
-        $this->_selectAliases[] = "{$tableName}_{$fieldName}";
+        $this->_selectAliases["{$tableName}_{$fieldName}"] = $field;
       }
       else {
         foreach ($fieldStats as $stat => $label) {
           $alias = $this->getStatisticsAlias($tableName, $fieldName, $stat);
-          $this->_selectAliases[] = $alias;
+          $this->_selectAliases[$alias] = $field;
+          $this->_selectAliases[$alias]['title'] = $fieldStats[$stat];
+          if (in_array($stat, ['sum', 'count'])) {
+            $this->_selectAliases[$alias]['stat'] = $stat;
+          }
         }
       }
       $this->_columnHeaders[$alias]['title'] = CRM_Utils_Array::value('title', $field);
@@ -684,7 +688,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
         }
       }
       else {
-        $this->_selectAliases[] = $alias;
+        $this->_selectAliases[$alias] = $alias;
         $this->_columnHeaders[$field['alias']]['type'] = CRM_Utils_Array::value('type', $field);
         $select[$fieldName] = $this->getBasicFieldSelectClause($field, $alias) . " as $alias ";
       }
@@ -1795,7 +1799,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     $this->_columnHeaders[$alias]['title'] = CRM_Utils_Array::value('title', $field);
     $this->_columnHeaders[$alias]['type'] = CRM_Utils_Array::value('type', $field);
     $this->_statFields[CRM_Utils_Array::value('title', $field)] = $alias;
-    $this->_selectAliases[] = $alias;
+    $this->_selectAliases[$alias] = $alias;
     return $alias;
   }
 
@@ -2544,6 +2548,87 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
 
     // use this method for formatting custom rows for display purpose.
     $this->alterCustomDataDisplay($rows);
+  }
+
+  /**
+   * Calculate section totals.
+   *
+   * When "order by" fields are marked as sections, this assigns to the template
+   * an array of total counts for each section. This data is used by the Smarty
+   * plugin {sectionTotal}.
+   */
+  public function sectionTotals() {
+
+    // Reports using order_bys with sections must populate $this->_selectAliases in select() method.
+    if (empty($this->_selectAliases)) {
+      return;
+    }
+
+    if (!empty($this->_sections)) {
+      // build the query with no LIMIT clause
+      $select = str_ireplace('SELECT SQL_CALC_FOUND_ROWS ', 'SELECT ', $this->_select);
+      $sql = "{$select} {$this->_from} {$this->_where} {$this->_groupBy} {$this->_having} {$this->_orderBy}";
+
+      // pull section aliases out of $this->_sections
+      $sectionAliases = array_keys($this->_sections);
+
+      $ifnulls = array();
+      $statFields = ['ct' => ['title' => '']];
+      foreach (array_keys($this->_selectAliases) as $alias) {
+        if (!empty($this->_selectAliases[$alias]['stat'])) {
+          $statFields[$alias] = ['title' => $this->_selectAliases[$alias]['title']];
+          $stat = $this->_selectAliases[$alias]['stat'];
+          if ($stat === 'count' && isset($statFields['ct'])) {
+            unset($statFields['ct']);
+          }
+          $ifnulls[] = $this->getStatOp($stat) . "( $alias ) as $alias";
+        }
+      }
+
+      foreach ($sectionAliases as $alias) {
+        $ifnulls[] = "COALESCE($alias, '') as $alias";
+      }
+      $outerSelect = "SELECT " . implode(", ", $ifnulls);
+
+      // Group (un-limited) report by all aliases and get counts. This might
+      // be done more efficiently when the contents of $sql are known, ie. by
+      // overriding this method in the report class.
+
+      $query = $outerSelect .
+        ", count(*) as ct from ($sql) as subquery group by " .
+        implode(", ", $sectionAliases);
+
+      // initialize array of total counts
+      $dao = CRM_Core_DAO::executeQuery($query);
+      $totals = $totalsArray = array();
+      while ($dao->fetch()) {
+        $values = [];
+        // let $this->_alterDisplay translate any integer ids to human-readable values.
+        $rows[0] = $dao->toArray();
+        $this->alterDisplay($rows);
+        $row = $rows[0];
+
+        foreach ($sectionAliases as $alias) {
+          $values[] = $row[$alias];
+          $key = implode(CRM_Core_DAO::VALUE_SEPARATOR, $values);
+          foreach ($statFields as $statField => $spec) {
+            $totalsArray[$key][$statField]['title'] = $statFields[$statField]['title'];
+            if (!isset($totalsArray[$key][$statField]['value'])) {
+              $totalsArray[$key][$statField]['value'] = 0;
+            }
+            $totalsArray[$key][$statField]['value'] += $dao->$statField;
+          }
+        }
+      }
+      foreach ($totalsArray as $fieldKey => $value) {
+        foreach ($value as $statKey => $spec) {
+          $totals[$fieldKey][] = $spec['title'] . ' : ' . $spec['value'];
+        }
+        $totals[$fieldKey] = implode(' , ', $totals[$fieldKey]);
+      }
+
+      $this->assign('sectionTotals', $totals);
+    }
   }
 
   /**
@@ -6820,32 +6905,49 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    *
    * @param array $field
    * @param string $stat
-   * @param string $label
-   * @param string $alias
    *
    * @return string
    */
   protected function getStatisticsSelectClause($field, $stat) {
+    $statOp = $this->getStatOp($stat);
     switch (strtolower($stat)) {
         case 'max':
         case 'sum':
-          return "$stat({$field['dbAlias']})";
-
         case 'cumulative':
-          return "SUM({$field['dbAlias']})";
-
         case 'count':
-          return "COUNT({$field['dbAlias']})";
+        case 'display':
+          return "$statOp({$field['dbAlias']})";
 
         case 'count_distinct':
           return "COUNT(DISTINCT {$field['dbAlias']})";
 
         case 'avg':
           return "ROUND(AVG({$field['dbAlias']}),2)";
-
-        case 'display':
-          return "{$field['dbAlias']}";
       }
+  }
+
+  /**
+   * Get op string for a stat.
+   *
+   * @param $stat
+   *
+   * @return string
+   */
+  public function getStatOp($stat) {
+    switch (strtolower($stat)) {
+      case 'max':
+        return 'MAX';
+
+      case 'sum':
+      case 'cumulative':
+        return 'SUM';
+
+      case 'count':
+        return "COUNT";
+
+      case 'display':
+        return '';
+    }
   }
 
   /**
