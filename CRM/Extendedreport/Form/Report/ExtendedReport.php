@@ -7821,7 +7821,7 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
    */
   protected function getBasicFieldSelectClause($field, $alias) {
     $fieldString = $field['dbAlias'];
-    if ($this->groupConcatTested && (!empty($this->_groupByArray) || $this->isForceGroupBy)) {
+    if ((!empty($this->_groupByArray) || $this->isForceGroupBy)) {
       if ((empty($field['statistics']) || in_array('GROUP_CONCAT', $field['statistics']))) {
 
         if (empty($this->_groupByArray[$alias])) {
