@@ -7936,6 +7936,7 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
       }
       $orderBys[$quickFormOrderBy['column']] = $quickFormOrderBy;
       $orderBys[$quickFormOrderBy['column']]['title'] = $this->getMetadataByType('order_bys')[$quickFormOrderBy['column']]['title'];
+      $orderBys[$quickFormOrderBy['column']]['name'] = $quickFormOrderBy['column'];
     }
     $extendedOrderBys = $this->getExtendedOrderBysSelection($params);
     foreach ($extendedOrderBys as $index => $extendedOrderBy) {
