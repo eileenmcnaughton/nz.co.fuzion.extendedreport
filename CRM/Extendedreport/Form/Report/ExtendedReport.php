@@ -6108,20 +6108,20 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    *
    * @param string $value
    * @param array $row
-   * @param string $selectedfield
+   * @param string $selectedField
    * @param string $criteriaFieldName
    *
    * @return string
    */
-  function alterEventID($value, &$row, $selectedfield, $criteriaFieldName) {
+  function alterEventID($value, &$row, $selectedField, $criteriaFieldName) {
     if (isset($this->_drilldownReport)) {
       $criteriaString = $this->getCriteriaString();
       $url = CRM_Report_Utils_Report::getNextUrl(implode(',', array_keys($this->_drilldownReport)),
         $criteriaString . '&event_id_op=in&event_id_value=' . $value,
         $this->_absoluteUrl, $this->_id, $this->_drilldownReport
       );
-      $row[$selectedfield . '_link'] = $url;
-      $row[$selectedfield . '_hover'] = ts(implode(',', $this->_drilldownReport));
+      $row[$selectedField . '_link'] = $url;
+      $row[$selectedField . '_hover'] = ts(implode(',', $this->_drilldownReport));
     }
     return is_string(CRM_Event_PseudoConstant::event($value, FALSE)) ? CRM_Event_PseudoConstant::event($value, FALSE) : '';
   }
