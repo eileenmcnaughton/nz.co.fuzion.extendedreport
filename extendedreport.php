@@ -134,8 +134,8 @@ function extendedreport_civicrm_post($op, $objectName, $objectId, &$objectRef) {
  */
 function extendedreport_civicrm_preProcess($formName, &$form) {
   if (is_subclass_of($form, 'CRM_Extendedreport_Form_Report_ExtendedReport') && $form->getInstanceID()) {
-    CRM_Core_Resources::singleton()->addScript("cj('#crm-container').append(
-      '<p><a href=\"" . CRM_Utils_System::url('civicrm/a/#/exreport/report/' . $form->getInstanceID()) .  "\">Report advanced configuration</a> provides options to re-order columnns, change titles & fallback to another field on empty. Once you use them you cannot configure those panes in this view</p>')");
+    CRM_Core_Resources::singleton()->addScript("cj('#mainTabContainer').append(
+      '<p><a href=\"" . CRM_Utils_System::url('civicrm/a/#/exreport/report/' . $form->getInstanceID()) .  "\">Advanced Report configuration</a> provides options to re-order columnns, change titles & fallback to another field on empty.</p>')");
   }
 }
 

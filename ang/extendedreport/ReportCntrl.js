@@ -27,7 +27,7 @@
   //   $scope -- This is the set of variables shared between JS and HTML.
   //   crmApi, crmStatus, crmUiHelp -- These are services provided by civicrm-core.
   //   myContact -- The current contact, defined above in config().
-  angular.module('extendedreport').controller('ExtendedreportReportCntrl', function($scope, crmApi, crmStatus, crmUiHelp, reportMetadata, reportInstance) {
+  angular.module('extendedreport').controller('ExtendedreportReportCntrl', function($scope, crmApi, crmStatus, crmUiHelp, reportMetadata, reportInstance, crmLegacy) {
     // The ts() and hs() functions help load strings for this module.
     var ts = $scope.ts = CRM.ts('extendedreport');
     var hs = $scope.hs = crmUiHelp({file: 'CRM/extendedreport/ReportCntrl'});// See: templates/CRM/extendedreport/ReportCntrl.hlp
@@ -37,7 +37,8 @@
     var form_values = reportInstance.values[reportID]['form_values'];
     $scope.form_values = form_values;
 
-    $scope.classicUrl = 'http://dmaster.local/civicrm/report/instance/' + reportInstance.id + '?reset=1&output=html';
+    $scope.classicUrl = crmLegacy.url('civicrm/report/instance/' + reportInstance.id, 'reset=1output=html');
+
     // We have myContact available in JS. We also want to reference it in HTML.
     $scope.reportMetadata = reportMetadata.values;
 
