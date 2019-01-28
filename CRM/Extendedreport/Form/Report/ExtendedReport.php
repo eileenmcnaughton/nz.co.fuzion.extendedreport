@@ -268,6 +268,22 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   protected $groupFilterNotOptimised = FALSE;
 
   /**
+   * Filters to apply to join.
+   *
+   * This might be deprecated for $this->getMetaDataByType('join_filters');
+   *
+   * @var array
+   */
+  protected $_joinFilters = [];
+
+  /**
+   * Tables created in order to precontstrain results for performance.
+   *
+   * @var array
+   */
+  protected $_tempTables;
+
+  /**
    * Class constructor.
    */
   public function __construct() {
@@ -784,7 +800,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     $columnFields = $this->getFieldBreakdownForAggregates('column');
     $rowFields = $this->getFieldBreakdownForAggregates('row');
     $selectedTables = array();
-    $rowColumns = $this->extractCustomFields($rowFields, $selectedTables, 'row_header');
+    $rowColumns = $this->extractCustomFields($rowFields, 'row_header');
 
     if (empty($rowColumns)) {
       if (empty($rowFields)) {
@@ -810,7 +826,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
         'title' => $rowColumns[$rowHeader]['title']
       ];
     }
-    $columnColumns = $this->extractCustomFields($columnFields, $selectedTables, 'column_header');
+    $columnColumns = $this->extractCustomFields($columnFields, 'column_header');
     if (empty($columnColumns)) {
       foreach ($columnFields as $field => $fieldDetails) { //only one but we don't know the name
         //we wrote this as purely a custom field against custom field. In process of refactoring to allow
@@ -2050,7 +2066,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   /**
    * Take API Styled field and add extra params required in report class
    *
-   * @param string $field
+   * @param array $field
    */
   function getCustomFieldDetails(&$field) {
     $types = array(
@@ -2328,7 +2344,7 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
         return "({$field['dbAlias']}) as $alias";
       }
     }
-
+    return FALSE;
   }
 
   /**
@@ -2336,13 +2352,12 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
    * This allows us to include custom fields from multiple contacts (for example) in one report
    *
    * @param $customFields
-   * @param $selectedTables
    * @param string $context
    *
    * @return array
    * @throws \Exception
    */
-  function extractCustomFields(&$customFields, &$selectedTables, $context = 'select') {
+  function extractCustomFields(&$customFields, $context = 'select') {
     $myColumns = array();
     $metadata = $this->getMetadataByType('metadata');
     $selectedFields = array_intersect_key($metadata, $customFields);
@@ -2874,7 +2889,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    * @param $fieldValueMap
    * @param array $row
    *
-   * @return float|string|void
+   * @return float|string
    */
   function formatCustomValues($value, $customField, $fieldValueMap, $row = array()) {
     if (!empty($this->_customGroupExtends) && count($this->_customGroupExtends) == 1) {
@@ -3035,10 +3050,10 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       $orderFields = array_intersect_key(array_flip($this->_groupBysArray), $row);
     }
   }
+
   /*
    * Function is over-ridden to support multiple add to groups
-   */
-  /**
+   *
    * @param $groupID
    */
   function add2group($groupID) {
@@ -5383,9 +5398,6 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     ";
   }
 
-  /*
-   *
-   */
   /**
    * @param string $prefix
    */
@@ -6296,11 +6308,11 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
   /**
    * @param $value
    *
-   * @return string
+   * @return string|null
    */
   function alterParticipantRole($value) {
     if (empty($value)) {
-      return;
+      return NULL;
     }
     $roles = explode(CRM_Core_DAO::VALUE_SEPARATOR, $value);
     $value = array();
@@ -7972,9 +7984,12 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
   }
 
   /**
-   * @param $tableName
-   * @param $fieldName
-   * @param $stat
+   * Get the aias for a stat field.
+   *
+   * @param string $tableName
+   * @param string $fieldName
+   * @param string $stat
+   *
    * @return string
    */
   protected function getStatisticsAlias($tableName, $fieldName, $stat) {
@@ -7985,7 +8000,11 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
   }
 
   /**
-   * @param $field
+   * Get array of statistics to display if appropriate.
+   *
+   * @param array $field
+   *
+   * @return array
    */
   protected function getFieldStatistics($field) {
     return empty($this->_groupByArray) ? [] : CRM_Utils_Array::value('statistics', $field, []);
