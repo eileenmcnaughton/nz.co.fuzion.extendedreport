@@ -122,7 +122,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
 
 
   /**
-   * Allow the aggregate column to be unset which will just give totalss
+   * Allow the aggregate column to be unset which will just give totals
    * @var boolean
    */
   protected $_aggregatesColumnsOptions = TRUE;
@@ -277,7 +277,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   protected $_joinFilters = [];
 
   /**
-   * Tables created in order to precontstrain results for performance.
+   * Tables created in order to pre-constrain results for performance.
    *
    * @var array
    */
@@ -1319,7 +1319,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
         }
         $prefix = ($filterString === 'join_filters') ? 'join_filter_' : '';
         $filters[$table][$prefix . $fieldName] = $field;
-        $this->addFilterFieldsToReport($field, $fieldName, $filters, $table, $count, $prefix);
+        $this->addFilterFieldsToReport($field, $fieldName, $table, $count, $prefix);
       }
 
       if (!empty($filters) && $filterString == 'filters') {
@@ -2452,7 +2452,7 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
     }
 
     $selectedFields = array_keys($firstRow);
-    $alterFunctions = $alterMap = array();
+    $alterFunctions = $alterMap = $alterSpecs = [];
 
     foreach ($this->getSelectedAggregateRows() as $pivotRowField => $pivotRowFieldSpec) {
       $pivotRowIsCustomField = substr($pivotRowField, 0, 7) == 'custom_';
@@ -2722,7 +2722,7 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
    * @param string $value
    * @param array $row
    * @param string $selectedField
-   * @param $criteriaFieldName
+   * @param string $criteriaFieldName [optional]
    * @param array $specs
    *
    * @return string
@@ -3885,6 +3885,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
   }
 
   /**
+   * @param $options
    * @return array
    */
   function getMembershipTypeColumns($options) {
@@ -6034,6 +6035,8 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    * @param $value
    * @param $row
    *
+   * @param $selectedField
+   * @param $criteriaFieldName
    * @return string
    */
   function alterFinancialType($value, &$row, $selectedField, $criteriaFieldName) {
@@ -6195,7 +6198,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
     $row[$selectedfield . '_hover'] = ts("%1 for this county.", array(
       1 => $value,
     ));
-    $counties = CRM_Core_PseudoConstant::county($value, FALSE);
+    $counties = CRM_Core_PseudoConstant::county($value);
     if (!is_array($counties)) {
       return $counties;
     }
@@ -6340,6 +6343,8 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    *
    * @param id $value
    *
+   * @param $row
+   * @param $selectedField
    * @return string
    */
   protected function alterPledgePaymentLink($value, &$row, $selectedField) {
@@ -6406,9 +6411,13 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
 
   /**
    * @param $value
-   * @param $bao
-   * @param $fieldName
+   * @param $row
+   * @param $selectedField
+   * @param $criteriaFieldName
+   * @param $spec
    * @return bool|null|string
+   * @internal param $bao
+   * @internal param $fieldName
    */
   function alterPseudoConstant($value, &$row, $selectedField, $criteriaFieldName, $spec) {
     return CRM_Core_PseudoConstant::getLabel($spec['bao'], $spec['name'], $value);
@@ -6568,11 +6577,11 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
   /**
    * @param array $field
    * @param string $fieldName
-   * @param array $filters
    * @param string $table
    * @param int $count
+   * @param $prefix
    */
-  protected function addFilterFieldsToReport($field, $fieldName, $filters, $table, $count, $prefix) {
+  protected function addFilterFieldsToReport($field, $fieldName, $table, $count, $prefix) {
     $operations = CRM_Utils_Array::value('operations', $field);
     if (empty($operations)) {
       $operations = $this->getOperationPair(
@@ -6684,8 +6693,9 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    * @param array $field
    * @param string $fieldName
    *
-   * @return string
-   *   Relevant where clause.
+   * @param string $prefix
+   * @return string Relevant where clause.
+   * Relevant where clause.
    */
   protected function generateFilterClause($field, $fieldName, $prefix = '') {
     if (CRM_Utils_Array::value('type', $field) & CRM_Utils_Type::T_DATE) {
