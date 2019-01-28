@@ -125,11 +125,27 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
 
   /**
    * Test extended order bys (as configured by angular form) result in re-ordered fields and order by fallbacks.
+   *
+   * We are testing that the order is
+   * - nick-name fall back on first name
+   * - last name desc
+   *
+   * This means we have
+   * contact 0 is b,a (with fall back)
+   * contact 1 is a,b (with fall back)
+   * contact 2 is a,c (no fallback)
+   * contact 3 is b,z (no fallback)
+   *
+   * First is contact 2 - this demonstrates that nick name is preferred
+   * Second is contact 1 - this demonstrates fallback on first name and is after 1 due to sort order
+   * Third is contact 3 this demonstrates that the fallback option has 'slotted' between the 2
+   *  nick names
+   * Forth is contact 0 - this demonstrates desc sort order on last name.
    */
   public function testExtendedOrderBys() {
-    $this->ids['Contact'][0] = $this->callAPISuccess('Contact', 'create', ['contact_type' => 'Individual', 'first_name' => 'r', 'last_name' => 'a'])['id'];
+    $this->ids['Contact'][0] = $this->callAPISuccess('Contact', 'create', ['contact_type' => 'Individual', 'first_name' => 'b', 'last_name' => 'a'])['id'];
     $this->ids['Contact'][1] = $this->callAPISuccess('Contact', 'create', ['contact_type' => 'Individual', 'first_name' => 'a', 'last_name' => 'b'])['id'];
-    $this->ids['Contact'][2] = $this->callAPISuccess('Contact', 'create', ['contact_type' => 'Individual', 'first_name' => 'r', 'nick_name' => 'b', 'last_name' => 'c'])['id'];
+    $this->ids['Contact'][2] = $this->callAPISuccess('Contact', 'create', ['contact_type' => 'Individual', 'first_name' => 'r', 'nick_name' => 'a', 'last_name' => 'c'])['id'];
     $this->ids['Contact'][3] = $this->callAPISuccess('Contact', 'create', ['contact_type' => 'Individual', 'first_name' => 'z', 'nick_name' => 'b', 'last_name' => 'd'])['id'];
     foreach ($this->ids['Contact'] as $contactID) {
       $this->callAPISuccess('Contribution', 'create', ['financial_type_id' => 'Donation', 'total_amount' => 10, 'contact_id' => $contactID]);
@@ -157,12 +173,10 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
       'fields' => ['civicrm_contact_first_name' => 1, 'civicrm_contact_last_name' => 1],
     ]);
 
-    $this->assertEquals('a', $rows[0]['civicrm_contact_civicrm_contact_first_name']);
-    $this->assertEquals('z', $rows[1]['civicrm_contact_civicrm_contact_first_name']);
-    $this->assertEquals('d', $rows[1]['civicrm_contact_civicrm_contact_last_name']);
-    $this->assertEquals('r', $rows[2]['civicrm_contact_civicrm_contact_first_name']);
-    $this->assertEquals('c', $rows[2]['civicrm_contact_civicrm_contact_last_name']);
-    $this->assertEquals('r', $rows[3]['civicrm_contact_civicrm_contact_first_name']);
+    $this->assertEquals('r', $rows[0]['civicrm_contact_civicrm_contact_first_name']);
+    $this->assertEquals('a', $rows[1]['civicrm_contact_civicrm_contact_first_name']);
+    $this->assertEquals('z', $rows[2]['civicrm_contact_civicrm_contact_first_name']);
+    $this->assertEquals('b', $rows[3]['civicrm_contact_civicrm_contact_first_name']);
 
     foreach ($this->ids['Contact'] as $contactID) {
       $this->callAPISuccess('Contact', 'delete', ['id' => $contactID]);
