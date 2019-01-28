@@ -1,5 +1,4 @@
 <?php
-use CRM_Extendedreport_ExtensionUtil as E;
 
 /**
  * ReportTemplate.Getmetadata API specification (optional)
@@ -31,10 +30,12 @@ function civicrm_api3_report_template_getmetadata($params) {
       'option_group_name' => 'report_template',
       'return' => 'name',
       'value' => $params['report_id'],
+      'options' => ['limit' => 1],
     )
   );
 
   $reportInstance = new $class();
+  /* @var $reportInstance \CRM_Extendedreport_Form_Report_ExtendedReport */
   if (!empty($params['instance_id'])) {
     $reportInstance->setID($params['instance_id']);
   }
