@@ -2909,7 +2909,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       ))
     ) {
       // we will return unless it is potentially an editable field
-      return;
+      return '';
     }
 
     $htmlType = $customField['html_type'];
@@ -3132,7 +3132,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    * @param string $type
    * @param array $options
    *
-   * @return
+   * @return array
    */
    protected function getColumns($type, $options = array()) {
      $defaultOptions = array(
@@ -3424,7 +3424,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
   }
 
   /**
-   * @param array $options
+   * @param array $options [optional]
    *
    * @return array
    */
@@ -5321,7 +5321,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    * Add join from address table to contact.
    *
    * @param string $prefix prefix to add to table names
-   * @param array $extra extra join parameters
+   * @param array $extra [optional] extra join parameters
    *
    * @return bool true or false to denote whether extra filters can be appended to join
    */
@@ -5354,7 +5354,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    * Prefix will be added to both tables as it's assumed you are using it to get address of a secondary contact.
    *
    * @param string $prefix
-   * @param array $extra
+   * @param array $extra [optional]
    */
   protected function joinWebsiteFromContact($prefix = '', $extra = array()) {
     $this->_from .= " LEFT JOIN civicrm_website {$this->_aliases[$prefix . 'civicrm_website']}
@@ -5389,7 +5389,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    * Add join from contact table to primary phone.
    *
    * @param string $prefix
-   * @param array $extra
+   * @param array $extra [optional]
    */
   function joinPrimaryPhoneFromContact($prefix = '', $extra = []) {
     $this->_from .= " LEFT JOIN civicrm_phone {$this->_aliases[$prefix . 'civicrm_phone']}
@@ -5399,7 +5399,10 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
   }
 
   /**
+   * Add join to entity tag from contact.
+   *
    * @param string $prefix
+   * @param array $extra [optional]
    */
   function joinEntityTagFromContact($prefix = '', $extra = array()) {
     if (!$this->isTableSelected($prefix . 'civicrm_tag')) {
@@ -7310,7 +7313,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
     // Add totals field
     if ($curFields[$fieldName]['type'] === CRM_Utils_Type::T_INT) {
       $this->_columns[$tableKey]['metadata'][$fieldName . '_qty'] = array_merge(
-        $field, ['title' => "{$field['label']} Quantity", 'statistics' => ['count' => ts("Quantity Selected")]]
+        $field, ['title' => "$prefixLabel{$field['label']} Quantity", 'statistics' => ['count' => ts("Quantity Selected")]]
       );
     }
   }
@@ -7642,11 +7645,13 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
   }
 
   /**
-   * @param $type
-   * @param array $spec
-   * @param $table
+   * @param string $type
+   * @param array $spec [optional]
+   * @param string $table [optional]
    *
-   * @return mixed
+   * @todo do we still need spec & table here?
+   *
+   * @return int
    */
   protected function getOperatorType($type, $spec = [], $table = '') {
     $typeMap = [
@@ -7661,19 +7666,14 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
       CRM_Utils_Type::T_TIMESTAMP => CRM_Report_Form::OP_DATE,
     ];
     return $typeMap[$type];
-    switch ($type) {
-
-
-      default:
-        if (!empty($table['bao']) &&
+    /* could we still need this?
+    /    if (!empty($table['bao']) &&
           array_key_exists('pseudoconstant', $spec)
         ) {
           // with multiple options operator-type is generally multi-select
           return CRM_Report_Form::OP_MULTISELECT;
         }
-        break;
-    }
-    return FALSE;
+    */
   }
 
   /**
