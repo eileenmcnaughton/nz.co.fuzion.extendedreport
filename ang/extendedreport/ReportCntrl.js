@@ -135,6 +135,9 @@
       if (!field.hasOwnProperty('field_on_null')) {
         field['field_on_null'] = [];
       }
+      if (!field.hasOwnProperty('field_on_null_usage')) {
+        field['field_on_null_usage'] = 'on_null';
+      }
       $scope.selectedField = field;
       $scope.selectedAlternateFields = field['field_on_null'];
     };
@@ -142,6 +145,9 @@
     $scope.selectOrderBy = function(field) {
       if (!field.hasOwnProperty('field_on_null')) {
         field['field_on_null'] = [];
+      }
+      if (!field.hasOwnProperty('field_on_null_usage')) {
+        field['field_on_null_usage'] = 'on_null';
       }
       if (!field.hasOwnProperty('order')) {
         field['order'] = 'ASC';
