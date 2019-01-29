@@ -7176,10 +7176,22 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
   protected function getSelectedFields() {
     $fields = $this->getMetadataByType('fields');
     $selectedFields = array_intersect_key($fields, $this->getConfiguredFieldsFlatArray());
+    $orderBys = $this->getSelectedOrderBys();
     foreach ($fields as $fieldName => $field) {
       if (!empty($field['required'])) {
         $selectedFields[$fieldName] = $field;
       }
+      if (isset($orderBys[$fieldName]) && isset($selectedFields[$fieldName])) {
+        // The field is being selected for select & order by. Reconcile any fallbacks.
+        // Perhaps later we should find a way to support them not being the same but for now....
+        if (CRM_Utils_Array::value('field_on_null', $orderBys[$fieldName], [])
+          !== CRM_Utils_Array::value('field_on_null', $selectedFields[$fieldName], [])) {
+          CRM_Core_Session::setStatus(E::ts('Selected field fallback altered to match order by fallback. Currently different configurations are not supported if both are selected'));
+          $selectedFields[$fieldName]['field_on_null'] = CRM_Utils_Array::value('field_on_null', $orderBys[$fieldName], []);
+          $this->_formValues['extended_fields'][$fieldName] = $selectedFields[$fieldName];
+        }
+      }
+
     }
     return $selectedFields;
   }

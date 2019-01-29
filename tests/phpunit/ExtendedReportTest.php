@@ -141,8 +141,12 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
    * Third is contact 3 this demonstrates that the fallback option has 'slotted' between the 2
    *  nick names
    * Forth is contact 0 - this demonstrates desc sort order on last name.
+   *
+   * @dataProvider getFieldsForExtendedOrderBys
+   *
+   * @param array $fields
    */
-  public function testExtendedOrderBys() {
+  public function testExtendedOrderBys($fields) {
     $this->ids['Contact'][0] = $this->callAPISuccess('Contact', 'create', ['contact_type' => 'Individual', 'first_name' => 'b', 'last_name' => 'a'])['id'];
     $this->ids['Contact'][1] = $this->callAPISuccess('Contact', 'create', ['contact_type' => 'Individual', 'first_name' => 'a', 'last_name' => 'b'])['id'];
     $this->ids['Contact'][2] = $this->callAPISuccess('Contact', 'create', ['contact_type' => 'Individual', 'first_name' => 'r', 'nick_name' => 'a', 'last_name' => 'c'])['id'];
@@ -170,7 +174,7 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
           'order' => 'DESC',
         ],
       ],
-      'fields' => ['civicrm_contact_first_name' => 1, 'civicrm_contact_last_name' => 1],
+      'fields' => $fields,
     ]);
 
     $this->assertEquals('r', $rows[0]['civicrm_contact_civicrm_contact_first_name']);
@@ -181,6 +185,18 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
     foreach ($this->ids['Contact'] as $contactID) {
       $this->callAPISuccess('Contact', 'delete', ['id' => $contactID]);
     }
+  }
+
+  /**
+   * Get fields data
+   *
+   * @return array
+   */
+  public function getFieldsForExtendedOrderBys() {
+    return [
+      [['civicrm_contact_first_name' => 1, 'civicrm_contact_last_name' => 1]],
+      [['civicrm_contact_first_name' => 1, 'civicrm_contact_nick_name' => 1]],
+    ];
   }
 
   /**
