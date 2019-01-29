@@ -7896,6 +7896,7 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
           }
           $this->metaData['fields'][$fieldName]['title'] .= '(' . implode(', ', $nullString) . ')';
           $this->metaData['fields'][$fieldName]['field_on_null'] = $configuredExtendedField['field_on_null'];
+          $this->metaData['fields'][$fieldName]['field_on_null_usage'] = CRM_Utils_Array::value('field_on_null_usage', $configuredExtendedField, 'on_null');
 
         }
       }
@@ -7980,13 +7981,18 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
       foreach ($field['field_on_null'] as $fallback) {
         $fallbacks[] = $this->getMetadataByType('fields')[$fallback['name']]['dbAlias'];
       }
-      $fieldString = 'COALESCE(' . $fieldString . ',' . implode(',', $fallbacks) . ')';
+      if (CRM_Utils_Array::value('field_on_null_usage', $field, 'on_null') === 'on_null') {
+        $fieldString = 'COALESCE(' . $fieldString . ',' . implode(',', $fallbacks) . ')';
+      }
+      else {
+        $fieldString = 'COALESCE(NULLIF(' . $fieldString . ', ""),' . implode(',', $fallbacks) . ')';
+      }
     }
     if ($this->isGroupByMode()) {
       if ((empty($field['statistics']) || in_array('GROUP_CONCAT', $field['statistics']))) {
 
         if (empty($this->_groupByArray[$alias])) {
-          return "GROUP_CONCAT(DISTINCT {$fieldString})";
+          return "GROUP_CONCAT(DISTINCT ({$fieldString}))";
         }
         return "({$fieldString}) ";
       }

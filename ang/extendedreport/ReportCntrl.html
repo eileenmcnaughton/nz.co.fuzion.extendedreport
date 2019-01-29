@@ -51,6 +51,10 @@
             <h3 class="fieldTitle" extendedreport-editable ng-model="selectedOrderBy.title">{{selectedField.title}}</h3>
             <div extendedreport-editable ng-model="selectedField.order">{{selectedField.order}}</div>
             <div>Fallback field:</div>
+            <select ng-model="selectedOrderBy.field_on_null_usage">
+              <option value="on_null">{{ ts('On null value') }}</option>
+              <option value="on_empty">{{ ts('On null or empty value') }}</option>
+            </select>
             <div ui-sortable="sortableOrderByOptions" class="order-bys-container" ng-model=selectedOrderBy.field_on_null>
               <div class="fieldItem" ng-repeat="fieldItem in selectedOrderBy.field_on_null">{{fieldItem.title}}</div>
             </div>
@@ -78,6 +82,10 @@
             <div class="ex-report-block" ng-model=selectedField>
               <h3 class="fieldTitle" extendedreport-editable ng-model="selectedField.title">{{selectedField.title}}</h3>
               <div>Fallback field:</div>
+              <select ng-model="selectedField.field_on_null_usage">
+                <option value="on_null">{{ ts('On null value') }}</option>
+                <option value="on_empty">{{ ts('On null or empty value') }}</option>
+              </select>
               <div ui-sortable="sortableFieldOptions" class="fields-container" ng-model=selectedField.field_on_null>
                 <div class="fieldItem" ng-repeat="fieldItem in selectedField.field_on_null">{{fieldItem.title}}</div>
               </div>
