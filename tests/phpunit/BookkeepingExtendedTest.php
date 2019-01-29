@@ -24,6 +24,9 @@ class BookkeepingExtendedTest extends BaseTestClass implements HeadlessInterface
 
   protected $contacts = array();
 
+  /**
+   * @return \Civi\Test\CiviEnvBuilder
+   */
   public function setUpHeadless() {
     // Civi\Test has many helpers, like install(), uninstall(), sql(), and sqlFile().
     // See: https://github.com/civicrm/org.civicrm.testapalooza/blob/master/civi-test.md

@@ -90,8 +90,12 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
    * Test extended fields (as configured in angular form) merge the flat fields array.
    *
    * We are checking we can re-order fields, change titles & add fallbacks.
+   *
+   * @dataProvider getDataForExtendedFields
+   *
+   * @param array $group_bys
    */
-  public function testExtendedFields() {
+  public function testExtendedFields($group_bys = []) {
     $contact = $this->callAPISuccess('Contact', 'create', ['contact_type' => 'Individual', 'first_name' => 'first', 'last_name' => 'last']);
     $this->ids['Contact'][] = $contact['id'];
     $this->callAPISuccess('Contribution', 'create', ['financial_type_id' => 'Donation', 'total_amount' => 10, 'contact_id' => $contact['id']]);
@@ -114,6 +118,7 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
         ],
       ],
       'fields' => ['civicrm_contact_first_name' => 1, 'civicrm_contact_middle_name' => 1],
+      'group_bys' => $group_bys,
     ]);
     $this->assertEquals(['civicrm_contact_civicrm_contact_middle_name', 'civicrm_contact_civicrm_contact_last_name'], array_keys($rows[0]));
     $this->assertEquals('special name(First name)', $this->labels['civicrm_contact_civicrm_contact_middle_name']);
@@ -121,6 +126,18 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
     $this->assertEquals('first', $rows[0]['civicrm_contact_civicrm_contact_middle_name']);
     $this->assertEquals('last', $rows[0]['civicrm_contact_civicrm_contact_last_name']);
     $this->callAPISuccess('Contact', 'delete', ['id' => $contact['id']]);
+  }
+
+  /**
+   * Get fields data
+   *
+   * @return array
+   */
+  public function getDataForExtendedFields() {
+    return [
+      [[]],
+      [['civicrm_contact_contact_id' => '1']],
+    ];
   }
 
   /**

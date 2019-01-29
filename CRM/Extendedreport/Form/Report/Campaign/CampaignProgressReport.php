@@ -25,7 +25,6 @@ class CRM_Extendedreport_Form_Report_Campaign_CampaignProgressReport extends CRM
       'financial_type_id' => [
         'title' => ts('Financial type'),
         'alter_display' => 'alterFinancialType',
-        'statistics' => array('GROUP_CONCAT'),
         'type' => CRM_Utils_Type::T_INT,
         'operatorType' => self::OP_MULTISELECT,
         'is_fields' => TRUE,
@@ -74,7 +73,6 @@ class CRM_Extendedreport_Form_Report_Campaign_CampaignProgressReport extends CRM
         'operatorType' => CRM_Report_Form::OP_SELECT,
         'options' => array(0 => ts('Payment'), 1 => ts('Pledge')),
         'alter_display' => 'alterIsPledge',
-        'statistics' => array('GROUP_CONCAT'),
         'is_fields' => TRUE,
         'is_filters' => FALSE,
         'is_group_bys' => TRUE,
