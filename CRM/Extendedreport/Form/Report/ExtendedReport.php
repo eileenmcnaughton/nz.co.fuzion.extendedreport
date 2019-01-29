@@ -2333,17 +2333,6 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
       $this->_columnHeaders["{$tableName}_{$fieldName}"]['dbAlias'] = CRM_Utils_Array::value('dbAlias', $field);
       return ' 1 as  ' . $alias;
     }
-
-    if ((!empty($this->_groupByArray) || $this->isForceGroupBy)) {
-      if ($tableKey === 'fields' && (empty($field['statistics']) || in_array('GROUP_CONCAT', $field['statistics']))) {
-        $alias = "{$tableName}_{$fieldName}";
-        $this->_columnHeaders["{$tableName}_{$fieldName}"]['type'] = $field['type'];
-        if (empty($this->_groupByArray[$tableName . '_' . $fieldName])) {
-          return "GROUP_CONCAT(DISTINCT {$field['dbAlias']}) as $alias";
-        }
-        return "({$field['dbAlias']}) as $alias";
-      }
-    }
     return FALSE;
   }
 
@@ -3331,7 +3320,6 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'is_group_bys' => TRUE,
         'operatorType' => CRM_Report_Form::OP_MULTISELECT,
         'options' => CRM_Contribute_PseudoConstant::financialType(),
-        'statistics' => array('GROUP_CONCAT'),
       ),
       'id' => array(
         'title' => ts('Individual Line Item'),
@@ -7994,7 +7982,7 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
       }
       $fieldString = 'COALESCE(' . $fieldString . ',' . implode(',', $fallbacks) . ')';
     }
-    if ((!empty($this->_groupByArray) || $this->isForceGroupBy)) {
+    if ($this->isGroupByMode()) {
       if ((empty($field['statistics']) || in_array('GROUP_CONCAT', $field['statistics']))) {
 
         if (empty($this->_groupByArray[$alias])) {
@@ -8031,6 +8019,14 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
    */
   protected function getFieldStatistics($field) {
     return empty($this->_groupByArray) ? [] : CRM_Utils_Array::value('statistics', $field, []);
+  }
+
+  /**
+   * Is the report in group by mode - either by being forced or by group by conditions being present.
+   * @return bool
+   */
+  protected function isGroupByMode() {
+    return (!empty($this->_groupByArray) || $this->isForceGroupBy);
   }
 
 }
