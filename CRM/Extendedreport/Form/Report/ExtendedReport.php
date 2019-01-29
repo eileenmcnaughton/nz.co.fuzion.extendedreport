@@ -7978,7 +7978,7 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
     if (!empty($field['field_on_null'])) {
       $fallbacks = [];
       foreach ($field['field_on_null'] as $fallback) {
-        $fallbacks[] = $this->getMetadataByType('filters')[$fallback['name']]['dbAlias'];
+        $fallbacks[] = $this->getMetadataByType('fields')[$fallback['name']]['dbAlias'];
       }
       $fieldString = 'COALESCE(' . $fieldString . ',' . implode(',', $fallbacks) . ')';
     }
