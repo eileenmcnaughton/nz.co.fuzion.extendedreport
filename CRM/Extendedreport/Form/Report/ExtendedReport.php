@@ -3725,7 +3725,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'trxn_date' => array(
           'title' => ts('Transaction Date'),
           'default' => TRUE,
-          'type' => CRM_Utils_Type::T_DATE,
+          'type' => CRM_Utils_Type::T_DATE + CRM_Utils_Type::T_TIME,
           'operatorType' => CRM_Report_Form::OP_DATE,
           'is_fields' => TRUE,
           'is_filters' => TRUE,
