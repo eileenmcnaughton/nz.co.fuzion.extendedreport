@@ -48,8 +48,8 @@
         <div class="floatleft" ng-if="selectedOrderBy">
           <h2>{{ ts('Selected field') }}</h2>
           <div class="ex-report-block" ng-model=selectedOrderBy>
-            <h3 class="fieldTitle" extendedreport-editable ng-model="selectedOrderBy.title">{{selectedField.title}}</h3>
-            <div extendedreport-editable ng-model="selectedField.order">{{selectedField.order}}</div>
+            <h3 class="fieldTitle" extendedreport-editable ng-model="selectedOrderBy.title">{{selectedOrderBy.title}}</h3>
+            <div ng-model="selectedOrderBy.order">{{selectedOrderBy.order}}</div>
             <div>Fallback field:</div>
             <select ng-model="selectedOrderBy.field_on_null_usage">
               <option value="on_null">{{ ts('On null value') }}</option>
