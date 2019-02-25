@@ -42,9 +42,10 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
 
     $spec = array(
       'id' => array(
-        'no_display' => TRUE,
-        'required' => TRUE,
+        'name' => 'id',
+        'title' => ts('Activity ID'),
         'is_group_bys' => $options['group_by'],
+        'is_fields' => TRUE,
       ),
       'source_record_id' => array(
         'no_display' => TRUE,
