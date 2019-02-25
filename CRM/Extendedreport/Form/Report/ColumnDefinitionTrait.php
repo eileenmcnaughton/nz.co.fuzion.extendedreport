@@ -270,6 +270,8 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
         'name' => 'display_name',
         'title' => ts($options['prefix_label'] . 'Contact Name'),
         'is_fields' => TRUE,
+        'is_filters' => TRUE,
+        'is_order_bys' => TRUE,
       ),
       $options['prefix'] . 'contact_id' => array(
         'name' => 'id',
