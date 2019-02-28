@@ -914,7 +914,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     if ($this->getFilterFieldValue($spec)) {
       // for now we will literally just handle IN
       if ($filterSpec['field']['op'] == 'in') {
-        $options = array_intersect_key($options, array_flip($filterSpec['field']['value']));
+        $options = array_intersect_key($options, array_flip($spec['field']['value']));
         $this->_aggregatesIncludeNULL = FALSE;
       }
     }
@@ -1376,7 +1376,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       $tableName = $field['table_name'];
       $groupTitle = $this->_columns[$tableName]['group_title'];
 
-      if (!$groupTitle && isset($table['group_title'])) {
+      if (!$groupTitle && isset($field['group_title'])) {
         $groupTitle = $field['group_title'];
       }
       $colGroups[$tableName]['use_accordian_for_field_selection'] = TRUE;
@@ -1857,8 +1857,8 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
         }
       }
       foreach ($this->_columns[$tableName]['filters'] as $fieldName => $field) {
-        if (!empty($table['extends'])) {
-          $this->_columns[$tableName][$fieldName]['metadata'] = $table['extends'];
+        if (!empty($field['extends'])) {
+          $this->_columns[$tableName][$fieldName]['metadata'] = $field['extends'];
         }
         if (empty($this->_columns[$tableName]['metadata'])) {
           $this->_columns[$tableName] = $this->setMetaDataForTable($tableName);
@@ -2889,6 +2889,16 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       $idKeyArray = array($this->_aliases[$entity_table] . '.id');
       if (empty($this->_groupByArray) || $this->_groupByArray == $idKeyArray) {
         $entity_field = $entity_table . '_id';
+        //Check if alias of id field is set as row key.
+        if (empty($row[$entity_field])) {
+          $metaData = $this->getMetadataByAlias('fields');
+          foreach ($metaData as $key => $val) {
+            if ($val['name'] == 'id') {
+              $entity_field = $key;
+              break;
+            }
+          }
+        }
         $entityID = $row[$entity_field];
       }
     }
@@ -5603,7 +5613,7 @@ AND {$this->_aliases['civicrm_line_item']}.entity_table = 'civicrm_participant')
     $this->_from .= "
       INNER JOIN civicrm_relationship_type {$this->_aliases['civicrm_relationship_type']}
       ON ( {$this->_aliases['civicrm_relationship']}.relationship_type_id  =
-      {$this->_aliases['civicrm_relationship_type']}.id  ) 
+      {$this->_aliases['civicrm_relationship_type']}.id  )
     ";
   }
 
@@ -6447,7 +6457,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
     }
 
     if (in_array($this->_outputMode, array('print'))) {
-      return implode($return, '<br>');
+      return implode('<br>', $return);
     }
 
     $html .= "</table>";
@@ -7441,7 +7451,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
     $customGroupWhere = '';
     if (!$this->userHasAllCustomGroupAccess()) {
       $permissionedCustomGroupIDs = CRM_ACL_API::group(CRM_Core_Permission::VIEW, NULL, 'civicrm_custom_group', NULL, NULL);
-      if (empty($permCustomGroupIds)) {
+      if (empty($permissionedCustomGroupIDs)) {
         return [];
       }
       $customGroupWhere = "cg.id IN (" . implode(',', $permissionedCustomGroupIDs) . ") AND";
