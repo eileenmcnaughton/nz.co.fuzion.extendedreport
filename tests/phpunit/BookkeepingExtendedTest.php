@@ -39,7 +39,7 @@ class BookkeepingExtendedTest extends BaseTestClass implements HeadlessInterface
     parent::setUp();
     $this->enableAllComponents();
     $contact = $this->callAPISuccess('Contact', 'create', array('first_name' => 'Wonder', 'last_name' => 'Woman', 'contact_type' => 'Individual'));
-    $this->contacts[] = $contact['id'];
+    $this->ids['Contact'][] = $contact['id'];
   }
 
   public function tearDown() {
@@ -50,7 +50,7 @@ class BookkeepingExtendedTest extends BaseTestClass implements HeadlessInterface
    * Test the bookkeeping report with some data.
    */
   public function testBookkeepingReport() {
-    $this->callAPISuccess('Order', 'create', array('contact_id' => $this->contacts[0], 'total_amount' => 5, 'financial_type_id' => 2));
+    $this->callAPISuccess('Order', 'create', array('contact_id' => $this->ids['Contact'][0], 'total_amount' => 5, 'financial_type_id' => 2));
     $params = array(
       'report_id' => 'contribution/bookkeeping_extended',
       'fields' => array (

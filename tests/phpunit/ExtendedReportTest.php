@@ -275,10 +275,9 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
     $rows = $this->getRows($params);
     $this->assertEquals(1, count($rows));
 
-
-    $this->callAPISuccess('Group', 'delete', ['id' => $group['id']]);
     $this->callAPISuccess('Contribution', 'get', ['api.Contribution.delete' => 1]);
     $this->callAPISuccess('Contact', 'get', ['id' => ['IN' => [$goodBob['id'], $badBob['id']], 'api.Contact.delete' => 1]]);
+    $this->callAPISuccess('Group', 'delete', ['id' => $group['id']]);
   }
 
   /**
