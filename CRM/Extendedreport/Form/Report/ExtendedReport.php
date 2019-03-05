@@ -1536,7 +1536,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       }
 
       foreach ($this->getMetadataByType('group_bys') as $fieldName => $field) {
-        if (isset($field['default'])) {
+        if (isset($field['is_group_bys_default'])) {
           if (!empty($field['frequency'])) {
             $this->_defaults['group_bys_freq'][$fieldName] = 'MONTH';
           }
