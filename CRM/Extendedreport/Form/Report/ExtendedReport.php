@@ -6456,7 +6456,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
     }
 
     if (in_array($this->_outputMode, ['print'])) {
-      return implode($return, '<br>');
+      return implode('<br>', $return);
     }
 
     $html .= "</table>";
