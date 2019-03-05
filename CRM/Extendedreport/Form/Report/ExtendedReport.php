@@ -1510,118 +1510,100 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     $freezeGroup = [];
     $overrides = [];
 
-    // FIXME: generalizing form field naming conventions would reduce
-    // Lots of lines below.
-    foreach ($this->_columns as $tableName => $table) {
-      if (array_key_exists('fields', $table)) {
-        foreach ($table['fields'] as $fieldName => $field) {
-          if (empty($field['no_display'])) {
-            if (isset($field['required'])) {
-              // set default
-              $this->_defaults['fields'][$fieldName] = 1;
+    foreach ($this->getMetadataByType('fields') as $fieldName => $field) {
+      if (empty($field['no_display'])) {
+        if (isset($field['required'])) {
+          // set default
+          $this->_defaults['fields'][$fieldName] = 1;
 
-              if ($freeze) {
-                // find element object, so that we could use quickform's freeze method
-                // for required elements
-                $obj = $this->getElementFromGroup("fields", $fieldName);
-                if ($obj) {
-                  $freezeGroup[] = $obj;
-                }
-              }
-            }
-            elseif (isset($field['default'])) {
-              $this->_defaults['fields'][$fieldName] = $field['default'];
+          if ($freeze) {
+            // find element object, so that we could use quickform's freeze method
+            // for required elements
+            $obj = $this->getElementFromGroup("fields", $fieldName);
+            if ($obj) {
+              $freezeGroup[] = $obj;
             }
           }
         }
-      }
-
-      if (array_key_exists('group_bys', $table)) {
-        foreach ($table['group_bys'] as $fieldName => $field) {
+        elseif (!empty($field['is_fields_default'])) {
+          $this->_defaults['fields'][$fieldName] = TRUE;
+        }
+        foreach ($this->_options as $fieldName => $field) {
           if (isset($field['default'])) {
-            if (!empty($field['frequency'])) {
-              $this->_defaults['group_bys_freq'][$fieldName] = 'MONTH';
-            }
-            $this->_defaults['group_bys'][$fieldName] = $field['default'];
-          }
-        }
-      }
-      if (array_key_exists('filters', $table)) {
-        foreach ($table['filters'] as $fieldName => $field) {
-          if (isset($field['default'])) {
-            if (CRM_Utils_Array::value('type', $field) & CRM_Utils_Type::T_DATE
-              // This is the overriden part.
-              && !(CRM_Utils_Array::value('operatorType', $field) == self::OP_SINGLEDATE)
-            ) {
-              if (is_array($field['default'])) {
-                $this->_defaults["{$fieldName}_from"] = CRM_Utils_Array::value('from', $field['default']);
-                $this->_defaults["{$fieldName}_to"] = CRM_Utils_Array::value('to', $field['default']);
-                $this->_defaults["{$fieldName}_relative"] = 0;
-              }
-              else {
-                $this->_defaults["{$fieldName}_relative"] = $field['default'];
-              }
-            }
-            else {
-              $this->_defaults["{$fieldName}_value"] = $field['default'];
-            }
-          }
-          //assign default value as "in" for multiselect
-          //operator, To freeze the select element
-          if (CRM_Utils_Array::value('operatorType', $field) ==
-            CRM_Report_Form::OP_MULTISELECT
-          ) {
-            $this->_defaults["{$fieldName}_op"] = 'in';
-          }
-          if (CRM_Utils_Array::value('operatorType', $field) ==
-            // This is the OP_ENTITY_REF value. The constant is not registered in 4.4.
-            256
-          ) {
-            $this->_defaults["{$fieldName}_op"] = 'in';
-          }
-          elseif (CRM_Utils_Array::value('operatorType', $field) ==
-            CRM_Report_Form::OP_MULTISELECT_SEPARATOR
-          ) {
-            $this->_defaults["{$fieldName}_op"] = 'mhas';
-          }
-          elseif ($op = CRM_Utils_Array::value('default_op', $field)) {
-            $this->_defaults["{$fieldName}_op"] = $op;
+            $this->_defaults['options'][$fieldName] = $field['default'];
           }
         }
       }
 
-      if (
-        empty($this->_formValues['order_bys']) &&
-        (array_key_exists('order_bys', $table) &&
-          is_array($table['order_bys']))
-      ) {
-        if (!array_key_exists('order_bys', $this->_defaults)) {
-          $this->_defaults['order_bys'] = [];
-        }
-        foreach ($table['order_bys'] as $fieldName => $field) {
-          if (!empty($field['default']) || !empty($field['default_order']) ||
-            CRM_Utils_Array::value('default_is_section', $field) ||
-            !empty($field['default_weight'])
-          ) {
-            $order_by = [
-              'column' => $fieldName,
-              'order' => CRM_Utils_Array::value('default_order', $field, 'ASC'),
-              'section' => CRM_Utils_Array::value('default_is_section', $field, 0),
-            ];
-
-            if (!empty($field['default_weight'])) {
-              $this->_defaults['order_bys'][(int) $field['default_weight']] = $order_by;
-            }
-            else {
-              array_unshift($this->_defaults['order_bys'], $order_by);
-            }
-          }
-        }
-      }
-
-      foreach ($this->_options as $fieldName => $field) {
+      foreach ($this->getMetadataByType('group_bys') as $fieldName => $field) {
         if (isset($field['default'])) {
-          $this->_defaults['options'][$fieldName] = $field['default'];
+          if (!empty($field['frequency'])) {
+            $this->_defaults['group_bys_freq'][$fieldName] = 'MONTH';
+          }
+          $this->_defaults['group_bys'][$fieldName] = $field['default'];
+        }
+      }
+
+      foreach ($this->getMetadataByType('filters') as $fieldName => $field) {
+        if (isset($field['default'])) {
+          if (CRM_Utils_Array::value('type', $field) & CRM_Utils_Type::T_DATE
+            // This is the overriden part.
+            && !(CRM_Utils_Array::value('operatorType', $field) == self::OP_SINGLEDATE)
+          ) {
+            if (is_array($field['default'])) {
+              $this->_defaults["{$fieldName}_from"] = CRM_Utils_Array::value('from', $field['default']);
+              $this->_defaults["{$fieldName}_to"] = CRM_Utils_Array::value('to', $field['default']);
+              $this->_defaults["{$fieldName}_relative"] = 0;
+            }
+            else {
+              $this->_defaults["{$fieldName}_relative"] = $field['default'];
+            }
+          }
+          else {
+            $this->_defaults["{$fieldName}_value"] = $field['default'];
+          }
+        }
+        //assign default value as "in" for multiselect
+        //operator, To freeze the select element
+        if (CRM_Utils_Array::value('operatorType', $field) ==
+          CRM_Report_Form::OP_MULTISELECT
+        ) {
+          $this->_defaults["{$fieldName}_op"] = 'in';
+        }
+        if (CRM_Utils_Array::value('operatorType', $field) ==
+          // This is the OP_ENTITY_REF value. The constant is not registered in 4.4.
+          256
+        ) {
+          $this->_defaults["{$fieldName}_op"] = 'in';
+        }
+        elseif (CRM_Utils_Array::value('operatorType', $field) ==
+          CRM_Report_Form::OP_MULTISELECT_SEPARATOR
+        ) {
+          $this->_defaults["{$fieldName}_op"] = 'mhas';
+        }
+        elseif ($op = CRM_Utils_Array::value('default_op', $field)) {
+          $this->_defaults["{$fieldName}_op"] = $op;
+        }
+      }
+
+      $this->_defaults['order_bys'] = [];
+      foreach ($this->getMetadataByType('filters') as $fieldName => $field) {
+        if (!empty($field['default']) || !empty($field['default_order']) ||
+          CRM_Utils_Array::value('default_is_section', $field) ||
+          !empty($field['default_weight'])
+        ) {
+          $order_by = array(
+            'column' => $fieldName,
+            'order' => CRM_Utils_Array::value('default_order', $field, 'ASC'),
+            'section' => CRM_Utils_Array::value('default_is_section', $field, 0),
+          );
+
+          if (!empty($field['default_weight'])) {
+            $this->_defaults['order_bys'][(int) $field['default_weight']] = $order_by;
+          }
+          else {
+            array_unshift($this->_defaults['order_bys'], $order_by);
+          }
         }
       }
     }
@@ -3241,7 +3223,11 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         $spec['operatorType'] = $this->getOperatorType($spec['type'], $spec);
       }
       foreach (array_merge($types, ['fields']) as $type) {
-        if (!isset($spec['is_' . $type])) {
+        if (isset($options[$type]) && !empty($spec['is_' . $type])) {
+          // Options can change TRUE to FALSE for a field, but not vice versa.
+          $spec['is_' . $type] = $options[$type];
+        }
+        if (!isset($spec['is_' . $type]))    {
           $spec['is_' . $type] = FALSE;
         }
       }
@@ -3251,7 +3237,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       $columns[$tableName]['metadata'][$fieldAlias] = $spec;
       $columns[$tableName]['fields'][$fieldAlias] = $spec;
       if (isset($defaults['fields_defaults']) && in_array($spec['name'], $defaults['fields_defaults'])) {
-        $columns[$tableName]['fields'][$fieldAlias]['default'] = TRUE;
+        $columns[$tableName]['metadata'][$fieldAlias]['is_fields_default'] = TRUE;
       }
 
       if (empty($spec['is_fields']) || (isset($options['fields_excluded']) && in_array($specName, $options['fields_excluded']))) {
@@ -3278,7 +3264,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
           }
           $columns[$tableName][$type][$fieldAlias] = $spec;
           if (isset($defaults[$type . '_defaults']) && isset($defaults[$type . '_defaults'][$spec['name']])) {
-            $columns[$tableName][$type][$fieldAlias]['default'] = $defaults[$type . '_defaults'][$spec['name']];
+            $columns[$tableName]['metadata'][$fieldAlias]['default'] = $defaults[$type . '_defaults'][$spec['name']];
           }
         }
       }
@@ -5009,7 +4995,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'is_fields' => TRUE,
       ],
     ];
-    return $this->buildColumns($spec, $options['prefix'] . 'civicrm_address', 'CRM_Core_DAO_Address', NULL, $defaults);
+    return $this->buildColumns($spec, $options['prefix'] . 'civicrm_address', 'CRM_Core_DAO_Address', NULL, $defaults, $options);
   }
 
   /**
@@ -7187,6 +7173,15 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
   protected function getSelectedFields() {
     $fields = $this->getMetadataByType('fields');
     $selectedFields = array_intersect_key($fields, $this->getConfiguredFieldsFlatArray());
+    foreach ($selectedFields as $selectedField) {
+      if (!empty($selectedField['requires'])) {
+        $requiredFields = array_intersect_key($fields, array_fill_keys($selectedField['requires'], 1));
+        foreach ($requiredFields as $key => $requiredField) {
+          $requiredFields[$key]['no_display'] = TRUE;
+        }
+        $selectedFields = array_merge($requiredFields, $selectedFields);
+      }
+    }
     $orderBys = $this->getSelectedOrderBys();
     foreach ($fields as $fieldName => $field) {
       if (!empty($field['required'])) {
