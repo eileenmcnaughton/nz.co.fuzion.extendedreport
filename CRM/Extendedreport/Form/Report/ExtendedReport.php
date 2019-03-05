@@ -1389,7 +1389,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       $tableName = $field['table_name'];
       $groupTitle = $this->_columns[$tableName]['group_title'];
 
-      if (!$groupTitle && isset($table['group_title'])) {
+      if (!$groupTitle && isset($field['group_title'])) {
         $groupTitle = $field['group_title'];
       }
       $colGroups[$tableName]['use_accordian_for_field_selection'] = TRUE;
