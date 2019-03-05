@@ -27,63 +27,63 @@ class CRM_Extendedreport_Form_Report_Contact_AddressHistory extends CRM_Extended
    *
    * @var array
    */
-  protected $mergedContacts = array();
+  protected $mergedContacts = [];
 
   public function __construct() {
-    $this->_columns = $this->getColumns('Address', array(
+    $this->_columns = $this->getColumns('Address', [
         'fields' => TRUE,
         'order_by' => FALSE,
         //'fields_defaults' => array('address_name', 'street_address', 'supplemental_address_1', 'supplemental_address_2', 'city', 'state_province_id', 'country_id', 'postal_code', 'county_id'),
-        'fields_defaults' => array('display_address'),
-      )
+        'fields_defaults' => ['display_address'],
+      ]
     );
 
     $this->_columns['log_civicrm_address'] = $this->_columns['civicrm_address'];
     unset($this->_columns['civicrm_address']);
-    $logMetaData = array(
-      'id' => array(
+    $logMetaData = [
+      'id' => [
         'name' => 'id',
         'title' => ts('Address ID'),
         'type' => CRM_Utils_Type::T_INT,
         'is_fields' => TRUE,
         'no_display' => TRUE,
-      ),
-      'contact_id' => array(
+      ],
+      'contact_id' => [
         'name' => 'contact_id',
         'title' => ts('Contact ID'),
         'type' => CRM_Utils_Type::T_INT,
         'is_fields' => TRUE,
         'is_filters' => TRUE,
-      ),
-      'log_date' => array(
+      ],
+      'log_date' => [
         'name' => 'log_date',
         'title' => ts('Change Date'),
         'type' => CRM_Utils_Type::T_TIMESTAMP,
         'is_fields' => TRUE,
         'default' => 1,
-      ),
-      'log_conn_id' => array(
+      ],
+      'log_conn_id' => [
         'name' => 'log_conn_id',
         'title' => ts('Connection'),
         'type' => CRM_Utils_Type::T_STRING,
         'is_fields' => TRUE,
         'default' => 1,
-      ),
-      'log_user_id' => array(
+      ],
+      'log_user_id' => [
         'name' => 'log_user_id',
         'title' => ts('Changed By'),
         'type' => CRM_Utils_Type::T_INT,
         'is_fields' => TRUE,
         'default' => 1,
-      ),
-      'log_action' => array(
+      ],
+      'log_action' => [
         'name' => 'log_action',
         'title' => ts('Change action'),
         'type' => CRM_Utils_Type::T_STRING,
         'is_fields' => TRUE,
         'default' => 1,
-      ),
-    );
+      ],
+    ];
 
     foreach ($logMetaData as $index => $field) {
       foreach (['filters', 'join_filters', 'group_bys', 'order_bys'] as $type) {
@@ -96,23 +96,11 @@ class CRM_Extendedreport_Form_Report_Contact_AddressHistory extends CRM_Extended
     $this->_columns['log_civicrm_address']['fields'] += $logMetaData;
     $this->_columns['log_civicrm_address']['filters']['contact_id'] = $logMetaData['contact_id'];
 
-    $activityTypes = civicrm_api3('Activity', 'getoptions', array('field' => 'activity_type_id'));
+    $activityTypes = civicrm_api3('Activity', 'getoptions', ['field' => 'activity_type_id']);
     $this->activityTypeID = array_search('Contact Deleted by Merge', $activityTypes['values']);
     parent::__construct();
 
   }
-
-  /**
-  public function alterDisplay(&$rows) {
-    parent::alterDisplay($rows);
-    // Process rows in reverse order.
-    $oldestUnprocessedRowIndex = (count($rows) - 1);
-    while ($oldestUnprocessedRowIndex > -1) {
-      $row = &$rows[$oldestUnprocessedRowIndex];
-      $oldestUnprocessedRowIndex--;
-    }
-    return $rows;
-  }*/
 
   /**
    * Build order by clause.
@@ -136,12 +124,12 @@ class CRM_Extendedreport_Form_Report_Contact_AddressHistory extends CRM_Extended
    * @return null|string
    */
   public function whereClause(&$field, $op, $value, $min, $max) {
-     if ($field['name'] === 'contact_id' && $value) {
-       $this->contactID = (int) $value;
-       $mergedContactIDs = $this->getContactsMergedIntoThisOne($this->contactID);
-       $clause = parent::whereClause($field, 'in', array_merge(array($this->contactID), $mergedContactIDs), $min, $max);
-       return $clause;
-     }
+    if ($field['name'] === 'contact_id' && $value) {
+      $this->contactID = (int) $value;
+      $mergedContactIDs = $this->getContactsMergedIntoThisOne($this->contactID);
+      $clause = parent::whereClause($field, 'in', array_merge([$this->contactID], $mergedContactIDs), $min, $max);
+      return $clause;
+    }
   }
 
   /**
@@ -150,12 +138,15 @@ class CRM_Extendedreport_Form_Report_Contact_AddressHistory extends CRM_Extended
    */
   protected function getContactsMergedIntoThisOne($contactID) {
     // @todo get api joins working properly.
-    $result = civicrm_api3('Activity', 'get', array(
+    $result = civicrm_api3('Activity', 'get', [
       'assignee_contact_id' => $contactID,
       'return' => 'id',
       'activity_type_id' => $this->activityTypeID,
-      'api.ActivityContact.get' => array('record_type_id' => 'Activity Targets', 'return' => 'contact_id')
-    ));
+      'api.ActivityContact.get' => [
+        'record_type_id' => 'Activity Targets',
+        'return' => 'contact_id',
+      ],
+    ]);
     if ($result['count']) {
       foreach ($result['values'] as $resultRow) {
         if (!empty($resultRow['api.ActivityContact.get'])) {
