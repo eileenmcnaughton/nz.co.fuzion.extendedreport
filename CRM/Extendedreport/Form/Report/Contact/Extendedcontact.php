@@ -24,9 +24,6 @@ class CRM_Extendedreport_Form_Report_Contact_Extendedcontact extends CRM_Extende
       ]
     );
     $this->_columns['civicrm_contact']['fields']['id']['required'] = TRUE;
-    $this->_aggregateRowFields = [
-      'civicrm_contact:gender_id' => 'Gender',
-    ];
     parent::__construct();
   }
 }

@@ -40,7 +40,7 @@ class Contact_ExtendedContactTest extends BaseTestClass implements HeadlessInter
     $contact = $this->callAPISuccess('Contact', 'create', array('organization_name' => 'Amazons', 'last_name' => 'Woman', 'contact_type' => 'Organization', 'custom_' . $this->customFieldID => 'three'));
 
     $this->contacts[] = $contact['id'];
-    $contact = $this->callAPISuccess('Contact', 'create', array('first_name' => 'Wonder', 'last_name' => 'Woman', 'contact_type' => 'Individual', 'employer_id' => $contact['id'], 'custom_' . $this->customFieldID => 'two'));
+    $contact = $this->callAPISuccess('Contact', 'create', array('first_name' => 'Wonder', 'last_name' => 'Woman', 'contact_type' => 'Individual', 'employer_id' => $contact['id'], 'custom_' . $this->customFieldID => 'two', 'gender_id' => 'Female'));
     $this->contacts[] = $contact['id'];
   }
 
@@ -62,19 +62,17 @@ class Contact_ExtendedContactTest extends BaseTestClass implements HeadlessInter
     $params = [
       'report_id' => 'contact/contactextended',
       'aggregate_column_headers' => 'civicrm_contact_gender_id',
-      'aggregate_row_headers' => 'civicrm_contact:custom_' . $this->customFieldID,
+      'aggregate_row_headers' => 'custom_' . $this->customFieldID,
     ];
     $this->callAPISuccess('ReportTemplate', 'getrows', $params)['values'];
 
     $params = [
       'report_id' => 'contact/contactextended',
       'aggregate_column_headers' => 'custom_' . $this->customFieldID,
-      'aggregate_row_headers' => 'civicrm_contact:gender_id',
+      'aggregate_row_headers' => 'civicrm_contact_gender_id',
     ];
-    $this->callAPISuccess('ReportTemplate', 'getrows', $params)['values'];
-
-
-
+    $rows = $this->callAPISuccess('ReportTemplate', 'getrows', $params)['values'];
+    $this->assertEquals('Female', $rows[1]['civicrm_contact_civicrm_contact_gender_id']);
   }
 
 }

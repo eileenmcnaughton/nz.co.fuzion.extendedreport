@@ -322,7 +322,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
         'join_filters',
         'group_bys',
         'order_bys',
-        'aggregate_columns'
+        'aggregate_columns',
       ];
       $this->metaData = array_fill_keys($definitionTypes, []);
       $this->metaData['having'] = [];
@@ -811,79 +811,20 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     }
 
     $columnFields = $this->getAggregateField('column');
-    $rowFields = $this->getFieldBreakdownForAggregates('row');
-    $selectedTables = [];
-    $rowColumns = $this->extractCustomFields($rowFields, 'row_header');
+    $rowFields = $this->getAggregateFieldSpec('row');
 
-    if (empty($rowColumns)) {
-      if (empty($rowFields)) {
-        $this->addRowHeader(FALSE, [], FALSE);
-      }
-      else {
-        foreach ($rowFields as $field => $fieldDetails) {
-          //only one but we don't know the name
-          //we wrote this as purely a custom field against custom field. In process of refactoring to allow
-          // another field like event - so here we have no custom field .. must be a non custom field...
-          $tableAlias = $fieldDetails[0];
-          $tableName = array_search($tableAlias, $this->_aliases);
-          $fieldAlias = str_replace('-', '_', $tableName . '_' . $field);
-          $this->addRowHeader($tableAlias, $this->getMetadata()['metadata'][$fieldAlias], $fieldAlias, $this->getPropertyForField($field, 'title', $tableName));
-        }
-      }
+    if (empty($rowFields)) {
+      $this->addRowHeader(FALSE, [], FALSE);
+    }
+    foreach ($rowFields as $field => $fieldDetails) {
+      $this->addRowHeader(1, $fieldDetails, $fieldDetails['alias'], $fieldDetails['title']);
+    }
 
+    foreach ($columnFields as $field => $fieldDetails) { //only one but we don't know the name
+      $spec = $this->getMetadataByType('aggregate_columns')[$this->_params['aggregate_column_headers']];
+      $this->addColumnAggregateSelect($spec['name'], $spec['dbAlias'], $spec);
     }
-    else {
-      $rowHeader = $this->_params['aggregate_row_headers'];
-      $rowHeaderFieldName = $rowColumns[$rowHeader]['name'];
-      $this->_columnHeaders[$rowHeaderFieldName] = [
-        'title' => $rowColumns[$rowHeader]['title'],
-      ];
-    }
-    $columnColumns = $this->extractCustomFields($columnFields, 'column_header');
-    if (empty($columnColumns)) {
-      foreach ($columnFields as $field => $fieldDetails) { //only one but we don't know the name
-        //we wrote this as purely a custom field against custom field. In process of refactoring to allow
-        // another field like event - so here we have no custom field .. must be a non custom field...
-        if (empty($fieldDetails)) {
-          // This could happen if no column is specified - which is valid - resulting in
-          // just one total column.
-          $this->addColumnAggregateSelect('', '', []);
-          continue;
-        }
-        $spec = $this->getMetadataByType('aggregate_columns')[$this->_params['aggregate_column_headers']];
-        $this->addColumnAggregateSelect($spec['name'], $spec['dbAlias'], $spec);
-      }
-    }
-    foreach ($selectedTables as $selectedTable => $properties) {
-      $extendsTable = $properties['extends_table'];
-      $this->_extraFrom .= "
-      LEFT JOIN {$properties['name']} $selectedTable ON {$selectedTable}.entity_id = {$this->_aliases[$extendsTable]}.id";
-    }
-  }
 
-  /**
-   * Get property for a specified field. Naming conventions are a bit shaky
-   * so we use this function to avoid constantly doing this work.
-   *
-   * @param string $fieldName
-   * @param string $property
-   * @param string $tableName
-   *
-   * @return mixed
-   * @throws \Exception
-   */
-  function getPropertyForField($fieldName, $property, $tableName) {
-    if (isset($this->_columns[$tableName]['metadata'])) {
-      if (isset($this->_columns[$tableName]['metadata'][$fieldName])) {
-        return $this->_columns[$tableName]['metadata'][$fieldName][$property];
-      }
-      foreach ($this->_columns[$tableName]['metadata'] as $fieldSpec) {
-        if ($fieldSpec['name'] == $fieldName) {
-          return $fieldSpec[$property];
-        }
-      }
-    }
-    throw new Exception('No metadata found for ' . $fieldName . ' in table ' . $tableName);
   }
 
   /**
@@ -6759,6 +6700,25 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    * array('custom_2' => array('civicrm_contact');
    * ie fieldname => table alias
    */
+  protected function getAggregateFieldSpec($type) {
+    if (empty($this->_params['aggregate_' . $type . '_headers'])) {
+      return [];
+    }
+    $columnHeader = $this->_params['aggregate_' . $type . '_headers'];
+    return [$this->getMetadataByType('metadata')[$columnHeader]];
+  }
+
+  /**
+   * Get the selected pivot chart column fields as an array.
+   *
+   * @param string $type
+   *   Row or column to denote the fields we are extracting.
+   *
+   * @return array Selected fields in format
+   * Selected fields in format
+   * array('custom_2' => array('civicrm_contact');
+   * ie fieldname => table alias
+   */
   protected function getFieldBreakdownForAggregates($type) {
     if (empty($this->_params['aggregate_' . $type . '_headers'])) {
       return [];
@@ -6776,6 +6736,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
       return;
     }
     $aggregateColumnHeaderFields = $this->getAggregateColumnFields();
+    $aggregateRowHeaderFields = $this->getAggregateRowFields();
 
     foreach ($this->_customGroupExtended as $key => $groupSpec) {
       $customDAOs = $this->getCustomDataDAOs($groupSpec['extends']);
@@ -6792,19 +6753,19 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
         }
         $this->metaData['metadata'][$fieldName] = $this->_columns[$tableKey]['metadata'][$fieldName];
         $this->metaData['metadata'][$fieldName]['is_aggregate_columns'] = TRUE;
+        $this->metaData['metadata'][$fieldName]['table_alias'] = $this->_columns[$tableKey]['alias'];
         $this->metaData['aggregate_columns'][$fieldName] = $this->metaData['metadata'][$fieldName];
-        $this->_aggregateRowFields[$key . ':' . $prefix . 'custom_' . $customField['id']] = $customField['prefix_label'] . $customField['label'];
+        $aggregateRowHeaderFields[$prefix . 'custom_' . $customField['id']] = $customField['prefix_label'] . $customField['label'];
         if (in_array($customField['html_type'], ['Select', 'CheckBox'])) {
           $aggregateColumnHeaderFields[$prefix . 'custom_' . $customField['id']] = $customField['prefix_label'] . $customField['label'];
         }
       }
 
     }
-    $this->_aggregateRowFields = ['' => ts('--Select--')] + $this->_aggregateRowFields;
     $this->add('select', 'aggregate_column_headers', ts('Aggregate Report Column Headers'), $aggregateColumnHeaderFields, FALSE,
       ['id' => 'aggregate_column_headers', 'title' => ts('- select -')]
     );
-    $this->add('select', 'aggregate_row_headers', ts('Row Fields'), $this->_aggregateRowFields, FALSE,
+    $this->add('select', 'aggregate_row_headers', ts('Row Fields'), $aggregateRowHeaderFields, FALSE,
       ['id' => 'aggregate_row_headers', 'title' => ts('- select -')]
     );
     $this->_columns[$this->_baseTable]['fields']['include_null'] = [
@@ -7329,7 +7290,10 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    */
   protected function getSelectedAggregateRows() {
     $metadata = $this->getMetadataByType('metadata');
-    return array_intersect_key($metadata, $this->getFieldBreakdownForAggregates('row'));
+    if (empty($this->_params['aggregate_row_headers']) || !isset($metadata[$this->_params['aggregate_row_headers']])) {
+      return [];
+    }
+    return [$this->_params['aggregate_row_headers'] => $metadata[$this->_params['aggregate_row_headers']]];
   }
 
   /**
@@ -8092,6 +8056,23 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
       $aggregateColumns[$key] = $spec['title'];
     }
     return $aggregateColumns;
+  }
+
+  /**
+   * Get fields used to provide column headers on a pivot report.
+   *
+   * @return array
+   */
+  protected function getAggregateRowFields() {
+    // @todo - just re-using the same column field for rows but how do we decide
+    // what fields are suitable. Columns need some limits on variants or
+    // else it gets REALLLLLYYYYY WIDE.
+    $fields = $this->getMetadataByType('aggregate_columns');
+    $aggregateRows = ['' => ts('--Select--')];
+    foreach ($fields as $key => $spec) {
+      $aggregateRows[$key] = $spec['title'];
+    }
+    return $aggregateRows;
   }
 
 }
