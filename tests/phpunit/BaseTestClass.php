@@ -34,12 +34,28 @@ class BaseTestClass extends \PHPUnit_Framework_TestCase implements HeadlessInter
    */
   protected $customGroupID;
 
+  protected $ids = [];
+
   public function setUpHeadless() {
     // Civi\Test has many helpers, like install(), uninstall(), sql(), and sqlFile().
     // See: https://github.com/civicrm/org.civicrm.testapalooza/blob/master/civi-test.md
     return \Civi\Test::headless()
       ->installMe(__DIR__)
       ->apply();
+  }
+
+  public function tearDown() {
+    foreach ($this->ids as $entity => $entityIDs) {
+      foreach ($entityIDs as $entityID) {
+        try {
+          civicrm_api3($entity, 'delete', [
+            'id' => $entityID,
+          ]);
+        } catch (CiviCRM_API3_Exception $e) {
+          // No harm done - it was a best effort cleanup
+        }
+      }
+    }
   }
 
   /**

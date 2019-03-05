@@ -932,7 +932,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       }
     }
 
-    foreach ($options as $option) {
+    foreach ($options as $optionValue => $optionLabel) {
       $fieldAlias = str_replace([
         '-',
         '+',
@@ -940,7 +940,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
         '/',
         ')',
         '(',
-      ], '_', "{$fieldName}_" . strtolower(str_replace(' ', '', $option['value'])));
+      ], '_', "{$fieldName}_" . strtolower(str_replace(' ', '', $optionValue)));
 
       // htmlType is set for custom data and tells us the field will be stored using hex(01) separators.
       if (!empty($spec['htmlType']) && in_array($spec['htmlType'], [
@@ -948,13 +948,13 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
           'MultiSelect',
         ])
       ) {
-        $this->_select .= " , SUM( CASE WHEN {$dbAlias} LIKE '%" . CRM_Core_DAO::VALUE_SEPARATOR . $option['value'] . CRM_Core_DAO::VALUE_SEPARATOR . "%' THEN 1 ELSE 0 END ) AS $fieldAlias ";
+        $this->_select .= " , SUM( CASE WHEN {$dbAlias} LIKE '%" . CRM_Core_DAO::VALUE_SEPARATOR . $optionValue . CRM_Core_DAO::VALUE_SEPARATOR . "%' THEN 1 ELSE 0 END ) AS $fieldAlias ";
       }
       else {
-        $this->_select .= " , SUM( CASE {$dbAlias} WHEN '{$option['value']}' THEN 1 ELSE 0 END ) AS $fieldAlias ";
+        $this->_select .= " , SUM( CASE {$dbAlias} WHEN '{$optionValue}' THEN 1 ELSE 0 END ) AS $fieldAlias ";
       }
       $this->_columnHeaders[$fieldAlias] = [
-        'title' => $option['label'],
+        'title' => $optionLabel,
         'type' => CRM_Utils_Type::T_INT,
       ];
       $this->_statFields[] = $fieldAlias;
@@ -2690,7 +2690,7 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
 
     foreach (array_keys($rows) as $rowNumber) {
       $nextRow = CRM_Utils_Array::value($rowNumber + 1, $rows);
-      if ($nextRow === NULL) {
+      if ($nextRow === NULL && empty($this->rollupRow)) {
         $this->updateRollupRow($rows[$rowNumber], $fieldsToUnSetForSubtotalLines);
       }
       else {
@@ -2720,12 +2720,7 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
     }
     $value = trim($value, CRM_Core_DAO::VALUE_SEPARATOR);
     $options = $this->getCustomFieldOptions($specs);
-    foreach ($options as $option) {
-      if ($option['value'] === $value) {
-        return $option['label'];
-      }
-    }
-    return $value;
+    return CRM_Utils_Array::value($value, $options, $value);
   }
 
   /**
@@ -7623,7 +7618,7 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
   protected function getCustomFieldOptions($spec) {
     $options = [];
     if (!empty($spec['options'])) {
-      return $options;
+      return $spec['options'];
     }
 
     // Data type is set for custom fields but not core fields.
