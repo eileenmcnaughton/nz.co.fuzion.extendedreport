@@ -18,18 +18,18 @@ class CRM_Extendedreport_Form_Report_Contact_Extendedcontact extends CRM_Extende
    * Class constructor.
    */
   public function __construct() {
-    $this->_columns = $this->getColumns('Contact', array(
+    $this->_columns = $this->getColumns('Contact', [
         'fields' => FALSE,
         'order_by' => FALSE,
-      )
+      ]
     );
     $this->_columns['civicrm_contact']['fields']['id']['required'] = TRUE;
-    $this->_aggregateColumnHeaderFields = array(
+    $this->_aggregateColumnHeaderFields = [
       'civicrm_contact:gender_id' => 'Gender',
-    );
-    $this->_aggregateRowFields = array(
+    ];
+    $this->_aggregateRowFields = [
       'civicrm_contact:gender_id' => 'Gender',
-    );
+    ];
     parent::__construct();
   }
 }

@@ -11,37 +11,37 @@ class CRM_Extendedreport_Form_Report_ActivityPivot extends CRM_Extendedreport_Fo
   protected $_aggregatesIncludeNULL = TRUE;
   protected $_aggregatesAddTotal = TRUE;
   protected $_rollup = 'WITH ROLLUP';
-  public $_drilldownReport = array();
-  protected $_potentialCriteria = array();
+  public $_drilldownReport = [];
+  protected $_potentialCriteria = [];
   protected $_noFields = TRUE;
 
   /**
    * Class constructor.
    */
   public function __construct() {
-    $this->_customGroupExtended['civicrm_activity'] = array(
-      'extends' => array('Activity'),
+    $this->_customGroupExtended['civicrm_activity'] = [
+      'extends' => ['Activity'],
       'filters' => TRUE,
       'title' => ts('Activity'),
-    );
+    ];
 
-    $this->_columns = $this->getColumns('Activity', array(
+    $this->_columns = $this->getColumns('Activity', [
         'fields' => FALSE,
-      )
+      ]
     )//   + $this->getColumns('Contact', array())
     ;
 
-    $this->_aggregateRowFields = array(
+    $this->_aggregateRowFields = [
       'activity:activity_activity_type_id' => 'Activity Type',
       'activity:activity_status_id' => 'Activity Status',
       'activity:activity_result' => 'Activity Result',
       'activity:activity_subject' => 'Activity Subject',
       //      'civicrm_contact_civireport:gender_id' => 'Gender',
-    );
-    $this->_aggregateColumnHeaderFields = array(
+    ];
+    $this->_aggregateColumnHeaderFields = [
       'activity:activity_activity_type_id' => 'Activity Type',
       'activity:activity_status_id' => 'Activity Status',
-    );
+    ];
     parent::__construct();
   }
 
@@ -51,6 +51,6 @@ class CRM_Extendedreport_Form_Report_ActivityPivot extends CRM_Extendedreport_Fo
    * @return array
    */
   public function fromClauses() {
-    return array();
+    return [];
   }
 }
