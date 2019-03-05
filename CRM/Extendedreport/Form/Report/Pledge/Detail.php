@@ -38,6 +38,8 @@ class CRM_Extendedreport_Form_Report_Pledge_Detail extends CRM_Extendedreport_Fo
       'is_order_bys' => FALSE,
       'is_group_bys' => FALSE,
       'is_join_filters' => FALSE,
+      'is_aggregate_columns' => FALSE,
+      'is_aggregate_rows' => FALSE,
       'alias' => 'pledge_balance_amount'
     ];
     $this->_columns['civicrm_contribution']['group_title'] = E::ts('Report Date');
@@ -51,6 +53,8 @@ class CRM_Extendedreport_Form_Report_Pledge_Detail extends CRM_Extendedreport_Fo
       'is_group_bys' => FALSE,
       'is_order_bys' => FALSE,
       'is_join_filters' => FALSE,
+      'is_aggregate_columns' => FALSE,
+      'is_aggregate_rows' => FALSE,
       'operations' => ['to' => E::ts('Date')],
       'alias' => 'contribution_effective_date',
     );

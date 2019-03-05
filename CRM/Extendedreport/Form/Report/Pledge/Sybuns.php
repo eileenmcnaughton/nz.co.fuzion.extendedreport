@@ -70,6 +70,8 @@ class CRM_Extendedreport_Form_Report_Pledge_Sybuns extends CRM_Extendedreport_Fo
       'is_fields' => FALSE,
       'is_group_bys' => FALSE,
       'is_order_bys' => FALSE,
+      'is_aggregate_columns' => FALSE,
+      'is_aggregate_rows' => FALSE,
     ];
     $this->_tagFilter = TRUE;
     parent::__construct();

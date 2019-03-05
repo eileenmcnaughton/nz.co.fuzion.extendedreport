@@ -48,9 +48,6 @@ class CRM_Extendedreport_Form_Report_Case_ActivityPivot extends CRM_Extendedrepo
       'case_civireport:id' => 'Case',
       'civicrm_contact_civireport:gender_id' => 'Gender',
     );
-    $this->_aggregateColumnHeaderFields = array(
-      'civicrm_contact_civireport:gender_id' => 'Gender',
-    );
     $this->_tagFilter = TRUE;
     $this->_groupFilter = TRUE;
     parent::__construct();
