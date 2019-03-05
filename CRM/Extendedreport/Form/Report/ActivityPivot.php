@@ -38,10 +38,6 @@ class CRM_Extendedreport_Form_Report_ActivityPivot extends CRM_Extendedreport_Fo
       'activity:activity_subject' => 'Activity Subject',
       //      'civicrm_contact_civireport:gender_id' => 'Gender',
     ];
-    $this->_aggregateColumnHeaderFields = [
-      'activity:activity_activity_type_id' => 'Activity Type',
-      'activity:activity_status_id' => 'Activity Status',
-    ];
     parent::__construct();
   }
 

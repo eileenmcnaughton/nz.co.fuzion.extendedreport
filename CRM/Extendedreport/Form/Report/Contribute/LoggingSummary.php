@@ -59,6 +59,8 @@ class CRM_Extendedreport_Form_Report_Contribute_LoggingSummary extends CRM_Exten
       'type' => CRM_Utils_Type::T_INT,
       'is_fields' => TRUE,
       'no_display' => FALSE,
+      'is_aggregate_columns' => FALSE,
+      'is_aggregate_rows' => FALSE,
     );
 
     $this->_columns['civicrm_contribution']['fields']['log_date'] = array(
@@ -66,6 +68,8 @@ class CRM_Extendedreport_Form_Report_Contribute_LoggingSummary extends CRM_Exten
       'required' => TRUE,
       'type' => CRM_Utils_Type::T_TIME,
       'title' => ts('Change Date'),
+      'is_aggregate_columns' => FALSE,
+      'is_aggregate_rows' => FALSE,
     );
     $this->_columns['civicrm_contribution']['fields']['log_conn_id'] = array(
       'no_display' => FALSE,
@@ -78,6 +82,8 @@ class CRM_Extendedreport_Form_Report_Contribute_LoggingSummary extends CRM_Exten
       'default' => TRUE,
       'title' => ts('Action'),
       'type' => CRM_Utils_Type::T_STRING,
+      'is_aggregate_columns' => FALSE,
+      'is_aggregate_rows' => FALSE,
     );
     $this->_columns['civicrm_contribution']['filters']['log_action'] = array(
       'operatorType' => CRM_Report_Form::OP_MULTISELECT,

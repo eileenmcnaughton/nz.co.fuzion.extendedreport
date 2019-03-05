@@ -61,14 +61,14 @@ class Contact_ExtendedContactTest extends BaseTestClass implements HeadlessInter
   public function testGetRows() {
     $params = [
       'report_id' => 'contact/contactextended',
-      'aggregate_column_headers' => 'civicrm_contact:gender_id',
+      'aggregate_column_headers' => 'civicrm_contact_gender_id',
       'aggregate_row_headers' => 'civicrm_contact:custom_' . $this->customFieldID,
     ];
     $this->callAPISuccess('ReportTemplate', 'getrows', $params)['values'];
 
     $params = [
       'report_id' => 'contact/contactextended',
-      'aggregate_column_headers' => 'civicrm_contact:custom_' . $this->customFieldID,
+      'aggregate_column_headers' => 'custom_' . $this->customFieldID,
       'aggregate_row_headers' => 'civicrm_contact:gender_id',
     ];
     $this->callAPISuccess('ReportTemplate', 'getrows', $params)['values'];

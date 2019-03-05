@@ -48,9 +48,6 @@ class CRM_Extendedreport_Form_Report_Event_EventPivot extends CRM_Extendedreport
       'event:id' => 'Event',
     );
 
-    $this->_aggregateColumnHeaderFields = array(
-      'participant:status_id' => ts('Participant Status'),
-    );
     $this->_groupFilter = TRUE;
     parent::__construct();
   }

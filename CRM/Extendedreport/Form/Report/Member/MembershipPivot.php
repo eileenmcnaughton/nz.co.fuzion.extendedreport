@@ -39,10 +39,6 @@ class CRM_Extendedreport_Form_Report_Member_MembershipPivot extends CRM_Extended
       'membership:membership_membership_type_id' => 'Membership Type',
       'membership:membership_membership_status_id' => 'Membership Status',
     );
-    $this->_aggregateColumnHeaderFields = array(
-      'membership:membership_membership_type_id' => 'Membership Type',
-      'membership:membership_membership_status_id' => 'Membership Status',
-    );
     parent::__construct();
   }
 

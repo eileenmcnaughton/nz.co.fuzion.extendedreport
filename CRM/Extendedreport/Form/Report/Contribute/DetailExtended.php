@@ -89,6 +89,8 @@ class CRM_Extendedreport_Form_Report_Contribute_DetailExtended extends CRM_Exten
         'is_fields' => FALSE,
         'is_group_bys' => FALSE,
         'is_order_bys' => FALSE,
+        'is_aggregate_columns' => FALSE,
+        'is_aggregate_rows' => FALSE,
         'type' => CRM_Utils_Type::T_INT,
         'alias' => 'cordinality_cordinality'
       ]],

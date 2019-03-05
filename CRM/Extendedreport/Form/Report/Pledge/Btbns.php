@@ -48,6 +48,8 @@ class CRM_Extendedreport_Form_Report_Pledge_Btbns extends CRM_Extendedreport_For
              WHERE pledge.start_date >=  ('\$to') AND pledge.is_test = 0) ",
       'is_filters' => TRUE,
       'is_join_filters' => TRUE,
+      'is_aggregate_columns' => FALSE,
+      'is_aggregate_rows' => FALSE,
       'is_fields' => FALSE,
       'is_group_bys' => FALSE,
       'is_order_bys' => FALSE,

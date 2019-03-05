@@ -37,6 +37,8 @@ class CRM_Extendedreport_Form_Report_Pledge_PaidAndCommitted extends CRM_Extende
           'is_join_filters' => FALSE,
           'is_group_bys' => FALSE,
           'is_order_bys' => FALSE,
+          'is_aggregate_columns' => FALSE,
+          'is_aggregate_rows' => FALSE,
         ]
       ],
     'civicrm_pledge_payment');
@@ -52,6 +54,8 @@ class CRM_Extendedreport_Form_Report_Pledge_PaidAndCommitted extends CRM_Extende
       'is_join_filters' => FALSE,
       'is_group_bys' => TRUE,
       'is_order_bys' => FALSE,
+      'is_aggregate_columns' => FALSE,
+      'is_aggregate_rows' => FALSE,
     );
 
     $this->_columns['civicrm_pledge']['fields']['balance_amount'] = array(

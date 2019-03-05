@@ -34,6 +34,7 @@ class api_v3_ReportTemplate_GetmetadataTest extends BaseTestClass implements Hea
       CRM_Core_DAO::executeQuery("DELETE FROM civicrm_custom_group WHERE name = 'Contact'");
       \Civi::settings()->set('logging', FALSE);
     }
+    $this->enableAllComponents();
   }
 
   /**
@@ -86,7 +87,7 @@ class api_v3_ReportTemplate_GetmetadataTest extends BaseTestClass implements Hea
       'label' => 'bool_select_field',
     ]);
 
-    $result = civicrm_api3('ReportTemplate', 'Getmetadata', array('report_id' => 'pledge/details'))['values'];
+    $result = civicrm_api3('ReportTemplate', 'Getmetadata', array('debug' => 1, 'report_id' => 'pledge/details'))['values'];
     $filters = $result['filters'];
 
     foreach ($filters as $fieldName => $filter) {
@@ -117,7 +118,7 @@ class api_v3_ReportTemplate_GetmetadataTest extends BaseTestClass implements Hea
    * @dataProvider getAllNonLoggingReports
    */
   public function testApiMetadataAllReports($reportID) {
-    $result = civicrm_api3('ReportTemplate', 'Getmetadata', array('report_id' => $reportID))['values'];
+    $result = civicrm_api3('ReportTemplate', 'Getmetadata', ['report_id' => $reportID, 'debug' => 1])['values'];
     $filters = $result['filters'];
     foreach ($filters as $fieldName => $filter) {
       $this->assertEquals(TRUE, $filter['is_filters']);

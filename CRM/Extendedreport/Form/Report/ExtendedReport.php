@@ -103,12 +103,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   protected $_customGroupOrderBy = TRUE;
 
   /**
-   * Fields available to be added as Column headers in pivot style report
-   * @var array
-   */
-  protected $_aggregateColumnHeaderFields = [];
-
-  /**
    * Fields available to be added as Rows in pivot style report
    * @var array
    */
@@ -328,6 +322,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
         'join_filters',
         'group_bys',
         'order_bys',
+        'aggregate_columns'
       ];
       $this->metaData = array_fill_keys($definitionTypes, []);
       $this->metaData['having'] = [];
@@ -335,14 +330,15 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       foreach ($this->_columns as $table => $tableSpec) {
         foreach ($definitionTypes as $type) {
           foreach ($tableSpec['metadata'] as $fieldName => $fieldSpec) {
+            $fieldSpec = array_merge(['table_name' => $table], $fieldSpec);
             if (!isset($this->metaData[$fieldName])) {
-              $this->metaData['metadata'][$fieldName] = array_merge($fieldSpec, ['table_name' => $table]);
+              $this->metaData['metadata'][$fieldName] = $fieldSpec;
             }
             if ($fieldSpec['is_' . $type]) {
-              $this->metaData[$type][$fieldName] = array_merge($fieldSpec, ['table_name' => $table]);
+              $this->metaData[$type][$fieldName] = $fieldSpec;
             }
             if ($type === 'filters' && !empty($fieldSpec['having'])) {
-              $this->metaData['having'][$fieldName] = array_merge($fieldSpec, ['table_name' => $table]);
+              $this->metaData['having'][$fieldName] = $fieldSpec;
             }
           }
         }
@@ -371,6 +367,8 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
           'is_group_bys' => FALSE,
           'is_order_bys' => FALSE,
           'is_join_filters' => FALSE,
+          'is_aggregate_columns' => FALSE,
+          'is_aggregate_rows' => FALSE,
         ],
       ], 'civicrm_tag', 'CRM_Core_DAO_Tag', 'tag', [], ['no_field_disambiguation' => TRUE]);
     }
@@ -405,6 +403,8 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
           'is_group_bys' => FALSE,
           'is_order_bys' => FALSE,
           'is_join_filters' => FALSE,
+          'is_aggregate_columns' => FALSE,
+          'is_aggregate_rows' => FALSE,
           'dbAlias' => 'group.group_id',
         ],
       ],
@@ -810,7 +810,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       return;
     }
 
-    $columnFields = $this->getFieldBreakdownForAggregates('column');
+    $columnFields = $this->getAggregateField('column');
     $rowFields = $this->getFieldBreakdownForAggregates('row');
     $selectedTables = [];
     $rowColumns = $this->extractCustomFields($rowFields, 'row_header');
@@ -827,7 +827,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
           $tableAlias = $fieldDetails[0];
           $tableName = array_search($tableAlias, $this->_aliases);
           $fieldAlias = str_replace('-', '_', $tableName . '_' . $field);
-          $this->addRowHeader($tableAlias, $this->getMetadata()['metadata'][$tableName . '_' . $field], $fieldAlias, $this->getPropertyForField($field, 'title', $tableName));
+          $this->addRowHeader($tableAlias, $this->getMetadata()['metadata'][$fieldAlias], $fieldAlias, $this->getPropertyForField($field, 'title', $tableName));
         }
       }
 
@@ -850,21 +850,8 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
           $this->addColumnAggregateSelect('', '', []);
           continue;
         }
-        $tableAlias = $fieldDetails[0];
-        $spec = [];
-        $tableName = array_search($tableAlias, $this->_aliases);
-        if (!empty($this->_columns[$tableName]['metadata'][$field])) {
-          $spec = $this->_columns[$tableName]['metadata'][$field];
-        }
-        else {
-          foreach ($this->_columns[$tableName]['metadata'] as $fieldSpec) {
-            if ($fieldSpec['name'] == $field) {
-              $spec = $fieldSpec;
-            }
-          }
-        }
-        $fieldName = !empty($spec['name']) ? $spec['name'] : $field;
-        $this->addColumnAggregateSelect($fieldName, $spec['dbAlias'], $spec);
+        $spec = $this->getMetadataByType('aggregate_columns')[$this->_params['aggregate_column_headers']];
+        $this->addColumnAggregateSelect($spec['name'], $spec['dbAlias'], $spec);
       }
     }
     foreach ($selectedTables as $selectedTable => $properties) {
@@ -2211,7 +2198,8 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    * Overridden to support custom data for multiple entities of the same type.
    */
   public function extendedCustomDataFrom() {
-    foreach ($this->_columns as $table => $prop) {
+    foreach ($this->getMetadataByType('metadata') as $prop) {
+      $table = $prop['table_name'];
       if (empty($prop['extends']) || !$this->isCustomTableSelected($table)) {
         continue;
       }
@@ -2219,10 +2207,11 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       $baseJoin = CRM_Utils_Array::value($prop['extends'], $this->_customGroupExtendsJoin, "{$this->_aliases[$prop['extends_table']]}.id");
 
       $customJoin = is_array($this->_customGroupJoin) ? $this->_customGroupJoin[$table] : $this->_customGroupJoin;
-      if (!stristr($this->_from, $this->_aliases[$table])) {
+      $tableKey = CRM_Utils_Array::value('prefix', $prop) . $prop['table_name'];
+      if (!stristr($this->_from, $this->_aliases[$tableKey])) {
         // Protect against conflict with selectableCustomFrom.
         $this->_from .= "
-{$customJoin} {$prop['table_name']} {$this->_aliases[$table]} ON {$this->_aliases[$table]}.entity_id = {$baseJoin}";
+{$customJoin} {$prop['table_name']} {$this->_aliases[$tableKey]} ON {$this->_aliases[$tableKey]}.entity_id = {$baseJoin}";
       }
       // handle for ContactReference
       if (array_key_exists('fields', $prop)) {
@@ -2237,7 +2226,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
             }
             $columnName = CRM_Core_DAO::getFieldValue('CRM_Core_DAO_CustomField', CRM_Core_BAO_CustomField::getKeyID($fieldName), 'column_name');
             $this->_from .= "
-LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_aliases[$table]}.{$columnName} ";
+LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_aliases[$tableKey]}.{$columnName} ";
           }
         }
       }
@@ -3190,7 +3179,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     if (!$tableAlias) {
       $tableAlias = str_replace('civicrm_', '', $tableName);
     }
-    $types = ['filters', 'group_bys', 'order_bys', 'join_filters'];
+    $types = ['filters', 'group_bys', 'order_bys', 'join_filters', 'aggregate_columns', 'aggregate_rows'];
     $columns = [$tableName => array_fill_keys($types, [])];
     if (!empty($daoName)) {
       $columns[$tableName]['bao'] = $daoName;
@@ -3229,6 +3218,10 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
 
       $fieldAlias = (empty($options['no_field_disambiguation']) ? $tableAlias . '_' : '') . $specName;
       $spec['alias'] = $tableName . '_' . $fieldAlias;
+      if ($this->isPivot && !empty($spec['options'])) {
+        $spec['is_aggregate_columns'] = TRUE;
+        $spec['is_aggregate_rows'] = TRUE;
+      }
       $columns[$tableName]['metadata'][$fieldAlias] = $spec;
       $columns[$tableName]['fields'][$fieldAlias] = $spec;
       if (isset($defaults['fields_defaults']) && in_array($spec['name'], $defaults['fields_defaults'])) {
@@ -6744,6 +6737,28 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    * array('custom_2' => array('civicrm_contact');
    * ie fieldname => table alias
    */
+  protected function getAggregateField($type) {
+    if (empty($this->_params['aggregate_' . $type . '_headers'])) {
+      return [];
+    }
+    $columnHeader = $this->_params['aggregate_' . $type . '_headers'];
+    $fieldSpec = $this->getMetadataByType('aggregate_columns')[$columnHeader];
+    return [
+      $fieldSpec['table_name'] => [$fieldSpec['name']]
+    ];
+  }
+
+  /**
+   * Get the selected pivot chart column fields as an array.
+   *
+   * @param string $type
+   *   Row or column to denote the fields we are extracting.
+   *
+   * @return array Selected fields in format
+   * Selected fields in format
+   * array('custom_2' => array('civicrm_contact');
+   * ie fieldname => table alias
+   */
   protected function getFieldBreakdownForAggregates($type) {
     if (empty($this->_params['aggregate_' . $type . '_headers'])) {
       return [];
@@ -6760,7 +6775,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
     if (!$this->isPivot) {
       return;
     }
-    $this->_aggregateColumnHeaderFields = ['' => ts('--Select--')] + $this->_aggregateColumnHeaderFields;
+    $aggregateColumnHeaderFields = $this->getAggregateColumnFields();
 
     foreach ($this->_customGroupExtended as $key => $groupSpec) {
       $customDAOs = $this->getCustomDataDAOs($groupSpec['extends']);
@@ -6772,17 +6787,21 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
         $this->_columns[$tableKey]['metadata'][$fieldName] = $this->getCustomFieldMetadata($customField, $customField['prefix_label']);
         if (!empty($groupSpec['filters'])) {
           $this->_columns[$tableKey]['metadata'][$fieldName]['is_filters'] = TRUE;
+          $this->_columns[$tableKey]['metadata'][$fieldName]['extends_table'] = $this->_columns[$tableKey]['extends_table'];
           $this->_columns[$tableKey]['filters'][$fieldName] = $this->_columns[$tableKey]['metadata'][$fieldName];
         }
+        $this->metaData['metadata'][$fieldName] = $this->_columns[$tableKey]['metadata'][$fieldName];
+        $this->metaData['metadata'][$fieldName]['is_aggregate_columns'] = TRUE;
+        $this->metaData['aggregate_columns'][$fieldName] = $this->metaData['metadata'][$fieldName];
         $this->_aggregateRowFields[$key . ':' . $prefix . 'custom_' . $customField['id']] = $customField['prefix_label'] . $customField['label'];
         if (in_array($customField['html_type'], ['Select', 'CheckBox'])) {
-          $this->_aggregateColumnHeaderFields[$key . ':' . $prefix . 'custom_' . $customField['id']] = $customField['prefix_label'] . $customField['label'];
+          $aggregateColumnHeaderFields[$prefix . 'custom_' . $customField['id']] = $customField['prefix_label'] . $customField['label'];
         }
       }
 
     }
     $this->_aggregateRowFields = ['' => ts('--Select--')] + $this->_aggregateRowFields;
-    $this->add('select', 'aggregate_column_headers', ts('Aggregate Report Column Headers'), $this->_aggregateColumnHeaderFields, FALSE,
+    $this->add('select', 'aggregate_column_headers', ts('Aggregate Report Column Headers'), $aggregateColumnHeaderFields, FALSE,
       ['id' => 'aggregate_column_headers', 'title' => ts('- select -')]
     );
     $this->add('select', 'aggregate_row_headers', ts('Row Fields'), $this->_aggregateRowFields, FALSE,
@@ -7298,9 +7317,11 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    * @return array
    */
   protected function getSelectedAggregateColumns() {
-    $metadata = $this->getMetadataByType('metadata');
-    $columnAggregate = $this->getFieldBreakdownForAggregates('column');
-    return array_intersect_key($metadata, $columnAggregate);
+    $metadata = $this->getMetadataByType('aggregate_columns');
+    if (empty($this->_params['aggregate_column_headers']) || !isset($metadata[$this->_params['aggregate_column_headers']])) {
+      return [];
+    }
+    return [$this->_params['aggregate_column_headers'] => $metadata[$this->_params['aggregate_column_headers']]];
   }
 
   /**
@@ -7326,6 +7347,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
     $field['is_join_filters'] = $this->_customGroupFilters ? TRUE : FALSE;
     $field['is_group_bys'] = $this->_customGroupGroupBy ? TRUE : FALSE;
     $field['is_order_bys'] = $this->_customGroupOrderBy ? TRUE : FALSE;
+    $field['is_aggregate_columns'] = ($this->isPivot && !empty($field['options']));
     if ($this->_customGroupFilters) {
       $field = $this->addCustomDataFilters($field, $fieldName);
     }
@@ -7440,6 +7462,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
       }
       $field = $this->getCustomFieldMetadata($field, $prefixLabel, $prefix);
       $this->addCustomTableToColumns($field, $field['table_name'], $prefix, $prefixLabel, $prefix . $field['table_name']);
+      $field['extends_table'] = $this->_columns[$prefix . $field['table_name']]['extends_table'];
       $this->addCustomDataTable($field, $field['table_name'], $prefix, $prefixLabel);
     }
   }
@@ -7578,6 +7601,7 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
       'dbAlias' => $prefix . $field['table_name'] . '.' . $field['column_name'],
       'alias' => $prefix . $field['table_name'] . '_' . 'custom_' . $field['id'],
     ]);
+    $field['is_aggregate_columns'] = in_array($field['html_type'], ['Select', 'Radio']);
 
     if (!empty($field['option_group_id'])) {
       if (in_array($field['html_type'], [
@@ -8054,6 +8078,20 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
    */
   protected function isGroupByMode() {
     return (!empty($this->_groupByArray) || $this->isForceGroupBy);
+  }
+
+  /**
+   * Get fields used to provide column headers on a pivot report.
+   *
+   * @return array
+   */
+  protected function getAggregateColumnFields() {
+    $fields = $this->getMetadataByType('aggregate_columns');
+    $aggregateColumns = ['' => ts('--Select--')];
+    foreach ($fields as $key => $spec) {
+      $aggregateColumns[$key] = $spec['title'];
+    }
+    return $aggregateColumns;
   }
 
 }

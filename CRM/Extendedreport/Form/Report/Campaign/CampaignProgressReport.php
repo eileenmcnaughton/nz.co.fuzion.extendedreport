@@ -32,6 +32,8 @@ class CRM_Extendedreport_Form_Report_Campaign_CampaignProgressReport extends CRM
         'is_group_bys' => TRUE,
         'is_order_bys' => FALSE,
         'is_join_filters' => FALSE,
+        'is_aggregate_columns' => FALSE,
+        'is_aggregate_rows' => FALSE,
         'options' => $this->_getOptions('Contribution', 'financial_type_id'),
       ],
       'total_amount' => [
@@ -44,6 +46,8 @@ class CRM_Extendedreport_Form_Report_Campaign_CampaignProgressReport extends CRM
         'is_group_bys' => FALSE,
         'is_order_bys' => FALSE,
         'is_join_filters' => FALSE,
+        'is_aggregate_columns' => FALSE,
+        'is_aggregate_rows' => FALSE,
       ],
       'paid_amount' => [
         'title' => ts('Amount received'),
@@ -55,6 +59,8 @@ class CRM_Extendedreport_Form_Report_Campaign_CampaignProgressReport extends CRM
         'is_group_bys' => FALSE,
         'is_order_bys' => FALSE,
         'is_join_filters' => FALSE,
+        'is_aggregate_columns' => FALSE,
+        'is_aggregate_rows' => FALSE,
       ],
        'balance_amount' => [
         'title' => ts('Amount outstanding'),
@@ -66,6 +72,8 @@ class CRM_Extendedreport_Form_Report_Campaign_CampaignProgressReport extends CRM
         'is_group_bys' => FALSE,
         'is_order_bys' => FALSE,
         'is_join_filters' => FALSE,
+       'is_aggregate_columns' => FALSE,
+       'is_aggregate_rows' => FALSE,
       ],
       'is_pledge' => [
         'title' => ts('Type'),
@@ -88,6 +96,8 @@ class CRM_Extendedreport_Form_Report_Campaign_CampaignProgressReport extends CRM
         'is_group_bys' => FALSE,
         'is_order_bys' => FALSE,
         'is_join_filters' => FALSE,
+        'is_aggregate_columns' => FALSE,
+        'is_aggregate_rows' => FALSE,
       ],
       'effective_date' => [
         'type' => CRM_Utils_Type::T_DATE + CRM_Utils_Type::T_TIME,
@@ -99,6 +109,8 @@ class CRM_Extendedreport_Form_Report_Campaign_CampaignProgressReport extends CRM
         'is_group_bys' => FALSE,
         'is_order_bys' => FALSE,
         'is_join_filters' => FALSE,
+        'is_aggregate_columns' => FALSE,
+        'is_aggregate_rows' => FALSE,
       ],
     ];
 
