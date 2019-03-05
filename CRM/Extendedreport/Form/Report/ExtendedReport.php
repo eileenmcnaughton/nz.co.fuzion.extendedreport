@@ -7462,7 +7462,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
     $customGroupWhere = '';
     if (!$this->userHasAllCustomGroupAccess()) {
       $permissionedCustomGroupIDs = CRM_ACL_API::group(CRM_Core_Permission::VIEW, NULL, 'civicrm_custom_group', NULL, NULL);
-      if (empty($permCustomGroupIds)) {
+      if (empty($permissionedCustomGroupIDs)) {
         return [];
       }
       $customGroupWhere = "cg.id IN (" . implode(',', $permissionedCustomGroupIDs) . ") AND";
