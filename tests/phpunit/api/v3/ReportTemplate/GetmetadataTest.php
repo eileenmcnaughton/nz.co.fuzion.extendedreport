@@ -130,4 +130,13 @@ class api_v3_ReportTemplate_GetmetadataTest extends BaseTestClass implements Hea
     }
   }
 
+  /**
+   * Test the metadata generated for the address history report.
+   */
+  public function testApiMetadataContactFilters() {
+    $result = civicrm_api3('ReportTemplate', 'Getmetadata', array('report_id' => 'contact/addresshistory'))['values'];
+    $this->assertEquals(TRUE, $result['metadata']['contact_id']['is_contact_filter']);
+    $this->assertTrue(empty($result['order_bys']));
+  }
+
 }
