@@ -8053,6 +8053,10 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
     $fields = $this->getMetadataByType('aggregate_columns');
     $aggregateColumns = ['' => ts('--Select--')];
     foreach ($fields as $key => $spec) {
+      $tooCrazyManyOptionsForHeaders = ['county_id', 'country_id', 'state_province_id'];
+      if (in_array($spec['name'], $tooCrazyManyOptionsForHeaders)) {
+        continue;
+      }
       $aggregateColumns[$key] = $spec['title'];
     }
     return $aggregateColumns;
@@ -8064,10 +8068,10 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
    * @return array
    */
   protected function getAggregateRowFields() {
-    // @todo - just re-using the same column field for rows but how do we decide
     // what fields are suitable. Columns need some limits on variants or
-    // else it gets REALLLLLYYYYY WIDE.
-    $fields = $this->getMetadataByType('aggregate_columns');
+    // else it gets REALLLLLYYYYY WIDE - but for rows not sure what limits if
+    // any there should be
+    $fields = $this->getMetadataByType('metadata');
     $aggregateRows = ['' => ts('--Select--')];
     foreach ($fields as $key => $spec) {
       $aggregateRows[$key] = $spec['title'];
