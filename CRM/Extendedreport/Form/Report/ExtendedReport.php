@@ -334,11 +334,29 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
             if ($type === 'filters' && !empty($fieldSpec['having'])) {
               $this->metaData['having'][$fieldName] = $fieldSpec;
             }
+            if (!empty($fieldSpec['options'])) {
+              $this->metaData['metadata'][$fieldName]['options'] = $this->cleanOptions($fieldSpec['options']);
+            }
           }
         }
       }
     }
     return $this->metaData;
+  }
+
+  /**
+   * Pass all option keys & values through escaping in order to ensure nothing unbecoming in them.
+   *
+   * @param array $options
+   *
+   * @return $options
+   */
+  public function cleanOptions($options) {
+    $cleanOptions = [];
+    foreach ($options as $key  => $option) {
+      $cleanOptions[CRM_Utils_String::purifyHTML($key)] = CRM_Utils_String::purifyHTML($option);
+    }
+    return $cleanOptions;
   }
 
   /**
