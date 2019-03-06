@@ -103,6 +103,7 @@ function extendedreport_civicrm_tabset($tabsetName, &$tabs, $context) {
   foreach ($reports['values'] as $report) {
     $tabs['report_' . $report['id']] = [
       'title' => ts($report['title']),
+      'id' => 'report_' . $report['id'],
       'url' => CRM_Utils_System::url('civicrm/report/instance/' . $report['id'], [
           'log_civicrm_address_op' => 'in',
           'contact_id_value' => $context['contact_id'],
