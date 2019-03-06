@@ -103,6 +103,7 @@ function extendedreport_civicrm_tabset($tabsetName, &$tabs, $context) {
   foreach ($reports['values'] as $report) {
     $tabs['report_' . $report['id']] = [
       'title' => ts($report['title']),
+      'id' => 'report_' . $report['id'],
       'url' => CRM_Utils_System::url('civicrm/report/instance/' . $report['id'], [
           'log_civicrm_address_op' => 'in',
           'contact_id_value' => $context['contact_id'],
@@ -135,7 +136,7 @@ function extendedreport_civicrm_post($op, $objectName, $objectId, &$objectRef) {
  */
 function extendedreport_civicrm_preProcess($formName, &$form) {
   if (is_subclass_of($form, 'CRM_Extendedreport_Form_Report_ExtendedReport') && $form->getInstanceID()) {
-    CRM_Core_Resources::singleton()->addScript("cj('#mainTabContainer').append(
+    CRM_Core_Resources::singleton()->addScript("cj('.crm-report-criteria').append(
       '<p><a href=\"" . CRM_Utils_System::url('civicrm/a/#/exreport/report/' . $form->getInstanceID()) . "\">Advanced Report configuration</a> provides options to re-order columnns, change titles & fallback to another field on empty.</p>')");
   }
 }
