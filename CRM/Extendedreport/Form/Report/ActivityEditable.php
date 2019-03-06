@@ -4,7 +4,6 @@
  * Class CRM_Extendedreport_Form_Report_ActivityExtended
  */
 class CRM_Extendedreport_Form_Report_ActivityEditable extends CRM_Extendedreport_Form_Report_ExtendedReport {
-  //todo move def to getActivityColumns
   /**
    * @var array
    */
