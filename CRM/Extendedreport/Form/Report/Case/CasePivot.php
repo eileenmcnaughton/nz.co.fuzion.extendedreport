@@ -54,12 +54,6 @@ class CRM_Extendedreport_Form_Report_Case_CasePivot extends CRM_Extendedreport_F
       $this->_columns['civicrm_case']['filters']['case_civireport_is_deleted']
     );
 
-    $this->_aggregateRowFields = array(
-      'case_civireport:id' => 'Case',
-      'case_civireport:status_id' => 'Case Status',
-      'civicrm_contact:gender_id' => 'Gender',
-    );
-
     $this->_tagFilter = TRUE;
     $this->_groupFilter = TRUE;
     parent::__construct();
