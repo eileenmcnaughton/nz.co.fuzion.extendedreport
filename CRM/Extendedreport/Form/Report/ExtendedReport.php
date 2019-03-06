@@ -324,7 +324,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       foreach ($this->_columns as $table => $tableSpec) {
         foreach ($definitionTypes as $type) {
           foreach ($tableSpec['metadata'] as $fieldName => $fieldSpec) {
-            $fieldSpec = array_merge(['table_name' => $table], $fieldSpec);
+            $fieldSpec = array_merge(['table_name' => $table, 'group_title' => $tableSpec['group_title']], $fieldSpec);
             if (!isset($this->metaData[$fieldName])) {
               $this->metaData['metadata'][$fieldName] = $fieldSpec;
             }
@@ -1248,7 +1248,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
         $table = $field['table_name'];
         if ($filterString === 'filters') {
           $filterGroups[$table] = [
-            'group_title' => $this->_columns[$table]['group_title'],
+            'group_title' => $this->_columns[$field['table_key']]['group_title'],
             'use_accordian_for_field_selection' => TRUE,
           ];
         }
@@ -1308,18 +1308,10 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     $colGroups = [];
 
     foreach ($this->getMetadataByType('fields') as $fieldName => $field) {
-      $tableName = $field['table_name'];
-      $groupTitle = $this->_columns[$tableName]['group_title'];
-
-      if (!$groupTitle && isset($field['group_title'])) {
-        $groupTitle = $field['group_title'];
-      }
+      $tableName = $field['table_key'];
       $colGroups[$tableName]['use_accordian_for_field_selection'] = TRUE;
-
       $colGroups[$tableName]['fields'][$fieldName] = CRM_Utils_Array::value('title', $field);
-      if ($groupTitle && empty($colGroups[$tableName]['group_title'])) {
-        $colGroups[$tableName]['group_title'] = $groupTitle;
-      }
+      $colGroups[$tableName]['group_title'] = $groupTitle = $field['group_title'];
       $options[$fieldName] = CRM_Utils_Array::value('title', $field);
 
     }
@@ -2799,11 +2791,11 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       //lets only extend apply editability where only one entity extended
       // we can easily extend to contact combos
       list($entity) = $this->_customGroupExtends;
-      $entity_table = strtolower('civicrm_' . $entity);
-      $idKeyArray = [$this->_aliases[$entity_table] . '.id'];
+      $entity_table = $this->_aliases[strtolower('civicrm_' . $entity)];
+      $idKeyArray = [$entity_table . '.id'];
       if (empty($this->_groupByArray) || $this->_groupByArray == $idKeyArray) {
         $entity_field = $entity_table . '_id';
-        $entityID = $row[$entity_field];
+        $entityID = $row[$this->getMetadataByType('fields')[$entity_field]['alias']];
       }
     }
     if (CRM_Utils_System::isNull($value) && !in_array($customField['data_type'], [
@@ -3119,12 +3111,11 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     if (!empty($daoName)) {
       $columns[$tableName]['bao'] = $daoName;
     }
-    if ($tableAlias) {
-      $columns[$tableName]['alias'] = $tableAlias;
-    }
+    $columns[$tableName]['alias'] = $tableAlias;
     $exportableFields = $this->getMetadataForFields(['dao' => $daoName]);
 
     foreach ($specs as $specName => $spec) {
+      $spec['table_key'] = $tableName;
       unset($spec['default']);
       if (empty($spec['name'])) {
         $spec['name'] = $specName;
@@ -7496,6 +7487,7 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
           'option_group_id' => $customDAO->option_group_id,
           'time_format' => $customDAO->time_format,
           'prefix' => $prefix,
+          'table_key' => $prefix . $customDAO->table_name,
           'prefix_label' => $label,
           'table_name' => $customDAO->table_name,
         ];
