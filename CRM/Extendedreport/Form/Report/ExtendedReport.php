@@ -2947,32 +2947,6 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     }
   }
 
-  /*
-   * Function is over-ridden to support multiple add to groups
-   *
-   * @param $groupID
-   */
-  function add2group($groupID) {
-    if (is_numeric($groupID) && isset($this->_aliases['civicrm_contact'])) {
-      $contact = CRM_Utils_Array::value('btn_group_contact', $this->_submitValues, 'civicrm_contact');
-      $select = "SELECT DISTINCT {$this->_aliases[$contact]}.id AS addtogroup_contact_id";
-      //    $select = str_ireplace('SELECT SQL_CALC_FOUND_ROWS ', $select, $this->_select);
-
-      $sql = "{$select} {$this->_from} {$this->_where} AND {$this->_aliases[$contact]}.id IS NOT NULL {$this->_groupBy}  {$this->_having} {$this->_orderBy}";
-      $sql = str_replace('WITH ROLLUP', '', $sql);
-      $dao = CRM_Core_DAO::executeQuery($sql);
-
-      $contact_ids = [];
-      // Add resulting contacts to group
-      while ($dao->fetch()) {
-        $contact_ids[$dao->addtogroup_contact_id] = $dao->addtogroup_contact_id;
-      }
-
-      CRM_Contact_BAO_GroupContact::addContactsToGroup($contact_ids, $groupID);
-      CRM_Core_Session::setStatus(ts("Listed contact(s) have been added to the selected group."));
-    }
-  }
-
   /**
    * check if a table exists
    *
@@ -2985,41 +2959,6 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     $result = CRM_Core_DAO::executeQuery($sql);
     $result->fetch();
     return $result->N ? TRUE : FALSE;
-  }
-
-  /**
-   * Function is over-ridden to support multiple add to groups
-   */
-  function buildInstanceAndButtons() {
-    CRM_Report_Form_Instance::buildForm($this);
-    $this->_actionButtonName = $this->getButtonName('submit');
-    $this->addTaskMenu($this->getActions($this->_id));
-    $this->assign('instanceForm', $this->_instanceForm);
-
-    if (CRM_Core_Permission::check('administer Reports') && $this->_add2groupSupported) {
-      $this->addElement('select', 'groups', ts('Group'),
-        ['' => ts('- select group -')] + CRM_Core_PseudoConstant::staticGroup()
-      );
-      if (!empty($this->_add2GroupcontactTables) && is_array($this->_add2GroupcontactTables) && count($this->_add2GroupcontactTables > 1)) {
-        $this->addElement('select', 'btn_group_contact', ts('Contact to Add'),
-          ['' => ts('- choose contact -')] + $this->_add2GroupcontactTables
-        );
-      }
-      $this->assign('group', TRUE);
-    }
-
-    $label = ts('Add these Contacts to Group');
-    $this->addElement('submit', $this->_groupButtonName, $label, ['onclick' => 'return checkGroup();']);
-
-    $this->addChartOptions();
-    $this->addButtons([
-        [
-          'type' => 'submit',
-          'name' => ts('Preview Report'),
-          'isDefault' => TRUE,
-        ],
-      ]
-    );
   }
 
   /**
