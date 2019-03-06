@@ -13,8 +13,8 @@
         <author>Eileen McNaughton</author>
         <email>eileen@fuzion.co.nz</email>
     </maintainer>
-    <releaseDate>2019-02-18</releaseDate>
-    <version>4</version>
+    <releaseDate>2019-03-06</releaseDate>
+    <version>4.1</version>
     <develStage>stable</develStage>
     <compatibility>
         <ver>5.10</ver>
