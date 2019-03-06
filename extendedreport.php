@@ -1,6 +1,7 @@
 <?php
 
 require_once 'extendedreport.civix.php';
+
 use CRM_Extendedreport_ExtensionUtil as E;
 
 /**
@@ -97,12 +98,12 @@ function extendedreport_version_at_least($version) {
 }
 
 function extendedreport_civicrm_tabset($tabsetName, &$tabs, $context) {
-  $reports = civicrm_api3('ReportInstance', 'get', array('form_values' => array('LIKE' => '%contact_dashboard_tab";s:1:"1";%')));
+  $reports = civicrm_api3('ReportInstance', 'get', ['form_values' => ['LIKE' => '%contact_dashboard_tab";s:1:"1";%']]);
 
   foreach ($reports['values'] as $report) {
-    $tabs['report_' . $report['id']] = array(
+    $tabs['report_' . $report['id']] = [
       'title' => ts($report['title']),
-      'url' => CRM_Utils_System::url( 'civicrm/report/instance/' . $report['id'], array(
+      'url' => CRM_Utils_System::url('civicrm/report/instance/' . $report['id'], [
           'log_civicrm_address_op' => 'in',
           'contact_id_value' => $context['contact_id'],
           'contact_id' => $context['contact_id'],
@@ -110,9 +111,9 @@ function extendedreport_civicrm_tabset($tabsetName, &$tabs, $context) {
           'force' => 1,
           'section' => 2,
           'weight' => 70,
-        )
-      )
-    );
+        ]
+      ),
+    ];
   }
 }
 
@@ -135,7 +136,7 @@ function extendedreport_civicrm_post($op, $objectName, $objectId, &$objectRef) {
 function extendedreport_civicrm_preProcess($formName, &$form) {
   if (is_subclass_of($form, 'CRM_Extendedreport_Form_Report_ExtendedReport') && $form->getInstanceID()) {
     CRM_Core_Resources::singleton()->addScript("cj('#mainTabContainer').append(
-      '<p><a href=\"" . CRM_Utils_System::url('civicrm/a/#/exreport/report/' . $form->getInstanceID()) .  "\">Advanced Report configuration</a> provides options to re-order columnns, change titles & fallback to another field on empty.</p>')");
+      '<p><a href=\"" . CRM_Utils_System::url('civicrm/a/#/exreport/report/' . $form->getInstanceID()) . "\">Advanced Report configuration</a> provides options to re-order columnns, change titles & fallback to another field on empty.</p>')");
   }
 }
 
@@ -157,7 +158,7 @@ function extendedreport_civicrm_contactSummaryBlocks(&$blocks) {
       'title' => ts('Extended report'),
       'icon' => 'fa-table',
       'blocks' => [],
-    ]
+    ],
   ];
   foreach ($reports as $report) {
     $blocks['extendedreports']['blocks']['report_' . $report['id']] = [
