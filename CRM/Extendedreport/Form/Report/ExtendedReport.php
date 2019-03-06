@@ -103,12 +103,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   protected $_customGroupOrderBy = TRUE;
 
   /**
-   * Fields available to be added as Rows in pivot style report
-   * @var array
-   */
-  protected $_aggregateRowFields = [];
-
-  /**
    * Include NULL values in aggregate (pivot) fields
    * @var boolean
    */
