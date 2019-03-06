@@ -35,7 +35,7 @@ class ActivityPivotTest extends BaseTestClass implements HeadlessInterface, Hook
     $params = array(
       'report_id' => 'activity/pivot',
       'aggregate_column_headers' => 'activity_status_id',
-      'aggregate_row_headers' => 'activity:activity_activity_type_id',
+      'aggregate_row_headers' => 'activity_activity_type_id',
     );
     $completedStatusID = CRM_Core_PseudoConstant::getKey('CRM_Activity_BAO_Activity', 'status_id', 'Completed');
     $scheduledStatusID = CRM_Core_PseudoConstant::getKey('CRM_Activity_BAO_Activity', 'status_id', 'Scheduled');
