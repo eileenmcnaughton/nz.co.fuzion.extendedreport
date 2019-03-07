@@ -54,7 +54,15 @@ class Contact_AddressHistoryTest extends BaseTestClass implements HeadlessInterf
     ];
     $rows = $this->getRows($params);
     $this->assertEquals('15 Main St<br />
-Collinsville, 6022<br />', trim($rows[0]['log_civicrm_address_address_display_address']));
+Collinsville, Connecticut 6022<br />
+United States<br />', trim($rows[0]['log_civicrm_address_address_display_address']));
+    $this->assertEquals([
+      'log_civicrm_address_address_display_address' => 'Display Address',
+      'log_civicrm_address_log_date' => 'Change Date',
+      'log_civicrm_address_log_conn_id' => 'Connection',
+      'log_civicrm_address_log_user_id' => 'Changed By',
+      'log_civicrm_address_log_action' => 'Change action',
+    ], $this->labels);
   }
 
 }
