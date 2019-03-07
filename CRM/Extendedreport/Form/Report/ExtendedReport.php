@@ -682,7 +682,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
           }
         }
       }
-      $this->_columnHeaders[$alias]['title'] = CRM_Utils_Array::value('title', $field);
+      $this->addFieldToColumnHeaders($field, $alias);
       // 1. In many cases we want select clause to be built in slightly different way
       // for a particular field of a particular type.
       // 2. This method when used should receive params by reference and modify $this->_columnHeaders
@@ -698,11 +698,11 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
         foreach ($fieldStats as $stat => $label) {
           $alias = $this->getStatisticsAlias($tableName, $fieldName, $stat);
           if ($stat !== 'cumulative') {
-            $this->_columnHeaders[$alias]['title'] = $label;
+            $field['title'] = $label;
+            $this->addFieldToColumnHeaders($field, $alias);
             if (in_array($stat, ['count', 'count_distinct'])) {
               $field['type'] = CRM_Utils_Type::T_INT;
             }
-            $this->_columnHeaders[$alias]['type'] = $field['type'];
           }
           if (!in_array($stat, ['cumulative', 'display'])) {
             $this->_statFields[$label] = $alias;
@@ -1721,7 +1721,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    */
   protected function selectStatSum(&$tableName, &$fieldName, &$field) {
     $alias = "{$tableName}_{$fieldName}_sum";
-    $this->_columnHeaders[$alias]['title'] = CRM_Utils_Array::value('title', $field);
+    $this->addFieldToColumnHeaders($field, $alias);
     $this->_columnHeaders[$alias]['type'] = CRM_Utils_Array::value('type', $field);
     $this->_statFields[CRM_Utils_Array::value('title', $field)] = $alias;
     $this->_selectAliases[$alias] = $alias;
@@ -3105,6 +3105,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
             'dbAlias' => $tableName . '_' . $fieldAlias . '_' . $statisticName,
             'selectAlias' => "{$statisticName}({$tableAlias}.{$spec['name']})",
             'is_fields' => FALSE,
+            'is_aggregate_field_for' => $fieldAlias,
           ]);
           $columns[$tableName]['metadata'][$fieldAlias . '_' . $statisticName] = $columns[$tableName]['filters'][$fieldAlias . '_' . $statisticName];
         }
@@ -7072,20 +7073,20 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
   protected function getSelectedFields() {
     $fields = $this->getMetadataByType('fields');
     $selectedFields = array_intersect_key($fields, $this->getConfiguredFieldsFlatArray());
-    foreach ($selectedFields as $selectedField) {
-      if (!empty($selectedField['requires'])) {
-        $requiredFields = array_intersect_key($fields, array_fill_keys($selectedField['requires'], 1));
-        foreach ($requiredFields as $key => $requiredField) {
-          $requiredFields[$key]['no_display'] = TRUE;
-        }
-        $selectedFields = array_merge($requiredFields, $selectedFields);
-      }
+    $requiredFields = array_merge($this->getFieldsRequiredToSupportHavingFilters(), $this->getExtraFieldsRequiredForSelectedFields($selectedFields));
+
+    foreach (array_diff_key($requiredFields, $selectedFields) as $fieldKey => $fieldSpec) {
+      $selectedFields[$fieldKey] = $fieldSpec;
+      $selectedFields[$fieldKey]['no_display'] = TRUE;
+      $this->setFieldAsNoDisplay($fieldKey);
     }
+
     $orderBys = $this->getSelectedOrderBys();
     foreach ($fields as $fieldName => $field) {
       if (!empty($field['required'])) {
         $selectedFields[$fieldName] = $field;
       }
+
       if (isset($orderBys[$fieldName]) && isset($selectedFields[$fieldName])) {
         // The field is being selected for select & order by. Reconcile any fallbacks.
         // Perhaps later we should find a way to support them not being the same but for now....
@@ -8005,6 +8006,55 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
       $aggregateRows[$key] = $spec['title'];
     }
     return $aggregateRows;
+  }
+
+  /**
+   * Get metadata for any fields we need to add to select to support having filters.
+   * @return array
+   */
+  protected function getFieldsRequiredToSupportHavingFilters() {
+    $filters = $this->getSelectedFilters();
+    $fieldsRequireToSupportAggregateFilters = [];
+    foreach ($filters as $index => $filter) {
+      if (!empty($filter['is_aggregate_field_for'])) {
+        $fieldsRequireToSupportAggregateFilters[$filter['is_aggregate_field_for']] = $this->getMetadataByType('fields')[$filter['is_aggregate_field_for']];
+      }
+    }
+    return $fieldsRequireToSupportAggregateFilters;
+  }
+
+  /**
+   * @param $selectedFields
+   *
+   * @return array
+   */
+  protected function getExtraFieldsRequiredForSelectedFields($selectedFields) {
+    $fields = $this->getMetadataByType('fields');
+    $requiredFields = [];
+    foreach ($selectedFields as $selectedField) {
+      if (!empty($selectedField['requires'])) {
+        $requiredFields = array_merge($requiredFields, array_intersect_key($fields, array_fill_keys($selectedField['requires'], 1)));
+      }
+    }
+    return $requiredFields;
+  }
+
+  /**
+   * @param $fieldKey
+   */
+  protected function setFieldAsNoDisplay($fieldKey) {
+    $this->metaData['fields'][$fieldKey]['no_display'] = TRUE;
+  }
+
+  /**
+   * @param $field
+   * @param $alias
+   */
+  protected function addFieldToColumnHeaders($field, $alias) {
+    if (!isset($field['no_display'])) {
+      $this->_columnHeaders[$alias]['title'] = $field['title'];
+      $this->_columnHeaders[$alias]['type'] = $field['type'];
+    }
   }
 
 }

@@ -183,6 +183,17 @@ class ContributionContributionsTest extends BaseTestClass implements HeadlessInt
     ];
     $rows = $this->callAPISuccess('ReportTemplate', 'getrows', $params)['values'];
     $this->assertEquals(1, count($rows));
+    $this->assertEquals(100, $rows[0]['civicrm_contribution_contribution_total_amount_sum']);
+    $this->assertEquals(2, $rows[0]['civicrm_contribution_contribution_total_amount_count']);
+    // Make sure total amount is optional
+    unset($params['fields']['contribution_total_amount']);
+    $params['options']['metadata'] = ['labels'];
+    $rows = $this->callAPISuccess('ReportTemplate', 'getrows', $params);
+    $this->assertEquals(1, $rows['count']);
+    $this->assertEquals([
+      'civicrm_contact_civicrm_contact_contact_id' => 'Contact ID',
+      'civicrm_contribution_contribution_financial_type_id' => 'Contribution Type (Financial)',
+    ], $rows['metadata']['labels']);
   }
 
   /**
