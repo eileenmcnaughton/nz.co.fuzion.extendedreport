@@ -311,6 +311,7 @@ class BaseTestClass extends \PHPUnit_Framework_TestCase implements HeadlessInter
     foreach ($data as $params) {
       $contact = $this->callAPISuccess('Contact', 'create', $params);
       $contacts[$contact['id']] = $contact['values'][$contact['id']];
+      $this->ids['Contact'][] = $contact['id'];
     }
     return $contacts;
   }
