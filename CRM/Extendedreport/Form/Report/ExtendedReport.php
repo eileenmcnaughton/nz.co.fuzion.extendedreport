@@ -7145,18 +7145,21 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
     $selectedFilters = [];
     $filters = $this->getMetadataByType('filters');
     foreach ($this->_params as $key => $value) {
+      $field = '';
       if (substr($key, -6, 6) === '_value' && ($value !== '' && $value !== NULL && $value !== "NULL" && $value !== [])) {
-        $selectedFilters[] = substr($key, 0, strlen($key) - 6);
+        $field = substr($key, 0, strlen($key) - 6);
       }
-      if (substr($key, -9, 9) === '_relative' && !empty($value)) {
-        $selectedFilters[] = substr($key, 0, strlen($key) - 9);
+      $validSuffixes = ['relative', 'from', 'to', 'max', 'min'];
+      foreach ($validSuffixes as $suffix) {
+        $suffixLength = strlen($suffix) + 1;
+        if (substr($key, -$suffixLength, $suffixLength) === '_' . $suffix && (!empty($value) || is_numeric($value))) {
+          $field = substr($key, 0, strlen($key) - $suffixLength);
+        }
       }
-      if (substr($key, -5, 5) === '_from' && !empty($value)) {
-        $selectedFilters[] = substr($key, 0, strlen($key) - 5);
+      if (!empty($field)) {
+        $selectedFilters[$field] = $field;
       }
-      if (substr($key, -3, 3) === '_to' && !empty($value)) {
-        $selectedFilters[] = substr($key, 0, strlen($key) - 3);
-      }
+
     }
     return array_intersect_key($filters, array_flip($selectedFilters));
   }
