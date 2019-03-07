@@ -17,7 +17,7 @@
     <version>4.1</version>
     <develStage>stable</develStage>
     <compatibility>
-        <ver>5.10</ver>
+        <ver>5.11</ver>
     </compatibility>
     <comments>Extended reports create other report options such as crosstab urls, multiple contact custom fields, price
         set reports
