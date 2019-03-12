@@ -29,40 +29,39 @@
 
     <div class="panel panel-default">
       <div class="panel-heading">
-
-      <div id="extendedReportSortingConfig" ng-show="'sorting' == selectedTab">
-        <div class="floatleft">
-          <h2>{{ ts('Available Sorting fields') }}</h2>
-          <div ui-sortable="sortableOrderByOptions" class="order-bys-container screen floatleft" ng-model="orderBysList">
-            <div class="fieldItem" ng-repeat="fieldItem in orderBysList">{{fieldItem.title}}</div>
-          </div>
-        </div>
-
-        <div class="floatleft">
-          <h2>{{ ts('Selected Sorting fields') }}</h2>
-          <div ui-sortable="sortableOrderByOptions" class="order-bys-container screen floatleft" ng-model="reportOrderByFields">
-            <div class="fieldItem" ng-repeat="fieldItem in reportOrderByFields">
-              <span class="fieldTitle" ng-model="fieldItem.title" ng-click="selectOrderBy(fieldItem)">{{fieldItem.title}}</span></div>
-          </div>
-        </div>
-        <div class="floatleft" ng-if="selectedOrderBy">
-          <h2>{{ ts('Selected field') }}</h2>
-          <div class="ex-report-block" ng-model=selectedOrderBy>
-            <h3 class="fieldTitle" extendedreport-editable ng-model="selectedOrderBy.title">{{selectedOrderBy.title}}</h3>
-            <div ng-model="selectedOrderBy.order">{{selectedOrderBy.order}}</div>
-            <div>Fallback field:</div>
-            <select ng-model="selectedOrderBy.field_on_null_usage">
-              <option value="on_null">{{ ts('On null value') }}</option>
-              <option value="on_empty">{{ ts('On null or empty value') }}</option>
-            </select>
-            <div ui-sortable="sortableOrderByOptions" class="order-bys-container" ng-model=selectedOrderBy.field_on_null>
-              <div class="fieldItem" ng-repeat="fieldItem in selectedOrderBy.field_on_null">{{fieldItem.title}}</div>
+        <div id="extendedReportSortingConfig" ng-show="'sorting' == selectedTab">
+          <div class="floatleft">
+            <h2>{{ ts('Available Sorting fields') }}</h2>
+            <div ui-sortable="sortableOrderByOptions" class="order-bys-container screen floatleft" ng-model="orderBysList">
+              <div class="fieldItem" ng-repeat="fieldItem in orderBysList">{{fieldItem.title}}</div>
             </div>
           </div>
+
+          <div class="floatleft">
+            <h2>{{ ts('Selected Sorting fields') }}</h2>
+            <div ui-sortable="sortableOrderByOptions" class="order-bys-container screen floatleft" ng-model="reportOrderByFields">
+              <div class="fieldItem" ng-repeat="fieldItem in reportOrderByFields">
+                <span class="fieldTitle" ng-model="fieldItem.title" ng-click="selectOrderBy(fieldItem)">{{fieldItem.title}}</span></div>
+            </div>
+          </div>
+          <div class="floatleft" ng-if="selectedOrderBy">
+            <h2>{{ ts('Selected field') }}</h2>
+            <div class="ex-report-block" ng-model=selectedOrderBy>
+              <h3 class="fieldTitle" extendedreport-editable ng-model="selectedOrderBy.title">{{selectedOrderBy.title}}</h3>
+              <div ng-model="selectedOrderBy.order">{{selectedOrderBy.order}}</div>
+              <div>Fallback field:</div>
+              <select ng-model="selectedOrderBy.field_on_null_usage">
+                <option value="on_null">{{ ts('On null value') }}</option>
+                <option value="on_empty">{{ ts('On null or empty value') }}</option>
+              </select>
+              <div ui-sortable="sortableOrderByOptions" class="order-bys-container" ng-model=selectedOrderBy.field_on_null>
+                <div class="fieldItem" ng-repeat="fieldItem in selectedOrderBy.field_on_null">{{fieldItem.title}}</div>
+              </div>
+            </div>
+          </div>
+          <div class="clear"></div>
         </div>
-        <div class="clear"></div>
-      </div>
-      <div id="extendedReportFieldsConfig" ng-show="'fields' == selectedTab">
+        <div id="extendedReportFieldsConfig" ng-show="'fields' == selectedTab">
           <div class="floatleft">
             <h2>{{ ts('Available fields') }}</h2>
             <div ui-sortable="sortableFieldOptions" class="fields-container screen floatleft" ng-model="fieldList">
