@@ -166,6 +166,8 @@ function extendedreport_civicrm_contactSummaryBlocks(&$blocks) {
   ];
   foreach ($reports as $report) {
     $blocks['extendedreports']['blocks']['report_' . $report['id']] = [
+      'id' => 'report_' . $report['id'],
+      'icon' => 'crm-i fa-bar-chart',
       'title' => $report['title'],
       'tpl_file' => 'CRM/Extendedreport/Page/Inline/ExtendedReport.tpl',
       'edit' => FALSE,
