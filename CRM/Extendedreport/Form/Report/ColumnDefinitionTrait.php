@@ -125,7 +125,23 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
           'id_field' => 'id',
           'entity' => 'activity',
         ],
-
+      ],
+      'location' => [
+        'title' => ts('Location'),
+        'type' => CRM_Utils_Type::T_STRING,
+        'is_filters' => TRUE,
+        'is_fields' => TRUE,
+      ],
+      'priority_id' => [
+        'title' => ts('Priority'),
+        'type' => CRM_Utils_Type::T_STRING,
+        'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+        'alter_display' => 'alterPseudoConstant',
+        'options' => CRM_Activity_BAO_Activity::buildOptions('priority_id'),
+        'is_filters' => TRUE,
+        'is_fields' => TRUE,
+        'is_group_bys' => TRUE,
+        'is_order_bys' => TRUE,
       ],
       'result' => [
         'title' => ts('Activity Result'),
