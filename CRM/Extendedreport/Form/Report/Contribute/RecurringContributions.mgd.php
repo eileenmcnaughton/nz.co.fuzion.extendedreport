@@ -3,17 +3,17 @@
 // The record will be automatically inserted, updated, or deleted from the
 // database as appropriate. For more details, see "hook_civicrm_managed" at:
 // http://wiki.civicrm.org/confluence/display/CRMDOC42/Hook+Reference
-return array(
-  0 => array(
-    'name' => 'Extended Report - Contributions',
+return [
+  0 => [
+    'name' => 'Extended Report - Recurring Contributions',
     'entity' => 'ReportTemplate',
-    'params' => array(
+    'params' => [
       'version' => 3,
-      'label' => 'Extended Report - Contributions',
-      'description' => 'Extended Report - Contributions',
-      'class_name' => 'CRM_Extendedreport_Form_Report_Contribute_Contributions',
-      'report_url' => 'contribution/contributions',
+      'label' => 'Extended Report - Recurring Contributions',
+      'description' => 'Extended Report - Recurring Contributions',
+      'class_name' => 'CRM_Extendedreport_Form_Report_Contribute_RecurringContributions',
+      'report_url' => 'contribution/recurring_contributions',
       'component' => 'CiviContribute',
-    ),
-  ),
-);
+    ],
+  ],
+];

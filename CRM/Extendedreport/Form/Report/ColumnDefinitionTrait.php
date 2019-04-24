@@ -440,4 +440,141 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
     return $this->buildColumns($activityFields['civicrm_activity']['fields'], $options['prefix'] . 'civicrm_activity', 'CRM_Activity_DAO_Activity');
   }
 
+  /**
+   * @param array $options
+   *
+   * @return array
+   */
+  function getContributionRecurColumns($options = []) {
+    $spec = [
+      'id' => [
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+        'statistics' => ['count' => E::ts('Numer of recurring profiles')],
+      ],
+      'payment_processor_id' => [
+        'title' => E::ts('Payment Processor'),
+        'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+        'alter_display' => 'alterPseudoConstant',
+        'options' => CRM_Contribute_BAO_ContributionRecur::buildOptions('payment_processor_id', 'get'),
+        'type' => CRM_Utils_Type::T_INT,
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+        'is_group_bys' =>  TRUE,
+        'is_order_bys' => TRUE,
+      ],
+      'currency' => [
+        'title' => E::ts("Currency"),
+        'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+        'options' => CRM_Core_OptionGroup::values('currencies_enabled'),
+        'default' => NULL,
+        'type' => CRM_Utils_Type::T_STRING,
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+      ],
+      'contribution_status_id' => [
+        'title' => E::ts('Recurring Contribution Status'),
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+        'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+        'options' => CRM_Contribute_PseudoConstant::contributionStatus(),
+        'default' => [5],
+        'type' => CRM_Utils_Type::T_INT,
+        'is_group_bys' =>  TRUE,
+        'is_order_bys' => TRUE,
+      ],
+      'frequency_interval' => [
+        'title' => E::ts('Frequency interval'),
+        'type' => CRM_Utils_Type::T_INT,
+        'is_fields' => TRUE,
+        'is_filters' => TRUE
+      ],
+      'frequency_unit' => [
+        'title' => E::ts('Frequency unit'),
+        'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+        'options' => CRM_Core_OptionGroup::values('recur_frequency_units'),
+        'type' => CRM_Utils_Type::T_STRING,
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+      ],
+      'amount' => [
+        'title' => E::ts('Installment Amount'),
+        'type' => CRM_Utils_Type::T_MONEY,
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+        'is_group_bys' =>  TRUE,
+        'is_order_bys' => TRUE,
+      ],
+      'installments' => [
+        'title' => E::ts('Installments'),
+        'type' => CRM_Utils_Type::T_INT,
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+      ],
+      'start_date' => [
+        'title' => E::ts('Start Date'),
+        'operatorType' => CRM_Report_Form::OP_DATE,
+        'type' => CRM_Utils_Type::T_DATE + CRM_Utils_Type::T_TIME,
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+      ],
+      'create_date' => [
+        'title' => E::ts('Create Date'),
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+      ],
+      'modified_date' => [
+        'title' => E::ts('Modified Date'),
+        'operatorType' => CRM_Report_Form::OP_DATE,
+        'type' => CRM_Utils_Type::T_DATE + CRM_Utils_Type::T_TIME,
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+      ],
+      'cancel_date' => [
+        'title' => E::ts('Cancel Date'),
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+      ],
+      'cancel_reason' => [
+        'title' => E::ts('Cancellation Reason'),
+        'operatorType' => CRM_Report_Form::OP_STRING,
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+        'is_group_bys' =>  TRUE,
+        'is_order_bys' => TRUE,
+      ],
+      'end_date' => [
+        'title' => E::ts('End Date'),
+        'operatorType' => CRM_Report_Form::OP_DATE,
+        'type' => CRM_Utils_Type::T_DATE + CRM_Utils_Type::T_TIME,
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+      ],
+      'next_sched_contribution_date' => [
+        'title' => E::ts('Next Scheduled Contribution Date'),
+        'operatorType' => CRM_Report_Form::OP_DATE,
+        'type' => CRM_Utils_Type::T_DATE + CRM_Utils_Type::T_TIME,
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+      ],
+      'failure_count' => [
+        'title' => E::ts('Failure Count'),
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+      ],
+      'failure_retry_date' => [
+        'title' => E::ts('Failure Retry Date'),
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+      ],
+      'financial_type_id' => [
+        'title' => E::ts('Financial Type'),
+        'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+        'options' => CRM_Financial_BAO_FinancialType::getAvailableFinancialTypes(),
+        'type' => CRM_Utils_Type::T_INT,
+      ],
+    ];
+    return $this->buildColumns($spec, $options['prefix'] . 'civicrm_contribution_recur', 'CRM_Contribute_BAO_ContributionRecur', NULL, $this->getDefaultsFromOptions($options), $options);
+  }
+
 }

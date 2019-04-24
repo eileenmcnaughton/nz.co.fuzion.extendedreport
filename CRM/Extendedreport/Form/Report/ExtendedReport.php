@@ -5006,6 +5006,11 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'rightTable' => 'civicrm_contact',
         'callback' => 'joinContactFromContribution',
       ],
+      'contact_from_contribution_recur' => [
+        'leftTable' => 'civicrm_contribution_recur',
+        'rightTable' => 'civicrm_contact',
+        'callback' => 'joinContactFromContributionRecur',
+      ],
       'contact_from_pledge' => [
         'leftTable' => 'civicrm_pledge',
         'rightTable' => 'civicrm_contact',
@@ -5644,6 +5649,14 @@ ON {$this->_aliases['civicrm_membership']}.contact_id = {$this->_aliases['civicr
   function joinContactFromContribution() {
     $this->_from .= " LEFT JOIN civicrm_contact {$this->_aliases['civicrm_contact']}
 ON {$this->_aliases['civicrm_contribution']}.contact_id = {$this->_aliases['civicrm_contact']}.id";
+  }
+
+  /**
+   * Join contact in from civicrm_contribution_recur table.
+   */
+  function joinContactFromContributionRecur() {
+    $this->_from .= " LEFT JOIN civicrm_contact {$this->_aliases['civicrm_contact']}
+ON {$this->_aliases['civicrm_contribution_recur']}.contact_id = {$this->_aliases['civicrm_contact']}.id";
   }
 
   /**
