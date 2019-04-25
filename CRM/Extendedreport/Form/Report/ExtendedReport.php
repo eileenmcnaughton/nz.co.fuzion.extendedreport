@@ -7943,11 +7943,14 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
   }
 
   /**
-   * @param $params
-   * @return mixed
+   * Get configured extended order by fields.
+   *
+   * @param array $params
+   *
+   * @return array
    */
   protected function getExtendedOrderBysSelection($params) {
-    return CRM_Utils_Array::value('extended_order_bys', $params, []);
+    return CRM_Utils_Array::value('extended_order_bys', $params, CRM_Utils_Array::value('extended_order_bys', $this->_formValues, CRM_Utils_Array::value('extended_order_bys', $this->_params, [])));
   }
 
   /**
