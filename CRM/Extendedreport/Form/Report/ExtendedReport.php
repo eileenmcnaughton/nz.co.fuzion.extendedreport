@@ -7851,7 +7851,7 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
           }
           $this->metaData['order_bys'][$extendedOrderBy['name']]['title'] .= '(' . implode(', ', $nullString) . ')';
           $this->metaData['order_bys'][$extendedOrderBy['name']]['field_on_null'] = $extendedOrderBy['field_on_null'];
-
+          $this->metaData['order_bys'][$extendedOrderBy['name']]['field_on_null_usage'] = CRM_Utils_Array::value('field_on_null_usage', $extendedOrderBy, 'on_null');
         }
       }
     }
