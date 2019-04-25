@@ -51,6 +51,7 @@ class CRM_Extendedreport_Form_Report_Price_Lineitem extends CRM_Extendedreport_F
       + $this->getColumns('PriceField', array('order_by' => TRUE))
       + $this->getColumns('PriceFieldValue' , array('order_by' => TRUE))
       + $this->getColumns('LineItem', array('order_by' => TRUE, 'fields_defaults' => array('financial_type_id', 'line_total'))) +
+      $this->getColumns('BillingAddress') +
       $this->getColumns('Address');
     parent::__construct();
   }
@@ -79,6 +80,7 @@ class CRM_Extendedreport_Form_Report_Price_Lineitem extends CRM_Extendedreport_F
       'contact_from_contribution',
       'event_from_participant',
       'address_from_contact',
+      'address_from_contribution',
     );
 
   }

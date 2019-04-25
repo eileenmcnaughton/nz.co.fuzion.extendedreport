@@ -4863,6 +4863,28 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     return $this->buildColumns($spec, $options['prefix'] . 'civicrm_address', 'CRM_Core_DAO_Address', NULL, $defaults, $options);
   }
 
+  function getBillingAddressColumns($options = array()) {
+    $options['prefix'] = 'billing';
+    $spec = array(
+      $options['prefix'] . 'name' => array(
+        'title' => ts($options['prefix_label'] . 'Billing Name'),
+        'name' => 'name',
+        'is_fields' => TRUE,
+        'alter_display' => 'alterBillingName',
+      ),
+    );
+    //FIX THIS
+    return $this->buildColumns($spec, $options['prefix'] . 'civicrm_address', 'CRM_Core_DAO_Address', NULL, $defaults);
+  }
+
+  function alterBillingName($value, &$row, $selectedField) {
+    if (empty($value)) {
+      return '';
+    }
+
+    return str_replace(CRM_Core_DAO::VALUE_SEPARATOR, ' ', $value);
+  }
+
   /**
    * Get Specification
    * for tag columns.
@@ -5036,6 +5058,11 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'rightTable' => 'civicrm_address',
         'callback' => 'joinAddressFromContact',
       ],
+      'address_from_contribution' => [
+        'leftTable' => 'civicrm_contact',
+        'rightTable' => 'civicrm_address',
+        'callback' => 'joinAddressFromContribution',
+      ],
       'contact_from_address' => [
         'leftTable' => 'civicrm_address',
         'rightTable' => 'civicrm_contact',
@@ -5177,6 +5204,15 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     ON {$this->_aliases[$prefix . 'civicrm_address']}.contact_id = {$this->_aliases[$prefix . 'civicrm_contact']}.id
     AND {$this->_aliases[$prefix . 'civicrm_address']}.is_primary = 1
     ";
+    return TRUE;
+  }
+
+  protected function joinAddressFromContribution($prefix = 'billingaddress', $extra = array()) {
+    $this->_from .= " LEFT JOIN civicrm_address billingaddress
+    ON billingaddress.id = {$this->_aliases[$prefix . 'civicrm_contribution']}.address_id
+    AND billingaddress.is_billing = 1
+    ";
+
     return TRUE;
   }
 
