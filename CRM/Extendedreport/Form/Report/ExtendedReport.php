@@ -4864,6 +4864,41 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
   }
 
   /**
+   * Get billing address columns to add to array.
+   *
+   * @param array $options
+   *
+   * @return array billing address columns definition
+   */
+  function getBillingAddressColumns($options = array()) {
+    $options['prefix'] = 'billing';
+    $spec = array(
+      $options['prefix'] . 'name' => array(
+        'title' => ts($options['prefix_label'] . 'Billing Name'),
+        'name' => 'name',
+        'is_fields' => TRUE,
+        'alter_display' => 'alterBillingName',
+      ),
+    );
+    //FIX THIS
+    return $this->buildColumns($spec, $options['prefix'] . 'civicrm_address', 'CRM_Core_DAO_Address', NULL);
+  }
+
+  /**
+   * @param $value
+   * @param $row
+   *
+   * @return string
+   */
+  function alterBillingName($value, &$row, $selectedField) {
+    if (empty($value)) {
+      return '';
+    }
+
+    return str_replace(CRM_Core_DAO::VALUE_SEPARATOR, ' ', $value);
+  }
+
+  /**
    * Get Specification
    * for tag columns.
    * @param array $options
@@ -5036,6 +5071,11 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'rightTable' => 'civicrm_address',
         'callback' => 'joinAddressFromContact',
       ],
+      'address_from_contribution' => [
+        'leftTable' => 'civicrm_contact',
+        'rightTable' => 'civicrm_address',
+        'callback' => 'joinAddressFromContribution',
+      ],
       'contact_from_address' => [
         'leftTable' => 'civicrm_address',
         'rightTable' => 'civicrm_contact',
@@ -5177,6 +5217,25 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     ON {$this->_aliases[$prefix . 'civicrm_address']}.contact_id = {$this->_aliases[$prefix . 'civicrm_contact']}.id
     AND {$this->_aliases[$prefix . 'civicrm_address']}.is_primary = 1
     ";
+    return TRUE;
+  }
+
+  /**
+   * Add join from contribution table to address.
+   *
+   * Prefix will be added to both tables as it's assumed you are using it to get address of a secondary contact
+   *
+   * @param string $prefix prefix to add to table names
+   * @param array $extra extra join parameters
+   *
+   * @return bool true or false to denote whether extra filters can be appended to join
+   */
+  protected function joinAddressFromContribution($prefix = 'billingaddress', $extra = array()) {
+    $this->_from .= " LEFT JOIN civicrm_address billingaddress
+    ON billingaddress.id = {$this->_aliases[$prefix . 'civicrm_contribution']}.address_id
+    AND billingaddress.is_billing = 1
+    ";
+
     return TRUE;
   }
 
