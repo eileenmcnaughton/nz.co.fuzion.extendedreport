@@ -4881,7 +4881,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       ),
     );
     //FIX THIS
-    return $this->buildColumns($spec, $options['prefix'] . 'civicrm_address', 'CRM_Core_DAO_Address', NULL, $defaults);
+    return $this->buildColumns($spec, $options['prefix'] . 'civicrm_address', 'CRM_Core_DAO_Address', NULL);
   }
 
   /**
