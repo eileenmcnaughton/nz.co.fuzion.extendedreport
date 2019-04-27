@@ -450,6 +450,7 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
       'id' => [
         'is_fields' => TRUE,
         'is_filters' => TRUE,
+        'type' => CRM_Utils_Type::T_INT,
         'statistics' => ['count' => E::ts('Numer of recurring profiles')],
       ],
       'payment_processor_id' => [
@@ -521,6 +522,7 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
       'create_date' => [
         'title' => E::ts('Create Date'),
         'is_fields' => TRUE,
+        'type' => CRM_Utils_Type::T_DATE + CRM_Utils_Type::T_TIME,
         'is_filters' => TRUE,
       ],
       'modified_date' => [
@@ -533,11 +535,13 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
       'cancel_date' => [
         'title' => E::ts('Cancel Date'),
         'is_fields' => TRUE,
+        'type' => CRM_Utils_Type::T_DATE + CRM_Utils_Type::T_TIME,
         'is_filters' => TRUE,
       ],
       'cancel_reason' => [
         'title' => E::ts('Cancellation Reason'),
         'operatorType' => CRM_Report_Form::OP_STRING,
+        'type' => CRM_Utils_Type::T_STRING,
         'is_fields' => TRUE,
         'is_filters' => TRUE,
         'is_group_bys' =>  TRUE,
@@ -561,11 +565,13 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
         'title' => E::ts('Failure Count'),
         'is_fields' => TRUE,
         'is_filters' => TRUE,
+        'type' => CRM_Utils_Type::T_INT,
       ],
       'failure_retry_date' => [
         'title' => E::ts('Failure Retry Date'),
         'is_fields' => TRUE,
         'is_filters' => TRUE,
+        'type' => CRM_Utils_Type::T_DATE + CRM_Utils_Type::T_TIME,
       ],
       'financial_type_id' => [
         'title' => E::ts('Financial Type'),
