@@ -14,7 +14,7 @@
         <email>eileen@fuzion.co.nz</email>
     </maintainer>
     <releaseDate>2019-04-27</releaseDate>
-    <version>4.23</version>
+    <version>4.3</version>
     <develStage>stable</develStage>
     <compatibility>
         <ver>5.13</ver>
