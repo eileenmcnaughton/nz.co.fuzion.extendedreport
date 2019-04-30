@@ -224,7 +224,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    *
    * @var bool
    */
-  protected $isSupportsContactTab = FALSE;
+  protected $isSupportsContactTab = TRUE;
 
   /**
    * DAOs for custom data fields to use.
