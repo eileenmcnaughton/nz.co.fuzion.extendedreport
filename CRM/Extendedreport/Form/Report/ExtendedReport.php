@@ -1961,7 +1961,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
 
       //$templatesDir = str_replace('CRM/Extendedreport', 'templates/CRM/Extendedreport', __DIR__);
       $this->add('select', 'templates', ts('Select Alternate Template'), $this->_templates, FALSE,
-        ['id' => 'templates', 'title' => ts('- select -'),]
+        ['id' => 'templates', 'title' => ts('- select -'), 'class' => 'crm-select2']
       );
 
       $this->tabs['Template'] = [
@@ -6732,10 +6732,10 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
 
     }
     $this->add('select', 'aggregate_column_headers', ts('Aggregate Report Column Headers'), $aggregateColumnHeaderFields, FALSE,
-      ['id' => 'aggregate_column_headers', 'title' => ts('- select -')]
+      ['id' => 'aggregate_column_headers',  'class' => 'crm-select2', 'title' => ts('- select -')]
     );
     $this->add('select', 'aggregate_row_headers', ts('Row Fields'), $aggregateRowHeaderFields, FALSE,
-      ['id' => 'aggregate_row_headers', 'title' => ts('- select -')]
+      ['id' => 'aggregate_row_headers',  'class' => 'crm-select2', 'title' => ts('- select -')]
     );
     $this->_columns[$this->_baseTable]['fields']['include_null'] = [
       'title' => 'Show column for unknown',
