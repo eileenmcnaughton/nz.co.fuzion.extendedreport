@@ -2334,6 +2334,17 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
     }
     parent::alterDisplay($rows);
 
+    if (isset($this->_params['delete_null'])) {
+      if ($this->_params['delete_null'] == '1') {
+        foreach ($rows[0] as $rowName => $rowValue) {
+          if($rowValue != ''&& is_numeric($rowValue)) {
+            if ($rowValue == 0) {
+              unset ($this->_columnHeaders[$rowName]);
+            }
+          }
+        }
+      }
+    }
     //THis is all generic functionality which can hopefully go into the parent class
     // it introduces the option of defining an alter display function as part of the column definition
     // @todo tidy up the iteration so it happens in this function
@@ -6796,6 +6807,8 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
     $this->add('select', 'aggregate_row_headers', ts('Row Fields'), $aggregateRowHeaderFields, FALSE,
       ['id' => 'aggregate_row_headers',  'class' => 'crm-select2', 'title' => ts('- select -')]
     );
+    $this->add('advcheckbox', 'delete_null',  ts('Hide columns with zero count'));
+
     $this->_columns[$this->_baseTable]['fields']['include_null'] = [
       'title' => 'Show column for unknown',
       'pseudofield' => TRUE,

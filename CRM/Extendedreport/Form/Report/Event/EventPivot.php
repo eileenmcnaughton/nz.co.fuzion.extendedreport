@@ -46,12 +46,6 @@ class CRM_Extendedreport_Form_Report_Event_EventPivot extends CRM_Extendedreport
 
     $this->_groupFilter = TRUE;
     parent::__construct();
-    $this->_options = array(
-      'delete_null' => array(
-        'title' => ts('Hide columns with zero count'),
-        'type' => 'checkbox',
-      ),
-    );
   }
 
   /**
@@ -65,18 +59,5 @@ class CRM_Extendedreport_Form_Report_Event_EventPivot extends CRM_Extendedreport
       'contact_from_participant',
     );
   }
-  function alterDisplay(&$rows) {
-    parent::alterDisplay($rows);
-    if (isset($this->_params['delete_null']['delete_null'])) {
-      if ($this->_params['delete_null']['delete_null'] == '1') {
-        foreach ($rows[0] as $rowName => $rowValue) {
-          if($rowValue != ''&& is_numeric($rowValue)) {
-            if ($rowValue == 0) {
-              unset ($this->_columnHeaders[$rowName]);
-            }
-          }
-        }
-      }
-    }
-  }
+
 }
