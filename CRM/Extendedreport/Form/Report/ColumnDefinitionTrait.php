@@ -92,11 +92,6 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
         'is_fields' => TRUE,
         'is_filters' => TRUE,
         'is_order_bys' => TRUE,
-        'crm_editable' => [
-          'id_table' => 'civicrm_activity',
-          'id_field' => 'id',
-          'entity' => 'activity',
-        ],
       ],
       'status_id' => [
         'title' => E::ts('Activity Status'),
