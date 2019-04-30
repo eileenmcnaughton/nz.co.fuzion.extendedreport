@@ -3,7 +3,7 @@
 /**
  * Class CRM_Extendedreport_Form_Report_ContributionPivot
  */
-class CRM_Extendedreport_Form_Report_Contribute_ContributionPivot extends CRM_Extendedreport_Form_Report_ExtendedReport {
+class CRM_Extendedreport_Form_Report_Contribute_ContributionRecurPivot extends CRM_Extendedreport_Form_Report_ExtendedReport {
 
   protected $_baseTable = 'civicrm_contribution_recur';
 
@@ -32,10 +32,10 @@ class CRM_Extendedreport_Form_Report_Contribute_ContributionPivot extends CRM_Ex
     $this->_columns = $this->getColumns('ContributionRecur', [
         'fields' => FALSE,
       ])
-    + $this->_columns = $this->getColumns('Contact', [
+    + $this->getColumns('Contact', [
         'fields' => FALSE,
     ])
-    + $this->_columns = $this->getColumns('Address', [
+    + $this->getColumns('Address', [
         'fields' => FALSE,
         'aggregate_rows' => TRUE,
       ]);
