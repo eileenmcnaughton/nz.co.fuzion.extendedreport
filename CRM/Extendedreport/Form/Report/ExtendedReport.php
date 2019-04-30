@@ -2398,7 +2398,7 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
         if (empty($this->_groupByArray) || $this->_groupByArray == $idKeyArray) {
           $alterFunctions[$fieldAlias] = 'alterCrmEditable';
           $alterMap[$fieldAlias] = $fieldAlias;
-          $alterSpecs[$fieldAlias] = $specs['crm_editable'];
+          $alterSpecs[$fieldAlias] = $specs;
           $alterSpecs[$fieldAlias]['field_name'] = $specs['name'];
         }
       }
@@ -5922,11 +5922,12 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    * @param array $row
    * @param string $selectedField
    * @param $criteriaFieldName
-   * @param array $specs
+   * @param array $fullSpec
    *
    * @return string
    */
-  function alterCrmEditable($value, &$row, $selectedField, $criteriaFieldName, $specs) {
+  function alterCrmEditable($value, &$row, $selectedField, $criteriaFieldName, $fullSpec) {
+    $specs = $fullSpec['crm_editable'];
     $id_field = $specs['id_table'] . '_' . $specs['id_field'];
     if (empty($row[$id_field])) {
       // Check one more possible field...
@@ -5950,9 +5951,13 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
       $value = isset($specs['options'][$value]) ? $specs['options'][$value] : $value;
       $class = 'editable_select';
     }
+    elseif (!empty($specs['data-type'])) {
+      $extra = "data-type='{$specs['data-type']}'";
+    }
+
     //nodeName == "INPUT" && this.type=="checkbox"
     $editableDiv = "<div data-id='{$entityID}' data-entity='{$entity}' class='crm-entity'>" .
-      "<span class='crm-editable crmf-{$specs['field_name']} $class ' data-action='create' $extra>" . $value . "</span></div>";
+      "<span class='crm-editable crmf-{$fullSpec['field_name']} $class' data-action='create' $extra>" . $value . "</span></div>";
     return $editableDiv;
   }
 
