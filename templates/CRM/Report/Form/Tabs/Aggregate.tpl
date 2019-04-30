@@ -12,5 +12,8 @@
         {$form.aggregate_column_headers.html}
       </td>
     </tr>
+    <tr>
+      <td>{$form.delete_null.label}  {$form.delete_null.html}</td></td>
+    </tr>
   </table>
 </div>
