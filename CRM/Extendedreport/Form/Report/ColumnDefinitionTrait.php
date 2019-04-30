@@ -61,9 +61,15 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
         'is_filters' => TRUE,
         'is_order_bys' => TRUE,
         'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-        'options' => CRM_Core_PseudoConstant::activityType(TRUE, TRUE),
+        'options' => $this->_getOptions('activity', 'activity_type_id'),
         'name' => 'activity_type_id',
         'type' => CRM_Utils_Type::T_INT,
+        'crm_editable' => [
+          'id_table' => 'civicrm_activity',
+          'id_field' => 'id',
+          'entity' => 'activity',
+          'options' => $this->_getOptions('activity', 'activity_type_id'),
+        ],
       ],
       'subject' => [
         'title' => E::ts('Subject'),
@@ -86,6 +92,11 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
         'is_fields' => TRUE,
         'is_filters' => TRUE,
         'is_order_bys' => TRUE,
+        'crm_editable' => [
+          'id_table' => 'civicrm_activity',
+          'id_field' => 'id',
+          'entity' => 'activity',
+        ],
       ],
       'status_id' => [
         'title' => E::ts('Activity Status'),
@@ -117,6 +128,11 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
         'name' => 'duration',
         'type' => CRM_Utils_Type::T_INT,
         'is_fields' => TRUE,
+        'crm_editable' => [
+          'id_table' => 'civicrm_activity',
+          'id_field' => 'id',
+          'entity' => 'activity',
+        ],
       ],
       'details' => [
         'title' => E::ts('Activity Details'),
@@ -134,17 +150,28 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
         'type' => CRM_Utils_Type::T_STRING,
         'is_filters' => TRUE,
         'is_fields' => TRUE,
+        'crm_editable' => [
+          'id_table' => 'civicrm_activity',
+          'id_field' => 'id',
+          'entity' => 'activity',
+        ],
       ],
       'priority_id' => [
         'title' => E::ts('Priority'),
         'type' => CRM_Utils_Type::T_STRING,
         'operatorType' => CRM_Report_Form::OP_MULTISELECT,
         'alter_display' => 'alterPseudoConstant',
-        'options' => CRM_Activity_BAO_Activity::buildOptions('priority_id'),
+        'options' => $this->_getOptions('activity', 'priority_id'),
         'is_filters' => TRUE,
         'is_fields' => TRUE,
         'is_group_bys' => TRUE,
         'is_order_bys' => TRUE,
+        'crm_editable' => [
+          'id_table' => 'civicrm_activity',
+          'id_field' => 'id',
+          'entity' => 'activity',
+          'options' => $this->_getOptions('activity', 'priority_id'),
+        ],
       ],
       'result' => [
         'title' => E::ts('Activity Result'),

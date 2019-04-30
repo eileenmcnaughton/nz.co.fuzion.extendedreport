@@ -5947,7 +5947,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
     if (!empty($specs['options'])) {
       $specs['options']['selected'] = $value;
       $extra = "data-type='select'";
-      $value = $specs['options'][$value];
+      $value = isset($specs['options'][$value]) ? $specs['options'][$value] : $value;
       $class = 'editable_select';
     }
     //nodeName == "INPUT" && this.type=="checkbox"
