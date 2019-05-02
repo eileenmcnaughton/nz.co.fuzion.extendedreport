@@ -4229,6 +4229,12 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'name' => 'phone',
         'is_fields' => TRUE,
       ],
+      $options['prefix'] . 'phone_numeric' => [
+        'title' => $options['prefix_label'] . ' ' . E::ts('Phone (numbers only)'),
+        'name' => 'phone_numeric',
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+      ],
     ];
 
     if ($options['subquery']) {
