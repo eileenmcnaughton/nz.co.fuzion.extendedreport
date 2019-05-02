@@ -2525,7 +2525,7 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
         implode(", ", $sectionAliases);
 
       // initialize array of total counts
-      $dao = CRM_Core_DAO::executeQuery($query);
+      $dao = $this->executeReportQuery($query);
       $totals = $totalsArray = [];
       while ($dao->fetch()) {
         $values = [];
