@@ -5083,7 +5083,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'callback' => 'joinAddressFromContact',
       ],
       'address_from_contribution' => [
-        'leftTable' => 'civicrm_contact',
+        'leftTable' => 'civicrm_contribution',
         'rightTable' => 'civicrm_address',
         'callback' => 'joinAddressFromContribution',
       ],
