@@ -2532,6 +2532,7 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
         // let $this->_alterDisplay translate any integer ids to human-readable values.
         $rows[0] = $dao->toArray();
         $this->alterDisplay($rows);
+        $this->alterCustomDataDisplay($rows);
         $row = $rows[0];
 
         foreach ($sectionAliases as $alias) {
