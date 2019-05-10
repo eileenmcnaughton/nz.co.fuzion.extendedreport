@@ -3580,6 +3580,17 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'default' => TRUE,
         'type' => CRM_Utils_Type::T_STRING,
       ],
+      'payment_processor_id' => [
+        'title' => ts('Payment Processor'),
+        'alter_display' => 'alterPaymentProcessor',
+        'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+        'options' => CRM_Core_PseudoConstant::paymentProcessor(TRUE),
+        'type' => CRM_Utils_Type::T_INT,
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+        'is_order_bys' => TRUE,
+        'is_group_bys' => TRUE,
+      ],
       'payment_instrument_id' => [
         'title' => ts('Payment Instrument'),
         'default' => TRUE,
@@ -6307,6 +6318,16 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
   function alterPaymentType($value) {
     $paymentInstruments = CRM_Contribute_PseudoConstant::paymentInstrument();
     return CRM_Utils_Array::value($value, $paymentInstruments);
+  }
+
+  /**
+   * @param int $value
+   *
+   * @return string
+   */
+  function alterPaymentProcessor($value) {
+    $paymentProcessors = CRM_Contribute_PseudoConstant::paymentProcessor(TRUE);
+    return CRM_Utils_Array::value($value, $paymentProcessors);
   }
 
   /**
