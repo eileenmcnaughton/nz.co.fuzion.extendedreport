@@ -605,6 +605,11 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
     return $this->buildColumns($spec, $options['prefix'] . 'civicrm_contribution_recur', 'CRM_Contribute_BAO_ContributionRecur', NULL, $this->getDefaultsFromOptions($options), $options);
   }
 
+	/**
+	 * @param array $options
+	 *
+	 * @return mixed
+	 */
 	function getPrimaryEmailColumns($options = []) {
 		$defaultOptions = [
 			'prefix' => 'civicrm',
