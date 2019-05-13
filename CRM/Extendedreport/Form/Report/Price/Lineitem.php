@@ -45,7 +45,7 @@ class CRM_Extendedreport_Form_Report_Price_Lineitem extends CRM_Extendedreport_F
   public function __construct() {
     $this->_columns
       = $this->getColumns('Contact', array('order_by' => TRUE))
-      + $this->getColumns('PrimaryEmail', [
+      + $this->getColumns('Email', [
 		    'fields' => TRUE,
 		    'order_by' => FALSE,
 	    ])
