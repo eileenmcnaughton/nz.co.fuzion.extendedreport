@@ -45,6 +45,10 @@ class CRM_Extendedreport_Form_Report_Price_Lineitem extends CRM_Extendedreport_F
   public function __construct() {
     $this->_columns
       = $this->getColumns('Contact', array('order_by' => TRUE))
+      + $this->getColumns('PrimaryEmail', [
+		    'fields' => TRUE,
+		    'order_by' => FALSE,
+	    ])
       + $this->getColumns('Event')
       + $this->getColumns('Participant')
       + $this->getColumns('Contribution', array('order_by' => TRUE))
@@ -81,6 +85,7 @@ class CRM_Extendedreport_Form_Report_Price_Lineitem extends CRM_Extendedreport_F
       'event_from_participant',
       'address_from_contact',
       'address_from_contribution',
+	    'email_from_contact',
     );
 
   }

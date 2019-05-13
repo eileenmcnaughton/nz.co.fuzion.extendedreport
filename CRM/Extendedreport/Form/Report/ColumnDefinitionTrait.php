@@ -605,4 +605,33 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
     return $this->buildColumns($spec, $options['prefix'] . 'civicrm_contribution_recur', 'CRM_Contribute_BAO_ContributionRecur', NULL, $this->getDefaultsFromOptions($options), $options);
   }
 
+	function getPrimaryEmailColumns($options = []) {
+		$defaultOptions = [
+			'prefix' => 'civicrm',
+			'prefix_label' => '',
+			'group_by' => FALSE,
+			'order_by' => TRUE,
+			'filters' => TRUE,
+			'fields_defaults' => [],
+			'filters_defaults' => [],
+			'group_bys_defaults' => [],
+			'order_by_defaults' => [],
+		];
+		$options = array_merge($defaultOptions, $options);
+		$defaults = $this->getDefaultsFromOptions($options);
+
+		$fields = [
+			'email' => [
+				'title' => ts($options['prefix_label'] . 'Primary Email'),
+				'name' => 'email',
+				'is_fields' => TRUE,
+				'is_filters' => TRUE,
+				'is_group_bys' => TRUE,
+				'is_order_bys' => TRUE,
+				'type' => CRM_Utils_Type::T_STRING,
+				'operatorType' => CRM_Report_Form::OP_STRING,
+			],
+		];
+		return $this->buildColumns($fields, $options['prefix'] . 'civicrm_email', 'CRM_Core_DAO_Email', NULL, $defaults, $options);
+	}
 }
