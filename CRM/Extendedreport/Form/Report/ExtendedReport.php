@@ -1023,7 +1023,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
           $this->_groupBy .= ", " . $section['dbAlias'];
         }
       }
-      if (!empty($this->_statFields) && empty($this->_orderByArray) &&
+      if (!empty($this->_statistics) && empty($this->_orderByArray) &&
         (count($this->_groupByArray) <= 1 || !$this->_having)
         && $this->_rollup !== FALSE
         && !$this->isInProcessOfPreconstraining()
