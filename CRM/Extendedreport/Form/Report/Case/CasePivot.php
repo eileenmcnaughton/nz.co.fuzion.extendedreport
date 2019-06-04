@@ -16,16 +16,12 @@ class CRM_Extendedreport_Form_Report_Case_CasePivot extends CRM_Extendedreport_F
   protected $_potentialCriteria = array();
   protected $isPivot = TRUE;
   protected $_noFields = TRUE;
+  protected $_customGroupExtends = ['Case'];
 
   /**
    * Class constructor.
    */
   public function __construct() {
-    $this->_customGroupExtended['civicrm_case'] = array(
-      'extends' => array('Case'),
-      'filters' => TRUE,
-      'title' => ts('Case'),
-    );
 
     $this->_columns = $this->getColumns('Case', array(
           'fields' => FALSE,

@@ -5,6 +5,7 @@
  */
 class CRM_Extendedreport_Form_Report_ActivityPivot extends CRM_Extendedreport_Form_Report_ExtendedReport {
   protected $_baseTable = 'civicrm_activity';
+  protected $_customGroupExtends = ['Activity'];
   protected $skipACL = FALSE;
   protected $isPivot = TRUE;
   protected $_customGroupAggregates = TRUE;

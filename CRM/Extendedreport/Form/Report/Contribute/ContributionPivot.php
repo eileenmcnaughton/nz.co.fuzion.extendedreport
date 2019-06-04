@@ -14,6 +14,7 @@ class CRM_Extendedreport_Form_Report_Contribute_ContributionPivot extends CRM_Ex
   protected $isPivot = TRUE;
   protected $_potentialCriteria = array();
   protected $_noFields = TRUE;
+  protected $_customGroupExtends = ['Contribution', 'Contact', 'Individual', 'Household', 'Organization'];
 
   /**
    * Class constructor.

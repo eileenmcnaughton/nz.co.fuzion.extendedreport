@@ -7,8 +7,6 @@ class CRM_Extendedreport_Form_Report_Member_MembershipPivot extends CRM_Extended
 
   protected $_baseTable = 'civicrm_membership';
 
-  protected $skipACL = TRUE;
-
   protected $_customGroupAggregates = TRUE;
 
   protected $_aggregatesIncludeNULL = TRUE;
@@ -21,19 +19,13 @@ class CRM_Extendedreport_Form_Report_Member_MembershipPivot extends CRM_Extended
 
   public $_drilldownReport = ['membership/membershipdetail' => 'Link to Participants'];
 
-  protected $_potentialCriteria = [];
-
   protected $_noFields = TRUE;
 
+  protected $_customGroupExtends = ['Membership', 'Contact', 'Individual', 'Household', 'Organization'];
   /**
    * Class constructor.
    */
   public function __construct() {
-    $this->_customGroupExtended['civicrm_membership'] = [
-      'extends' => ['Membership'],
-      'filters' => TRUE,
-      'title' => ts('Membership'),
-    ];
     $this->_columns = $this->getColumns('membership', [
           'fields' => FALSE,
           'order_by' => FALSE,

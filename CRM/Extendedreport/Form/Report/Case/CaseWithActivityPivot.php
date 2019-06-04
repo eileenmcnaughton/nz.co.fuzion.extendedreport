@@ -15,6 +15,7 @@ class CRM_Extendedreport_Form_Report_Case_CaseWithActivityPivot extends CRM_Exte
   public $_drilldownReport = array();
   protected $isPivot = TRUE;
   protected $_noFields = TRUE;
+  protected $_customGroupExtends = ['Case', 'Activity'];
   /**
    * PreConstrain means the query gets run twice - the first time for generating temp tables
    * which go in the from the second time around
@@ -34,17 +35,6 @@ class CRM_Extendedreport_Form_Report_Case_CaseWithActivityPivot extends CRM_Exte
    *
    */
   public function __construct() {
-    $this->_customGroupExtended['civicrm_case'] = array(
-      'extends' => array('Case'),
-      'filters' => TRUE,
-      'title' => ts('Case'),
-    );
-    $this->_customGroupExtended['civicrm_activity'] = array(
-      'extends' => array('Activity'),
-      'filters' => TRUE,
-      'title' => ts('Activity'),
-    );
-
     $this->_columns = $this->getColumns('Case', array(
           'fields' => FALSE,
         )
