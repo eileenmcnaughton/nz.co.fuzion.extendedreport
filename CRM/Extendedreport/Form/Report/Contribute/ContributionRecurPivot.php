@@ -24,6 +24,7 @@ class CRM_Extendedreport_Form_Report_Contribute_ContributionRecurPivot extends C
   protected $_potentialCriteria = [];
 
   protected $_noFields = TRUE;
+  protected $_customGroupExtends = ['ContributionRecur', 'Contact', 'Individual', 'Household', 'Organization'];
 
   /**
    * Class constructor.

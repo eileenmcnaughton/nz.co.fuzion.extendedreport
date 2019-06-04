@@ -12,7 +12,7 @@ class CRM_Extendedreport_Form_Report_Contact_Extendedcontact extends CRM_Extende
   protected $_customGroupAggregates = TRUE;
   protected $isPivot = TRUE;
   protected $_noFields = TRUE;
-
+  protected $_customGroupExtends = ['Contact', 'Individual', 'Household', 'Organization'];
 
   /**
    * Class constructor.
