@@ -1949,6 +1949,39 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
 
   }
 
+  /**
+   * Add group by options to the report.
+   */
+  public function addGroupBys() {
+    $options = $freqElements = [];
+
+    foreach ($this->getMetadataByType('group_bys') as $field) {
+      if (empty($field['no_display'])) {
+        $options[$field['title']] = $field['title'];
+        if (!empty($field['frequency'])) {
+          $freqElements[$field['title']] = $field['title'];
+        }
+      }
+    }
+    $this->addCheckBox("group_bys", ts('Group by columns'), $options, NULL,
+      NULL, NULL, NULL, $this->_fourColumnAttribute
+    );
+    $this->assign('groupByElements', $options);
+    if (!empty($options)) {
+      $this->tabs['GroupBy'] = [
+        'title' => ts('Grouping'),
+        'tpl' => 'GroupBy',
+        'div_label' => 'group-by-elements',
+      ];
+    }
+
+    foreach ($freqElements as $name) {
+      $this->addElement('select', "group_bys_freq[$name]",
+        ts('Frequency'), $this->_groupByDateFreq
+      );
+    }
+  }
+
   protected function userHasAllCustomGroupAccess() {
     return CRM_Core_Permission::check('access all custom data');
   }
