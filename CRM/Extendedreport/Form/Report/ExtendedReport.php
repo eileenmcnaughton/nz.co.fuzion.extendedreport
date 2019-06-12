@@ -7690,12 +7690,7 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
         $field['operatorType'] = CRM_Report_Form::OP_MULTISELECT;
       }
 
-      $ogDAO = CRM_Core_DAO::executeQuery("SELECT ov.value, ov.label FROM civicrm_option_value ov WHERE ov.option_group_id = %1 ORDER BY ov.weight", [
-        1 => [$field['option_group_id'], 'Integer'],
-      ]);
-      while ($ogDAO->fetch()) {
-        $field['options'][$ogDAO->value] = $ogDAO->label;
-      }
+      $field['options'] = civicrm_api3($field['extends'], 'getoptions', ['field' => 'custom_' . $field['id']])['values'];
     }
 
     if ($field['type'] === CRM_Utils_Type::T_BOOLEAN) {
