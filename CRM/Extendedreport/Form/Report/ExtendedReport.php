@@ -4707,6 +4707,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    *  - prefix_label Label to give columns from this address table instance
    *
    * @return array address columns definition
+   * @throws \CRM_Core_Exception
    */
   function getAddressColumns($options = []) {
     $defaultOptions = [
@@ -4907,7 +4908,9 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'title' => ts($options['prefix_label'] . 'Location Type'),
         'type' => CRM_Utils_Type::T_INT,
         'is_fields' => TRUE,
+        'is_join_filters' => TRUE,
         'alter_display' => 'alterLocationTypeID',
+        'options' => CRM_Core_BAO_Address::buildOptions('location_type_id'),
       ],
       $options['prefix'] . 'id' => [
         'title' => ts($options['prefix_label'] . ' Address ID'),
