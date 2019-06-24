@@ -865,11 +865,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       ], '_', "{$fieldName}_" . strtolower(str_replace(' ', '', $optionValue)));
 
       // htmlType is set for custom data and tells us the field will be stored using hex(01) separators.
-      if (!empty($spec['htmlType']) && in_array($spec['htmlType'], [
-          'CheckBox',
-          'MultiSelect',
-        ])
-      ) {
+      if (!empty($spec['htmlType']) && ($spec['htmlType'] == 'CheckBox' || strpos($spec['htmlType'], 'Multi') !== FALSE)) {
         $this->_select .= " , SUM( CASE WHEN {$dbAlias} LIKE '%" . CRM_Core_DAO::VALUE_SEPARATOR . $optionValue . CRM_Core_DAO::VALUE_SEPARATOR . "%' THEN 1 ELSE 0 END ) AS $fieldAlias ";
       }
       else {
