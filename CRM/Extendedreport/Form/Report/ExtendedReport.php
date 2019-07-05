@@ -944,11 +944,9 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    */
   function from() {
     if (!empty($this->_baseTable)) {
-      if (!empty($this->_aliases['civicrm_contact'])) {
-        $this->buildACLClause($this->_aliases['civicrm_contact']);
-      }
+      $tableAlias = (empty($this->_aliases[$this->_baseTable]) ? '' : $this->_aliases[$this->_baseTable]);
+      $this->setFromBase($this->_baseTable, 'id', $tableAlias);
 
-      $this->_from = "FROM {$this->_baseTable} " . (empty($this->_aliases[$this->_baseTable]) ? '' : $this->_aliases[$this->_baseTable]);
       $availableClauses = $this->getAvailableJoins();
       foreach ($this->fromClauses() as $clauseKey => $fromClause) {
         if (is_array($fromClause)) {
@@ -1829,6 +1827,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     $this->storeWhereHavingClauseArray();
     $this->storeGroupByArray();
     $this->storeOrderByArray();
+    $this->buildPermissionClause();
     $this->select();
     $this->from();
     $this->where();
