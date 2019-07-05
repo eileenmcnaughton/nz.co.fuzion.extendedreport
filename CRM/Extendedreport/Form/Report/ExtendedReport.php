@@ -1145,7 +1145,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
           $groupByFrequency = CRM_Utils_Array::value($fieldName, $this->_params['group_bys_freq']);
           switch ($groupByFrequency) {
             case 'FISCALYEAR' :
-              $this->_groupByArray[$groupByKey . '_start'] = self::fiscalYearOffset($fieldData['dbAlias']);
+              $this->_groupByArray[$groupByKey . '_start'] = $this->fiscalYearOffset($fieldData['dbAlias']);
               break;
 
             case 'YEAR' :
@@ -1954,9 +1954,9 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   public function addGroupBys() {
     $options = $freqElements = [];
 
-    foreach ($this->getMetadataByType('group_bys') as $field) {
+    foreach ($this->getMetadataByType('group_bys') as $fieldName => $field) {
       if (empty($field['no_display'])) {
-        $options[$field['title']] = $field['title'];
+        $options[$field['title']] = $fieldName;
         if (!empty($field['frequency'])) {
           $freqElements[$field['title']] = $field['title'];
         }
