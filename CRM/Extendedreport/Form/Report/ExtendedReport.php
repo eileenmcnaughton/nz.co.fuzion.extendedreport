@@ -671,18 +671,28 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       $fieldStats = $this->getFieldStatistics($field);
       if ($fieldStats === []) {
         $this->_selectAliases["{$tableName}_{$fieldName}"] = $field;
+        $this->addFieldToColumnHeaders($field, $alias);
       }
       else {
         foreach ($fieldStats as $stat => $label) {
           $alias = $this->getStatisticsAlias($tableName, $fieldName, $stat);
           $this->_selectAliases[$alias] = $field;
           $this->_selectAliases[$alias]['title'] = $fieldStats[$stat];
+
           if (in_array($stat, ['sum', 'count'])) {
             $this->_selectAliases[$alias]['stat'] = $stat;
           }
+          $statSpec = array_merge($field, [
+            'type' => in_array($stat, ['count', 'count_distinct']) ? CRM_Utils_Type::T_INT : $field['type'],
+            'title' => $label,
+          ]);
+
+          if ($stat !== 'cumulative') {
+            $this->addFieldToColumnHeaders($statSpec, $alias);
+          }
         }
       }
-      $this->addFieldToColumnHeaders($field, $alias);
+
       // 1. In many cases we want select clause to be built in slightly different way
       // for a particular field of a particular type.
       // 2. This method when used should receive params by reference and modify $this->_columnHeaders
@@ -697,13 +707,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       if ($fieldStats !== []) {
         foreach ($fieldStats as $stat => $label) {
           $alias = $this->getStatisticsAlias($tableName, $fieldName, $stat);
-          if ($stat !== 'cumulative') {
-            $field['title'] = $label;
-            $this->addFieldToColumnHeaders($field, $alias);
-            if (in_array($stat, ['count', 'count_distinct'])) {
-              $field['type'] = CRM_Utils_Type::T_INT;
-            }
-          }
           if (!in_array($stat, ['cumulative', 'display'])) {
             $this->_statFields[$label] = $alias;
           }
