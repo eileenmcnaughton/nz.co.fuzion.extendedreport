@@ -1145,7 +1145,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
           $groupByFrequency = CRM_Utils_Array::value($fieldName, $this->_params['group_bys_freq']);
           switch ($groupByFrequency) {
             case 'FISCALYEAR' :
-              $this->_groupByArray[$groupByKey . '_start'] = self::fiscalYearOffset($fieldData['dbAlias']);
+              $this->_groupByArray[$groupByKey . '_start'] = $this->fiscalYearOffset($fieldData['dbAlias']);
               break;
 
             case 'YEAR' :
