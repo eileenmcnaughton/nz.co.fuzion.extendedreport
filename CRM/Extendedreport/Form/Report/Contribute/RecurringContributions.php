@@ -72,8 +72,8 @@ class CRM_Extendedreport_Form_Report_Contribute_RecurringContributions extends C
    * Class constructor.
    */
   public function __construct() {
-    $this->_columns = $this->getColumns('ContributionRecur', ['group_by' => TRUE])
-      + $this->getColumns('Contact', ['group_by' => TRUE])
+    $this->_columns = $this->getColumns('Contact', ['group_by' => TRUE])
+      + $this->getColumns('ContributionRecur', ['group_by' => TRUE])
       + $this->getColumns('Email', ['group_by' => TRUE])
       + $this->getColumns('Address', ['group_by' => TRUE])
       + $this->getColumns('Phone', ['group_by' => TRUE])
