@@ -474,6 +474,7 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
         'is_filters' => TRUE,
         'type' => CRM_Utils_Type::T_INT,
         'statistics' => ['count' => E::ts('Numer of recurring profiles')],
+        'is_order_bys' => TRUE,
       ],
       'payment_processor_id' => [
         'title' => E::ts('Payment Processor'),
@@ -494,14 +495,16 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
         'type' => CRM_Utils_Type::T_STRING,
         'is_fields' => TRUE,
         'is_filters' => TRUE,
+        'is_order_bys' => TRUE,
       ],
       'contribution_status_id' => [
         'title' => E::ts('Recurring Contribution Status'),
         'is_fields' => TRUE,
         'is_filters' => TRUE,
         'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-        'options' => CRM_Contribute_PseudoConstant::contributionStatus(),
+        'options' => CRM_Contribute_BAO_ContributionRecur::buildOptions('contribution_status_id'),
         'default' => [5],
+        'alter_display' => 'alterByOptions',
         'type' => CRM_Utils_Type::T_INT,
         'is_group_bys' =>  TRUE,
         'is_order_bys' => TRUE,
@@ -510,7 +513,8 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
         'title' => E::ts('Frequency interval'),
         'type' => CRM_Utils_Type::T_INT,
         'is_fields' => TRUE,
-        'is_filters' => TRUE
+        'is_filters' => TRUE,
+        'is_order_bys' => TRUE,
       ],
       'frequency_unit' => [
         'title' => E::ts('Frequency unit'),
@@ -519,6 +523,7 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
         'type' => CRM_Utils_Type::T_STRING,
         'is_fields' => TRUE,
         'is_filters' => TRUE,
+        'is_order_bys' => TRUE,
       ],
       'amount' => [
         'title' => E::ts('Installment Amount'),
@@ -533,6 +538,7 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
         'type' => CRM_Utils_Type::T_INT,
         'is_fields' => TRUE,
         'is_filters' => TRUE,
+        'is_order_bys' => TRUE,
       ],
       'start_date' => [
         'title' => E::ts('Start Date'),
@@ -540,12 +546,14 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
         'type' => CRM_Utils_Type::T_DATE + CRM_Utils_Type::T_TIME,
         'is_fields' => TRUE,
         'is_filters' => TRUE,
+        'is_order_bys' => TRUE,
       ],
       'create_date' => [
         'title' => E::ts('Create Date'),
         'is_fields' => TRUE,
         'type' => CRM_Utils_Type::T_DATE + CRM_Utils_Type::T_TIME,
         'is_filters' => TRUE,
+        'is_order_bys' => TRUE,
       ],
       'modified_date' => [
         'title' => E::ts('Modified Date'),
@@ -553,12 +561,14 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
         'type' => CRM_Utils_Type::T_DATE + CRM_Utils_Type::T_TIME,
         'is_fields' => TRUE,
         'is_filters' => TRUE,
+        'is_order_bys' => TRUE,
       ],
       'cancel_date' => [
         'title' => E::ts('Cancel Date'),
         'is_fields' => TRUE,
         'type' => CRM_Utils_Type::T_DATE + CRM_Utils_Type::T_TIME,
         'is_filters' => TRUE,
+        'is_order_bys' => TRUE,
       ],
       'cancel_reason' => [
         'title' => E::ts('Cancellation Reason'),
@@ -575,6 +585,7 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
         'type' => CRM_Utils_Type::T_DATE + CRM_Utils_Type::T_TIME,
         'is_fields' => TRUE,
         'is_filters' => TRUE,
+        'is_order_bys' => TRUE,
       ],
       'next_sched_contribution_date' => [
         'title' => E::ts('Next Scheduled Contribution Date'),
@@ -582,24 +593,28 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
         'type' => CRM_Utils_Type::T_DATE + CRM_Utils_Type::T_TIME,
         'is_fields' => TRUE,
         'is_filters' => TRUE,
+        'is_order_bys' => TRUE,
       ],
       'failure_count' => [
         'title' => E::ts('Failure Count'),
         'is_fields' => TRUE,
         'is_filters' => TRUE,
         'type' => CRM_Utils_Type::T_INT,
+        'is_order_bys' => TRUE,
       ],
       'failure_retry_date' => [
         'title' => E::ts('Failure Retry Date'),
         'is_fields' => TRUE,
         'is_filters' => TRUE,
         'type' => CRM_Utils_Type::T_DATE + CRM_Utils_Type::T_TIME,
+        'is_order_bys' => TRUE,
       ],
       'financial_type_id' => [
         'title' => E::ts('Financial Type'),
         'operatorType' => CRM_Report_Form::OP_MULTISELECT,
         'options' => CRM_Financial_BAO_FinancialType::getAvailableFinancialTypes(),
         'type' => CRM_Utils_Type::T_INT,
+        'is_order_bys' => TRUE,
       ],
     ];
     return $this->buildColumns($spec, $options['prefix'] . 'civicrm_contribution_recur', 'CRM_Contribute_BAO_ContributionRecur', NULL, $this->getDefaultsFromOptions($options), $options);

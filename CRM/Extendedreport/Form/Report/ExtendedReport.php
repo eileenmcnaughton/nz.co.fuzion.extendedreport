@@ -6074,6 +6074,17 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
   }
 
   /**
+   * Retrieve text for contribution status from pseudoconstant
+   * @param $value
+   * @param $row
+   *
+   * @return string
+   */
+  function alterByOptions($value, &$row, $selectedField, $criteriaFieldName, $spec) {
+    return CRM_Core_PseudoConstant::getKey($spec['bao'], $spec['name'], $value);
+  }
+
+  /**
    * @param $value
    * @param $row
    *
