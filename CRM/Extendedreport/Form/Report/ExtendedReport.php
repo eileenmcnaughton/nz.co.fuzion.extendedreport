@@ -2451,7 +2451,7 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
       // - no manipulation to be done
       return;
     }
-    foreach ($rows as $index => & $row) {
+    foreach ($rows as $index => &$row) {
       foreach ($row as $selectedField => $value) {
         if (array_key_exists($selectedField, $alterFunctions)) {
           $rows[$index][$selectedField] = $this->{$alterFunctions[$selectedField]}($value, $row, $selectedField, $alterMap[$selectedField], $alterSpecs[$selectedField]);
@@ -6081,7 +6081,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    * @return string
    */
   function alterByOptions($value, &$row, $selectedField, $criteriaFieldName, $spec) {
-    return CRM_Core_PseudoConstant::getKey($spec['bao'], $spec['name'], $value);
+    return CRM_Core_PseudoConstant::getLabel($spec['bao'], $spec['name'], $value);
   }
 
   /**
