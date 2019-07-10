@@ -3883,6 +3883,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'name' => 'start_date',
         'is_fields' => TRUE,
         'is_filters' => TRUE,
+        'is_order_bys' => TRUE,
       ],
       'event_end_date' => [
         'title' => ts('Event End Date'),
