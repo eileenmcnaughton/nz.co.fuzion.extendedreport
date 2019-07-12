@@ -2734,10 +2734,9 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
 
     // skip for type date and ContactReference since date format is already handled
     $query = "
-SELECT cg.table_name, cf." . implode(", cf.", $customFieldCols) . ", ov.value, ov.label
+SELECT cg.table_name, cg.extends, cf." . implode(", cf.", $customFieldCols) . "
 FROM  civicrm_custom_field cf
 INNER JOIN civicrm_custom_group cg ON cg.id = cf.custom_group_id
-LEFT JOIN civicrm_option_value ov ON cf.option_group_id = ov.option_group_id
 WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       cg.is_active = 1 AND
       cf.is_active = 1 AND
@@ -2759,7 +2758,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         }
       }
       if ($dao->option_group_id) {
-        $fieldValueMap[$dao->option_group_id][$dao->value] = $dao->label;
+        $fieldValueMap[$dao->option_group_id] = civicrm_api3($dao->extends, 'getoptions', ['field' => 'custom_' . $dao->id])['values'];
       }
     }
     $entryFound = FALSE;
