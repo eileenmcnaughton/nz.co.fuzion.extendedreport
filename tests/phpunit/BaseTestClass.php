@@ -20,7 +20,7 @@ require_once __DIR__ . '/../../extendedreport.php';
  *
  * @group headless
  */
-class BaseTestClass extends \PHPUnit_Framework_TestCase implements HeadlessInterface, HookInterface, TransactionalInterface {
+class BaseTestClass extends \PHPUnit\Framework\TestCase implements HeadlessInterface, HookInterface, TransactionalInterface {
 
   use \Civi\Test\Api3TestTrait;
 
@@ -36,6 +36,13 @@ class BaseTestClass extends \PHPUnit_Framework_TestCase implements HeadlessInter
 
   protected $ids = [];
 
+  /**
+   * Set up for headless tests.
+   *
+   * @return \Civi\Test\CiviEnvBuilder
+   *
+   * @throws \CRM_Extension_Exception_ParseException
+   */
   public function setUpHeadless() {
     // Civi\Test has many helpers, like install(), uninstall(), sql(), and sqlFile().
     // See: https://github.com/civicrm/org.civicrm.testapalooza/blob/master/civi-test.md
