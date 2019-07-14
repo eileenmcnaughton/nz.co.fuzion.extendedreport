@@ -425,6 +425,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    * (not in core) for uniquename matching against core metadata.
    *
    * https://github.com/eileenmcnaughton/nz.co.fuzion.extendedreport/issues/12
+   * @throws \Exception
    */
   public function preProcess() {
     $this->preProcessCommon();
@@ -7442,16 +7443,29 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
     $curFields[$fieldName] = $field;
 
     // Add totals field
+    $this->_columns[$tableKey]['metadata'][$fieldName . '_qty'] = array_merge(
+      $field, [
+        'title' => "$prefixLabel{$field['label']} Count of Selected",
+        'statistics' => ['count' => "$prefixLabel{$field['label']} Count of Selected"],
+        'is_group_bys' => FALSE,
+        'is_order_bys' => FALSE,
+        'is_filters' => FALSE,
+        'is_join_filters' => FALSE,
+      ]
+    );
     if ($curFields[$fieldName]['type'] === CRM_Utils_Type::T_INT) {
-      $this->_columns[$tableKey]['metadata'][$fieldName . '_qty'] = array_merge(
+      $this->_columns[$tableKey]['metadata'][$fieldName . '_sum'] = array_merge(
         $field, [
-          'title' => "$prefixLabel{$field['label']} Quantity",
-          'statistics' => ['count' => ts("Quantity Selected")],
+          'title' => "$prefixLabel{$field['label']} Selected Quantity",
+          'statistics' => ['sum' => "$prefixLabel{$field['label']} Selected Quantity"],
+          'is_group_bys' => FALSE,
+          'is_order_bys' => FALSE,
+          'is_filters' => FALSE,
+          'is_join_filters' => FALSE,
         ]
       );
     }
   }
-
 
   /**
    * @param array $field
