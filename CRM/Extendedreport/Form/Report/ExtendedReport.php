@@ -3501,6 +3501,11 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'name' => 'contact_id',
         'is_filters' => TRUE,
       ],
+      'owner_membership_id' => [
+        'title' => ts('Primary Membership'),
+        'operatorType' => CRM_Report_Form::OP_INT,
+        'is_filters' => TRUE,
+      ],
     ];
     return $this->buildColumns($specs, $options['prefix'] . 'civicrm_membership', 'CRM_Member_DAO_Membership');
   }
