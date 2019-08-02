@@ -2367,8 +2367,8 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
 
     if (isset($this->_params['delete_null'])) {
       if ($this->_params['delete_null'] == '1') {
-        foreach ($rows[0] as $rowName => $rowValue) {
-          if($rowValue != ''&& is_numeric($rowValue)) {
+        foreach ($this->rollupRow as $rowName => $rowValue) {
+          if($rowValue != '' && is_numeric($rowValue)) {
             if ($rowValue == 0) {
               unset ($this->_columnHeaders[$rowName]);
             }
