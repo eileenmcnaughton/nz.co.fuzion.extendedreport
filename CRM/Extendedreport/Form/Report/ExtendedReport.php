@@ -8273,6 +8273,7 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
    * @param array $statistics
    */
   public function groupByStat(&$statistics) {
+    $combinations = [];
     foreach ($this->getSelectedGroupBys() as $field) {
       $combinations[] = $field['title'];
     }
