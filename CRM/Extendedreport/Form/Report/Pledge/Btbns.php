@@ -54,6 +54,7 @@ class CRM_Extendedreport_Form_Report_Pledge_Btbns extends CRM_Extendedreport_For
       'is_group_bys' => FALSE,
       'is_order_bys' => FALSE,
       'default' => date('Y'),
+      'table_key' => 'civicrm_pledge',
     ];
     $this->_groupFilter = TRUE;
     $this->_tagFilter = TRUE;

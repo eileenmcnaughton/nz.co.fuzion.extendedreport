@@ -74,6 +74,7 @@ class CRM_Extendedreport_Form_Report_Pledge_Lybunt extends CRM_Extendedreport_Fo
       'is_fields' => FALSE,
       'is_group_bys' => FALSE,
       'is_order_bys' => FALSE,
+      'table_key' => 'civicrm_pledge',
     ];
 
     $this->_groupFilter = TRUE;
