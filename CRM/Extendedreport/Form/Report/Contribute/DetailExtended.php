@@ -38,8 +38,6 @@ class CRM_Extendedreport_Form_Report_Contribute_DetailExtended extends CRM_Exten
 
   protected $_allBatches = NULL;
 
-  protected $_softFrom = NULL;
-
   protected $groupConcatTested = TRUE;
 
   protected $_customGroupExtends = [
@@ -219,41 +217,6 @@ class CRM_Extendedreport_Form_Report_Contribute_DetailExtended extends CRM_Exten
       'value' => implode(',  ', $average),
       'type' => CRM_Utils_Type::T_STRING,
     ];
-
-    // Stats for soft credits
-    if ($this->_softFrom && CRM_Utils_Array::value('contribution_or_soft_value', $this->_params) != 'contributions_only') {
-      $totalAmount = $average = [];
-      $count = 0;
-      $select = "
-SELECT COUNT(contribution_soft_civireport.amount ) as count,
-       SUM(contribution_soft_civireport.amount ) as amount,
-       ROUND(AVG(contribution_soft_civireport.amount), 2) as avg,
-       {$this->_aliases['civicrm_contribution']}.currency as currency";
-      $sql = "
-{$select}
-{$this->_softFrom}
-GROUP BY {$this->_aliases['civicrm_contribution']}.currency";
-      $dao = CRM_Core_DAO::executeQuery($sql);
-      while ($dao->fetch()) {
-        $totalAmount[] = CRM_Utils_Money::format($dao->amount, $dao->currency) . " (" . $dao->count . ")";
-        $average[] = CRM_Utils_Money::format($dao->avg, $dao->currency);
-        $count += $dao->count;
-      }
-      $statistics['counts']['softamount'] = [
-        'title' => ts('Total Amount (Soft Credits)'),
-        'value' => implode(',  ', $totalAmount),
-        'type' => CRM_Utils_Type::T_STRING,
-      ];
-      $statistics['counts']['softcount'] = [
-        'title' => ts('Total Soft Credits'),
-        'value' => $count,
-      ];
-      $statistics['counts']['softavg'] = [
-        'title' => ts('Average (Soft Credits)'),
-        'value' => implode(',  ', $average),
-        'type' => CRM_Utils_Type::T_STRING,
-      ];
-    }
 
     return $statistics;
   }

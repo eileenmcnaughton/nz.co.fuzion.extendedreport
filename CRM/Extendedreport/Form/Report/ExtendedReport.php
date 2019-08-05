@@ -8267,4 +8267,19 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
     }
   }
 
+  /**
+   * Add group by statistics.
+   *
+   * @param array $statistics
+   */
+  public function groupByStat(&$statistics) {
+    foreach ($this->getSelectedGroupBys() as $field) {
+      $combinations[] = $field['title'];
+    }
+    $statistics['groups'][] = [
+      'title' => ts('Grouping(s)'),
+      'value' => implode(' & ', $combinations),
+    ];
+  }
+
 }
