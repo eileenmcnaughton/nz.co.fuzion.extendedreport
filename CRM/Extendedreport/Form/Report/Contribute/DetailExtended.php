@@ -35,19 +35,20 @@
 class CRM_Extendedreport_Form_Report_Contribute_DetailExtended extends CRM_Extendedreport_Form_Report_ExtendedReport {
 
   protected $_summary = NULL;
+
   protected $_allBatches = NULL;
 
   protected $_softFrom = NULL;
 
   protected $groupConcatTested = TRUE;
 
-  protected $_customGroupExtends = array(
+  protected $_customGroupExtends = [
     'Contribution',
     'Individual',
     'Contact',
     'Organization',
     'Household',
-  );
+  ];
 
   protected $isTempTableBuilt = FALSE;
 
@@ -65,50 +66,52 @@ class CRM_Extendedreport_Form_Report_Contribute_DetailExtended extends CRM_Exten
       $this->activeCampaigns = $getCampaigns['campaigns'];
       asort($this->activeCampaigns);
     }
-    $this->_columns = $this->getColumns('Contact',  array(
-      'fields_defaults' => array('display_name', 'id'),
-    ))
-    + $this->getColumns('Email')
-    + $this->getColumns('Phone')
-    + $this->getColumns('Contribution', array(
-      'fields_defaults' => array('receive_date', 'id', 'total_amount'),
-      'filters_defaults' => array('contribution_status_id' => array(1), 'is_test' => 0),
-      'group_bys_defaults' => ['id' => TRUE],
-    ));
+    $this->_columns = $this->getColumns('Contact', [
+        'fields_defaults' => ['display_name', 'id'],
+      ])
+      + $this->getColumns('Email')
+      + $this->getColumns('Phone')
+      + $this->getColumns('Contribution', [
+        'fields_defaults' => ['receive_date', 'id', 'total_amount'],
+        'filters_defaults' => ['contribution_status_id' => [1], 'is_test' => 0],
+        'group_bys_defaults' => ['id' => TRUE],
+      ]);
 
     $this->_columns['civicrm_contribution']['fields']['id']['required'] = TRUE;
     $this->_columns['civicrm_contribution']['fields']['currency']['required'] = TRUE;
     $this->_columns['civicrm_contribution']['fields']['currency']['no_display'] = TRUE;
 
-    $this->_columns['civicrm_contribution_ordinality'] = array(
+    $this->_columns['civicrm_contribution_ordinality'] = [
       'dao' => 'CRM_Contribute_DAO_Contribution',
       'alias' => 'cordinality',
-      'metadata' => ['ordinality' => [
-        'is_filters' => TRUE,
-        'is_join_filters' => FALSE,
-        'is_fields' => FALSE,
-        'is_group_bys' => FALSE,
-        'is_order_bys' => FALSE,
-        'is_aggregate_columns' => FALSE,
-        'is_aggregate_rows' => FALSE,
-        'type' => CRM_Utils_Type::T_INT,
-        'alias' => 'cordinality_cordinality',
-        'table_key' => 'civicrm_contribution',
-      ]],
+      'metadata' => [
+        'ordinality' => [
+          'is_filters' => TRUE,
+          'is_join_filters' => FALSE,
+          'is_fields' => FALSE,
+          'is_group_bys' => FALSE,
+          'is_order_bys' => FALSE,
+          'is_aggregate_columns' => FALSE,
+          'is_aggregate_rows' => FALSE,
+          'type' => CRM_Utils_Type::T_INT,
+          'alias' => 'cordinality_cordinality',
+          'table_key' => 'civicrm_contribution',
+        ],
+      ],
       'group_title' => ts('Contribution Ordinality'),
 
       'filters' => [
         'ordinality' => [
           'title' => ts('Contribution Ordinality'),
           'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-          'options' => array(
+          'options' => [
             0 => 'First by Contributor',
             1 => 'Second or Later by Contributor',
-          ),
+          ],
           'type' => CRM_Utils_Type::T_INT,
         ],
       ],
-    );
+    ];
     $this->_columns += $this->getColumns('Address');
     $this->_columns += $this->getColumns('Note');
 
@@ -119,23 +122,23 @@ class CRM_Extendedreport_Form_Report_Contribute_DetailExtended extends CRM_Exten
     $this->_allBatches = CRM_Batch_BAO_Batch::getBatches();
     if (!empty($this->_allBatches)) {
       $this->_columns['civicrm_batch']['dao'] = 'CRM_Batch_DAO_Batch';
-      $this->_columns['civicrm_batch']['fields']['batch_id'] = array(
+      $this->_columns['civicrm_batch']['fields']['batch_id'] = [
         'name' => 'id',
         'title' => ts('Batch Name'),
-      );
-      $this->_columns['civicrm_batch']['filters']['bid'] = array(
+      ];
+      $this->_columns['civicrm_batch']['filters']['bid'] = [
         'name' => 'id',
         'title' => ts('Batch Name'),
         'type' => CRM_Utils_Type::T_INT,
         'operatorType' => CRM_Report_Form::OP_MULTISELECT,
         'options' => $this->_allBatches,
-      );
+      ];
       $this->_columns['civicrm_entity_batch']['dao'] = 'CRM_Batch_DAO_EntityBatch';
-      $this->_columns['civicrm_entity_batch']['fields']['entity_batch_id'] = array(
+      $this->_columns['civicrm_entity_batch']['fields']['entity_batch_id'] = [
         'name' => 'batch_id',
         'default' => TRUE,
         'no_display' => TRUE,
-      );
+      ];
     }
 
     $this->_currencyColumn = 'civicrm_contribution_currency';
@@ -184,7 +187,7 @@ class CRM_Extendedreport_Form_Report_Contribute_DetailExtended extends CRM_Exten
   function statistics(&$rows) {
     $statistics = parent::statistics($rows);
 
-    $totalAmount = $average = array();
+    $totalAmount = $average = [];
     $count = 0;
     $select = "
         SELECT COUNT({$this->_aliases['civicrm_contribution']}.total_amount ) as count,
@@ -202,24 +205,24 @@ class CRM_Extendedreport_Form_Report_Contribute_DetailExtended extends CRM_Exten
       $average[] = CRM_Utils_Money::format($dao->avg, $dao->currency);
       $count += $dao->count;
     }
-    $statistics['counts']['amount'] = array(
+    $statistics['counts']['amount'] = [
       'title' => ts('Total Amount (Donations)'),
       'value' => implode(',  ', $totalAmount),
       'type' => CRM_Utils_Type::T_STRING,
-    );
-    $statistics['counts']['count'] = array(
+    ];
+    $statistics['counts']['count'] = [
       'title' => ts('Total Donations'),
       'value' => $count,
-    );
-    $statistics['counts']['avg'] = array(
+    ];
+    $statistics['counts']['avg'] = [
       'title' => ts('Average'),
       'value' => implode(',  ', $average),
       'type' => CRM_Utils_Type::T_STRING,
-    );
+    ];
 
     // Stats for soft credits
     if ($this->_softFrom && CRM_Utils_Array::value('contribution_or_soft_value', $this->_params) != 'contributions_only') {
-      $totalAmount = $average = array();
+      $totalAmount = $average = [];
       $count = 0;
       $select = "
 SELECT COUNT(contribution_soft_civireport.amount ) as count,
@@ -236,20 +239,20 @@ GROUP BY {$this->_aliases['civicrm_contribution']}.currency";
         $average[] = CRM_Utils_Money::format($dao->avg, $dao->currency);
         $count += $dao->count;
       }
-      $statistics['counts']['softamount'] = array(
+      $statistics['counts']['softamount'] = [
         'title' => ts('Total Amount (Soft Credits)'),
         'value' => implode(',  ', $totalAmount),
         'type' => CRM_Utils_Type::T_STRING,
-      );
-      $statistics['counts']['softcount'] = array(
+      ];
+      $statistics['counts']['softcount'] = [
         'title' => ts('Total Soft Credits'),
         'value' => $count,
-      );
-      $statistics['counts']['softavg'] = array(
+      ];
+      $statistics['counts']['softavg'] = [
         'title' => ts('Average (Soft Credits)'),
         'value' => implode(',  ', $average),
         'type' => CRM_Utils_Type::T_STRING,
-      );
+      ];
     }
 
     return $statistics;
@@ -423,7 +426,7 @@ WHERE  civicrm_contribution_contribution_id={$row['civicrm_contribution_contribu
       // pull section aliases out of $this->_sections
       $sectionAliases = array_keys($this->_sections);
 
-      $ifnulls = array();
+      $ifnulls = [];
       foreach (array_merge($sectionAliases, array_keys($this->_selectAliases)) as $alias) {
         $ifnulls[] = "ifnull($alias, '') as $alias";
       }
@@ -444,7 +447,7 @@ WHERE  civicrm_contribution_contribution_id={$row['civicrm_contribution_contribu
         . implode(", ", $ifnulls)
         . "$addtotals, count(*) as ct from civireport_contribution_detail_temp3 group by " . implode(", ", $sectionAliases);
       // initialize array of total counts
-      $sumcontribs = $totals = array();
+      $sumcontribs = $totals = [];
       $dao = CRM_Core_DAO::executeQuery($query);
       while ($dao->fetch()) {
 
@@ -454,7 +457,7 @@ WHERE  civicrm_contribution_contribution_id={$row['civicrm_contribution_contribu
         $row = $rows[0];
 
         // add totals for all permutations of section values
-        $values = array();
+        $values = [];
         $i = 1;
         $aliasCount = count($sectionAliases);
         foreach ($sectionAliases as $alias) {
@@ -477,7 +480,7 @@ WHERE  civicrm_contribution_contribution_id={$row['civicrm_contribution_contribu
         }
       }
       if ($showsumcontribs) {
-        $totalandsum = array();
+        $totalandsum = [];
         // ts exception to avoid having ts("%1 %2: %3")
         $title = '%1 contributions / soft-credits: %2';
 
@@ -490,10 +493,10 @@ WHERE  civicrm_contribution_contribution_id={$row['civicrm_contribution_contribu
           }
         }
         foreach ($totals as $key => $total) {
-          $totalandsum[$key] = ts($title, array(
+          $totalandsum[$key] = ts($title, [
             1 => $total,
-            2 => CRM_Utils_Money::format($sumcontribs[$key])
-          ));
+            2 => CRM_Utils_Money::format($sumcontribs[$key]),
+          ]);
         }
         $this->assign('sectionTotals', $totalandsum);
       }
