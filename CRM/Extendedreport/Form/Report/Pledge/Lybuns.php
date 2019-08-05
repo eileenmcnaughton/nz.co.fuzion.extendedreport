@@ -74,6 +74,7 @@ class CRM_Extendedreport_Form_Report_Pledge_Lybuns extends CRM_Extendedreport_Fo
       'is_order_bys' => FALSE,
       'is_aggregate_columns' => FALSE,
       'is_aggregate_rows' => FALSE,
+      'table_key' => 'civicrm_pledge',
     ];
     $this->_groupFilter = TRUE;
     $this->_tagFilter = TRUE;
@@ -231,7 +232,7 @@ class CRM_Extendedreport_Form_Report_Pledge_Lybuns extends CRM_Extendedreport_Fo
     $rows = $contactIds = array();
     if (!CRM_Utils_Array::value('charts', $this->_params)) {
       $this->limit();
-      $getContacts = "SELECT SQL_CALC_FOUND_ROWS {$this->_aliases['civicrm_contact']}.id as cid {$this->_from} {$this->_where}  GROUP BY {$this->_aliases['civicrm_contact']}.id {$this->_limit}";
+      $getContacts = "SELECT {$this->_aliases['civicrm_contact']}.id as cid {$this->_from} {$this->_where}  GROUP BY {$this->_aliases['civicrm_contact']}.id {$this->_limit}";
 
       $dao = CRM_Core_DAO::executeQuery($getContacts);
 
@@ -257,11 +258,10 @@ class CRM_Extendedreport_Form_Report_Pledge_Lybuns extends CRM_Extendedreport_Fo
 
       while ($dao->fetch()) {
 
-        if (!$dao->civicrm_pledge_contact_id) {
+        if (empty($dao->civicrm_pledge_contact_id)) {
           continue;
         }
 
-        $row = array();
         foreach ($this->_columnHeaders as $key => $value) {
           if (property_exists($dao, $key)) {
             $rows[$dao->civicrm_pledge_contact_id][$key] = $dao->$key;
@@ -286,8 +286,6 @@ class CRM_Extendedreport_Form_Report_Pledge_Lybuns extends CRM_Extendedreport_Fo
 
     // do print / pdf / instance stuff if needed
     $this->endPostProcess($rows);
-
-
   }
 
   /**

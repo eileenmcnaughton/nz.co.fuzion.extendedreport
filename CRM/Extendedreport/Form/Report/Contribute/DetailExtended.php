@@ -92,7 +92,8 @@ class CRM_Extendedreport_Form_Report_Contribute_DetailExtended extends CRM_Exten
         'is_aggregate_columns' => FALSE,
         'is_aggregate_rows' => FALSE,
         'type' => CRM_Utils_Type::T_INT,
-        'alias' => 'cordinality_cordinality'
+        'alias' => 'cordinality_cordinality',
+        'table_key' => 'civicrm_contribution',
       ]],
       'group_title' => ts('Contribution Ordinality'),
 
@@ -419,10 +420,6 @@ WHERE  civicrm_contribution_contribution_id={$row['civicrm_contribution_contribu
     }
 
     if (!empty($this->_sections)) {
-      // build the query with no LIMIT clause
-      $select = str_ireplace('SELECT SQL_CALC_FOUND_ROWS ', 'SELECT ', $this->_select);
-      $sql = "{$select} {$this->_from} {$this->_where} {$this->_groupBy} {$this->_having} {$this->_orderBy}";
-
       // pull section aliases out of $this->_sections
       $sectionAliases = array_keys($this->_sections);
 

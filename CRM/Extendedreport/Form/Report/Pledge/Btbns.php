@@ -54,6 +54,7 @@ class CRM_Extendedreport_Form_Report_Pledge_Btbns extends CRM_Extendedreport_For
       'is_group_bys' => FALSE,
       'is_order_bys' => FALSE,
       'default' => date('Y'),
+      'table_key' => 'civicrm_pledge',
     ];
     $this->_groupFilter = TRUE;
     $this->_tagFilter = TRUE;
@@ -167,7 +168,7 @@ class CRM_Extendedreport_Form_Report_Pledge_Btbns extends CRM_Extendedreport_For
     $rows = $contactIds = array();
     if (!CRM_Utils_Array::value('charts', $this->_params)) {
       $this->limit();
-      $getContacts = "SELECT SQL_CALC_FOUND_ROWS {$this->_aliases['civicrm_contact']}.id as cid {$this->_from} {$this->_where}  GROUP BY {$this->_aliases['civicrm_contact']}.id {$this->_limit}";
+      $getContacts = "SELECT {$this->_aliases['civicrm_contact']}.id as cid {$this->_from} {$this->_where}  GROUP BY {$this->_aliases['civicrm_contact']}.id {$this->_limit}";
       $dao = CRM_Core_DAO::executeQuery($getContacts);
       while ($dao->fetch()) {
         $contactIds[] = $dao->cid;
