@@ -2164,7 +2164,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       }
 
       $baseJoin = CRM_Utils_Array::value($prop['extends'], $this->_customGroupExtendsJoin, "{$this->_aliases[$prop['extends_table']]}.id");
-
       $customJoin = is_array($this->_customGroupJoin) ? $this->_customGroupJoin[$table] : $this->_customGroupJoin;
       $tableKey = CRM_Utils_Array::value('prefix', $prop) . $prop['table_name'];
       if (!stristr($this->_from, $this->_aliases[$tableKey])) {
@@ -2172,22 +2171,12 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
         $this->_from .= "
 {$customJoin} {$prop['table_name']} {$this->_aliases[$tableKey]} ON {$this->_aliases[$tableKey]}.entity_id = {$baseJoin}";
       }
-      // handle for ContactReference
-      if (array_key_exists('fields', $prop)) {
-        foreach ($prop['fields'] as $fieldName => $field) {
-          if (CRM_Utils_Array::value('dataType', $field) ==
-            'ContactReference'
-          ) {
-            $customFieldID = CRM_Core_BAO_CustomField::getKeyID($fieldName);
-            if (!$customFieldID) {
-              // seems it can be passed with wierd things appended...
-              continue;
-            }
-            $columnName = CRM_Core_DAO::getFieldValue('CRM_Core_DAO_CustomField', CRM_Core_BAO_CustomField::getKeyID($fieldName), 'column_name');
-            $this->_from .= "
-LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_aliases[$tableKey]}.{$columnName} ";
-          }
-        }
+      if (CRM_Utils_Array::value('data_type', $prop) === 'ContactReference'
+        // Checking prop['statistics'] is a bit of a hack - we want to exclude aggregate fields
+        // we don't join twice.
+      && empty($prop['statistics'])) {
+        $this->_from .= "
+LEFT JOIN civicrm_contact {$prop['alias']} ON {$prop['alias']}.id = {$this->_aliases[$tableKey]}.{$prop['column_name']} ";
       }
     }
   }
@@ -7205,7 +7194,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
       if (!empty($field['pseudofield'])) {
         continue;
       }
-      $clause = NULL;
+
       $clause = $this->generateFilterClause($field, $filterName);
       if (!empty($clause)) {
         $this->whereClauses[$filterName] = $clause;
@@ -7510,6 +7499,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
       case 'ContactReference':
         $field['name'] = 'display_name';
         $field['alias'] = "contact_{$fieldName}_civireport";
+        $field['dbAlias'] = "contact_{$fieldName}_civireport.display_name";
         break;
     }
     return $field;
