@@ -326,6 +326,15 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
         'is_filters' => TRUE,
         'is_contact_filter' => TRUE,
       ],
+      $options['prefix'] . 'is_deleted' => [
+        'title' => $options['prefix_label'] . ts('Is deleted'),
+        'name' => 'is_deleted',
+        'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+        'options' => CRM_Contact_BAO_Contact::buildOptions('is_deleted'),
+        'is_fields' => FALSE,
+        'is_filters' => TRUE,
+        'is_group_bys' => FALSE,
+      ],
       $options['prefix'] . 'external_identifier' => [
         'name' => 'external_identifier',
         'title' => E::ts($options['prefix_label'] . 'External ID'),
