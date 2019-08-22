@@ -827,7 +827,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
         $columnType = end($columnType);
         $spec = [
           'table_name' => 'civicrm_contribution',
-          'group_title' => ts('Contributions'),
+          'group_title' => E::ts('Contributions'),
           'name' => 'total_amount',
           'type' => '1',
           'title' => 'Breakdown By ' . $columnType,
@@ -1709,7 +1709,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
           $amountYearLabel[$value]['title'] = $title;
         }
       }
-      $amountYearLabel['total_amount_total']['title'] = ts('Total');
+      $amountYearLabel['total_amount_total']['title'] = E::ts('Total');
       if (!empty($headerWeight)) {
         $amountYearLabel = [];
         $amountYearLabel[$rowFields[0]['alias']]['title'] = $this->_columnHeaders[$rowFields[0]['alias']]['title'];
@@ -1719,7 +1719,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
             $amountYearLabel[$headerKey]['title'] = $headerTitle;
           }
         }
-        $amountYearLabel['total_amount_total']['title'] = ts('Total');
+        $amountYearLabel['total_amount_total']['title'] = E::ts('Total');
       }
 
       $this->_columnHeaders = $amountYearLabel;
@@ -8421,8 +8421,8 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
 
     if ($this->_attributes['name'] == 'ContributionPivot') {
       $breakDownByMonth = [
-        'contribution_total_amount_month' => ts('Breakdown By Month'),
-        'contribution_total_amount_year' => ts('Breakdown By Year'),
+        'contribution_total_amount_month' => E::ts('Breakdown By Month'),
+        'contribution_total_amount_year' => E::ts('Breakdown By Year'),
       ];
       $aggregateColumns = $aggregateColumns + $breakDownByMonth;
     }
