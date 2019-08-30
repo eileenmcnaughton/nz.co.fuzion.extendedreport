@@ -6846,6 +6846,14 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
         CRM_Utils_Array::value('operatorType', $field));
     }
 
+    if ($fieldName == 'membership_owner_membership_id') {
+      $operations = array(
+        '' => 'Both',
+        'nll' => ts('Primary'),
+        'nnll' => ts('Inherited'),
+      );
+    }
+
     switch (CRM_Utils_Array::value('operatorType', $field)) {
       case CRM_Report_Form::OP_MONTH:
         if (!array_key_exists('options', $field) ||
