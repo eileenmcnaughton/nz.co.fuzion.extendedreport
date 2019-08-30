@@ -4327,6 +4327,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'is_order_bys' => TRUE,
       ],
       'receipt_date' => ['is_fields' => TRUE, 'is_order_bys' => TRUE,],
+      'thankyou_date' => ['is_fields' => TRUE, 'is_order_bys' => TRUE,'is_filters' => TRUE],
       'total_amount' => [
         'title' => ts('Contribution Amount'),
         'statistics' => [
