@@ -9,15 +9,11 @@ class CRM_Extendedreport_Form_Report_Member_MembershipPivot extends CRM_Extended
 
   protected $_customGroupAggregates = TRUE;
 
-  protected $_aggregatesIncludeNULL = TRUE;
-
-  protected $_aggregatesAddTotal = TRUE;
-
   protected $_rollup = 'WITH ROLLUP';
 
   protected $isPivot = TRUE;
 
-  public $_drilldownReport = ['membership/membershipdetail' => 'Link to Participants'];
+  public $_drilldownReport = ['membership/membershipdetail' => 'Link to memberships'];
 
   protected $_noFields = TRUE;
 
@@ -34,6 +30,10 @@ class CRM_Extendedreport_Form_Report_Member_MembershipPivot extends CRM_Extended
           'fields' => FALSE,
           'order_by' => FALSE,
         ]
+      ) + $this->getColumns('address', [
+          'fields' => FALSE,
+          'order_by' => FALSE,
+        ]
       );
     $this->_columns['civicrm_membership']['fields']['id']['required'] = TRUE;
     parent::__construct();
@@ -45,6 +45,7 @@ class CRM_Extendedreport_Form_Report_Member_MembershipPivot extends CRM_Extended
   public function fromClauses() {
     return [
       'contact_from_membership',
+      'address_from_contact',
     ];
   }
 }
