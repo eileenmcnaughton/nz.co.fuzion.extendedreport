@@ -620,4 +620,106 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
     return $this->buildColumns($spec, $options['prefix'] . 'civicrm_contribution_recur', 'CRM_Contribute_BAO_ContributionRecur', NULL, $this->getDefaultsFromOptions($options), $options);
   }
 
+  /**
+   * Function to get Grant columns.
+   *
+   * @param array $options column options
+   *
+   * @return array
+   */
+  protected function getGrantColumns($options = []) {
+    $defaultOptions = [
+      'prefix' => '',
+      'prefix_label' => '',
+      'group_by' => FALSE,
+      'order_by' => TRUE,
+      'filters' => TRUE,
+      'fields_defaults' => [],
+      'filters_defaults' => [],
+      'group_bys_defaults' => [],
+      'order_by_defaults' => ['sort_name ASC'],
+    ];
+
+    $options = array_merge($defaultOptions, $options);
+    $defaults = $this->getDefaultsFromOptions($options);
+    $specs = [
+      'grant_type_id' => [
+        'title' => ts('Grant Type'),
+        'is_fields' => 1,
+        'is_filters' => 1,
+        'is_group_bys' => 1,
+        'is_order_bys' => 1,
+        'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+        'options' => CRM_Core_PseudoConstant::get('CRM_Grant_DAO_Grant', 'grant_type_id'),
+        'alter_display' => 'alterPseudoConstant',
+      ],
+      'status_id' => [
+        'title' => ts('Grant Status'),
+        'is_fields' => 1,
+        'is_filters' => 1,
+        'is_group_bys' => 1,
+        'is_order_bys' => 1,
+        'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+        'options' => CRM_Core_PseudoConstant::get('CRM_Grant_DAO_Grant', 'status_id'),
+        'alter_display' => 'alterPseudoConstant',
+      ],
+      'amount_total' => [
+        'title' => ts('Amount Requested'),
+        'type' => CRM_Utils_Type::T_MONEY,
+        'is_fields' => 1,
+        'is_filters' => 1,
+        'is_order_bys' => 1,
+      ],
+      'amount_granted' => [
+        'title' => ts('Amount Granted'),
+        'is_fields' => 1,
+        'is_filters' => 1,
+        'is_order_bys' => 1,
+      ],
+      'application_received_date' => [
+        'title' => ts('Application Received'),
+        'default' => TRUE,
+        'type' => CRM_Utils_Type::T_DATE,
+        'is_fields' => 1,
+        'is_filters' => 1,
+        'is_group_bys' => 1,
+        'is_order_bys' => 1,
+      ],
+      'money_transfer_date' => [
+        'title' => ts('Money Transfer Date'),
+        'type' => CRM_Utils_Type::T_DATE,
+        'is_fields' => 1,
+        'is_filters' => 1,
+        'is_group_bys' => 1,
+        'is_order_bys' => 1,
+      ],
+      'grant_due_date' => [
+        'title' => ts('Grant Report Due'),
+        'type' => CRM_Utils_Type::T_DATE,
+        'is_fields' => 1,
+        'is_filters' => 1,
+        'is_group_bys' => 1,
+        'is_order_bys' => 1,
+      ],
+      'decision_date' => [
+        'title' => ts('Grant Decision Date'),
+        'type' => CRM_Utils_Type::T_DATE,
+        'is_fields' => 1,
+        'is_filters' => 1,
+        'is_group_bys' => 1,
+        'is_order_bys' => 1,
+      ],
+      'rationale' => [
+        'title' => ts('Rationale'),
+        'is_fields' => 1,
+      ],
+      'grant_report_received' => [
+        'title' => ts('Grant Report Received'),
+        'is_fields' => 1,
+        'is_filters' => 1,
+      ],
+    ];
+    return $this->buildColumns($specs, 'civicrm_grant', 'CRM_Grant_BAO_Grant', 'grants', $defaults);
+  }
+
 }

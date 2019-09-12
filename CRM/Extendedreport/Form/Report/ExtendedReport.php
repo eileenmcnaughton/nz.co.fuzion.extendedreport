@@ -5432,6 +5432,11 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'rightTable' => 'civicrm_note',
         'callback' => 'joinNoteFromParticipant',
       ],
+      'contact_from_grant' => [
+        'leftTable' => 'civicrm_grant',
+        'rightTable' => 'civicrm_contact',
+        'callback' => 'joinContactFromGrant',
+],
     ];
   }
 
@@ -5978,6 +5983,11 @@ ON {$this->_aliases['civicrm_participant']}.contact_id = {$this->_aliases['civic
   function joinNoteFromParticipant() {
     $this->_from .= " LEFT JOIN civicrm_note {$this->_aliases['civicrm_note']}
 ON {$this->_aliases['civicrm_participant']}.id = {$this->_aliases['civicrm_note']}.entity_id";
+  }
+
+  function joinContactFromGrant() {
+    $this->_from .= "LEFT JOIN civicrm_contact {$this->_aliases['civicrm_contact']}
+ON {$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_grant']}.contact_id";
   }
 
   function joinContactFromMembership() {
@@ -6827,7 +6837,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
     if (!isset($table['alias'])) {
       $this->_columns[$tableName]['alias'] = substr($tableName, 8) .
         '_civireport';
-    }
+      }
     else {
       $this->_columns[$tableName]['alias'] = $table['alias'];
     }
@@ -7825,7 +7835,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
       if (in_array($extendsEntity, [
         'Individual',
         'Household',
-        'Organziation',
+        'Organization',
       ])) {
         $extendsEntities['Contact'] = TRUE;
         unset($extendsEntities[$extendsEntity]);
