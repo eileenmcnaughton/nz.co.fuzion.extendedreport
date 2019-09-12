@@ -7996,8 +7996,8 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
       if (empty($spec['option_group_id'])) {
         throw new Exception('currently column headers need to be radio or select');
       }
-      $options = civicrm_api('option_value', 'get', [
-        'version' => 3,
+      $options = civicrm_api3('option_value', 'get', [
+        'is_active' => 1,
         'options' => ['limit' => 50,],
         'option_group_id' => $spec['option_group_id'],
       ]);
