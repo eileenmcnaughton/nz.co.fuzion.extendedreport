@@ -6274,7 +6274,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
       $url = CRM_Report_Utils_Report::getNextUrl(key($this->_drilldownReport),
         "reset=1&force=1&{$criteriaQueryParams}&" .
         "{$criteriaFieldName}_op=in&{$criteriaFieldName}_value={$value}",
-        $this->_absoluteUrl, $this->_id
+        $this->_absoluteUrl, $this->_id, $this->_drilldownReport
       );
       $row[$selectedField . '_link'] = $url;
     }
