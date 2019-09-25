@@ -621,6 +621,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     $return = [];
     foreach ($metadata as $key => $value) {
       $return[$value['alias']] = $value;
+      $return[$value['alias']]['fieldName'] = $key;
     }
     return $return;
   }
@@ -6268,13 +6269,15 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    * @param $criteriaFieldName
    * @return string
    */
-  function alterFinancialType($value, &$row, $selectedField, $criteriaFieldName) {
+  function alterFinancialType($value, &$row, $selectedField, $criteriaFieldName, $specs) {
     if ($this->_drilldownReport) {
+      // Issue #308 - drilldown report URLs should use original field name, not alias.
+      $criteriaFieldName = $specs['fieldName'];
       $criteriaQueryParams = CRM_Report_Utils_Report::getPreviewCriteriaQueryParams($this->_defaults, $this->_params);
       $url = CRM_Report_Utils_Report::getNextUrl(key($this->_drilldownReport),
         "reset=1&force=1&{$criteriaQueryParams}&" .
         "{$criteriaFieldName}_op=in&{$criteriaFieldName}_value={$value}",
-        $this->_absoluteUrl, $this->_id
+        $this->_absoluteUrl, $this->_id, $this->_drilldownReport
       );
       $row[$selectedField . '_link'] = $url;
     }
