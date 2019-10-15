@@ -28,6 +28,14 @@ class CRM_Extendedreport_Form_Report_Price_Lineitemparticipant extends CRM_Exten
     $this->getColumns('PriceFieldValue') +
     $this->getColumns('LineItem') +
     $this->getColumns('Address') +
+    $this->getColumns('Note') + array(
+      'civicrm_note' => array(
+        'dao' => 'CRM_Core_DAO_Note',
+        'fields' => array(
+          'note' => array('title' => ts('Note')),
+        ),
+      ),
+    ) +
     $this->getColumns('Email');
     parent::__construct();
   }
@@ -53,6 +61,7 @@ class CRM_Extendedreport_Form_Report_Price_Lineitemparticipant extends CRM_Exten
       'participant_from_lineItem',
       'contribution_from_participant',
       'contact_from_participant',
+      'note_from_participant',
       'event_from_participant',
       'address_from_contact',
       'email_from_contact',
