@@ -3373,6 +3373,9 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
           $columns[$tableName][$type][$fieldAlias] = $spec;
           if (isset($defaults[$type . '_defaults']) && isset($defaults[$type . '_defaults'][$spec['name']])) {
             $columns[$tableName]['metadata'][$fieldAlias]['default'] = $defaults[$type . '_defaults'][$spec['name']];
+            if ($type == 'group_bys') {
+              $columns[$tableName]['metadata'][$fieldAlias]['is_group_bys_default'] = $defaults[$type . '_defaults'][$spec['name']];
+            }
           }
         }
       }
