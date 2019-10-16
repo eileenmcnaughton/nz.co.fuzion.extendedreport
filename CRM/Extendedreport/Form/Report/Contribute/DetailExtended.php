@@ -78,6 +78,7 @@ class CRM_Extendedreport_Form_Report_Contribute_DetailExtended extends CRM_Exten
     $this->_columns['civicrm_contribution']['fields']['id']['required'] = TRUE;
     $this->_columns['civicrm_contribution']['fields']['currency']['required'] = TRUE;
     $this->_columns['civicrm_contribution']['fields']['currency']['no_display'] = TRUE;
+    $this->_columns['civicrm_contribution']['metadata']['contribution_total_amount']['statistics'] = [];
 
     $this->_columns['civicrm_contribution_ordinality'] = [
       'dao' => 'CRM_Contribute_DAO_Contribution',
