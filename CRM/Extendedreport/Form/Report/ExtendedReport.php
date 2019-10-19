@@ -1679,7 +1679,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     $this->_columnHeaders = array_merge(array_intersect_key(array_flip($fieldMap), $this->_columnHeaders), $this->_columnHeaders);
 
     // Change column header.
-    if ($this->_params['aggregate_column_headers'] == 'contribution_total_amount_year' || $this->_params['aggregate_column_headers'] == 'contribution_total_amount_month') {
+    if (isset($this->_params['aggregate_column_headers']) && $this->_params['aggregate_column_headers'] == 'contribution_total_amount_year' || $this->_params['aggregate_column_headers'] == 'contribution_total_amount_month') {
       $columnType = explode('_', $this->_params['aggregate_column_headers']);
       $columnType = end($columnType);
       $result = self::buildContributionTotalAmountBybreakdown('HEADER', $columnType, $this->_params['aggregate_column_headers'], $this->_params);
