@@ -3041,6 +3041,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    * @return float|string
    */
   function formatCustomValues($value, $customField, $fieldValueMap, $row = []) {
+    // @todo this might hopefully be already done by metadata - for booleans it is.
     if (!empty($this->_customGroupExtends) && count($this->_customGroupExtends) == 1) {
       //lets only extend apply editability where only one entity extended
       // we can easily extend to contact combos
@@ -3065,12 +3066,8 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
 
     switch ($customField['data_type']) {
       case 'Boolean':
-        if ($value == '1') {
-          $retValue = ts('Yes');
-        }
-        else {
-          $retValue = ts('No');
-        }
+        // Already handled.
+        $retValue = $value;
         break;
 
       case 'Link':
