@@ -22,7 +22,7 @@ use Civi\Test\TransactionalInterface;
  */
 class BookkeepingExtendedTest extends BaseTestClass implements HeadlessInterface, HookInterface, TransactionalInterface {
 
-  protected $contacts = array();
+  protected $contacts = [];
 
   /**
    * @return \Civi\Test\CiviEnvBuilder
@@ -38,7 +38,7 @@ class BookkeepingExtendedTest extends BaseTestClass implements HeadlessInterface
   public function setUp() {
     parent::setUp();
     $this->enableAllComponents();
-    $contact = $this->callAPISuccess('Contact', 'create', array('first_name' => 'Wonder', 'last_name' => 'Woman', 'contact_type' => 'Individual'));
+    $contact = $this->callAPISuccess('Contact', 'create', ['first_name' => 'Wonder', 'last_name' => 'Woman', 'contact_type' => 'Individual']);
     $this->ids['Contact'][] = $contact['id'];
   }
 
