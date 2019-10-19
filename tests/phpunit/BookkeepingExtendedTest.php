@@ -50,10 +50,10 @@ class BookkeepingExtendedTest extends BaseTestClass implements HeadlessInterface
    * Test the bookkeeping report with some data.
    */
   public function testBookkeepingReport() {
-    $this->callAPISuccess('Order', 'create', array('contact_id' => $this->ids['Contact'][0], 'total_amount' => 5, 'financial_type_id' => 2));
-    $params = array(
+    $contribution = $this->callAPISuccess('Order', 'create', ['contact_id' => $this->ids['Contact'][0], 'total_amount' => 5, 'financial_type_id' => 2, 'contribution_status_id' => 'Pending', 'api.Payment.create' => ['total_amount' => 5]]);
+    $params = [
       'report_id' => 'contribution/bookkeeping_extended',
-      'fields' => array (
+      'fields' => [
         'civicrm_contact_display_name' => '1',
         'membership_membership_type_id' => '1',
         'membership_membership_status_id' => '1',
@@ -67,8 +67,8 @@ class BookkeepingExtendedTest extends BaseTestClass implements HeadlessInterface
         'contribution_receipt_date' => '1',
         'financial_trxn_currency' => '1',
         'entity_financial_trxn_amount' => '1',
-      ),
-    );
+      ],
+    ];
     $rows = $this->getRows($params);
     $this->assertEquals(date('Y-m-d'), date('Y-m-d', strtotime($rows[0]['civicrm_contribution_contribution_receive_date'])));
     $this->assertEquals('USD', $rows[0]['civicrm_financial_trxn_financial_trxn_currency']);
