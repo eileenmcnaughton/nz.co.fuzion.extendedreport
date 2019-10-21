@@ -114,9 +114,9 @@ function extendedreport_civicrm_tabset($tabsetName, &$tabs, $context) {
           'output' => 'html',
           'force' => 1,
           'section' => 2,
-          'weight' => 70,
         ]
       ),
+      'weight' => 70,
     ];
   }
 }
