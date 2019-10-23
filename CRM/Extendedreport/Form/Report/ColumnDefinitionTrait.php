@@ -621,6 +621,58 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
   }
 
   /**
+   * Function to get ContributionSoft columns
+   * @param array $options
+   *
+   * @return array
+   */
+  function getContributionSoftColumns($options = []) {
+    $spec = [
+      'id' => [
+        'is_fields' => FALSE,
+        'is_filters' => FALSE,
+        'type' => CRM_Utils_Type::T_INT,
+        'is_order_bys' => FALSE,
+      ],
+      'contribution_id' => [
+        'is_fields' => FALSE,
+        'is_filters' => FALSE,
+        'type' => CRM_Utils_Type::T_INT,
+        'is_order_bys' => FALSE,
+        'default' => TRUE,
+      ],
+      'amount' => [
+        'default' => TRUE,
+        'type' => CRM_Utils_Type::T_MONEY,
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+        'is_group_bys' => TRUE,
+        'is_order_bys' => TRUE,
+      ],
+      'soft_credit_type_id' => [
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+        'is_group_bys' => TRUE,
+        'type' => CRM_Utils_Type::T_INT,
+        'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+        'options' => CRM_Contribute_BAO_ContributionSoft::buildOptions('soft_credit_type_id'),
+        'alter_display' => 'alterPseudoConstant',
+        'is_order_bys' => TRUE,
+      ],
+      'currency' => [
+        'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+        'options' => CRM_Core_OptionGroup::values('currencies_enabled'),
+        'default' => NULL,
+        'type' => CRM_Utils_Type::T_STRING,
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+        'is_order_bys' => TRUE,
+      ],
+    ];
+    return $this->buildColumns($spec, $options['prefix'] . 'civicrm_contribution_soft', 'CRM_Contribute_BAO_ContributionSoft', NULL, $this->getDefaultsFromOptions($options), $options);
+  }
+
+  /**
    * Function to get Grant columns.
    *
    * @param array $options column options
