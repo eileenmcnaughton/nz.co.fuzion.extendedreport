@@ -5988,7 +5988,8 @@ ON {$this->_aliases['civicrm_participant']}.contact_id = {$this->_aliases['civic
 
   function joinNoteFromParticipant() {
     $this->_from .= " LEFT JOIN civicrm_note {$this->_aliases['civicrm_note']}
-ON {$this->_aliases['civicrm_participant']}.id = {$this->_aliases['civicrm_note']}.entity_id";
+ON ( {$this->_aliases['civicrm_participant']}.id = {$this->_aliases['civicrm_note']}.entity_id
+AND {$this->_aliases['civicrm_note']}.entity_table = 'civicrm_participant') ";
   }
 
   function joinContactFromGrant() {
