@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-    - uses: actions/stale@v1
+    - uses: actions/gatsbyjs@0879694
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
         stale-issue-message: 'Stale issue message. Sorry I don't get to everything. Please close this if you are not still actively interested'
