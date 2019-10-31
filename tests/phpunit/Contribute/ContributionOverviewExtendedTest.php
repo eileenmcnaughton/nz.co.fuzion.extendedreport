@@ -64,9 +64,11 @@ class ContributionOverviewExtendedTest extends BaseTestClass implements Headless
 
   /**
    * Test the ContributionOverviewExtended report with group by.
+   *
+   * @throws \CRM_Core_Exception
    */
   public function testContributionExtendedReport() {
-    $this->callAPISuccess('Order', 'create', ['contact_id' => $this->contacts[0], 'total_amount' => 5, 'financial_type_id' => 2]);
+    $this->callAPISuccess('Order', 'create', ['contact_id' => $this->contacts[0], 'total_amount' => 5, 'financial_type_id' => 2, 'contribution_status_id' => 'Pending', 'api.Payment.create' => ['total_amount' => 5]]);
     $params = [
       'report_id' => 'contribution/overview',
       'fields' => [
