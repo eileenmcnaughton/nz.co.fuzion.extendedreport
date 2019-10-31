@@ -52,14 +52,7 @@ class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Exten
       + $this->getColumns('Event')
       + $this->getColumns('Contribution')
       + $this->getColumns('LineItem')
-      + [
-        'civicrm_note' => [
-          'dao' => 'CRM_Core_DAO_Note',
-          'fields' => [
-            'note' => ['title' => ts('Participant Note')],
-          ],
-        ],
-      ]
+      + $this->getColumns('Note')
       + $this->getColumns('Relationship', [
         'fields' => FALSE,
         'filters' => FALSE,
