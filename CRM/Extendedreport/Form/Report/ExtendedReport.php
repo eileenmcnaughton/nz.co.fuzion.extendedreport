@@ -1646,6 +1646,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    * @param string $action
    *
    * @return array
+   * @throws \CiviCRM_API3_Exception
    */
   protected function _getOptions($entity, $field, $action = 'get') {
     static $allOptions = [];
@@ -1860,10 +1861,15 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    * @param integer $rowFieldId
    * @param string $columnType = month / year
    * @param string $header = `contribution_total_amount_year` / 'contribution_total_amount_year'
-   * @param array $params
+   *
+   * @return array
+   *
+   * @return array
+   * @throws \CiviCRM_API3_Exception
+   * @throws \CiviCRM_API3_Exception
    */
-  function buildContributionTotalAmountBybreakdown($rowFieldId = NULL, $columnType, $header, $params) {
-    if ($header == 'contribution_total_amount_year' || $header == 'contribution_total_amount_month') {
+  function buildContributionTotalAmountBybreakdown($rowFieldId, $columnType, $header) {
+    if ($header === 'contribution_total_amount_year' || $header == 'contribution_total_amount_month') {
       $where = '';
       $clause = '';
 
@@ -2906,6 +2912,7 @@ LEFT JOIN civicrm_contact {$prop['alias']} ON {$prop['alias']}.id = {$this->_ali
    * @param array $specs
    *
    * @return string
+   * @throws \Exception
    */
   function alterFromOptions($value, &$row, $selectedField, $criteriaFieldName, $specs) {
     if ($specs['data_type'] == 'ContactReference') {
@@ -2924,6 +2931,9 @@ LEFT JOIN civicrm_contact {$prop['alias']} ON {$prop['alias']}.id = {$this->_ali
    * Am using it in a pretty hacky way to also cover the select box custom fields
    *
    * @param $rows
+   *
+   * @throws \CRM_Core_Exception
+   * @throws \CiviCRM_API3_Exception
    */
   function alterCustomDataDisplay(&$rows) {
 
@@ -3064,6 +3074,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    * @param array $row
    *
    * @return float|string
+   * @throws \CRM_Core_Exception
    */
   function formatCustomValues($value, $customField, $fieldValueMap, $row = []) {
     // @todo this might hopefully be already done by metadata - for booleans it is.
@@ -3307,7 +3318,6 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    *
    * @param array $specs
    * @param string $tableName
-   * @param string $tableAlias
    * @param string $daoName
    * @param string $tableAlias
    * @param array $defaults
@@ -3315,6 +3325,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    *    - group_title
    *
    * @return array
+   * @throws \CiviCRM_API3_Exception
    */
   protected function buildColumns($specs, $tableName, $daoName = NULL, $tableAlias = NULL, $defaults = [], $options = []) {
 
@@ -4623,7 +4634,6 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
   /**
    * Get email columns.
    *
-   * @param array $options column options
    * @param array $options
    *
    * @return array
@@ -4661,7 +4671,6 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
   /**
    * Get email columns.
    *
-   * @param array $options column options
    * @param array $options
    *
    * @return array
@@ -4889,6 +4898,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    *
    * @return array
    *   Options in a format id => label
+   * @throws \CiviCRM_API3_Exception
    */
   protected function getRelationshipABOptions() {
     $relationshipTypes = civicrm_api3('relationship_type', 'get', [
@@ -5194,6 +5204,8 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
   /**
    * @param $value
    * @param $row
+   *
+   * @param $selectedField
    *
    * @return string
    */
@@ -6310,6 +6322,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    * @param $selectedField
    * @param $criteriaFieldName
    *
+   * @param $specs
    * @return string
    */
   function alterFinancialType($value, &$row, $selectedField, $criteriaFieldName, $specs) {
@@ -6353,6 +6366,9 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    * @param $value
    * @param $row
    *
+   * @param $selectedField
+   * @param $criteriaFieldName
+   * @param $spec
    * @return string
    */
   function alterByOptions($value, &$row, $selectedField, $criteriaFieldName, $spec) {
@@ -6400,7 +6416,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
   /**
    * @param int|null $value
    * @param array $row
-   * @param string $selectedfield
+   * @param string $selectedField
    *
    * @return string
    *   Name of primary participant.
@@ -7400,6 +7416,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    * See address history for the latter option & LineitemMembership for the former.
    *
    * @return int|null
+   * @throws \CRM_Core_Exception
    */
   protected function getContactIdFilter() {
     if (!empty($this->_defaults['contact_id_filter_field'])) {
@@ -7422,6 +7439,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    * @param $table
    *
    * @return array
+   * @throws \CiviCRM_API3_Exception
    */
   protected function getMetadataForFields($table) {
     // higher preference to bao object
@@ -7982,6 +8000,7 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
    * @param string $prefix
    *
    * @return mixed
+   * @throws \CiviCRM_API3_Exception
    */
   protected function getCustomFieldMetadata($field, $prefixLabel, $prefix = '') {
     $field = array_merge($field, [
@@ -8130,6 +8149,7 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
    * @param string $prefix
    *
    * @return array
+   * @throws \CiviCRM_API3_Exception
    */
   protected function getQillForField($field, $fieldName, $prefix = '') {
     if ((CRM_Utils_Array::value('type', $field) & CRM_Utils_Type::T_DATE ||
