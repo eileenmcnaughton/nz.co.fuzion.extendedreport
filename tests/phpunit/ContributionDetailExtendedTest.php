@@ -45,6 +45,8 @@ class ContributionDetailExtendedTest extends BaseTestClass implements HeadlessIn
 
   /**
    * Test the ContributionDetailExtended report with order by.
+   *
+   * @throws \CRM_Core_Exception
    */
   public function testContributionExtendedReport() {
     $this->setupData();
@@ -63,6 +65,11 @@ class ContributionDetailExtendedTest extends BaseTestClass implements HeadlessIn
     $this->assertEquals('USD', $rows[0]['civicrm_contribution_contribution_currency']);
   }
 
+  /**
+   * Test Detail Extended report, grouping by contact.
+   *
+   * @throws \CRM_Core_Exception
+   */
   public function testDetailExtendedGroupByContact() {
     $this->setupData();
     $params = [
@@ -82,11 +89,18 @@ class ContributionDetailExtendedTest extends BaseTestClass implements HeadlessIn
     $this->getRows($params);
   }
 
+  /**
+   * Set up for test.
+   *
+   * @throws \CRM_Core_Exception
+   */
   protected function setupData() {
     $this->callAPISuccess('Order', 'create', [
       'contact_id' => $this->contacts[0],
       'total_amount' => 5,
-      'financial_type_id' => 2
+      'financial_type_id' => 2,
+      'contribution_status_id' => 'Pending',
+      'api.Payment.create' => ['total_amount' => 5],
     ]);
   }
 
