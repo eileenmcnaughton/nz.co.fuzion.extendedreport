@@ -22,7 +22,7 @@ use Civi\Test\TransactionalInterface;
  */
 class ContributionDetailExtendedTest extends BaseTestClass implements HeadlessInterface, HookInterface, TransactionalInterface {
 
-  protected $contacts = array();
+  protected $contacts = [];
 
   public function setUpHeadless() {
     // Civi\Test has many helpers, like install(), uninstall(), sql(), and sqlFile().
@@ -50,17 +50,17 @@ class ContributionDetailExtendedTest extends BaseTestClass implements HeadlessIn
    */
   public function testContributionExtendedReport() {
     $this->setupData();
-    $params = array(
+    $params = [
       'report_id' => 'contribution/detailextended',
-      'fields' => array (
+      'fields' => [
         'civicrm_contact_display_name' => '1',
         'contribution_currency' => '1',
-      ),
-      'order_bys' => array(
+      ],
+      'order_bys' => [
         1 => ['column' => 'contribution_financial_type_id', 'order' => 'ASC'],
         2 => ['column' => 'contribution_total_amount', 'order' => 'DESC'],
-      ),
-    );
+      ],
+    ];
     $rows = $this->getRows($params);
     $this->assertEquals('USD', $rows[0]['civicrm_contribution_contribution_currency']);
   }
@@ -82,8 +82,9 @@ class ContributionDetailExtendedTest extends BaseTestClass implements HeadlessIn
         'contribution_total_amount' => '1',
         'id' => '1',
       ],
-      'group_bys' =>['civicrm_contact_contact_id' => '1'],
-      'order_bys' => [['column' => '-'],
+      'group_bys' => ['civicrm_contact_contact_id' => '1'],
+      'order_bys' => [
+        ['column' => '-'],
       ],
     ];
     $this->getRows($params);

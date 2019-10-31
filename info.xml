@@ -1,28 +1,28 @@
 <?xml version="1.0"?>
 <extension key="nz.co.fuzion.extendedreport" type="module">
-    <file>extendedreport</file>
-    <name>ExtendedReport</name>
-    <description>Extended reports</description>
-    <license>AGPL</license>
-    <urls>
-        <url desc="Main Extension Page">http://civicrm.org</url>
-        <url desc="Support">http://chat.civicrm.org</url>
-        <url desc="Licensing">http://civicrm.org/licensing</url>
-    </urls>
-    <maintainer>
-        <author>Eileen McNaughton</author>
-        <email>eileen@fuzion.co.nz</email>
-    </maintainer>
-    <releaseDate>2019-10-19</releaseDate>
-    <version>4.9</version>
-    <develStage>stable</develStage>
-    <compatibility>
-        <ver>5.18</ver>
-    </compatibility>
-    <comments>Extended reports create other report options such as crosstab urls, multiple contact custom fields, price
-        set reports
-    </comments>
-    <civix>
-        <namespace>CRM/Extendedreport</namespace>
-    </civix>
+  <file>extendedreport</file>
+  <name>ExtendedReport</name>
+  <description>Extended reports</description>
+  <license>AGPL</license>
+  <urls>
+    <url desc="Main Extension Page">http://civicrm.org</url>
+    <url desc="Support">http://chat.civicrm.org</url>
+    <url desc="Licensing">http://civicrm.org/licensing</url>
+  </urls>
+  <maintainer>
+    <author>Eileen McNaughton</author>
+    <email>eileen@fuzion.co.nz</email>
+  </maintainer>
+  <releaseDate>2019-10-19</releaseDate>
+  <version>4.9</version>
+  <develStage>stable</develStage>
+  <compatibility>
+    <ver>5.18</ver>
+  </compatibility>
+  <comments>Extended reports create other report options such as crosstab urls, multiple contact custom fields, price
+    set reports
+  </comments>
+  <civix>
+    <namespace>CRM/Extendedreport</namespace>
+  </civix>
 </extension>

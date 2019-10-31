@@ -33,27 +33,27 @@ class CRM_Extendedreport_Form_Report_ActivityExtended extends CRM_Extendedreport
    */
   public function __construct() {
     $this->_columns = $this->getColumns(
-      'Contact',
-      array(
-        'prefix' => '',
-        'prefix_label' => 'Source Contact ::',
-        'filters' => TRUE,
-      )
-    ) + $this->getColumns(
         'Contact',
-        array(
+        [
+          'prefix' => '',
+          'prefix_label' => 'Source Contact ::',
+          'filters' => TRUE,
+        ]
+      ) + $this->getColumns(
+        'Contact',
+        [
           'prefix' => 'target_',
           'group_by' => TRUE,
           'prefix_label' => 'Target Contact ::',
           'filters' => TRUE,
-        )
-    ) + $this->getColumns(
-        'Contact', array(
+        ]
+      ) + $this->getColumns(
+        'Contact', [
           'prefix' => 'assignee_',
           'prefix_label' => 'Assignee Contact ::',
           'filters' => TRUE,
-        )
-    ) + $this->getColumns('Activity', array('group_by' => TRUE));
+        ]
+      ) + $this->getColumns('Activity', ['group_by' => TRUE]);
     parent::__construct();
   }
 

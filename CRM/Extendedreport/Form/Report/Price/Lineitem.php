@@ -33,7 +33,7 @@
  */
 class CRM_Extendedreport_Form_Report_Price_Lineitem extends CRM_Extendedreport_Form_Report_ExtendedReport {
 
-  protected $_customGroupExtends = array('Contribution');
+  protected $_customGroupExtends = ['Contribution'];
 
   protected $_baseTable = 'civicrm_line_item';
 
@@ -44,7 +44,7 @@ class CRM_Extendedreport_Form_Report_Price_Lineitem extends CRM_Extendedreport_F
    */
   public function __construct() {
     $this->_columns
-      = $this->getColumns('Contact', array('order_by' => TRUE))
+      = $this->getColumns('Contact', ['order_by' => TRUE])
       + $this->getColumns('Email', [
           'fields' => TRUE,
           'order_by' => FALSE,
@@ -52,10 +52,10 @@ class CRM_Extendedreport_Form_Report_Price_Lineitem extends CRM_Extendedreport_F
       )
       + $this->getColumns('Event')
       + $this->getColumns('Participant')
-      + $this->getColumns('Contribution', array('order_by' => TRUE))
-      + $this->getColumns('PriceField', array('order_by' => TRUE))
-      + $this->getColumns('PriceFieldValue' , array('order_by' => TRUE))
-      + $this->getColumns('LineItem', array('order_by' => TRUE, 'fields_defaults' => array('financial_type_id', 'line_total'))) +
+      + $this->getColumns('Contribution', ['order_by' => TRUE])
+      + $this->getColumns('PriceField', ['order_by' => TRUE])
+      + $this->getColumns('PriceFieldValue', ['order_by' => TRUE])
+      + $this->getColumns('LineItem', ['order_by' => TRUE, 'fields_defaults' => ['financial_type_id', 'line_total']]) +
       $this->getColumns('BillingAddress') +
       $this->getColumns('Address');
     parent::__construct();
@@ -77,7 +77,7 @@ class CRM_Extendedreport_Form_Report_Price_Lineitem extends CRM_Extendedreport_F
    * @return array
    */
   public function fromClauses() {
-    return array(
+    return [
       'priceFieldValue_from_lineItem',
       'priceField_from_lineItem',
       'participant_from_lineItem',
@@ -86,8 +86,8 @@ class CRM_Extendedreport_Form_Report_Price_Lineitem extends CRM_Extendedreport_F
       'event_from_participant',
       'address_from_contact',
       'address_from_contribution',
-	    'email_from_contact',
-    );
+      'email_from_contact',
+    ];
 
   }
 

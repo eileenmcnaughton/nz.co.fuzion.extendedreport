@@ -11,6 +11,7 @@ eval(cv('php:boot --level=classloader', 'phpcode'));
  *   The rest of the command to send.
  * @param string $decode
  *   Ex: 'json' or 'phpcode'.
+ *
  * @return string
  *   Response output (if the command executed normally).
  * @throws \RuntimeException
@@ -18,7 +19,7 @@ eval(cv('php:boot --level=classloader', 'phpcode'));
  */
 function cv($cmd, $decode = 'json') {
   $cmd = 'cv ' . $cmd;
-  $descriptorSpec = array(0 => array("pipe", "r"), 1 => array("pipe", "w"), 2 => STDERR);
+  $descriptorSpec = [0 => ["pipe", "r"], 1 => ["pipe", "w"], 2 => STDERR];
   $oldOutput = getenv('CV_OUTPUT');
   putenv("CV_OUTPUT=json");
   $process = proc_open($cmd, $descriptorSpec, $pipes, __DIR__);

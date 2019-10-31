@@ -22,7 +22,7 @@ use Civi\Test\TransactionalInterface;
  */
 class CampaignProgressReportTest extends BaseTestClass implements HeadlessInterface, HookInterface, TransactionalInterface {
 
-  protected $contacts = array();
+  protected $contacts = [];
 
   public function setUpHeadless() {
     // Civi\Test has many helpers, like install(), uninstall(), sql(), and sqlFile().
@@ -35,7 +35,7 @@ class CampaignProgressReportTest extends BaseTestClass implements HeadlessInterf
   public function setUp() {
     parent::setUp();
     $this->enableAllComponents();
-    $contact = $this->callAPISuccess('Contact', 'create', array('first_name' => 'Wonder', 'last_name' => 'Woman', 'contact_type' => 'Individual'));
+    $contact = $this->callAPISuccess('Contact', 'create', ['first_name' => 'Wonder', 'last_name' => 'Woman', 'contact_type' => 'Individual']);
     $this->contacts[] = $contact['id'];
   }
 
@@ -50,9 +50,11 @@ class CampaignProgressReportTest extends BaseTestClass implements HeadlessInterf
    *
    * @param array $params
    *   Parameters to pass to the report
+   *
+   * @throws \CRM_Core_Exception
    */
   public function testProgressReport($params) {
-    $this->callAPISuccess('Order', 'create', array('contact_id' => $this->contacts[0], 'total_amount' => 5, 'financial_type_id' => 2));
+    $this->callAPISuccess('Order', 'create', ['contact_id' => $this->contacts[0], 'total_amount' => 5, 'financial_type_id' => 2]);
     // Just checking no error at the moment.
     $this->getRows($params);
   }
@@ -61,29 +63,33 @@ class CampaignProgressReportTest extends BaseTestClass implements HeadlessInterf
    * Get datasets for testing the report
    */
   public function getReportParameters() {
-    return array(
-      'basic' => array(array(
-        'report_id' => 'campaign/progress',
-        'fields' => array(
-          'campaign_id' => '1',
-          'total_amount' => '1',
-          'paid_amount' => '1',
-          'balance_amount' => '1',
-        ),
-      )),
-      'group_by_variant' => array(array(
-        'report_id' => 'campaign/progress',
-        'fields' => array(
-          'campaign_id' => '1',
-          'total_amount' => '1',
-          'paid_amount' => '1',
-          'balance_amount' => '1',
-        ),
-        'group_bys' => array(
-          'campaign_id' => '1',
-        ),
-      )),
-    );
+    return [
+      'basic' => [
+        [
+          'report_id' => 'campaign/progress',
+          'fields' => [
+            'campaign_id' => '1',
+            'total_amount' => '1',
+            'paid_amount' => '1',
+            'balance_amount' => '1',
+          ],
+        ],
+      ],
+      'group_by_variant' => [
+        [
+          'report_id' => 'campaign/progress',
+          'fields' => [
+            'campaign_id' => '1',
+            'total_amount' => '1',
+            'paid_amount' => '1',
+            'balance_amount' => '1',
+          ],
+          'group_bys' => [
+            'campaign_id' => '1',
+          ],
+        ],
+      ],
+    ];
   }
 
 }

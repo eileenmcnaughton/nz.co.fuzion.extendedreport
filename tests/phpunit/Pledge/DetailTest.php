@@ -47,7 +47,7 @@ class Pledge_DetailTest extends BaseTestClass implements HeadlessInterface, Hook
    */
   public function testPledgeDetailReport() {
     $this->setUpPledgeData();
-    $params = array(
+    $params = [
       'report_id' => 'pledge/details',
       'fields' => [
         'civicrm_contact_display_name' => '1',
@@ -57,7 +57,7 @@ class Pledge_DetailTest extends BaseTestClass implements HeadlessInterface, Hook
       ],
       'effective_date_op' => 'to',
       'effective_date_value' => date('Y-m-d', strtotime('3 weeks ago')),
-    );
+    ];
     $rows = $this->getRows($params);
     $this->assertEquals(3, count($rows));
     $this->assertEquals(20000, $rows[0]['civicrm_pledge_payment_balance_amount_sum']);

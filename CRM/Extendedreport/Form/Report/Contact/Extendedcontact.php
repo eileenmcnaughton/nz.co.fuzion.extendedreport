@@ -7,11 +7,17 @@
  * to true based on the civicrm_contact table.
  */
 class CRM_Extendedreport_Form_Report_Contact_Extendedcontact extends CRM_Extendedreport_Form_Report_ExtendedReport {
+
   protected $_baseTable = 'civicrm_contact';
+
   protected $skipACL = TRUE;
+
   protected $_customGroupAggregates = TRUE;
+
   protected $isPivot = TRUE;
+
   protected $_noFields = TRUE;
+
   protected $_customGroupExtends = ['Contact', 'Individual', 'Household', 'Organization'];
 
   /**

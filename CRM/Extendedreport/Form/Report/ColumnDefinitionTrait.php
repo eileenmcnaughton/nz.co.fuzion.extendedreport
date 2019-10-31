@@ -17,6 +17,7 @@ use CRM_Extendedreport_ExtensionUtil as E;
  * It is for code organisation & may or may not make the most sense long term.
  */
 trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
+
   /*
  * Function to get Activity Columns
  * @param array $options column options
@@ -484,7 +485,7 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
         'type' => CRM_Utils_Type::T_INT,
         'is_fields' => TRUE,
         'is_filters' => TRUE,
-        'is_group_bys' =>  TRUE,
+        'is_group_bys' => TRUE,
         'is_order_bys' => TRUE,
       ],
       'currency' => [
@@ -506,7 +507,7 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
         'default' => [5],
         'alter_display' => 'alterByOptions',
         'type' => CRM_Utils_Type::T_INT,
-        'is_group_bys' =>  TRUE,
+        'is_group_bys' => TRUE,
         'is_order_bys' => TRUE,
       ],
       'frequency_interval' => [
@@ -530,7 +531,7 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
         'type' => CRM_Utils_Type::T_MONEY,
         'is_fields' => TRUE,
         'is_filters' => TRUE,
-        'is_group_bys' =>  TRUE,
+        'is_group_bys' => TRUE,
         'is_order_bys' => TRUE,
       ],
       'installments' => [
@@ -576,7 +577,7 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
         'type' => CRM_Utils_Type::T_STRING,
         'is_fields' => TRUE,
         'is_filters' => TRUE,
-        'is_group_bys' =>  TRUE,
+        'is_group_bys' => TRUE,
         'is_order_bys' => TRUE,
       ],
       'end_date' => [
@@ -622,6 +623,7 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
 
   /**
    * Function to get ContributionSoft columns
+   *
    * @param array $options
    *
    * @return array

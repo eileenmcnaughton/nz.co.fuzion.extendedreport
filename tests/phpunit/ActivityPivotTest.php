@@ -28,15 +28,15 @@ class ActivityPivotTest extends BaseTestClass implements HeadlessInterface, Hook
   public function testPivotReport() {
     $contact = $this->callAPISuccess('Contact', 'create', ['contact_type' => 'Individual', 'email' => 'demo@example.com']);
     $this->ids['Contact'][] = $contact['id'];
-    $this->callAPISuccess('Activity', 'create', ['source_contact_id' => $contact['id'], 'activity_type_id' => 'Meeting' , 'status_id' => 'Scheduled']);
-    $this->callAPISuccess('Activity', 'create', ['source_contact_id' => $contact['id'], 'activity_type_id' => 'Meeting' , 'status_id' => 'Completed']);
-    $this->callAPISuccess('Activity', 'create', ['source_contact_id' => $contact['id'], 'activity_type_id' => 'Phone Call' , 'status_id' => 'Completed']);
+    $this->callAPISuccess('Activity', 'create', ['source_contact_id' => $contact['id'], 'activity_type_id' => 'Meeting', 'status_id' => 'Scheduled']);
+    $this->callAPISuccess('Activity', 'create', ['source_contact_id' => $contact['id'], 'activity_type_id' => 'Meeting', 'status_id' => 'Completed']);
+    $this->callAPISuccess('Activity', 'create', ['source_contact_id' => $contact['id'], 'activity_type_id' => 'Phone Call', 'status_id' => 'Completed']);
 
-    $params = array(
+    $params = [
       'report_id' => 'activity/pivot',
       'aggregate_column_headers' => 'activity_status_id',
       'aggregate_row_headers' => 'activity_activity_type_id',
-    );
+    ];
     $completedStatusID = CRM_Core_PseudoConstant::getKey('CRM_Activity_BAO_Activity', 'status_id', 'Completed');
     $scheduledStatusID = CRM_Core_PseudoConstant::getKey('CRM_Activity_BAO_Activity', 'status_id', 'Scheduled');
     $rows = $this->getRows($params);

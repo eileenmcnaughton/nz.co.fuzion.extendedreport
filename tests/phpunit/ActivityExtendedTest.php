@@ -26,10 +26,10 @@ class ActivityExtendedTest extends BaseTestClass implements HeadlessInterface, H
    * Test the future income report with some data.
    */
   public function testReportDateSql() {
-    $params = array(
+    $params = [
       'report_id' => 'activityextended',
       'activity_activity_date_time_relative' => 'previous.month',
-    );
+    ];
     $this->getRows($params);
     $this->assertContains('235959', $this->sql[0]);
   }

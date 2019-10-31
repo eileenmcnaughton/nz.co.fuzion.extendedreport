@@ -4,13 +4,21 @@
  * Class CRM_Extendedreport_Form_Report_RelationshipExtended
  */
 class CRM_Extendedreport_Form_Report_RelationshipExtended extends CRM_Extendedreport_Form_Report_ExtendedReport {
+
   protected $_summary = NULL;
+
   protected $_emailField_a = FALSE;
+
   protected $_emailField_b = FALSE;
+
   protected $_baseTable = 'civicrm_relationship';
+
   protected $_primaryContactPrefix = 'contact_a_';
+
   protected $groupFilterNotOptimised = FALSE;
+
   protected $_customGroupExtends = ['Relationship', 'Contact', 'Individual', 'Household', 'Organization'];
+
   public $_tagFilterTable = 'contact_a_civicrm_contact';
 
   /**
@@ -28,46 +36,46 @@ class CRM_Extendedreport_Form_Report_RelationshipExtended extends CRM_Extendedre
   public function __construct() {
     $this->_tagFilter = TRUE;
     $this->_groupFilter = TRUE;
-    $this->_customGroupExtended['civicrm_relationship'] = array(
-      'extends' => array('Relationship'),
+    $this->_customGroupExtended['civicrm_relationship'] = [
+      'extends' => ['Relationship'],
       'title' => ts('Relationship'),
       'filters' => TRUE,
-    );
+    ];
 
-    $this->_columns = $this->getColumns('Contact', array(
+    $this->_columns = $this->getColumns('Contact', [
           'prefix' => 'contact_a_',
           'prefix_label' => 'Contact A ::',
-        )
-      ) + $this->getColumns('Address', array(
+        ]
+      ) + $this->getColumns('Address', [
           'prefix' => 'contact_a_',
           'prefix_label' => 'Contact A ::',
-        )
-      ) + $this->getColumns('Email', array(
+        ]
+      ) + $this->getColumns('Email', [
           'prefix' => 'contact_a_',
           'prefix_label' => 'Contact A ::',
-        )
-      ) + $this->getColumns('Phone', array(
+        ]
+      ) + $this->getColumns('Phone', [
           'prefix' => 'contact_a_',
           'prefix_label' => 'Contact A ::',
           'subquery' => FALSE,
-        )
-      ) + $this->getColumns('Contact', array(
+        ]
+      ) + $this->getColumns('Contact', [
         'prefix' => 'contact_b_',
         'prefix_label' => 'Contact B ::',
-      )) + $this->getColumns('Address', array(
+      ]) + $this->getColumns('Address', [
           'prefix' => 'contact_b_',
           'prefix_label' => 'Contact B ::',
-        )
-      ) + $this->getColumns('Email', array(
+        ]
+      ) + $this->getColumns('Email', [
         'prefix' => 'contact_b_',
         'prefix_label' => 'Contact B ::',
-      ))
+      ])
 
-      + $this->getColumns('Phone', array(
+      + $this->getColumns('Phone', [
         'prefix' => 'contact_b_',
         'prefix_label' => 'Contact B ::',
         'subquery' => FALSE,
-      ))
+      ])
       + $this->getColumns('Relationship')
       + $this->getColumns('RelationshipType')
       + $this->getColumns('Case', ['filters_defaults' => []]);
@@ -172,10 +180,10 @@ class CRM_Extendedreport_Form_Report_RelationshipExtended extends CRM_Extendedre
     }
     //for displaying relationship status
     if (!$isStatusFilter && $relStatus) {
-      $statistics['filters'][] = array(
+      $statistics['filters'][] = [
         'title' => 'Relationship Status',
-        'value' => $relStatus
-      );
+        'value' => $relStatus,
+      ];
     }
     return $statistics;
   }
@@ -183,9 +191,9 @@ class CRM_Extendedreport_Form_Report_RelationshipExtended extends CRM_Extendedre
   function postProcess() {
     $this->beginPostProcess();
     $this->relationType = NULL;
-    $originalRelationshipTypes = array();
+    $originalRelationshipTypes = [];
 
-    $relationships = array();
+    $relationships = [];
     if (CRM_Utils_Array::value('relationship_relationship_type_id_value', $this->_params) && is_array($this->_params['relationship_relationship_type_id_value'])) {
       $originalRelationshipTypes = $this->_params['relationship_relationship_type_id_value'];
       foreach ($this->_params['relationship_relationship_type_id_value'] as $relString) {
@@ -195,13 +203,13 @@ class CRM_Extendedreport_Form_Report_RelationshipExtended extends CRM_Extendedre
       }
     }
     $this->_params['relationship_relationship_type_id_value'] = $relationships;
-    $this->buildACLClause(array(
+    $this->buildACLClause([
       $this->_aliases['contact_a_civicrm_contact'],
-      $this->_aliases['contact_b_civicrm_contact']
-    ));
+      $this->_aliases['contact_b_civicrm_contact'],
+    ]);
     $sql = $this->buildQuery();
     $this->addToDeveloperTab($sql);
-    $rows = array();
+    $rows = [];
     $this->buildRows($sql, $rows);
     $this->_params['relationship_type_id_value'] = $originalRelationshipTypes;
     $this->formatDisplay($rows);

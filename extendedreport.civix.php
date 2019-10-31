@@ -7,8 +7,11 @@
  * extension.
  */
 class CRM_Extendedreport_ExtensionUtil {
+
   const SHORT_NAME = "extendedreport";
+
   const LONG_NAME = "nz.co.fuzion.extendedreport";
+
   const CLASS_PREFIX = "CRM_Extendedreport";
 
   /**
@@ -20,13 +23,14 @@ class CRM_Extendedreport_ExtensionUtil {
    * @param string $text
    *   Canonical message text (generally en_US).
    * @param array $params
+   *
    * @return string
    *   Translated text.
    * @see ts
    */
-  public static function ts($text, $params = array()) {
+  public static function ts($text, $params = []) {
     if (!array_key_exists('domain', $params)) {
-      $params['domain'] = array(self::LONG_NAME, NULL);
+      $params['domain'] = [self::LONG_NAME, NULL];
     }
     return ts($text, $params);
   }
@@ -37,6 +41,7 @@ class CRM_Extendedreport_ExtensionUtil {
    * @param string|NULL $file
    *   Ex: NULL.
    *   Ex: 'css/foo.css'.
+   *
    * @return string
    *   Ex: 'http://example.org/sites/default/ext/org.example.foo'.
    *   Ex: 'http://example.org/sites/default/ext/org.example.foo/css/foo.css'.
@@ -54,6 +59,7 @@ class CRM_Extendedreport_ExtensionUtil {
    * @param string|NULL $file
    *   Ex: NULL.
    *   Ex: 'css/foo.css'.
+   *
    * @return string
    *   Ex: '/var/www/example.org/sites/default/ext/org.example.foo'.
    *   Ex: '/var/www/example.org/sites/default/ext/org.example.foo/css/foo.css'.
@@ -68,6 +74,7 @@ class CRM_Extendedreport_ExtensionUtil {
    *
    * @param string $suffix
    *   Ex: 'Page_HelloWorld' or 'Page\\HelloWorld'.
+   *
    * @return string
    *   Ex: 'CRM_Foo_Page_HelloWorld'.
    */
@@ -100,7 +107,7 @@ function _extendedreport_civix_civicrm_config(&$config = NULL) {
     array_unshift($template->template_dir, $extDir);
   }
   else {
-    $template->template_dir = array($extDir, $template->template_dir);
+    $template->template_dir = [$extDir, $template->template_dir];
   }
 
   $include_path = $extRoot . PATH_SEPARATOR . get_include_path();
@@ -140,7 +147,7 @@ function _extendedreport_civix_civicrm_install() {
 function _extendedreport_civix_civicrm_postInstall() {
   _extendedreport_civix_civicrm_config();
   if ($upgrader = _extendedreport_civix_upgrader()) {
-    if (is_callable(array($upgrader, 'onPostInstall'))) {
+    if (is_callable([$upgrader, 'onPostInstall'])) {
       $upgrader->onPostInstall();
     }
   }
@@ -166,7 +173,7 @@ function _extendedreport_civix_civicrm_uninstall() {
 function _extendedreport_civix_civicrm_enable() {
   _extendedreport_civix_civicrm_config();
   if ($upgrader = _extendedreport_civix_upgrader()) {
-    if (is_callable(array($upgrader, 'onEnable'))) {
+    if (is_callable([$upgrader, 'onEnable'])) {
       $upgrader->onEnable();
     }
   }
@@ -181,7 +188,7 @@ function _extendedreport_civix_civicrm_enable() {
 function _extendedreport_civix_civicrm_disable() {
   _extendedreport_civix_civicrm_config();
   if ($upgrader = _extendedreport_civix_upgrader()) {
-    if (is_callable(array($upgrader, 'onDisable'))) {
+    if (is_callable([$upgrader, 'onDisable'])) {
       $upgrader->onDisable();
     }
   }
@@ -224,15 +231,16 @@ function _extendedreport_civix_upgrader() {
  *
  * @param $dir string, base dir
  * @param $pattern string, glob pattern, eg "*.txt"
+ *
  * @return array(string)
  */
 function _extendedreport_civix_find_files($dir, $pattern) {
-  if (is_callable(array('CRM_Utils_File', 'findFiles'))) {
+  if (is_callable(['CRM_Utils_File', 'findFiles'])) {
     return CRM_Utils_File::findFiles($dir, $pattern);
   }
 
-  $todos = array($dir);
-  $result = array();
+  $todos = [$dir];
+  $result = [];
   while (!empty($todos)) {
     $subdir = array_shift($todos);
     foreach (_extendedreport_civix_glob("$subdir/$pattern") as $match) {
@@ -254,6 +262,7 @@ function _extendedreport_civix_find_files($dir, $pattern) {
   }
   return $result;
 }
+
 /**
  * (Delegated) Implements hook_civicrm_managed().
  *
@@ -298,11 +307,11 @@ function _extendedreport_civix_civicrm_caseTypes(&$caseTypes) {
       CRM_Core_Error::fatal($errorMessage);
       // throw new CRM_Core_Exception($errorMessage);
     }
-    $caseTypes[$name] = array(
+    $caseTypes[$name] = [
       'module' => E::LONG_NAME,
       'name' => $name,
       'file' => $file,
-    );
+    ];
   }
 }
 
@@ -340,12 +349,14 @@ function _extendedreport_civix_civicrm_angularModules(&$angularModules) {
  * This wrapper provides consistency.
  *
  * @link http://php.net/glob
+ *
  * @param string $pattern
+ *
  * @return array, possibly empty
  */
 function _extendedreport_civix_glob($pattern) {
   $result = glob($pattern);
-  return is_array($result) ? $result : array();
+  return is_array($result) ? $result : [];
 }
 
 /**
@@ -360,12 +371,12 @@ function _extendedreport_civix_glob($pattern) {
 function _extendedreport_civix_insert_navigation_menu(&$menu, $path, $item) {
   // If we are done going down the path, insert menu
   if (empty($path)) {
-    $menu[] = array(
-      'attributes' => array_merge(array(
-        'label'      => CRM_Utils_Array::value('name', $item),
-        'active'     => 1,
-      ), $item),
-    );
+    $menu[] = [
+      'attributes' => array_merge([
+        'label' => CRM_Utils_Array::value('name', $item),
+        'active' => 1,
+      ], $item),
+    ];
     return TRUE;
   }
   else {
@@ -376,7 +387,7 @@ function _extendedreport_civix_insert_navigation_menu(&$menu, $path, $item) {
     foreach ($menu as $key => &$entry) {
       if ($entry['attributes']['name'] == $first) {
         if (!isset($entry['child'])) {
-          $entry['child'] = array();
+          $entry['child'] = [];
         }
         $found = _extendedreport_civix_insert_navigation_menu($entry['child'], implode('/', $path), $item, $key);
       }
@@ -389,7 +400,7 @@ function _extendedreport_civix_insert_navigation_menu(&$menu, $path, $item) {
  * (Delegated) Implements hook_civicrm_navigationMenu().
  */
 function _extendedreport_civix_navigationMenu(&$nodes) {
-  if (!is_callable(array('CRM_Core_BAO_Navigation', 'fixNavigationMenu'))) {
+  if (!is_callable(['CRM_Core_BAO_Navigation', 'fixNavigationMenu'])) {
     _extendedreport_civix_fixNavigationMenu($nodes);
   }
 }
@@ -400,7 +411,7 @@ function _extendedreport_civix_navigationMenu(&$nodes) {
  */
 function _extendedreport_civix_fixNavigationMenu(&$nodes) {
   $maxNavID = 1;
-  array_walk_recursive($nodes, function($item, $key) use (&$maxNavID) {
+  array_walk_recursive($nodes, function ($item, $key) use (&$maxNavID) {
     if ($key === 'navID') {
       $maxNavID = max($maxNavID, $item);
     }
@@ -449,6 +460,6 @@ function _extendedreport_civix_civicrm_alterSettingsFolders(&$metaDataFolders = 
  */
 
 function _extendedreport_civix_civicrm_entityTypes(&$entityTypes) {
-  $entityTypes = array_merge($entityTypes, array (
-  ));
+  $entityTypes = array_merge($entityTypes, [
+  ]);
 }

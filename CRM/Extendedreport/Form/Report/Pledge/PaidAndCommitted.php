@@ -9,28 +9,33 @@
  */
 
 class CRM_Extendedreport_Form_Report_Pledge_PaidAndCommitted extends CRM_Extendedreport_Form_Report_ExtendedReport {
+
   protected $_summary = NULL;
+
   protected $_totalPaid = FALSE;
-  protected $_customGroupExtends = array(
+
+  protected $_customGroupExtends = [
     'Pledge',
-  );
-  public $_drilldownReport = array('pledge/detail' => 'Pledge Details');
+  ];
+
+  public $_drilldownReport = ['pledge/detail' => 'Pledge Details'];
+
   protected $_customGroupGroupBy = TRUE;
 
   /**
    * Class constructor.
    */
   public function __construct() {
-    $this->_columns = $this->getColumns('Contact', array(
+    $this->_columns = $this->getColumns('Contact', [
           'fields' => TRUE,
           'order_by' => TRUE,
-        )
+        ]
       ) + $this->getColumns('Contact')
       + $this->getColumns('FinancialType')
       + $this->buildColumns([
         'actual_amount' => [
           'title' => ts('Amount Paid'),
-          'statistics' => array('sum' => ts('Amount Paid')),
+          'statistics' => ['sum' => ts('Amount Paid')],
           'type' => CRM_Utils_Type::T_MONEY,
           'is_fields' => TRUE,
           'is_filters' => FALSE,
@@ -39,13 +44,13 @@ class CRM_Extendedreport_Form_Report_Pledge_PaidAndCommitted extends CRM_Extende
           'is_order_bys' => FALSE,
           'is_aggregate_columns' => FALSE,
           'is_aggregate_rows' => FALSE,
-        ]
+        ],
       ],
-    'civicrm_pledge_payment');
+        'civicrm_pledge_payment');
 
-    $this->_columns += $this->getColumns('Pledge', array('fields' => TRUE));
+    $this->_columns += $this->getColumns('Pledge', ['fields' => TRUE]);
 
-    $this->_columns['civicrm_pledge']['metadata']['balance_amount'] = array(
+    $this->_columns['civicrm_pledge']['metadata']['balance_amount'] = [
       'title' => 'Balance to Pay',
       'type' => CRM_Utils_Type::T_MONEY,
       'dbAlias' => "(COALESCE(sum(pledge.amount), 0) - COALESCE(sum(pledge_payment_civireport.actual_amount), 0))",
@@ -56,18 +61,18 @@ class CRM_Extendedreport_Form_Report_Pledge_PaidAndCommitted extends CRM_Extende
       'is_order_bys' => FALSE,
       'is_aggregate_columns' => FALSE,
       'is_aggregate_rows' => FALSE,
-    );
+    ];
 
-    $this->_columns['civicrm_pledge']['fields']['balance_amount'] = array(
+    $this->_columns['civicrm_pledge']['fields']['balance_amount'] = [
       'title' => 'Balance to Pay',
-      'statistics' => array('sum' => ts('Balance')),
+      'statistics' => ['sum' => ts('Balance')],
       'type' => CRM_Utils_Type::T_MONEY,
-    );
+    ];
 
-    $this->_columns['civicrm_pledge']['order_bys']['balance_amount'] = array(
+    $this->_columns['civicrm_pledge']['order_bys']['balance_amount'] = [
       'title' => 'Balance to Pay',
       'type' => CRM_Utils_Type::T_MONEY,
-    );
+    ];
 
     $this->_groupFilter = TRUE;
     $this->_tagFilter = TRUE;
@@ -110,18 +115,19 @@ class CRM_Extendedreport_Form_Report_Pledge_PaidAndCommitted extends CRM_Extende
    *
    * @return string
    */
-   function selectClause(&$tableName, $tableKey, &$fieldName, &$field) {
-     if ($fieldName == 'balance_amount') {
-       $this->_columnHeaders["{$tableName}_{$fieldName}"]['title'] = CRM_Utils_Array::value('title', $field);
-       $this->_columnHeaders["{$tableName}_{$fieldName}"]['type'] = CRM_Utils_Array::value('type', $field);
-       $this->_statFields['Balance to Pay'] = "{$tableName}_{$fieldName}";
-       return " COALESCE(sum(pledge.amount), 0) - COALESCE(sum({$this->_aliases['civicrm_pledge_payment']}.actual_amount), 0) as civicrm_pledge_balance_amount ";
-     }
+  function selectClause(&$tableName, $tableKey, &$fieldName, &$field) {
+    if ($fieldName == 'balance_amount') {
+      $this->_columnHeaders["{$tableName}_{$fieldName}"]['title'] = CRM_Utils_Array::value('title', $field);
+      $this->_columnHeaders["{$tableName}_{$fieldName}"]['type'] = CRM_Utils_Array::value('type', $field);
+      $this->_statFields['Balance to Pay'] = "{$tableName}_{$fieldName}";
+      return " COALESCE(sum(pledge.amount), 0) - COALESCE(sum({$this->_aliases['civicrm_pledge_payment']}.actual_amount), 0) as civicrm_pledge_balance_amount ";
+    }
   }
 
   /**
    * Block parent re-ordering of headers.
    */
-  function reOrderColumnHeaders() {}
+  function reOrderColumnHeaders() {
+  }
 
 }

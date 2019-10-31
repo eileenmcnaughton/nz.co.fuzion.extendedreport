@@ -22,7 +22,7 @@ use Civi\Test\TransactionalInterface;
  */
 class Contact_BasicContactTest extends BaseTestClass implements HeadlessInterface, HookInterface, TransactionalInterface {
 
-  protected $contacts = array();
+  protected $contacts = [];
 
   public function setUpHeadless() {
     // Civi\Test has many helpers, like install(), uninstall(), sql(), and sqlFile().
@@ -36,10 +36,17 @@ class Contact_BasicContactTest extends BaseTestClass implements HeadlessInterfac
   public function setUp() {
     parent::setUp();
     $this->createCustomGroupWithField(['CustomField' => ['html_type' => 'CheckBox', 'option_values' => ['two' => 'A couple', 'three' => 'A few', 'four' => 'Too Many']]]);
-    $contact = $this->callAPISuccess('Contact', 'create', array('organization_name' => 'Amazons', 'last_name' => 'Woman', 'contact_type' => 'Organization', 'custom_' . $this->customFieldID => 'three'));
+    $contact = $this->callAPISuccess('Contact', 'create', ['organization_name' => 'Amazons', 'last_name' => 'Woman', 'contact_type' => 'Organization', 'custom_' . $this->customFieldID => 'three']);
 
     $this->contacts[] = $contact['id'];
-    $contact = $this->callAPISuccess('Contact', 'create', array('first_name' => 'Wonder', 'last_name' => 'Woman', 'contact_type' => 'Individual', 'employer_id' => $contact['id'], 'custom_' . $this->customFieldID => 'two', 'gender_id' => 'Female'));
+    $contact = $this->callAPISuccess('Contact', 'create', [
+      'first_name' => 'Wonder',
+      'last_name' => 'Woman',
+      'contact_type' => 'Individual',
+      'employer_id' => $contact['id'],
+      'custom_' . $this->customFieldID => 'two',
+      'gender_id' => 'Female',
+    ]);
     $this->contacts[] = $contact['id'];
   }
 
@@ -84,7 +91,7 @@ class Contact_BasicContactTest extends BaseTestClass implements HeadlessInterfac
           'civicrm_contact_civicrm_contact_contact_id_link' => '/index.php?q=civicrm/contact/view&amp;reset=1&amp;cid=' . $this->contacts[1],
         ],
     ], $rows);
-    $params[ 'custom_' . $customField['id'] . '_value'] = 'Wonder';
+    $params['custom_' . $customField['id'] . '_value'] = 'Wonder';
     $rows = $this->getRows($params);
     $this->assertEmpty($rows);
   }

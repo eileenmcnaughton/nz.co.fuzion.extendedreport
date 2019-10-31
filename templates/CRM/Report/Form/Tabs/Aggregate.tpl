@@ -4,16 +4,17 @@
       <td>
         <div id='crm-custom_fields'>
           <label>{ts}Select Row Fields{/ts}</label>
-          {$form.aggregate_row_headers.html}
+            {$form.aggregate_row_headers.html}
         </div>
       </td>
       <td>
         <label>{ts}Select Column Header{/ts}</label>
-        {$form.aggregate_column_headers.html}
+          {$form.aggregate_column_headers.html}
       </td>
     </tr>
     <tr>
-      <td>{$form.delete_null.label}  {$form.delete_null.html}</td></td>
+      <td>{$form.delete_null.label}  {$form.delete_null.html}</td>
+      </td>
     </tr>
   </table>
 </div>

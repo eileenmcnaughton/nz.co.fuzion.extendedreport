@@ -32,41 +32,48 @@
  * @copyright CiviCRM LLC (c) 2004-2014
  */
 class CRM_Extendedreport_Form_Report_Contribute_BookkeepingExtended extends CRM_Extendedreport_Form_Report_ExtendedReport {
+
   protected $_baseTable = 'civicrm_contribution';
+
   protected $_rollup = '';
+
   /**
    * Class constructor.
    */
   public function __construct() {
     $this->_columns = $this->getColumns('Contact')
-    + $this->getColumns('Address')
-    + $this->getColumns('Phone', array('subquery' => FALSE))
-    + $this->getColumns('Email')
-    + $this->getColumns('Membership')
-    + $this->getColumns('MembershipLog', array('prefix_label' => 'Historical '))
-    + $this->getColumns('FinancialAccount', array(
+      + $this->getColumns('Address')
+      + $this->getColumns('Phone', ['subquery' => FALSE])
+      + $this->getColumns('Email')
+      + $this->getColumns('Membership')
+      + $this->getColumns('MembershipLog', ['prefix_label' => 'Historical '])
+      + $this->getColumns('FinancialAccount', [
         'prefix' => 'credit_',
         'group_by' => TRUE,
         'prefix_label' => ts('Credit '),
         'filters' => TRUE,
-      ))
-    + $this->getColumns('FinancialAccount', array(
-      'prefix' => 'debit_',
-      'group_by' => TRUE,
-      'prefix_label' => ts('Debit '),
-      'filters' => FALSE,
-    ))
-    + $this->getColumns('LineItem')
-    + $this->getColumns('Contribution', array(
-      'fields_defaults' => array('receive_date'),
-      'filters_defaults' => array('contribution_status_id' => array(1),
-     )))
-    +  $this->getColumns('FinancialTrxn', array(
-      'filters_defaults' => array('status_id' => array('IN' => array(1)),
-    )))
-    + $this->buildColumns(
-      [
-          'amount' => array(
+      ])
+      + $this->getColumns('FinancialAccount', [
+        'prefix' => 'debit_',
+        'group_by' => TRUE,
+        'prefix_label' => ts('Debit '),
+        'filters' => FALSE,
+      ])
+      + $this->getColumns('LineItem')
+      + $this->getColumns('Contribution', [
+        'fields_defaults' => ['receive_date'],
+        'filters_defaults' => [
+          'contribution_status_id' => [1],
+        ],
+      ])
+      + $this->getColumns('FinancialTrxn', [
+        'filters_defaults' => [
+          'status_id' => ['IN' => [1]],
+        ],
+      ])
+      + $this->buildColumns(
+        [
+          'amount' => [
             'title' => ts('Amount'),
             'default' => TRUE,
             'type' => CRM_Utils_Type::T_MONEY,
@@ -78,13 +85,13 @@ class CRM_Extendedreport_Form_Report_Contribute_BookkeepingExtended extends CRM_
             'is_order_bys' => FALSE,
             'is_join_filters' => FALSE,
             'table_name' => 'civicrm_entity_financial_trxn',
-          ),
-      ], 'civicrm_entity_financial_trxn', 'CRM_Financial_DAO_EntityFinancialTrxn')
-     + $this->getColumns('Batch', array(
-      'group_by' => TRUE,
-      'prefix_label' => ts('Batch '),
-      'filters' => TRUE,
-    ));
+          ],
+        ], 'civicrm_entity_financial_trxn', 'CRM_Financial_DAO_EntityFinancialTrxn')
+      + $this->getColumns('Batch', [
+        'group_by' => TRUE,
+        'prefix_label' => ts('Batch '),
+        'filters' => TRUE,
+      ]);
 
     $this->_groupFilter = TRUE;
     $this->_tagFilter = TRUE;
@@ -148,7 +155,7 @@ class CRM_Extendedreport_Form_Report_Contribute_BookkeepingExtended extends CRM_
 
     if ($fieldName == 'amount') {
       $field['dbAlias'] =
-      $this->setHeaders($tableName, $fieldName, $field, $alias);
+        $this->setHeaders($tableName, $fieldName, $field, $alias);
       $clause = "(
         CASE
         WHEN  {$this->_aliases['civicrm_entity_financial_trxn']}_item.entity_id IS NOT NULL
@@ -168,7 +175,7 @@ class CRM_Extendedreport_Form_Report_Contribute_BookkeepingExtended extends CRM_
     parent::from();
     // @todo break these out to be like the other ones.
     $this->_from .=
-    "
+      "
               LEFT JOIN civicrm_financial_account {$this->_aliases['debit_civicrm_financial_account']}
                     ON {$this->_aliases['civicrm_financial_trxn']}.to_financial_account_id =
                     {$this->_aliases['debit_civicrm_financial_account']}.id
@@ -187,7 +194,7 @@ class CRM_Extendedreport_Form_Report_Contribute_BookkeepingExtended extends CRM_
    * @return array
    */
   function fromClauses() {
-    return array(
+    return [
       'contact_from_contribution',
       'financial_trxn_from_contribution',
       'lineItem_from_financialTrxn',
@@ -196,7 +203,7 @@ class CRM_Extendedreport_Form_Report_Contribute_BookkeepingExtended extends CRM_
       'address_from_contact',
       'email_from_contact',
       'membership_from_lineItem',
-    );
+    ];
   }
 
   function orderBy() {
@@ -242,7 +249,7 @@ class CRM_Extendedreport_Form_Report_Contribute_BookkeepingExtended extends CRM_
               END";
     }
     if ($field['dbAlias'] == 'credit_financial_account.name') {
-      $field['dbAlias'] =  "CASE
+      $field['dbAlias'] = "CASE
               WHEN financial_trxn_civireport.from_financial_account_id IS NOT NULL
               THEN {$this->_aliases['credit_civicrm_financial_account']}.id
               ELSE  credit_financial_item_financial_account.id
@@ -280,18 +287,18 @@ class CRM_Extendedreport_Form_Report_Contribute_BookkeepingExtended extends CRM_
         $dao->count), 2), $dao->currency);
     }
     if (empty($amount)) {
-      return  $statistics;
+      return $statistics;
     }
-    $statistics['counts']['amount'] = array(
+    $statistics['counts']['amount'] = [
       'value' => implode(', ', $amount),
       'title' => 'Total Amount',
       'type' => CRM_Utils_Type::T_STRING,
-    );
-    $statistics['counts']['avg'] = array(
+    ];
+    $statistics['counts']['avg'] = [
       'value' => implode(', ', $avg),
       'title' => 'Average',
       'type' => CRM_Utils_Type::T_STRING,
-    );
+    ];
     return $statistics;
   }
 
@@ -347,10 +354,10 @@ class CRM_Extendedreport_Form_Report_Contribute_BookkeepingExtended extends CRM_
   public function storeGroupByArray() {
     parent::storeGroupByArray();
     if (empty($this->_groupByArray)) {
-      $this->_groupByArray = array(
+      $this->_groupByArray = [
         "{$this->_aliases['civicrm_entity_financial_trxn']}.id",
         "{$this->_aliases['civicrm_line_item']}.id",
-      );
+      ];
       $this->_rollup = FALSE;
     }
   }

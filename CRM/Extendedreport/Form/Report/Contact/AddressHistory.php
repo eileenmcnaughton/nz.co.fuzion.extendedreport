@@ -6,6 +6,7 @@
 class CRM_Extendedreport_Form_Report_Contact_AddressHistory extends CRM_Extendedreport_Form_Report_ExtendedReport {
 
   protected $_baseTable = 'log_civicrm_address';
+
   protected $isSupportsContactTab = TRUE;
 
   /**

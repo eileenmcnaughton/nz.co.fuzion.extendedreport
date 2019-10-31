@@ -24,6 +24,7 @@ class CRM_Extendedreport_Form_Report_Contribute_ContributionRecurPivot extends C
   protected $_potentialCriteria = [];
 
   protected $_noFields = TRUE;
+
   protected $_customGroupExtends = ['ContributionRecur', 'Contact', 'Individual', 'Household', 'Organization'];
 
   /**
@@ -33,10 +34,10 @@ class CRM_Extendedreport_Form_Report_Contribute_ContributionRecurPivot extends C
     $this->_columns = $this->getColumns('ContributionRecur', [
         'fields' => FALSE,
       ])
-    + $this->getColumns('Contact', [
+      + $this->getColumns('Contact', [
         'fields' => FALSE,
-    ])
-    + $this->getColumns('Address', [
+      ])
+      + $this->getColumns('Address', [
         'fields' => FALSE,
         'aggregate_rows' => TRUE,
       ]);

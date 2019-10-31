@@ -1,4 +1,5 @@
 <?php
+
 use CRM_Extendedreport_ExtensionUtil as E;
 
 /**
@@ -9,7 +10,8 @@ use CRM_Extendedreport_ExtensionUtil as E;
  *
  * @see http://wiki.civicrm.org/confluence/display/CRMDOC/API+Architecture+Standards
  */
-function _civicrm_api3_report_template_getinstance_spec(&$spec) {}
+function _civicrm_api3_report_template_getinstance_spec(&$spec) {
+}
 
 /**
  * ReportTemplate.getinstance API
@@ -17,6 +19,7 @@ function _civicrm_api3_report_template_getinstance_spec(&$spec) {}
  * Wrapper for ReportInstance.get that ensures php deserialization is done.
  *
  * @param array $params
+ *
  * @return array API result descriptor
  *
  * @throws API_Exception

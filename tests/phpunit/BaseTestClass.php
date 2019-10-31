@@ -58,7 +58,8 @@ class BaseTestClass extends \PHPUnit\Framework\TestCase implements HeadlessInter
           civicrm_api3($entity, 'delete', [
             'id' => $entityID,
           ]);
-        } catch (CiviCRM_API3_Exception $e) {
+        }
+        catch (CiviCRM_API3_Exception $e) {
           // No harm done - it was a best effort cleanup
         }
       }
@@ -75,6 +76,7 @@ class BaseTestClass extends \PHPUnit\Framework\TestCase implements HeadlessInter
 
   /**
    * @param $params
+   *
    * @return array|int
    */
   protected function getRows($params) {
@@ -148,6 +150,7 @@ class BaseTestClass extends \PHPUnit\Framework\TestCase implements HeadlessInter
    * Create custom group.
    *
    * @param array $params
+   *
    * @return array
    */
   public function customGroupCreate($params = []) {
@@ -180,6 +183,7 @@ class BaseTestClass extends \PHPUnit\Framework\TestCase implements HeadlessInter
    *
    * @param array $params
    *   (custom_group_id) is required.
+   *
    * @return array
    */
   protected function customFieldCreate($params) {

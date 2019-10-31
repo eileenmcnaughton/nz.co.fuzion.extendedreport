@@ -18,6 +18,7 @@ class CRM_Extendedreport_Form_Report_Member_MembershipPivot extends CRM_Extended
   protected $_noFields = TRUE;
 
   protected $_customGroupExtends = ['Membership', 'Contact', 'Individual', 'Household', 'Organization'];
+
   /**
    * Class constructor.
    */

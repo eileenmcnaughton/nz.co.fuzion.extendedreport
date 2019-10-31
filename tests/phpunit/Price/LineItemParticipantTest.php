@@ -22,55 +22,57 @@ use Civi\Test\TransactionalInterface;
  */
 class LineItemParticipantTest extends BaseTestClass implements HeadlessInterface, HookInterface, TransactionalInterface {
 
-    protected $contacts = array();
+  protected $contacts = [];
 
-    public function setUpHeadless() {
-        // Civi\Test has many helpers, like install(), uninstall(), sql(), and sqlFile().
-        // See: https://github.com/civicrm/org.civicrm.testapalooza/blob/master/civi-test.md
-        return \Civi\Test::headless()
-            ->installMe(__DIR__)
-            ->apply();
-    }
+  public function setUpHeadless() {
+    // Civi\Test has many helpers, like install(), uninstall(), sql(), and sqlFile().
+    // See: https://github.com/civicrm/org.civicrm.testapalooza/blob/master/civi-test.md
+    return \Civi\Test::headless()
+      ->installMe(__DIR__)
+      ->apply();
+  }
 
-    public function setUp() {
-        parent::setUp();
-        $components = array();
-        $dao = new CRM_Core_DAO_Component();
-        while ($dao->fetch()) {
-            $components[$dao->id] = $dao->name;
-        }
-        civicrm_api3('Setting', 'create', array('enable_components' => $components));
-        $contact = $this->callAPISuccess('Contact', 'create', array('first_name' => 'Wonder', 'last_name' => 'Woman', 'contact_type' => 'Individual'));
-        $this->contacts[] = $contact['id'];
+  public function setUp() {
+    parent::setUp();
+    $components = [];
+    $dao = new CRM_Core_DAO_Component();
+    while ($dao->fetch()) {
+      $components[$dao->id] = $dao->name;
     }
+    civicrm_api3('Setting', 'create', ['enable_components' => $components]);
+    $contact = $this->callAPISuccess('Contact', 'create', ['first_name' => 'Wonder', 'last_name' => 'Woman', 'contact_type' => 'Individual']);
+    $this->contacts[] = $contact['id'];
+  }
 
-    /**
-     * Test the report runs.
-     *
-     * @dataProvider getReportParameters
-     *
-     * @param array $params
-     *   Parameters to pass to the report
-     */
-    public function testReport($params) {
-        // Just checking no error at the moment.
-        $this->getRows($params);
-    }
+  /**
+   * Test the report runs.
+   *
+   * @dataProvider getReportParameters
+   *
+   * @param array $params
+   *   Parameters to pass to the report
+   */
+  public function testReport($params) {
+    // Just checking no error at the moment.
+    $this->getRows($params);
+  }
 
-    /**
-     * Get datasets for testing the report
-     */
-    public function getReportParameters() {
-        return array(
-            'basic' => array(array(
-                'report_id' => 'price/lineitemparticipant',
-                'fields' => array(
-                    'event_event_id' => '1',
-                    'civicrm_contact_display_name' => '1',
-                    'contribution_payment_instrument_id' => 1,
-                    'email_email' => 1,
-                ),
-            )),
-        );
-    }
+  /**
+   * Get datasets for testing the report
+   */
+  public function getReportParameters() {
+    return [
+      'basic' => [
+        [
+          'report_id' => 'price/lineitemparticipant',
+          'fields' => [
+            'event_event_id' => '1',
+            'civicrm_contact_display_name' => '1',
+            'contribution_payment_instrument_id' => 1,
+            'email_email' => 1,
+          ],
+        ],
+      ],
+    ];
+  }
 }

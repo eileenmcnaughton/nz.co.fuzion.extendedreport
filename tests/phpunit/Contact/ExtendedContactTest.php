@@ -22,7 +22,7 @@ use Civi\Test\TransactionalInterface;
  */
 class Contact_ExtendedContactTest extends BaseTestClass implements HeadlessInterface, HookInterface, TransactionalInterface {
 
-  protected $contacts = array();
+  protected $contacts = [];
 
   public function setUpHeadless() {
     // Civi\Test has many helpers, like install(), uninstall(), sql(), and sqlFile().
@@ -37,17 +37,24 @@ class Contact_ExtendedContactTest extends BaseTestClass implements HeadlessInter
     parent::setUp();
     $this->enableAllComponents();
     $this->createCustomGroupWithField(['CustomField' => ['html_type' => 'CheckBox', 'option_values' => ['two' => 'A couple', 'three' => 'A few', 'four' => 'Too Many']]]);
-    $contact = $this->callAPISuccess('Contact', 'create', array('organization_name' => 'Amazons', 'last_name' => 'Woman', 'contact_type' => 'Organization', 'custom_' . $this->customFieldID => 'three'));
+    $contact = $this->callAPISuccess('Contact', 'create', ['organization_name' => 'Amazons', 'last_name' => 'Woman', 'contact_type' => 'Organization', 'custom_' . $this->customFieldID => 'three']);
 
     $this->contacts[] = $contact['id'];
-    $contact = $this->callAPISuccess('Contact', 'create', array('first_name' => 'Wonder', 'last_name' => 'Woman', 'contact_type' => 'Individual', 'employer_id' => $contact['id'], 'custom_' . $this->customFieldID => 'two', 'gender_id' => 'Female'));
+    $contact = $this->callAPISuccess('Contact', 'create', [
+      'first_name' => 'Wonder',
+      'last_name' => 'Woman',
+      'contact_type' => 'Individual',
+      'employer_id' => $contact['id'],
+      'custom_' . $this->customFieldID => 'two',
+      'gender_id' => 'Female',
+    ]);
     $this->contacts[] = $contact['id'];
   }
 
   public function tearDown() {
     parent::tearDown();
-    $this->callAPISuccess('CustomField', 'delete', array('id' => $this->customFieldID));
-    $this->callAPISuccess('CustomGroup', 'delete', array('id' => $this->customGroupID));
+    $this->callAPISuccess('CustomField', 'delete', ['id' => $this->customFieldID]);
+    $this->callAPISuccess('CustomGroup', 'delete', ['id' => $this->customGroupID]);
     foreach ($this->contacts as $contact) {
       $this->callAPISuccess('Contact', 'delete', ['id' => $contact]);
     }

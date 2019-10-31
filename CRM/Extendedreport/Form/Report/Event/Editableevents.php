@@ -4,9 +4,13 @@
  * Class CRM_Extendedreport_Form_Report_Event_Editableevents
  */
 class CRM_Extendedreport_Form_Report_Event_Editableevents extends CRM_Extendedreport_Form_Report_ExtendedReport {
+
   protected $_baseTable = 'civicrm_event';
+
   protected $skipACL = TRUE;
-  protected $_customGroupExtends = array('Event');
+
+  protected $_customGroupExtends = ['Event'];
+
   protected $_customGroupGroupBy = TRUE;
 
   /**
@@ -14,10 +18,10 @@ class CRM_Extendedreport_Form_Report_Event_Editableevents extends CRM_Extendedre
    */
   public function __construct() {
     $this->_columns = $this->getColumns('Event');
-    $this->_columns['civicrm_event']['fields']['id'] = array(
+    $this->_columns['civicrm_event']['fields']['id'] = [
       'title' => 'id',
       'required' => TRUE,
-    );
+    ];
     parent::__construct();
   }
 }

@@ -34,10 +34,12 @@
  *
  */
 class CRM_Extendedreport_Form_Report_Pledge_Sybunt extends CRM_Extendedreport_Form_Report_ExtendedReport {
+
   protected $_add2groupSupported = FALSE;
-  protected $_customGroupExtends = array(
-    'Pledge'
-  );
+
+  protected $_customGroupExtends = [
+    'Pledge',
+  ];
 
   /**
    *
@@ -58,12 +60,12 @@ class CRM_Extendedreport_Form_Report_Pledge_Sybunt extends CRM_Extendedreport_Fo
       + $this->getColumns('Phone')
       + $this->getColumns('Pledge');
 
-      $this->_columns['civicrm_pledge']['filters']['yid'] =
-      $this->_columns['civicrm_pledge']['metadata']['yid'] = [
+    $this->_columns['civicrm_pledge']['filters']['yid'] =
+    $this->_columns['civicrm_pledge']['metadata']['yid'] = [
       'name' => 'start_date',
       'title' => ts('This Year'),
       'operatorType' => CRM_Report_Form::OP_SELECT,
-      'type'    => CRM_Utils_Type::T_INT,
+      'type' => CRM_Utils_Type::T_INT,
       'options' => $optionYear,
       'default' => date('Y'),
       'is_filters' => TRUE,
@@ -83,8 +85,8 @@ class CRM_Extendedreport_Form_Report_Pledge_Sybunt extends CRM_Extendedreport_Fo
   }
 
   function select() {
-    $select = array();
-    $this->_columnHeaders = array();
+    $select = [];
+    $this->_columnHeaders = [];
     $current_year = $this->_params['yid_value'];
     $previous_year = $current_year - 1;
     $previous_pyear = $current_year - 2;
@@ -175,7 +177,7 @@ class CRM_Extendedreport_Form_Report_Pledge_Sybunt extends CRM_Extendedreport_Fo
   }
 
   function groupBy() {
-    $this->_groupByArray = array($this->_aliases['civicrm_pledge'] . '.contact_id');
+    $this->_groupByArray = [$this->_aliases['civicrm_pledge'] . '.contact_id'];
     $this->_groupBy = CRM_Contact_BAO_Query::getGroupByFromSelectColumns($this->_selectClauses, $this->_groupByArray) . ", Year({$this->_aliases['civicrm_pledge']}.start_date) WITH ROLLUP ";
   }
 
@@ -195,11 +197,11 @@ class CRM_Extendedreport_Form_Report_Pledge_Sybunt extends CRM_Extendedreport_Fo
       $sql = "{$select} {$this->_from } {$this->_where}";
       $dao = CRM_Core_DAO::executeQuery($sql);
       if ($dao->fetch()) {
-        $statistics['counts']['amount'] = array(
+        $statistics['counts']['amount'] = [
           'value' => $dao->amount,
           'title' => 'Total LifeTime',
-          'type' => CRM_Utils_Type::T_MONEY
-        );
+          'type' => CRM_Utils_Type::T_MONEY,
+        ];
       }
     }
     return $statistics;
@@ -216,7 +218,7 @@ class CRM_Extendedreport_Form_Report_Pledge_Sybunt extends CRM_Extendedreport_Fo
     $this->where();
     $this->groupBy();
 
-    $rows = $contactIds = array();
+    $rows = $contactIds = [];
     if (!CRM_Utils_Array::value('charts', $this->_params)) {
       $this->limit();
       $getContacts = "SELECT {$this->_aliases['civicrm_contact']}.id as cid {$this->_from} {$this->_where} GROUP BY {$this->_aliases['civicrm_contact']}.id {$this->_limit}";
@@ -240,7 +242,7 @@ class CRM_Extendedreport_Form_Report_Pledge_Sybunt extends CRM_Extendedreport_Fo
       $current_year = $this->_params['yid_value'];
       $upTo_year = $current_year - 4;
 
-      $rows = $row = array();
+      $rows = $row = [];
       $dao = CRM_Core_DAO::executeQuery($sql);
       $contributionSum = 0;
 

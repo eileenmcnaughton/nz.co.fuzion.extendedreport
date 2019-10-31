@@ -1,6 +1,6 @@
-(function(angular, $, _) {
+(function (angular, $, _) {
 
-  angular.module('extendedreport').config(function($routeProvider) {
+  angular.module('extendedreport').config(function ($routeProvider) {
       $routeProvider.when('/exreport/report/:id', {
         controller: 'ExtendedreportReportCntrl',
         templateUrl: '~/extendedreport/ReportCntrl.html',
@@ -8,14 +8,14 @@
         // If you need to look up data when opening the page, list it out
         // under "resolve".
         resolve: {
-          reportMetadata: function(crmApi, $route) {
+          reportMetadata: function (crmApi, $route) {
             return crmApi('ReportTemplate', 'getmetadata', {
               instance_id: $route.current.params.id
             });
           },
-          reportInstance: function(crmApi, $route) {
+          reportInstance: function (crmApi, $route) {
             return crmApi('ReportTemplate', 'getinstance', {
-                id: $route.current.params.id
+              id: $route.current.params.id
             });
           }
         }
@@ -27,7 +27,7 @@
   //   $scope -- This is the set of variables shared between JS and HTML.
   //   crmApi, crmStatus, crmUiHelp -- These are services provided by civicrm-core.
   //   myContact -- The current contact, defined above in config().
-  angular.module('extendedreport').controller('ExtendedreportReportCntrl', function($scope, crmApi, crmStatus, crmUiHelp, reportMetadata, reportInstance, crmLegacy) {
+  angular.module('extendedreport').controller('ExtendedreportReportCntrl', function ($scope, crmApi, crmStatus, crmUiHelp, reportMetadata, reportInstance, crmLegacy) {
     // The ts() and hs() functions help load strings for this module.
     var ts = $scope.ts = CRM.ts('extendedreport');
     var hs = $scope.hs = crmUiHelp({file: 'CRM/extendedreport/ReportCntrl'});// See: templates/CRM/extendedreport/ReportCntrl.hlp
@@ -44,7 +44,7 @@
 
     function getLabels(fields) {
       var labels = [];
-      _.each(fields, function(field, key) {
+      _.each(fields, function (field, key) {
         var label = {
           'title': field.title,
           'name': key
@@ -61,8 +61,8 @@
       var selectedFields = [];
       _.each(formValues['fields'], function (field, key) {
         selectedFields.push({
-          'title' : fields[key]['title'],
-          'name' : key
+          'title': fields[key]['title'],
+          'name': key
         });
       });
       return selectedFields;
@@ -87,7 +87,7 @@
 
     function getUnselectedFields(fieldMetadata, selectedFields) {
       var ret = [];
-      _.each(fieldMetadata, function(field, key) {
+      _.each(fieldMetadata, function (field, key) {
         if (!selectedFields.hasOwnProperty(key)) {
           ret.push({
             'title': field.title,
@@ -101,7 +101,7 @@
     function getUnselectedSorting(fieldMetadata, selectedFields) {
 
       var ret = [];
-      _.each(fieldMetadata, function(field, key) {
+      _.each(fieldMetadata, function (field, key) {
         if (!selectedFields.hasOwnProperty(key)) {
           ret.push({
             'title': field.title,
@@ -120,18 +120,18 @@
     $scope.sortableFieldOptions = {
       placeholder: "fieldItem",
       connectWith: ".fields-container",
-      cancel : "input,textarea,button,select,option,a,.crm-editable-enabled,[contenteditable]",
+      cancel: "input,textarea,button,select,option,a,.crm-editable-enabled,[contenteditable]",
       containment: "#extendedReportFieldsConfig"
     };
 
     $scope.sortableOrderByOptions = {
       placeholder: "fieldItem",
       connectWith: ".order-bys-container",
-      cancel : "input,textarea,button,select,option,a,.crm-editable-enabled,[contenteditable]",
+      cancel: "input,textarea,button,select,option,a,.crm-editable-enabled,[contenteditable]",
       containment: "#extendedReportSortingConfig"
     };
 
-    $scope.selectField = function(field) {
+    $scope.selectField = function (field) {
       if (!field.hasOwnProperty('field_on_null')) {
         field['field_on_null'] = [];
       }
@@ -142,7 +142,7 @@
       $scope.selectedAlternateFields = field['field_on_null'];
     };
 
-    $scope.selectOrderBy = function(field) {
+    $scope.selectOrderBy = function (field) {
       if (!field.hasOwnProperty('field_on_null')) {
         field['field_on_null'] = [];
       }
@@ -158,7 +158,7 @@
 
     $scope.selectedTab = 'fields';
 
-    $scope.selectTab = function(tab) {
+    $scope.selectTab = function (tab) {
       $scope.selectedTab = tab;
     };
 
@@ -178,11 +178,11 @@
   });
 
   // Editable titles using ngModel & html5 contenteditable
-  angular.module('extendedreport').directive("extendedreportEditable", function() {
+  angular.module('extendedreport').directive("extendedreportEditable", function () {
     return {
       restrict: "A",
       require: "ngModel",
-      link: function(scope, element, attrs, ngModel) {
+      link: function (scope, element, attrs, ngModel) {
         var ts = CRM.ts('extendedreport');
 
         function read() {
@@ -194,12 +194,12 @@
           ngModel.$setViewValue(htmlVal);
         }
 
-        ngModel.$render = function() {
+        ngModel.$render = function () {
           element.html(ngModel.$viewValue || ' ');
         };
 
         // Special handling for enter and escape keys
-        element.on('keydown', function(e) {
+        element.on('keydown', function (e) {
           // Enter: prevent line break and save
           if (e.which === 13) {
             e.preventDefault();
@@ -212,7 +212,7 @@
           }
         });
 
-        element.on("blur change", function() {
+        element.on("blur change", function () {
           scope.$apply(read);
         });
 

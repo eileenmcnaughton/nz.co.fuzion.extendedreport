@@ -6,20 +6,26 @@
 class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Extendedreport_Form_Report_ExtendedReport {
 
   protected $_summary = NULL;
+
   protected $_baseTable = 'civicrm_participant';
+
   protected $skipACL = FALSE;
+
   protected $_groupFilter = TRUE;
+
   protected $_tagFilter = TRUE;
+
   protected $joinFiltersTab = TRUE;
 
-  protected $_customGroupExtends = array(
+  protected $_customGroupExtends = [
     'Participant',
     'Contact',
     'Individual',
     'Event',
-  );
+  ];
 
-  public $_drilldownReport = array('event/income' => 'Link to Detail Report');
+  public $_drilldownReport = ['event/income' => 'Link to Detail Report'];
+
   protected $_participantTable = 'civicrm_participant';
 
   /**
@@ -46,70 +52,70 @@ class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Exten
       + $this->getColumns('Event')
       + $this->getColumns('Contribution')
       + $this->getColumns('LineItem')
-      + array(
-      'civicrm_note' => array(
-        'dao' => 'CRM_Core_DAO_Note',
-        'fields' => array(
-          'note' => array('title' => ts('Participant Note')),
-        ),
-      ),
-    )
-    + $this->getColumns('Relationship', array(
+      + [
+        'civicrm_note' => [
+          'dao' => 'CRM_Core_DAO_Note',
+          'fields' => [
+            'note' => ['title' => ts('Participant Note')],
+          ],
+        ],
+      ]
+      + $this->getColumns('Relationship', [
         'fields' => FALSE,
         'filters' => FALSE,
         'join_filters' => TRUE,
         'group_by' => FALSE,
-    )) +
-    $this->getColumns('Contact', array(
+      ]) +
+      $this->getColumns('Contact', [
         'fields' => TRUE,
         'join_fields' => TRUE,
         'filters' => FALSE,
         'prefix' => 'related_',
         'prefix_label' => 'Related Contact ',
-    )) +
-    $this->getColumns('Email', array(
-      'prefix' => 'related_',
-      'prefix_label' => 'Related Contact ',
-    )) +
-    $this->getColumns('Phone', array(
-      'fields' => TRUE,
-      'join_fields' => TRUE,
-      'filters' => FALSE,
-      'prefix' => 'related_',
-      'prefix_label' => 'Related Contact ',
-    ));
+      ]) +
+      $this->getColumns('Email', [
+        'prefix' => 'related_',
+        'prefix_label' => 'Related Contact ',
+      ]) +
+      $this->getColumns('Phone', [
+        'fields' => TRUE,
+        'join_fields' => TRUE,
+        'filters' => FALSE,
+        'prefix' => 'related_',
+        'prefix_label' => 'Related Contact ',
+      ]);
 
-    $this->_options = array(
-      'blank_column_begin' => array(
+    $this->_options = [
+      'blank_column_begin' => [
         'title' => ts('Blank column at the Beginning'),
         'type' => 'checkbox',
-      ),
-      'blank_column_end' => array(
+      ],
+      'blank_column_end' => [
         'title' => ts('Blank column at the End'),
         'type' => 'select',
-        'options' => array(
+        'options' => [
           '' => '-select-',
           1 => ts('One'),
           2 => ts('Two'),
           3 => ts('Three'),
-        ),
-      ),
-    );
+        ],
+      ],
+    ];
 
     // If we have active campaigns add those elements to both the fields and filters
     if ($campaignEnabled && !empty($this->activeCampaigns)) {
-      $this->_columns['civicrm_participant']['fields']['campaign_id'] = array(
+      $this->_columns['civicrm_participant']['fields']['campaign_id'] = [
         'title' => ts('Campaign'),
         'default' => 'false',
-      );
-      $this->_columns['civicrm_participant']['filters']['campaign_id'] = array(
+      ];
+      $this->_columns['civicrm_participant']['filters']['campaign_id'] = [
         'title' => ts('Campaign'),
         'operatorType' => CRM_Report_Form::OP_MULTISELECT,
         'options' => $this->activeCampaigns,
-      );
-      $this->_columns['civicrm_participant']['order_bys']['campaign_id'] = array(
+      ];
+      $this->_columns['civicrm_participant']['order_bys']['campaign_id'] = [
         'title' => ts('Campaign'),
-      );
+      ];
     }
 
     $this->_currencyColumn = 'civicrm_participant_fee_currency';
@@ -122,7 +128,7 @@ class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Exten
    * @return array
    */
   public function fromClauses() {
-    return array(
+    return [
       'event_from_participant',
       'contact_from_participant',
       'note_from_participant',
@@ -130,7 +136,7 @@ class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Exten
       'address_from_contact',
       'email_from_contact',
       'related_contact_from_participant',
-    );
+    ];
   }
 
   /**
@@ -170,7 +176,7 @@ class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Exten
     $contributionStatus = CRM_Contribute_PseudoConstant::contributionStatus();
     $paymentInstruments = CRM_Contribute_PseudoConstant::paymentInstrument();
     $honorTypes = CRM_Core_OptionGroup::values('honor_type', FALSE, FALSE, FALSE, NULL, 'label');
-    $genders = CRM_Core_PseudoConstant::get('CRM_Contact_DAO_Contact', 'gender_id', array('localize' => TRUE));
+    $genders = CRM_Core_PseudoConstant::get('CRM_Contact_DAO_Contact', 'gender_id', ['localize' => TRUE]);
 
     foreach ($rows as $rowNum => $row) {
       // make count columns point to detail report
@@ -209,7 +215,7 @@ class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Exten
       if (array_key_exists('civicrm_participant_role_id', $row)) {
         if ($value = $row['civicrm_participant_role_id']) {
           $roles = explode(CRM_Core_DAO::VALUE_SEPARATOR, $value);
-          $value = array();
+          $value = [];
           foreach ($roles as $role) {
             $value[$role] = CRM_Event_PseudoConstant::participantRole($role, FALSE);
           }
@@ -225,18 +231,18 @@ class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Exten
 
           $our_participant_id = $row['civicrm_participant_registered_by_id'];
 
-          $result = civicrm_api3('Participant', 'get', array(
+          $result = civicrm_api3('Participant', 'get', [
             'sequential' => 1,
             'return' => "contact_id",
             'id' => $our_participant_id,
-          ));
+          ]);
           $our_contact_id = $result['values']['0']['contact_id'];
 
-          $result = civicrm_api3('Contact', 'get', array(
+          $result = civicrm_api3('Contact', 'get', [
             'sequential' => 1,
             'return' => "sort_name",
             'id' => $our_contact_id,
-          ));
+          ]);
           $our_sort_name = $result['values']['0']['sort_name'];
 
           $rows[$rowNum]['civicrm_participant_registered_by_id'] = $our_sort_name;
@@ -248,7 +254,7 @@ class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Exten
           $rows[$rowNum]['civicrm_participant_registered_by_id'] = "<a title='$Title' href=$viewUrl>$our_sort_name</a>";
 
         }
-          $entryFound = TRUE;
+        $entryFound = TRUE;
       }
 
       // Handle value separator in Fee Level
@@ -281,16 +287,16 @@ class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Exten
         if ($value = $row['civicrm_participant_participant_registered_by_id']) {
           $details = CRM_Event_BAO_Participant::participantDetails($value);
 
-        $viewUrl = CRM_Utils_System::url("civicrm/contact/view/participant",
-          "reset=1&id=" . $row['civicrm_participant_participant_registered_by_id'] .
-          "&cid=" . $details['cid'] . "&action=view&context=participant"
-        );
+          $viewUrl = CRM_Utils_System::url("civicrm/contact/view/participant",
+            "reset=1&id=" . $row['civicrm_participant_participant_registered_by_id'] .
+            "&cid=" . $details['cid'] . "&action=view&context=participant"
+          );
 
-        $participantTitle = ts('View Participant Record');
+          $participantTitle = ts('View Participant Record');
 
-        $rows[$rowNum]['civicrm_participant_participant_registered_by_id'] =
-          "<a title='$participantTitle' href=$viewUrl>" . $details['name'] . "</a>";
-        //$rows[$rowNum]['civicrm_participant_participant_registered_by_id'] = $details['name'];
+          $rows[$rowNum]['civicrm_participant_participant_registered_by_id'] =
+            "<a title='$participantTitle' href=$viewUrl>" . $details['name'] . "</a>";
+          //$rows[$rowNum]['civicrm_participant_participant_registered_by_id'] = $details['name'];
         }
         $entryFound = TRUE;
       }

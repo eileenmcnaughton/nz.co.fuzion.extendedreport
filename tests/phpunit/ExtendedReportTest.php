@@ -23,6 +23,7 @@ use Civi\Test\TransactionalInterface;
 class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, HookInterface {
 
   protected $ids = [];
+
   public function setUpHeadless() {
     // Civi\Test has many helpers, like install(), uninstall(), sql(), and sqlFile().
     // See: https://github.com/civicrm/org.civicrm.testapalooza/blob/master/civi-test.md
@@ -47,7 +48,7 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
    * Example: Test that a version is returned.
    */
   public function testReportsRun() {
-    $reports = array();
+    $reports = [];
     extendedreport_civicrm_managed($reports);
     foreach ($reports as $report) {
       try {
@@ -55,13 +56,13 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
           // Hack alert - there is a bug whereby the table is deleted but the row isn't after ActivityExtendedTest.
           // So far I've failed to solve this properly - probably transaction rollback in some way.
           CRM_Core_DAO::executeQuery("DELETE FROM civicrm_custom_group WHERE name = 'Contact'");
-          $this->callAPISuccess('Setting', 'create', array('logging' => TRUE));
+          $this->callAPISuccess('Setting', 'create', ['logging' => TRUE]);
         }
-        $this->callAPISuccess('ReportTemplate', 'getrows', array(
+        $this->callAPISuccess('ReportTemplate', 'getrows', [
           'report_id' => $report['params']['report_url'],
-        ));
+        ]);
         if (!empty($report['is_require_logging'])) {
-          $this->callAPISuccess('Setting', 'create', array('logging' => FALSE));
+          $this->callAPISuccess('Setting', 'create', ['logging' => FALSE]);
         }
       }
       catch (CiviCRM_API3_Exception $e) {
@@ -103,8 +104,8 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
       'report_id' => 'contribution/contributions',
       'extended_fields' => [
         [
-          'title' =>  'special name',
-          'name' =>  "civicrm_contact_middle_name",
+          'title' => 'special name',
+          'name' => "civicrm_contact_middle_name",
           'field_on_null' => [
             [
               'title' => 'First name',
@@ -113,8 +114,8 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
           ],
         ],
         [
-          'title' =>  'boring name',
-          'name' =>  "civicrm_contact_last_name",
+          'title' => 'boring name',
+          'name' => "civicrm_contact_last_name",
         ],
       ],
       'fields' => ['civicrm_contact_first_name' => 1, 'civicrm_contact_middle_name' => 1],
@@ -176,8 +177,8 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
       'report_id' => 'contribution/contributions',
       'extended_order_bys' => [
         [
-          'title' =>  'Nick Name',
-          'column' =>  "civicrm_contact_nick_name",
+          'title' => 'Nick Name',
+          'column' => "civicrm_contact_nick_name",
           'field_on_null' => [
             [
               'title' => 'First name',
@@ -186,8 +187,8 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
           ],
         ],
         [
-          'title' =>  'Last Name',
-          'column' =>  "civicrm_contact_last_name",
+          'title' => 'Last Name',
+          'column' => "civicrm_contact_last_name",
           'order' => 'DESC',
         ],
       ],
@@ -310,10 +311,10 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
    */
   public function testPledgeIncomeReport() {
     $this->setUpPledgeData();
-    $params = array(
+    $params = [
       'report_id' => 'pledge/income',
-      'order_bys' => [['column' => 'pledge_payment_scheduled_date', 'order' => 'ASC']]
-    );
+      'order_bys' => [['column' => 'pledge_payment_scheduled_date', 'order' => 'ASC']],
+    ];
     $rows = $this->getRows($params);
     // 12 exist, 10 are unpaid.
     $this->assertEquals(10, count($rows));
@@ -329,10 +330,10 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
    */
   public function testPledgeIncomeReportGroupByContact() {
     $this->setUpPledgeData();
-    $params = array(
+    $params = [
       'report_id' => 'pledge/income',
-      'group_bys' => array('civicrm_contact_contact_id' => '1'),
-    );
+      'group_bys' => ['civicrm_contact_contact_id' => '1'],
+    ];
     $rows = $this->getRows($params);
     $this->assertEquals(3, count($rows));
     $this->assertEquals(20000, $rows[0]['civicrm_pledge_payment_pledge_payment_scheduled_amount_sum']);
@@ -348,18 +349,18 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
    */
   public function testPledgeIncomeReportGroupByMonth() {
     $this->setUpPledgeData();
-    $params = array(
+    $params = [
       'report_id' => 'pledge/income',
-      'group_bys' => array('pledge_payment_scheduled_date' => '1'),
+      'group_bys' => ['pledge_payment_scheduled_date' => '1'],
       'group_bys_freq' => [
-          'pledge_payment_scheduled_date' => 'MONTH',
-          'next_civicrm_pledge_payment_next_scheduled_date' => 'MONTH',
+        'pledge_payment_scheduled_date' => 'MONTH',
+        'next_civicrm_pledge_payment_next_scheduled_date' => 'MONTH',
       ],
       'fields' => [
         'pledge_payment_scheduled_date' => '1',
         'pledge_payment_scheduled_amount' => '1',
       ],
-    );
+    ];
     $pledgePayments = $this->callAPISuccess('PledgePayment', 'get', []);
     $rows = $this->getRows($params);
     $this->assertEquals(5, count($rows));

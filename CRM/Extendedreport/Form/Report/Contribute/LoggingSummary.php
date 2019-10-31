@@ -33,6 +33,7 @@
 class CRM_Extendedreport_Form_Report_Contribute_LoggingSummary extends CRM_Extendedreport_Form_Report_ExtendedReport {
 
   protected $_baseTable = 'log_civicrm_contribution';
+
   /**
    */
   public function __construct() {
@@ -45,14 +46,14 @@ class CRM_Extendedreport_Form_Report_Contribute_LoggingSummary extends CRM_Exten
       }
     }
 
-    $this->_columns['civicrm_contribution']['fields']['log_user_id'] = array(
+    $this->_columns['civicrm_contribution']['fields']['log_user_id'] = [
       'no_display' => FALSE,
       'required' => TRUE,
       'title' => ts('Changed By'),
       'alter_display' => 'alterContactID',
       'type' => CRM_Utils_Type::T_INT,
-    );
-    $this->_columns['civicrm_contribution']['metadata']['log_user_id'] = array(
+    ];
+    $this->_columns['civicrm_contribution']['metadata']['log_user_id'] = [
       'title' => ts('Changed By'),
       'alter_display' => 'alterContactID',
       'name' => 'log_user_id',
@@ -61,41 +62,41 @@ class CRM_Extendedreport_Form_Report_Contribute_LoggingSummary extends CRM_Exten
       'no_display' => FALSE,
       'is_aggregate_columns' => FALSE,
       'is_aggregate_rows' => FALSE,
-    );
+    ];
 
-    $this->_columns['civicrm_contribution']['fields']['log_date'] = array(
+    $this->_columns['civicrm_contribution']['fields']['log_date'] = [
       'default' => TRUE,
       'required' => TRUE,
       'type' => CRM_Utils_Type::T_TIME,
       'title' => ts('Change Date'),
       'is_aggregate_columns' => FALSE,
       'is_aggregate_rows' => FALSE,
-    );
-    $this->_columns['civicrm_contribution']['fields']['log_conn_id'] = array(
+    ];
+    $this->_columns['civicrm_contribution']['fields']['log_conn_id'] = [
       'no_display' => FALSE,
       'required' => TRUE,
       'title' => ts('Change Identifier'),
       'type' => CRM_Utils_Type::T_STRING,
-    );
+    ];
 
-    $this->_columns['civicrm_contribution']['fields']['log_action'] = array(
+    $this->_columns['civicrm_contribution']['fields']['log_action'] = [
       'default' => TRUE,
       'title' => ts('Action'),
       'type' => CRM_Utils_Type::T_STRING,
       'is_aggregate_columns' => FALSE,
       'is_aggregate_rows' => FALSE,
-    );
-    $this->_columns['civicrm_contribution']['filters']['log_action'] = array(
+    ];
+    $this->_columns['civicrm_contribution']['filters']['log_action'] = [
       'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-      'options' => array(
+      'options' => [
         'Insert' => ts('Insert'),
         'Update' => ts('Update'),
         'Delete' => ts('Delete'),
-      ),
-      'default' => array('Insert', 'Update', 'Delete'),
+      ],
+      'default' => ['Insert', 'Update', 'Delete'],
       'title' => ts('Action'),
       'type' => CRM_Utils_Type::T_STRING,
-    );
+    ];
     foreach ($this->_columns['civicrm_contribution']['metadata'] as $index => $field) {
       if (!isset($field['dbAlias'])) {
         $this->_columns['civicrm_contribution']['metadata'][$index]['dbAlias'] = 'contribution.' . $index;
@@ -124,12 +125,17 @@ class CRM_Extendedreport_Form_Report_Contribute_LoggingSummary extends CRM_Exten
     if (!$value) {
       return ts('System');
     }
-    $display_name = CRM_Core_DAO::singleValueQuery('SELECT display_name FROM civicrm_contact WHERE id = %1', array(1=> array($value, 'Integer')));
+    $display_name = CRM_Core_DAO::singleValueQuery('SELECT display_name FROM civicrm_contact WHERE id = %1', [1 => [$value, 'Integer']]);
 
     if (empty($display_name)) {
-      $display_name = CRM_Core_DAO::singleValueQuery('SELECT display_name FROM log_civicrm_contact WHERE id = %1 AND display_name IS NOT NULL ORDER BY log_date DESC LIMIT 1', array(1=> array($value, 'Integer')));
+      $display_name = CRM_Core_DAO::singleValueQuery('SELECT display_name FROM log_civicrm_contact WHERE id = %1 AND display_name IS NOT NULL ORDER BY log_date DESC LIMIT 1', [
+        1 => [
+          $value,
+          'Integer',
+        ],
+      ]);
     }
-    return $display_name  ? $display_name . '(' . $value . ')' : $value;
+    return $display_name ? $display_name . '(' . $value . ')' : $value;
   }
 
 

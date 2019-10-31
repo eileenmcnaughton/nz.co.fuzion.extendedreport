@@ -9,12 +9,17 @@
  */
 
 class CRM_Extendedreport_Form_Report_Pledge_Summary extends CRM_Extendedreport_Form_Report_ExtendedReport {
+
   protected $_summary = NULL;
+
   protected $_totalPaid = FALSE;
-  protected $_customGroupExtends = array(
+
+  protected $_customGroupExtends = [
     'Pledge',
-  );
-  public $_drilldownReport = array('pledge/details' => 'Pledge Details');
+  ];
+
+  public $_drilldownReport = ['pledge/details' => 'Pledge Details'];
+
   protected $_customGroupGroupBy = TRUE;
 
   /**
@@ -23,20 +28,20 @@ class CRM_Extendedreport_Form_Report_Pledge_Summary extends CRM_Extendedreport_F
   public function __construct() {
     $this->_columns =
       $this->getColumns('Campaign')
-      + $this->getColumns('Contact', array(
+      + $this->getColumns('Contact', [
           'fields' => TRUE,
           'order_by' => TRUE,
-        )
+        ]
       ) + $this->getColumns('Contact')
       + $this->getColumns('Email')
       + $this->getColumns('FinancialType')
-      + $this->getColumns('Pledge', array('fields' => TRUE))
+      + $this->getColumns('Pledge', ['fields' => TRUE])
       + $this->getColumns('PledgePayment');
-    $this->_columns['civicrm_pledge']['fields']['balance_amount'] = array(
+    $this->_columns['civicrm_pledge']['fields']['balance_amount'] = [
       'title' => 'Balance to Pay',
-      'statistics' => array('sum' => ts('Balance')),
+      'statistics' => ['sum' => ts('Balance')],
       'type' => CRM_Utils_Type::T_MONEY,
-    );
+    ];
 
     $this->_groupFilter = TRUE;
     $this->_tagFilter = TRUE;

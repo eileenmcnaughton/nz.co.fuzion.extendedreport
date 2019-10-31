@@ -22,7 +22,7 @@ use Civi\Test\TransactionalInterface;
  */
 class ContributionContributionsTest extends BaseTestClass implements HeadlessInterface, HookInterface, TransactionalInterface {
 
-  protected $contacts = array();
+  protected $contacts = [];
 
   public function setUpHeadless() {
     // Civi\Test has many helpers, like install(), uninstall(), sql(), and sqlFile().
@@ -73,50 +73,50 @@ class ContributionContributionsTest extends BaseTestClass implements HeadlessInt
         [
           'order_bys' => [['column' => 'contribution_check_number', 'order' => 'ASC']],
           'group_bys' => ['contribution_campaign_id' => '1'],
-        ]
+        ],
       ],
       [
         [
           'order_bys' => [['column' => 'contribution_check_number', 'order' => 'DESC']],
           'group_bys' => ['contribution_campaign_id' => '1'],
-        ]
+        ],
       ],
       [
         [
           'order_bys' => [['column' => 'contribution_check_number', 'order' => 'DESC', 'section' => 1]],
           'group_bys' => ['contribution_campaign_id' => '1'],
-        ]
+        ],
       ],
       [
         [
           'order_bys' => [['column' => 'contribution_check_number', 'order' => 'DESC', 'section' => 1, 'pageBreak' => 1]],
           'group_bys' => ['contribution_campaign_id' => '1'],
-        ]
+        ],
       ],
       [
         [
           'order_bys' => [['column' => 'contribution_check_number', 'order' => 'ASC']],
-        ]
+        ],
       ],
       [
         [
           'order_bys' => [['column' => 'contribution_check_number', 'order' => 'DESC']],
-        ]
+        ],
       ],
       [
         [
           'order_bys' => [['column' => 'contribution_check_number', 'order' => 'DESC', 'section' => 1]],
-        ]
+        ],
       ],
       [
         [
           'order_bys' => [['column' => 'contribution_check_number', 'order' => 'DESC', 'section' => 1, 'pageBreak' => 1]],
-        ]
+        ],
       ],
       [
         [
           'extended_order_bys' => [['column' => 'contribution_check_number', 'order' => 'DESC', 'title' => 'special']],
-        ]
+        ],
       ],
       [
         [
@@ -127,8 +127,8 @@ class ContributionContributionsTest extends BaseTestClass implements HeadlessInt
             'civicrm_contact_display_name' => '1',
           ],
           'order_bys' => [1 => ['column' => 'civicrm_contact_sort_name', 'order' => 'DESC', 'section' => 1]],
-        ]
-      ]
+        ],
+      ],
     ];
   }
 
@@ -141,8 +141,8 @@ class ContributionContributionsTest extends BaseTestClass implements HeadlessInt
       'contribution_total_amount_sum_op' => 'lte',
       'contribution_total_amount_sum_value' => '1000',
       'group_bys' => [
-          'contribution_financial_type_id' => '1',
-          'contribution_campaign_id' => '1',
+        'contribution_financial_type_id' => '1',
+        'contribution_campaign_id' => '1',
       ],
       'order_bys' => [['column' => 'contribution_source', 'order' => 'ASC']],
     ];

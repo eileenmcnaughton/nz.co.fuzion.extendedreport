@@ -50,7 +50,13 @@ class BookkeepingExtendedTest extends BaseTestClass implements HeadlessInterface
    * Test the bookkeeping report with some data.
    */
   public function testBookkeepingReport() {
-    $contribution = $this->callAPISuccess('Order', 'create', ['contact_id' => $this->ids['Contact'][0], 'total_amount' => 5, 'financial_type_id' => 2, 'contribution_status_id' => 'Pending', 'api.Payment.create' => ['total_amount' => 5]]);
+    $contribution = $this->callAPISuccess('Order', 'create', [
+      'contact_id' => $this->ids['Contact'][0],
+      'total_amount' => 5,
+      'financial_type_id' => 2,
+      'contribution_status_id' => 'Pending',
+      'api.Payment.create' => ['total_amount' => 5],
+    ]);
     $params = [
       'report_id' => 'contribution/bookkeeping_extended',
       'fields' => [

@@ -22,7 +22,7 @@ use Civi\Test\TransactionalInterface;
  */
 class RelationshipExtendedTest extends BaseTestClass implements HeadlessInterface, HookInterface {
 
-  protected $contacts = array();
+  protected $contacts = [];
 
   /**
    * @return \Civi\Test\CiviEnvBuilder
@@ -38,25 +38,36 @@ class RelationshipExtendedTest extends BaseTestClass implements HeadlessInterfac
 
   public function setUp() {
     parent::setUp();
-    $components = array();
+    $components = [];
     $dao = new CRM_Core_DAO_Component();
     while ($dao->fetch()) {
       $components[$dao->id] = $dao->name;
     }
-    civicrm_api3('Setting', 'create', array('enable_components' => $components));
+    civicrm_api3('Setting', 'create', ['enable_components' => $components]);
     $this->createCustomGroupWithField();
 
-    $contact = $this->callAPISuccess('Contact', 'create', array('organization_name' => 'Amazons', 'last_name' => 'Woman', 'contact_type' => 'Organization', 'custom_' . $this->customFieldID => 'super org'));
+    $contact = $this->callAPISuccess('Contact', 'create', [
+      'organization_name' => 'Amazons',
+      'last_name' => 'Woman',
+      'contact_type' => 'Organization',
+      'custom_' . $this->customFieldID => 'super org',
+    ]);
     $this->contacts[] = $contact['id'];
-    $contact = $this->callAPISuccess('Contact', 'create', array('first_name' => 'Wonder', 'last_name' => 'Woman', 'contact_type' => 'Individual', 'employer_id' => $contact['id'], 'custom_' . $this->customFieldID => 'just a gal'));
+    $contact = $this->callAPISuccess('Contact', 'create', [
+      'first_name' => 'Wonder',
+      'last_name' => 'Woman',
+      'contact_type' => 'Individual',
+      'employer_id' => $contact['id'],
+      'custom_' . $this->customFieldID => 'just a gal',
+    ]);
     $this->contacts[] = $contact['id'];
 
   }
 
   public function tearDown() {
     parent::tearDown();
-    $this->callAPISuccess('CustomField', 'delete', array('id' => $this->customFieldID));
-    $this->callAPISuccess('CustomGroup', 'delete', array('id' => $this->customGroupID));
+    $this->callAPISuccess('CustomField', 'delete', ['id' => $this->customFieldID]);
+    $this->callAPISuccess('CustomGroup', 'delete', ['id' => $this->customGroupID]);
     foreach ($this->contacts as $contact) {
       $this->callAPISuccess('Contact', 'delete', ['id' => $contact]);
     }
@@ -69,14 +80,14 @@ class RelationshipExtendedTest extends BaseTestClass implements HeadlessInterfac
    */
   public function testReport() {
     $customFieldPrefix = 'custom_contact_a__' . $this->customFieldID;
-    $params = array(
+    $params = [
       'report_id' => 'relationshipextended',
-      'fields' => array (
+      'fields' => [
         'relationship_type_label_a_b' => '1',
-      ),
+      ],
       $customFieldPrefix . '_op' => "like",
-      $customFieldPrefix .  '_value' => '%g%',
-    );
+      $customFieldPrefix . '_value' => '%g%',
+    ];
     $rows = $this->getRows($params);
     $this->assertEquals(1, count($rows));
     $this->assertEquals('Employee of', $rows[0]['civicrm_relationship_type_relationship_type_label_a_b']);
@@ -86,18 +97,18 @@ class RelationshipExtendedTest extends BaseTestClass implements HeadlessInterfac
    * Test the report with group filter.
    */
   public function testReportWithGroupFilter() {
-    $params = array(
+    $params = [
       'report_id' => 'relationshipextended',
-      'fields' => array (
+      'fields' => [
         'relationship_type_label_a_b' => '1',
-      ),
+      ],
       'gid_op' => 'in',
-      'gid_value' => array(1),
+      'gid_value' => [1],
       'contact_a_civicrm_contact_civicrm_value_' . $this->customGroup['table_name'] . 'custom_ ' . $this->customFieldID . '_op' => "like",
       'contact_a_civicrm_contact_civicrm_value_' . $this->customGroup['table_name'] . 'custom_ ' . $this->customFieldID . '_value' => 'h',
-    );
+    ];
     $rows = $this->getRows($params);
-    $this->assertEquals(array(), $rows);
+    $this->assertEquals([], $rows);
   }
 
 }

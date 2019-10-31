@@ -9,6 +9,7 @@ use Civi\Test\TransactionalInterface;
 /**
  * ReportTemplate.Getmetadata API Test Case
  * This is a generic test class implemented with PHPUnit.
+ *
  * @group headless
  */
 class api_v3_ReportTemplate_GetmetadataTest extends BaseTestClass implements HeadlessInterface, HookInterface, TransactionalInterface {
@@ -87,7 +88,7 @@ class api_v3_ReportTemplate_GetmetadataTest extends BaseTestClass implements Hea
       'label' => 'bool_select_field',
     ]);
 
-    $result = civicrm_api3('ReportTemplate', 'Getmetadata', array('debug' => 1, 'report_id' => 'pledge/details'))['values'];
+    $result = civicrm_api3('ReportTemplate', 'Getmetadata', ['debug' => 1, 'report_id' => 'pledge/details'])['values'];
     $filters = $result['filters'];
 
     foreach ($filters as $fieldName => $filter) {
@@ -108,7 +109,7 @@ class api_v3_ReportTemplate_GetmetadataTest extends BaseTestClass implements Hea
     $this->assertEquals(CRM_Report_Form::OP_SELECT, $filters['custom_' . $booleanField['id']]['operatorType']);
 
     foreach ([$dateField['id'], $ids['custom_field_id'], $selectField['id'], $multiSelectField['id'], $booleanField['id']] as $id) {
-      $this->callAPISuccess('CustomField', 'delete', array('id' => $id));
+      $this->callAPISuccess('CustomField', 'delete', ['id' => $id]);
     }
   }
 
@@ -135,7 +136,7 @@ class api_v3_ReportTemplate_GetmetadataTest extends BaseTestClass implements Hea
    * Test the metadata generated for the address history report.
    */
   public function testApiMetadataContactFilters() {
-    $result = civicrm_api3('ReportTemplate', 'Getmetadata', array('report_id' => 'contact/addresshistory'))['values'];
+    $result = civicrm_api3('ReportTemplate', 'Getmetadata', ['report_id' => 'contact/addresshistory'])['values'];
     $this->assertEquals(TRUE, $result['metadata']['contact_id']['is_contact_filter']);
     $this->assertTrue(empty($result['order_bys']));
   }

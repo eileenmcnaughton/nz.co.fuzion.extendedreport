@@ -17,7 +17,9 @@ class CRM_Extendedreport_Form_Report_Grant_Detail extends CRM_Extendedreport_For
     'Organization',
     'Grant',
   ];
+
   protected $_baseTable = 'civicrm_grant';
+
   protected $_customGroupGroupBy = TRUE;
 
   /**
@@ -32,9 +34,9 @@ class CRM_Extendedreport_Form_Report_Grant_Detail extends CRM_Extendedreport_For
 
   function fromClauses() {
     return [
-    'contact_from_grant',
-    'email_from_contact',
-    'phone_from_contact',
+      'contact_from_grant',
+      'email_from_contact',
+      'phone_from_contact',
     ];
   }
 

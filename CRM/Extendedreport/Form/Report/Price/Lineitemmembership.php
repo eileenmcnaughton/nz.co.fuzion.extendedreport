@@ -1,16 +1,18 @@
 <?php
+
 /**
  * Class CRM_Extendedreport_Form_Report_Price_Lineitemmembership
  */
 class CRM_Extendedreport_Form_Report_Price_Lineitemmembership extends CRM_Extendedreport_Form_Report_ExtendedReport {
 
-  protected $_customGroupExtends = array('Membership', 'Individual', 'Contact');
+  protected $_customGroupExtends = ['Membership', 'Individual', 'Contact'];
 
   protected $_baseTable = 'civicrm_line_item';
 
   protected $_aclTable = 'civicrm_contact';
 
   protected $isSupportsContactTab = TRUE;
+
   protected $joinFiltersTab = TRUE;
 
   /**
@@ -25,12 +27,12 @@ class CRM_Extendedreport_Form_Report_Price_Lineitemmembership extends CRM_Extend
    */
   public function __construct() {
     $this->_columns = $this->getColumns('Contact') +
-    $this->getColumns('Membership') +
-    $this->getColumns('Contribution') +
-    $this->getColumns('PriceField') +
-    $this->getColumns('PriceFieldValue') +
-    $this->getColumns('LineItem') +
-    $this->getColumns('Address', ['join_filters' => TRUE]);
+      $this->getColumns('Membership') +
+      $this->getColumns('Contribution') +
+      $this->getColumns('PriceField') +
+      $this->getColumns('PriceFieldValue') +
+      $this->getColumns('LineItem') +
+      $this->getColumns('Address', ['join_filters' => TRUE]);
 
     parent::__construct();
   }
@@ -43,14 +45,14 @@ class CRM_Extendedreport_Form_Report_Price_Lineitemmembership extends CRM_Extend
    * @return array
    */
   public function fromClauses() {
-    return array(
+    return [
       'priceFieldValue_from_lineItem',
       'priceField_from_lineItem',
       'membership_from_lineItem',
       'contact_from_membership',
       'address_from_contact',
       'contribution_from_lineItem',
-    );
+    ];
   }
 
 }

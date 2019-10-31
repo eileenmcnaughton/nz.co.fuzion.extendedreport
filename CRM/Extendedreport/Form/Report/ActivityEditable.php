@@ -4,14 +4,17 @@
  * Class CRM_Extendedreport_Form_Report_ActivityExtended
  */
 class CRM_Extendedreport_Form_Report_ActivityEditable extends CRM_Extendedreport_Form_Report_ExtendedReport {
+
   /**
    * @var array
    */
-  protected $_customGroupExtends = array('Activity');
+  protected $_customGroupExtends = ['Activity'];
+
   /**
    * @var bool
    */
   protected $_customGroupGroupBy = FALSE;
+
   /**
    * @var string
    */
@@ -36,8 +39,8 @@ class CRM_Extendedreport_Form_Report_ActivityEditable extends CRM_Extendedreport
    * Generate From clause.
    */
   function fromClauses() {
-    return array(
-      'activity_target_from_activity'
-    );
+    return [
+      'activity_target_from_activity',
+    ];
   }
 }

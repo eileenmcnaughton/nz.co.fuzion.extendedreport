@@ -9,12 +9,17 @@
  */
 
 class CRM_Extendedreport_Form_Report_Campaign_CampaignProgressReport extends CRM_Extendedreport_Form_Report_ExtendedReport {
+
   protected $_summary = NULL;
+
   protected $_totalPaid = FALSE;
-  protected $_customGroupExtends = array(
+
+  protected $_customGroupExtends = [
     'Campaign',
-  );
+  ];
+
   protected $_baseTable = 'civicrm_campaign';
+
   protected $_customGroupGroupBy = TRUE;
 
   /**
@@ -40,7 +45,7 @@ class CRM_Extendedreport_Form_Report_Campaign_CampaignProgressReport extends CRM
         'title' => ts('Raised'),
         'type' => CRM_Utils_Type::T_MONEY,
         'operatorType' => CRM_Report_Form::OP_FLOAT,
-        'statistics' => array('sum' => ts('Total Raised')),
+        'statistics' => ['sum' => ts('Total Raised')],
         'is_fields' => TRUE,
         'is_filters' => FALSE,
         'is_group_bys' => FALSE,
@@ -53,7 +58,7 @@ class CRM_Extendedreport_Form_Report_Campaign_CampaignProgressReport extends CRM
         'title' => ts('Amount received'),
         'type' => CRM_Utils_Type::T_MONEY,
         'operatorType' => CRM_Report_Form::OP_FLOAT,
-        'statistics' => array('sum' => ts('Total Received')),
+        'statistics' => ['sum' => ts('Total Received')],
         'is_fields' => TRUE,
         'is_filters' => FALSE,
         'is_group_bys' => FALSE,
@@ -62,24 +67,24 @@ class CRM_Extendedreport_Form_Report_Campaign_CampaignProgressReport extends CRM
         'is_aggregate_columns' => FALSE,
         'is_aggregate_rows' => FALSE,
       ],
-       'balance_amount' => [
+      'balance_amount' => [
         'title' => ts('Amount outstanding'),
         'type' => CRM_Utils_Type::T_MONEY,
         'operatorType' => CRM_Report_Form::OP_FLOAT,
-        'statistics' => array('sum' => ts('Pledges Outstanding')),
+        'statistics' => ['sum' => ts('Pledges Outstanding')],
         'is_fields' => TRUE,
         'is_filters' => FALSE,
         'is_group_bys' => FALSE,
         'is_order_bys' => FALSE,
         'is_join_filters' => FALSE,
-       'is_aggregate_columns' => FALSE,
-       'is_aggregate_rows' => FALSE,
+        'is_aggregate_columns' => FALSE,
+        'is_aggregate_rows' => FALSE,
       ],
       'is_pledge' => [
         'title' => ts('Type'),
         'type' => CRM_Utils_Type::T_BOOLEAN,
         'operatorType' => CRM_Report_Form::OP_SELECT,
-        'options' => array(0 => ts('Payment'), 1 => ts('Pledge')),
+        'options' => [0 => ts('Payment'), 1 => ts('Pledge')],
         'alter_display' => 'alterIsPledge',
         'is_fields' => TRUE,
         'is_filters' => FALSE,
@@ -226,7 +231,7 @@ LEFT JOIN
    * @return string
    */
   function alterIsPledge($value) {
-    return str_replace(array(0, 1), array(ts('Payment without pledge'),ts('Pledge')), $value);
+    return str_replace([0, 1], [ts('Payment without pledge'), ts('Pledge')], $value);
   }
 
   /**
@@ -290,9 +295,9 @@ LEFT JOIN
    */
   function getOperationPair($type = "string", $fieldName = NULL) {
     if ($type == self::OP_SINGLEDATE) {
-      return array(
+      return [
         'to' => ts('Until Date'),
-      );
+      ];
     }
     return parent::getOperationPair($type, $fieldName);
   }

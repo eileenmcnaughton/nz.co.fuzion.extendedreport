@@ -4,7 +4,7 @@
       <td>
         <div id='crm-custom_fields'>
           <label>{ts}Select Template{/ts}</label>
-          {$form.templates.html}
+            {$form.templates.html}
         </div>
       </td>
     </tr>

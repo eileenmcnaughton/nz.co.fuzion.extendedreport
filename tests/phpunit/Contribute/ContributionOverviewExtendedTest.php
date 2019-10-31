@@ -22,7 +22,7 @@ use Civi\Test\TransactionalInterface;
  */
 class ContributionOverviewExtendedTest extends BaseTestClass implements HeadlessInterface, HookInterface, TransactionalInterface {
 
-  protected $contacts = array();
+  protected $contacts = [];
 
   public function setUpHeadless() {
     // Civi\Test has many helpers, like install(), uninstall(), sql(), and sqlFile().
@@ -35,27 +35,27 @@ class ContributionOverviewExtendedTest extends BaseTestClass implements Headless
   public function setUp() {
     parent::setUp();
     $this->enableAllComponents();
-    $contact = $this->callAPISuccess('Contact', 'create', array('first_name' => 'Wonder', 'last_name' => 'Woman', 'contact_type' => 'Individual'));
+    $contact = $this->callAPISuccess('Contact', 'create', ['first_name' => 'Wonder', 'last_name' => 'Woman', 'contact_type' => 'Individual']);
     $this->contacts[] = $contact['id'];
 
-    $contribution = $this->callAPISuccess('Contribution', 'create', array(
+    $contribution = $this->callAPISuccess('Contribution', 'create', [
       'contact_id' => $contact['id'],
       'receive_date' => '2017-08-09',
       'total_amount' => 5,
       'financial_type_id' => 'Donation',
-    ));
-    $contribution = $this->callAPISuccess('Contribution', 'create', array(
+    ]);
+    $contribution = $this->callAPISuccess('Contribution', 'create', [
       'contact_id' => $contact['id'],
       'receive_date' => '1 month ago',
       'total_amount' => 500,
       'financial_type_id' => 'Donation',
-    ));
-    $contribution = $this->callAPISuccess('Contribution', 'create', array(
+    ]);
+    $contribution = $this->callAPISuccess('Contribution', 'create', [
       'contact_id' => $contact['id'],
       'receive_date' => '1 month ago',
       'total_amount' => 10,
       'financial_type_id' => 'Member Dues',
-    ));
+    ]);
   }
 
   public function tearDown() {
@@ -66,22 +66,22 @@ class ContributionOverviewExtendedTest extends BaseTestClass implements Headless
    * Test the ContributionOverviewExtended report with group by.
    */
   public function testContributionExtendedReport() {
-    $this->callAPISuccess('Order', 'create', array('contact_id' => $this->contacts[0], 'total_amount' => 5, 'financial_type_id' => 2));
-    $params = array(
+    $this->callAPISuccess('Order', 'create', ['contact_id' => $this->contacts[0], 'total_amount' => 5, 'financial_type_id' => 2]);
+    $params = [
       'report_id' => 'contribution/overview',
-      'fields' => array (
+      'fields' => [
         'contribution_financial_type_id' => '1',
         'contribution_total_amount' => '1',
-      ),
-      'order_bys' => array(
-        1 => array(
+      ],
+      'order_bys' => [
+        1 => [
           'column' => '-',
-        ),
-      ),
-      'group_bys' => array(
+        ],
+      ],
+      'group_bys' => [
         'contribution_financial_type_id' => 1,
-      ),
-    );
+      ],
+    ];
     $rows = $this->getRows($params);
     $this->assertEquals('Member Dues', $rows[1]['civicrm_contribution_contribution_financial_type_id'], print_r($this->sql, TRUE) . print_r($rows, TRUE));
   }
