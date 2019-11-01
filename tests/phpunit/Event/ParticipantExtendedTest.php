@@ -2,10 +2,6 @@
 
 require_once __DIR__ . '../../BaseTestClass.php';
 
-use Civi\Test\HeadlessInterface;
-use Civi\Test\HookInterface;
-use Civi\Test\TransactionalInterface;
-
 /**
  * FIXME - Add test description.
  *
@@ -20,7 +16,7 @@ use Civi\Test\TransactionalInterface;
  *
  * @group headless
  */
-class Event_ParticipantExtendedTest extends BaseTestClass implements HeadlessInterface, HookInterface, TransactionalInterface {
+class Event_ParticipantExtendedTest extends BaseTestClass {
 
   /**
    * Test the future income report with some data.
