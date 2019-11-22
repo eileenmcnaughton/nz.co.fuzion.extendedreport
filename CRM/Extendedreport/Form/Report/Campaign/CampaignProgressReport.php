@@ -251,7 +251,9 @@ LEFT JOIN
     foreach ($rows as $index => $row) {
       if (isset($row['civicrm_campaign_campaign_goal_revenue']) && is_numeric($row['civicrm_campaign_campaign_goal_revenue'])) {
         $runningTotalGoal += $row['civicrm_campaign_campaign_goal_revenue'];
-        $runningTotalLeft += $row['progress_still_to_raise'];
+        if (isset($row['progress_still_to_raise']) && is_numeric($row['progress_still_to_raise'])) {
+          $runningTotalLeft += $row['progress_still_to_raise'];
+        }
       }
       else {
         $rows[$index]['civicrm_campaign_campaign_goal_revenue'] = $runningTotalGoal;
