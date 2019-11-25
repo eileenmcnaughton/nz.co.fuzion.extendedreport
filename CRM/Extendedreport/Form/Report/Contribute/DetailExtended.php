@@ -263,45 +263,24 @@ class CRM_Extendedreport_Form_Report_Contribute_DetailExtended extends CRM_Exten
 
 
       // convert donor sort name to link
-      if (array_key_exists('civicrm_contact_sort_name', $row) &&
-        CRM_Utils_Array::value('civicrm_contact_sort_name', $rows[$rowNum]) &&
-        array_key_exists('civicrm_contact_id', $row)
+      if (array_key_exists('civicrm_contact_civicrm_contact_sort_name', $row) &&
+        CRM_Utils_Array::value('civicrm_contact_civicrm_contact_sort_name', $rows[$rowNum]) &&
+        array_key_exists('civicrm_contact_civicrm_contact_contact_id', $row)
       ) {
         $url = CRM_Utils_System::url("civicrm/contact/view",
-          'reset=1&cid=' . $row['civicrm_contact_id'],
+          'reset=1&cid=' . $row['civicrm_contact_civicrm_contact_contact_id'],
           $this->_absoluteUrl
         );
-        $rows[$rowNum]['civicrm_contact_sort_name_link'] = $url;
-        $rows[$rowNum]['civicrm_contact_sort_name_hover'] = ts("View Contact Summary for this Contact.");
-      }
-
-      // convert honoree sort name to link
-      if (array_key_exists('civicrm_contact_honor_sort_name_honor', $row) &&
-        CRM_Utils_Array::value('civicrm_contact_honor_sort_name_honor', $rows[$rowNum]) &&
-        array_key_exists('civicrm_contact_honor_id_honor', $row)
-      ) {
-
-        $url = CRM_Utils_System::url("civicrm/contact/view",
-          'reset=1&cid=' . $row['civicrm_contact_honor_id_honor'],
-          $this->_absoluteUrl
-        );
-        $rows[$rowNum]['civicrm_contact_honor_sort_name_honor_link'] = $url;
-        $rows[$rowNum]['civicrm_contact_honor_sort_name_honor_hover'] = ts("View Contact Summary for Honoree.");
-      }
-
-      if ($value = CRM_Utils_Array::value('civicrm_contribution_contribution_status_id', $row)) {
-        $rows[$rowNum]['civicrm_contribution_contribution_status_id'] = $contributionStatus[$value];
-        $entryFound = TRUE;
-      }
-      if ($value = CRM_Utils_Array::value('civicrm_contribution_contribution_page_id', $row)) {
-        $rows[$rowNum]['civicrm_contribution_contribution_page_id'] = $contributionPages[$value];
+        $rows[$rowNum]['civicrm_contact_civicrm_contact_sort_name_link'] = $url;
+        $rows[$rowNum]['civicrm_contact_civicrm_contact_sort_name_hover'] = ts("View Contact Summary for this Contact.");
         $entryFound = TRUE;
       }
 
-      if ($value = CRM_Utils_Array::value('civicrm_contribution_honor_type_id', $row)) {
-        $rows[$rowNum]['civicrm_contribution_honor_type_id'] = $honorTypes[$value];
+      if ($value = CRM_Utils_Array::value('civicrm_contribution_contribution_contribution_page_id', $row)) {
+        $rows[$rowNum]['civicrm_contribution_contribution_contribution_page_id'] = $contributionPages[$value];
         $entryFound = TRUE;
       }
+
       if (array_key_exists('civicrm_batch_batch_id', $row)) {
         if ($value = $row['civicrm_batch_batch_id']) {
           $rows[$rowNum]['civicrm_batch_batch_id'] = CRM_Core_DAO::getFieldValue('CRM_Batch_DAO_Batch', $value, 'title');
@@ -310,15 +289,16 @@ class CRM_Extendedreport_Form_Report_Contribute_DetailExtended extends CRM_Exten
       }
 
       // Contribution amount links to viewing contribution
-      if (($value = CRM_Utils_Array::value('civicrm_contribution_total_amount_sum', $row)) &&
+      if (($value = CRM_Utils_Array::value('civicrm_contribution_contribution_total_amount_sum', $row)) &&
+        array_key_exists('civicrm_contact_civicrm_contact_contact_id', $row) &&
         CRM_Core_Permission::check('access CiviContribute')
       ) {
         $url = CRM_Utils_System::url("civicrm/contact/view/contribution",
-          "reset=1&id=" . $row['civicrm_contribution_contribution_id'] . "&cid=" . $row['civicrm_contact_id'] . "&action=view&context=contribution&selectedChild=contribute",
+          "reset=1&id=" . $row['civicrm_contribution_contribution_id'] . "&cid=" . $row['civicrm_contact_civicrm_contact_contact_id'] . "&action=view&context=contribution&selectedChild=contribute",
           $this->_absoluteUrl
         );
-        $rows[$rowNum]['civicrm_contribution_total_amount_sum_link'] = $url;
-        $rows[$rowNum]['civicrm_contribution_total_amount_sum_hover'] = ts("View Details of this Contribution.");
+        $rows[$rowNum]['civicrm_contribution_contribution_total_amount_sum_link'] = $url;
+        $rows[$rowNum]['civicrm_contribution_contribution_total_amount_sum_hover'] = ts("View Details of this Contribution.");
         $entryFound = TRUE;
       }
 
@@ -330,47 +310,10 @@ class CRM_Extendedreport_Form_Report_Contribute_DetailExtended extends CRM_Exten
         }
       }
 
-      // soft credits
-      if (array_key_exists('civicrm_contribution_soft_credits', $row) &&
-        'Contribution' == CRM_Utils_Array::value('civicrm_contribution_contribution_or_soft', $rows[$rowNum]) &&
-        array_key_exists('civicrm_contribution_contribution_id', $row)
-      ) {
-        $query = "
-SELECT civicrm_contact_id, civicrm_contact_sort_name, civicrm_contribution_total_amount_sum, civicrm_contribution_currency
-FROM   civireport_contribution_detail_temp2
-WHERE  civicrm_contribution_contribution_id={$row['civicrm_contribution_contribution_id']}";
-        $dao = CRM_Core_DAO::executeQuery($query);
-        $string = '';
-        $separator = ($this->_outputMode !== 'csv') ? "<br/>" : ' ';
-        while ($dao->fetch()) {
-          $url = CRM_Utils_System::url("civicrm/contact/view", 'reset=1&cid=' . $dao->civicrm_contact_id);
-          $string = $string . ($string ? $separator : '') . "<a href='{$url}'>{$dao->civicrm_contact_sort_name}</a> " .
-            CRM_Utils_Money::format($dao->civicrm_contribution_total_amount_sum, $dao->civicrm_contribution_currency);
-        }
-        $rows[$rowNum]['civicrm_contribution_soft_credits'] = $string;
-      }
-
-      if (array_key_exists('civicrm_contribution_soft_credit_for', $row) &&
-        'Soft Credit' == CRM_Utils_Array::value('civicrm_contribution_contribution_or_soft', $rows[$rowNum]) &&
-        array_key_exists('civicrm_contribution_contribution_id', $row)
-      ) {
-        $query = "
-SELECT civicrm_contact_id, civicrm_contact_sort_name
-FROM   civireport_contribution_detail_temp1
-WHERE  civicrm_contribution_contribution_id={$row['civicrm_contribution_contribution_id']}";
-        $dao = CRM_Core_DAO::executeQuery($query);
-        $string = '';
-        while ($dao->fetch()) {
-          $url = CRM_Utils_System::url("civicrm/contact/view", 'reset=1&cid=' . $dao->civicrm_contact_id);
-          $string = $string . "\n<a href='{$url}'>{$dao->civicrm_contact_sort_name}</a>";
-        }
-        $rows[$rowNum]['civicrm_contribution_soft_credit_for'] = $string;
-      }
-
       $entryFound = $this->alterDisplayAddressFields($row, $rows, $rowNum, 'contribute/detail', 'List all contribution(s) for this ') ? TRUE : $entryFound;
 
       // skip looking further in rows, if first row itself doesn't
-      // have the column we need
+      // have the columns we need
       if (!$entryFound) {
         break;
       }
