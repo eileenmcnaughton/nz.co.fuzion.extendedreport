@@ -472,7 +472,7 @@ ROUND(AVG({$this->_aliases['civicrm_contribution_soft']}.amount), 2) as civicrm_
       if (array_key_exists('civicrm_contact_civicrm_contact_display_name', $row) &&
         array_key_exists('civicrm_contact_civicrm_contact_contact_id', $row)
       ) {
-        $url = CRM_Report_Utils_Report::getNextUrl('contribution/detailextended', 'reset=1&force=1&id_op=eq&id_value=' . $row['civicrm_contact_civicrm_contact_contact_id'], $this->_absoluteUrl, $this->_id, $this->_drilldownReport
+        $url = CRM_Report_Utils_Report::getNextUrl('contribution/detailextended', 'reset=1&force=1&civicrm_contact_contact_id_op=eq&civicrm_contact_contact_id_value=' . $row['civicrm_contact_civicrm_contact_contact_id'], $this->_absoluteUrl, $this->_id, $this->_drilldownReport
         );
         $rows[$rowNum]['civicrm_contact_civicrm_contact_display_name_link'] = $url;
         $rows[$rowNum]['civicrm_contact_civicrm_contact_display_name_hover'] = ts("Lists detailed contribution(s) for this record.");
