@@ -668,6 +668,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     $this->unsetBaseTableStatsFieldsWhereNoGroupBy();
 
     $selectedFields = $this->getSelectedFields();
+    $configuredFields = $this->getConfiguredFieldsFlatArray();
 
     $select = [];
     // Where we need fields for a having clause & the are not selected we
@@ -693,6 +694,12 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
 
     foreach ($selectedFields as $fieldName => $field) {
       $this->addAdditionalRequiredFields($field, $field['table_name']);
+
+      // Only display required_sql field as column if selected from UI.
+      if (!empty($field['required_sql']) && !array_key_exists($fieldName, $configuredFields)) {
+        $this->_noDisplay[] = $field['table_name'] . '_' . $fieldName;
+      }
+
       $tableName = $field['table_name'];
       $alias = isset($field['alias']) ? $field['alias'] : "{$tableName}_{$fieldName}";
       $fieldStats = $this->getFieldStatistics($field);
@@ -2734,9 +2741,7 @@ LEFT JOIN civicrm_contact {$prop['alias']} ON {$prop['alias']}.id = {$this->_ali
     // unset columns not to be displayed.
     if (!empty($rows)) {
       foreach ($this->_noDisplay as $noDisplayField) {
-        foreach ($rows as $rowNum => $row) {
-          unset($this->_columnHeaders[$noDisplayField]);
-        }
+        unset($this->_columnHeaders[$noDisplayField]);
       }
     }
 
@@ -7621,7 +7626,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
 
     $orderBys = $this->getSelectedOrderBys();
     foreach ($fields as $fieldName => $field) {
-      if (!empty($field['required'])) {
+      if (!empty($field['required']) || !empty($field['required_sql'])) {
         $selectedFields[$fieldName] = $field;
       }
 
