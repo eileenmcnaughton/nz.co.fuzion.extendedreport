@@ -5014,19 +5014,19 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'is_fields' => TRUE,
         'type' => CRM_Utils_Type::T_STRING,
         'requires' => [
-          $options['prefix'] . 'address_name',
-          $options['prefix'] . 'address_supplemental_address_1',
-          $options['prefix'] . 'address_supplemental_address_2',
-          $options['prefix'] . 'address_supplemental_address_3',
-          $options['prefix'] . 'address_street_address',
-          $options['prefix'] . 'address_city',
-          $options['prefix'] . 'address_postal_code',
-          $options['prefix'] . 'address_postal_code_suffix',
-          $options['prefix'] . 'address_county_id',
-          $options['prefix'] . 'address_country_id',
-          $options['prefix'] . 'address_state_province_id',
-          $options['prefix'] . 'address_is_primary',
-          $options['prefix'] . 'address_location_type_id',
+          "{$options['prefix']}address_{$options['prefix']}name",
+          "{$options['prefix']}address_{$options['prefix']}supplemental_address_1",
+          "{$options['prefix']}address_{$options['prefix']}supplemental_address_2",
+          "{$options['prefix']}address_{$options['prefix']}supplemental_address_3",
+          "{$options['prefix']}address_{$options['prefix']}street_address",
+          "{$options['prefix']}address_{$options['prefix']}city",
+          "{$options['prefix']}address_{$options['prefix']}postal_code",
+          "{$options['prefix']}address_{$options['prefix']}postal_code_suffix",
+          "{$options['prefix']}address_{$options['prefix']}county_id",
+          "{$options['prefix']}address_{$options['prefix']}country_id",
+          "{$options['prefix']}address_{$options['prefix']}state_province_id",
+          "{$options['prefix']}address_{$options['prefix']}is_primary",
+          "{$options['prefix']}address_{$options['prefix']}location_type_id",
         ],
         'alter_display' => 'alterDisplayAddress',
       ],
@@ -8585,6 +8585,7 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
   }
 
   /**
+   * If any fields have the "requires" element, return an array of additional fields required in the SELECT clause.
    * @param $selectedFields
    *
    * @return array
