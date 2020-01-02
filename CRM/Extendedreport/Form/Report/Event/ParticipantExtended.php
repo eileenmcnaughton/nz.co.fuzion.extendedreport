@@ -121,15 +121,18 @@ class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Exten
    * @return array
    */
   public function fromClauses() {
-    return [
+    $fromClauses = [
       'event_from_participant',
       'contact_from_participant',
       'note_from_participant',
       'phone_from_contact',
       'address_from_contact',
       'email_from_contact',
-      'related_contact_from_participant',
     ];
+    if ($this->isTableSelected('related_civicrm_contact')) {
+      $fromClauses[] = 'related_contact_from_participant';
+    }
+    return $fromClauses;
   }
 
   /**
