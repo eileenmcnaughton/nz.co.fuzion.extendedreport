@@ -358,6 +358,27 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
         'is_filters' => TRUE,
         'is_group_bys' => TRUE,
       ],
+      $options['prefix'] . 'email_greeting_display' => [
+        'name' => 'email_greeting_display',
+        'title' => E::ts($options['prefix_label'] . 'Email Greeting'),
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+        'is_order_bys' => TRUE,
+      ],
+      $options['prefix'] . 'postal_greeting_display' => [
+        'name' => 'postal_greeting_display',
+        'title' => E::ts($options['prefix_label'] . 'Postal Greeting'),
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+        'is_order_bys' => TRUE,
+      ],
+      $options['prefix'] . 'addressee_display' => [
+        'name' => 'addressee_display',
+        'title' => E::ts($options['prefix_label'] . 'Addressee'),
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+        'is_order_bys' => TRUE,
+      ],
     ];
     $individualFields = [
       $options['prefix'] . 'first_name' => [
