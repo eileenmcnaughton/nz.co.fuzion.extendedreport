@@ -4432,6 +4432,22 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'default' => NULL,
         'type' => CRM_Utils_Type::T_STRING,
       ],
+      'contribution_recur_id' => [
+        'title' => ts('Recurring Contribution ID'),
+        'is_fields' => TRUE,
+        'type' => CRM_Utils_Type::T_INT,
+      ],
+      'contribution_recur_id_exists' => [
+        'title' => ts('Recurring Contribution?'),
+        'pseudofield' => TRUE,
+        'is_fields' => TRUE,
+        'is_order_bys' => TRUE,
+        'alter_display' => 'alterRecurringContributionId',
+        'requires' => [
+          "{$options['prefix']}contribution_{$options['prefix']}contribution_recur_id",
+        ],
+        'type' => CRM_Utils_Type::T_STRING,
+      ],
       'is_test' => [
         'is_fields' => FALSE,
         'is_filters' => TRUE,
@@ -6774,6 +6790,18 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
     if (isset($options[$value])) {
       return $options[$value];
     }
+    return $value;
+  }
+
+  /**
+   * Return "Yes" if a contribution_recur_id exists, "No" otherwise.
+   * @param int $value
+   *
+   * @return string
+   */
+  protected function alterRecurringContributionId($value, &$row, $selectedField) {
+    $recurringIdField = str_replace('_exists', '', $selectedField);
+    $value = $row[$recurringIdField] ? ts('Yes') : ts('No');
     return $value;
   }
 
