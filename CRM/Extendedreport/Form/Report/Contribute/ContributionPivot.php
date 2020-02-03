@@ -46,6 +46,8 @@ class CRM_Extendedreport_Form_Report_Contribute_ContributionPivot extends CRM_Ex
           'fields' => FALSE,
           'aggregate_rows' => TRUE,
         ]);
+    // Ensure that a grand total result shows even if rows returned are more than 50 as this report doesn't do paging.
+    $this->setAddPaging(FALSE);
     parent::__construct();
   }
 
