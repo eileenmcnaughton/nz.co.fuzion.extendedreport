@@ -5686,10 +5686,12 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    * @param array $extra
    */
   function joinPhoneFromContact($prefix = '', $extra = []) {
-    $this->_from .= " LEFT JOIN civicrm_phone {$this->_aliases[$prefix . 'civicrm_phone']}
-    ON {$this->_aliases[$prefix . 'civicrm_phone']}.contact_id = {$this->_aliases[$prefix . 'civicrm_contact']}.id
-    AND {$this->_aliases[$prefix . 'civicrm_phone']}.is_primary = 1
-    ";
+    if ($this->isTableSelected($prefix . 'civicrm_phone')) {
+      $this->_from .= " LEFT JOIN civicrm_phone {$this->_aliases[$prefix . 'civicrm_phone']}
+      ON {$this->_aliases[$prefix . 'civicrm_phone']}.contact_id = {$this->_aliases[$prefix . 'civicrm_contact']}.id
+      AND {$this->_aliases[$prefix . 'civicrm_phone']}.is_primary = 1
+      ";
+    }
   }
 
   /**
