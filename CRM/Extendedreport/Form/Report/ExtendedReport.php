@@ -606,6 +606,11 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
         $params['extended_fields'] = array_merge($this->_formValues['extended_fields']);
       }
     }
+    if (empty($params) && !empty ($this->_params)) {
+      // The parent function calls this twice to 'handle dashlets' - but uses some 'co-incidental'
+      // parameters rather than information to do so.
+      return;
+    }
     $params['order_bys'] = $params['extended_order_bys'] = $this->getConfiguredOrderBys($params);
     // Renumber from 0
     $params['extended_order_bys'] = array_merge($params['extended_order_bys']);
