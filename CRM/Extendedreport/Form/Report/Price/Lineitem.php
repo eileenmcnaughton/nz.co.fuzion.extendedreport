@@ -50,6 +50,10 @@ class CRM_Extendedreport_Form_Report_Price_Lineitem extends CRM_Extendedreport_F
           'order_by' => FALSE,
         ]
       )
+      + $this->getColumns('Phone', [
+        'fields' => TRUE,
+        'order_by' => FALSE,
+      ])
       + $this->getColumns('Event')
       + $this->getColumns('Participant')
       + $this->getColumns('Contribution', ['order_by' => TRUE])
@@ -59,14 +63,6 @@ class CRM_Extendedreport_Form_Report_Price_Lineitem extends CRM_Extendedreport_F
       $this->getColumns('BillingAddress') +
       $this->getColumns('Address');
     parent::__construct();
-  }
-
-  function preProcess() {
-    parent::preProcess();
-  }
-
-  function select() {
-    parent::select();
   }
 
   /**
@@ -87,39 +83,9 @@ class CRM_Extendedreport_Form_Report_Price_Lineitem extends CRM_Extendedreport_F
       'address_from_contact',
       'address_from_contribution',
       'email_from_contact',
+      'phone_from_contact',
     ];
 
   }
 
-  function groupBy() {
-    parent::groupBy();
-
-  }
-
-  function orderBy() {
-    parent::orderBy();
-  }
-
-  /**
-   * @param $rows
-   *
-   * @return mixed
-   */
-  function statistics(&$rows) {
-    return parent::statistics($rows);
-  }
-
-  function postProcess() {
-    parent::postProcess();
-  }
-
-  /**
-   * Alter rows display.
-   *
-   * @param $rows
-   */
-  public function alterDisplay(&$rows) {
-    parent::alterDisplay($rows);
-
-  }
 }
