@@ -4,37 +4,25 @@
  * Class CRM_Extendedreport_Form_Report_ActivityExtended
  */
 class CRM_Extendedreport_Form_Report_ActivityExtended extends CRM_Extendedreport_Form_Report_ExtendedReport {
-  //todo move def to getActivityColumns
+
+  protected $_customGroupExtends = ['Activity', 'Contact', 'Individual', 'Household', 'Organization'];
+
+  protected $_editableFields = FALSE;
+
   /**
-   * @var array
-   */
-  protected $_customGroupExtended = array(
-    'civicrm_activity' => array(
-      'extends' => array('Activity'),
-      'title' => 'Activity',
-      'filters' => TRUE,
-    ),
-  );
-  /**
+   * Can this report be used on a contact tab.
+   *
+   * The report must support contact_id in the url for this to work.
+   *
    * @var bool
    */
-  protected $_addressField = FALSE;
-  /**
-   * @var bool
-   */
-  protected $_emailField = FALSE;
-  /**
-   * @var null
-   */
-  protected $_summary = NULL;
+  protected $isSupportsContactTab = TRUE;
+
   /**
    * @var bool
    */
   protected $_exposeContactID = FALSE;
-  /**
-   * @var bool
-   */
-  protected $_customGroupGroupBy = FALSE;
+
   /**
    * @var string
    */
@@ -42,32 +30,30 @@ class CRM_Extendedreport_Form_Report_ActivityExtended extends CRM_Extendedreport
 
   /**
    * Class constructor.
-   *
-   * @todo allow filtering on other contacts
    */
   public function __construct() {
     $this->_columns = $this->getColumns(
-      'Contact',
-      array(
-        'prefix' => '',
-        'prefix_label' => 'Source Contact ::',
-        'filters' => TRUE,
-      )
-    ) + $this->getColumns(
         'Contact',
-        array(
+        [
+          'prefix' => '',
+          'prefix_label' => 'Source Contact ::',
+          'filters' => TRUE,
+        ]
+      ) + $this->getColumns(
+        'Contact',
+        [
           'prefix' => 'target_',
           'group_by' => TRUE,
           'prefix_label' => 'Target Contact ::',
-          'filters' => FALSE,
-        )
-    ) + $this->getColumns(
-        'Contact', array(
+          'filters' => TRUE,
+        ]
+      ) + $this->getColumns(
+        'Contact', [
           'prefix' => 'assignee_',
           'prefix_label' => 'Assignee Contact ::',
-          'filters' => FALSE,
-        )
-    ) + $this->getColumns('Activity');
+          'filters' => TRUE,
+        ]
+      ) + $this->getColumns('Activity', ['group_by' => TRUE]);
     parent::__construct();
   }
 
@@ -96,17 +82,19 @@ class CRM_Extendedreport_Form_Report_ActivityExtended extends CRM_Extendedreport
        LEFT JOIN civicrm_email civicrm_email_source
          ON {$this->_aliases['civicrm_activity']}.source_contact_id = civicrm_email_source.contact_id
          AND civicrm_email_source.is_primary = 1
+         AND civicrm_email_source.is_deleted = 0
 
        LEFT JOIN civicrm_email civicrm_email_target
          ON {$this->_aliases['civicrm_activity_target']}.target_contact_id = civicrm_email_target.contact_id
          AND civicrm_email_target.is_primary = 1
+         AND civicrm_email_target.is_deleted = 0
 
        LEFT JOIN civicrm_email civicrm_email_assignee
         ON {$this->_aliases['civicrm_activity_assignment']}.assignee_contact_id = civicrm_email_assignee.contact_id
-        AND civicrm_email_assignee.is_primary = 1 ";
+        AND civicrm_email_assignee.is_primary = 1
+        AND civicrm_email_assignee.is_deleted = 0
+        ";
     }
-    $this->addAddressFromClause();
-    $this->selectableCustomDataFrom();
   }
 
   /**

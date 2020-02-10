@@ -4,22 +4,39 @@
  * Class CRM_Extendedreport_Form_Report_Case_CaseWithActivityPivot
  */
 class CRM_Extendedreport_Form_Report_Case_CaseWithActivityPivot extends CRM_Extendedreport_Form_Report_ExtendedReport {
+
   protected $_baseTable = 'civicrm_case';
+
   protected $skipACL = FALSE;
+
   protected $_customGroupAggregates = TRUE;
+
   protected $_aggregatesIncludeNULL = TRUE;
+
   protected $_aggregatesAddTotal = TRUE;
+
   protected $_rollup = 'WITH ROLLUP';
+
   protected $_temporary = ' TEMPORARY ';
+
   protected $_aggregatesAddPercentage = TRUE;
-  public $_drilldownReport = array();
+
+  public $_drilldownReport = [];
+
   protected $isPivot = TRUE;
+
+  protected $_noFields = TRUE;
+
+  protected $_customGroupExtends = ['Case', 'Activity'];
+
   /**
    * PreConstrain means the query gets run twice - the first time for generating temp tables
    * which go in the from the second time around
+   *
    * @var unknown
    */
   protected $_preConstrain = TRUE;
+
   /**
    * Name of table that links activities to cases. The 'real' table is replaced with the name of a filtered
    * temp table during processing
@@ -27,31 +44,21 @@ class CRM_Extendedreport_Form_Report_Case_CaseWithActivityPivot extends CRM_Exte
    * @var unknown
    */
   protected $_caseActivityTable = 'civicrm_case_activity';
-  protected $_potentialCriteria = array();
+
+  protected $_potentialCriteria = [];
 
   /**
    *
    */
   public function __construct() {
-    $this->_customGroupExtended['civicrm_case'] = array(
-      'extends' => array('Case'),
-      'filters' => TRUE,
-      'title' => ts('Case'),
-    );
-    $this->_customGroupExtended['civicrm_activity'] = array(
-      'extends' => array('Activity'),
-      'filters' => TRUE,
-      'title' => ts('Activity'),
-    );
-
-    $this->_columns = $this->getColumns('Case', array(
+    $this->_columns = $this->getColumns('Case', [
           'fields' => FALSE,
-        )
+        ]
       )
-      + $this->getColumns('Contact', array())
-      + $this->_columns = $this->getColumns('Activity', array(
+      + $this->getColumns('Contact', [])
+      + $this->_columns = $this->getColumns('Activity', [
           'fields' => FALSE,
-        )
+        ]
       );
     $this->_columns['civicrm_case']['fields']['id']['required'] = TRUE;
     $this->_columns['civicrm_contact']['fields']['id']['required'] = TRUE;
@@ -60,13 +67,6 @@ class CRM_Extendedreport_Form_Report_Case_CaseWithActivityPivot extends CRM_Exte
     $this->_columns['civicrm_contact']['fields']['gender_id']['no_display'] = TRUE;
     $this->_columns['civicrm_contact']['fields']['gender_id']['title'] = 'Gender';
 
-    $this->_aggregateRowFields = array(
-      'case_civireport:id' => 'Case',
-      'civicrm_contact_civireport:gender_id' => 'Gender',
-    );
-    $this->_aggregateColumnHeaderFields = array(
-      'civicrm_contact_civireport:gender_id' => 'Gender',
-    );
     $this->_tagFilter = TRUE;
     $this->_groupFilter = TRUE;
     parent::__construct();
@@ -110,10 +110,10 @@ class CRM_Extendedreport_Form_Report_Case_CaseWithActivityPivot extends CRM_Exte
    * @return array
    */
   function fromClauses() {
-    return array(
+    return [
       'contact_from_case',
       'activity_from_case',
-    );
+    ];
   }
 
   /**

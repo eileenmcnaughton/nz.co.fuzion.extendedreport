@@ -104,7 +104,7 @@
     _handler: function (e) {
       var term = $.trim(this.input[0].value.toLowerCase()),
 
-      // speed up lookups
+        // speed up lookups
         rows = this.rows, inputs = this.inputs, cache = this.cache;
 
       if (!term) {

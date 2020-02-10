@@ -4,31 +4,17 @@
  * Class CRM_Extendedreport_Form_Report_ActivityExtended
  */
 class CRM_Extendedreport_Form_Report_ActivityEditable extends CRM_Extendedreport_Form_Report_ExtendedReport {
-  //todo move def to getActivityColumns
+
   /**
    * @var array
    */
-  protected $_customGroupExtends = array('Activity');
-  /**
-   * @var bool
-   */
-  protected $_addressField = FALSE;
-  /**
-   * @var bool
-   */
-  protected $_emailField = FALSE;
-  /**
-   * @var null
-   */
-  protected $_summary = NULL;
-  /**
-   * @var bool
-   */
-  protected $_exposeContactID = FALSE;
+  protected $_customGroupExtends = ['Activity'];
+
   /**
    * @var bool
    */
   protected $_customGroupGroupBy = FALSE;
+
   /**
    * @var string
    */
@@ -42,12 +28,9 @@ class CRM_Extendedreport_Form_Report_ActivityEditable extends CRM_Extendedreport
    * Class constructor.
    */
   public function __construct() {
-    $this->_columns = $this->getColumns('Activity')
-      + $this->getColumns('Contact', array('prefix' => 'target_',));
-    $this->_columns['civicrm_activity']['fields']['id'] = array(
-      'title' => 'id',
-      'required' => TRUE,
-    );
+    $this->_columns = $this->getColumns('Activity', ['fields_defaults' => ['activity_type_id', 'details', 'subject']])
+      + $this->getColumns('Contact', ['prefix' => 'target_']);
+    $this->_columns['civicrm_activity']['metadata']['activity_id']['required_sql'] = TRUE;
     parent::__construct();
   }
 
@@ -55,8 +38,8 @@ class CRM_Extendedreport_Form_Report_ActivityEditable extends CRM_Extendedreport
    * Generate From clause.
    */
   function fromClauses() {
-    return array(
-      'activity_target_from_activity'
-    );
+    return [
+      'activity_target_from_activity',
+    ];
   }
 }
