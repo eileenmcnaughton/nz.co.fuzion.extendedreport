@@ -1487,10 +1487,18 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    * @param boolean $freeze
    *
    * @return array
+   *
+   * @throws \CRM_Core_Exception
    */
   public function setDefaultValues($freeze = TRUE) {
     $freezeGroup = [];
     $overrides = [];
+
+    foreach ($this->_options as $optionName => $field) {
+      if (isset($field['default'])) {
+        $this->_defaults['options'][$optionName] = $field['default'];
+      }
+    }
 
     foreach ($this->getMetadataByType('fields') as $fieldName => $field) {
       if (empty($field['no_display'])) {
@@ -1509,11 +1517,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
         }
         elseif (!empty($field['is_fields_default'])) {
           $this->_defaults['fields'][$fieldName] = TRUE;
-        }
-        foreach ($this->_options as $fieldName => $field) {
-          if (isset($field['default'])) {
-            $this->_defaults['options'][$fieldName] = $field['default'];
-          }
         }
       }
     }
