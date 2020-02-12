@@ -1509,7 +1509,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
           if ($freeze) {
             // find element object, so that we could use quickform's freeze method
             // for required elements
-            $obj = $this->getElementFromGroup("fields", $fieldName);
+            $obj = $this->getElementFromGroup('fields', $fieldName);
             if ($obj) {
               $freezeGroup[] = $obj;
             }
@@ -3296,11 +3296,11 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
                'group_by',
                'order_by',
                'join_filters',
-             ] as $type) {
-      if (!$options[$type]) {
+             ] as $metadataType) {
+      if (!$options[$metadataType]) {
         foreach ($columns as $tables => &$table) {
-          if (isset($table[$type])) {
-            $table[$type] = [];
+          if (isset($table[$metadataType])) {
+            $table[$metadataType] = [];
           }
         }
       }
