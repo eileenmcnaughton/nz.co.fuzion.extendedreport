@@ -99,6 +99,8 @@ class BaseTestClass extends \PHPUnit\Framework\TestCase implements HeadlessInter
    *
    * @return array
    *   ids of created objects
+   *
+   * @throws \CRM_Core_Exception
    */
   protected function createCustomGroupWithField($inputParams = [], $entity = 'Contact') {
     $params = ['title' => $entity];
