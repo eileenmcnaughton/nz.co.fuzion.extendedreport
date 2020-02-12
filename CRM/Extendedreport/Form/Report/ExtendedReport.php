@@ -1518,6 +1518,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
           }
         }
       }
+    }
 
       foreach ($this->getMetadataByType('group_bys') as $fieldName => $field) {
         if (isset($field['is_group_bys_default'])) {
@@ -1590,7 +1591,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
           }
         }
       }
-    }
 
     if (!empty($this->_submitValues)) {
       $this->preProcessOrderBy($this->_submitValues);
