@@ -34,10 +34,6 @@
  */
 class CRM_Extendedreport_Form_Report_Contribute_DetailExtended extends CRM_Extendedreport_Form_Report_ExtendedReport {
 
-  protected $_summary = NULL;
-
-  protected $_allBatches = NULL;
-
   protected $groupConcatTested = TRUE;
 
   protected $_customGroupExtends = [
@@ -110,7 +106,8 @@ class CRM_Extendedreport_Form_Report_Contribute_DetailExtended extends CRM_Exten
         ],
       ],
     ];
-    $this->_columns += $this->getColumns('Address');
+    $this->_columns += $this->getColumns('Address')
+      + $this->getColumns('Website');
     $this->_columns += $this->getColumns('Note');
 
     $this->_groupFilter = TRUE;
@@ -158,6 +155,7 @@ class CRM_Extendedreport_Form_Report_Contribute_DetailExtended extends CRM_Exten
     $this->joinPhoneFromContact();
     $this->joinAddressFromContact();
     $this->joinEmailFromContact();
+    $this->joinWebsiteFromContact();
 
     // include contribution note
     if ($this->isTableSelected('civicrm_note')) {
@@ -224,10 +222,7 @@ class CRM_Extendedreport_Form_Report_Contribute_DetailExtended extends CRM_Exten
   function alterDisplay(&$rows) {
     $entryFound = FALSE;
     $display_flag = $prev_cid = $cid = 0;
-    $contributionStatus = CRM_Contribute_PseudoConstant::contributionStatus();
     $contributionPages = CRM_Contribute_PseudoConstant::contributionPage();
-    $honorTypes = CRM_Core_OptionGroup::values('honor_type', FALSE, FALSE, FALSE, NULL, 'label');
-
 
     foreach ($rows as $rowNum => $row) {
       if (!empty($this->_noRepeats) && $this->_outputMode != 'csv') {

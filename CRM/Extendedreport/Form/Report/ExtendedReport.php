@@ -5597,11 +5597,13 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    */
   protected function joinAddressFromContact($prefix = '', $extra = []) {
 
-    $this->_from .= " LEFT JOIN civicrm_address {$this->_aliases[$prefix . 'civicrm_address']}
+    if ($this->isTableSelected($prefix . 'civicrm_address')) {
+      $this->_from .= " LEFT JOIN civicrm_address {$this->_aliases[$prefix . 'civicrm_address']}
     ON {$this->_aliases[$prefix . 'civicrm_address']}.contact_id = {$this->_aliases[$prefix . 'civicrm_contact']}.id
     AND {$this->_aliases[$prefix . 'civicrm_address']}.is_primary = 1
     ";
-    return TRUE;
+      return TRUE;
+    }
   }
 
   /**
@@ -5648,10 +5650,11 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    * @param array $extra
    */
   protected function joinEmailFromContact($prefix = '', $extra = []) {
-    $this->_from .= " LEFT JOIN civicrm_email {$this->_aliases[$prefix . 'civicrm_email']}
-   ON {$this->_aliases[$prefix . 'civicrm_email']}.contact_id = {$this->_aliases[$prefix . 'civicrm_contact']}.id
-   AND {$this->_aliases[$prefix . 'civicrm_email']}.is_primary = 1
-";
+    if ($this->isTableSelected($prefix . 'civicrm_email')) {
+      $this->_from .= " LEFT JOIN civicrm_email {$this->_aliases[$prefix . 'civicrm_email']}
+     ON {$this->_aliases[$prefix . 'civicrm_email']}.contact_id = {$this->_aliases[$prefix . 'civicrm_contact']}.id
+     AND {$this->_aliases[$prefix . 'civicrm_email']}.is_primary = 1";
+    }
   }
 
   /**
@@ -5663,11 +5666,13 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    * @param array $extra [optional]
    */
   protected function joinWebsiteFromContact($prefix = '', $extra = []) {
-    $this->_from .= " LEFT JOIN civicrm_website {$this->_aliases[$prefix . 'civicrm_website']}
+    if ($this->isTableSelected($prefix . 'civicrm_website')) {
+      $this->_from .= " LEFT JOIN civicrm_website {$this->_aliases[$prefix . 'civicrm_website']}
    ON {$this->_aliases[$prefix . 'civicrm_website']}.contact_id = {$this->_aliases[$prefix . 'civicrm_contact']}.id
 ";
-    if (!empty($this->joinClauses['civicrm_website'])) {
-      $this->_from .= ' AND ' . implode(',', $this->joinClauses['civicrm_website']);
+      if (!empty($this->joinClauses['civicrm_website'])) {
+        $this->_from .= ' AND ' . implode(',', $this->joinClauses['civicrm_website']);
+      }
     }
   }
 
@@ -5685,7 +5690,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    * @param string $prefix
    * @param array $extra
    */
-  function joinPhoneFromContact($prefix = '', $extra = []) {
+  protected function joinPhoneFromContact($prefix = '', $extra = []) {
     if ($this->isTableSelected($prefix . 'civicrm_phone')) {
       $this->_from .= " LEFT JOIN civicrm_phone {$this->_aliases[$prefix . 'civicrm_phone']}
       ON {$this->_aliases[$prefix . 'civicrm_phone']}.contact_id = {$this->_aliases[$prefix . 'civicrm_contact']}.id
@@ -5700,11 +5705,13 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    * @param string $prefix
    * @param array $extra [optional]
    */
-  function joinPrimaryPhoneFromContact($prefix = '', $extra = []) {
-    $this->_from .= " LEFT JOIN civicrm_phone {$this->_aliases[$prefix . 'civicrm_phone']}
-    ON {$this->_aliases[$prefix . 'civicrm_phone']}.contact_id = {$this->_aliases[$prefix . 'civicrm_contact']}.id
-    AND {$this->_aliases[$prefix . 'civicrm_phone']}.is_primary = 1
-    ";
+  protected function joinPrimaryPhoneFromContact($prefix = '', $extra = []) {
+    if ($this->isTableSelected($prefix . 'civicrm_phone')) {
+      $this->_from .= " LEFT JOIN civicrm_phone {$this->_aliases[$prefix . 'civicrm_phone']}
+      ON {$this->_aliases[$prefix . 'civicrm_phone']}.contact_id = {$this->_aliases[$prefix . 'civicrm_contact']}.id
+      AND {$this->_aliases[$prefix . 'civicrm_phone']}.is_primary = 1
+      ";
+    }
   }
 
   /**
