@@ -358,6 +358,14 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
         'is_filters' => TRUE,
         'is_group_bys' => TRUE,
       ],
+      $options['prefix'] . 'organization_name' => [
+        'title' => $options['prefix_label'] . E::ts('Organization Name'),
+        'name' => 'organization_name',
+        'operatorType' => CRM_Report_Form::OP_STRING,
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+        'is_group_bys' => TRUE,
+      ],
       $options['prefix'] . 'email_greeting_display' => [
         'name' => 'email_greeting_display',
         'title' => E::ts($options['prefix_label'] . 'Email Greeting'),
