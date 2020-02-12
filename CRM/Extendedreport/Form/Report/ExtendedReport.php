@@ -12,8 +12,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
 
   protected $_extraFrom = '';
 
-  protected $_summary = NULL;
-
   protected $_exposeContactID = FALSE;
 
   protected $_customGroupExtends = [];
@@ -5455,6 +5453,11 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'rightTable' => 'civicrm_address',
         'callback' => 'joinAddressFromContribution',
       ],
+      'address_from_event' => [
+        'leftTable' => 'civicrm_event',
+        'rightTable' => 'civicrm_address',
+        'callback' => 'joinAddressFromEvent',
+      ],
       'contact_from_address' => [
         'leftTable' => 'civicrm_address',
         'rightTable' => 'civicrm_contact',
@@ -5601,6 +5604,28 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       $this->_from .= " LEFT JOIN civicrm_address {$this->_aliases[$prefix . 'civicrm_address']}
     ON {$this->_aliases[$prefix . 'civicrm_address']}.contact_id = {$this->_aliases[$prefix . 'civicrm_contact']}.id
     AND {$this->_aliases[$prefix . 'civicrm_address']}.is_primary = 1
+    ";
+      return TRUE;
+    }
+  }
+
+  /**
+   * Add join from contact table to address.
+   *
+   * Prefix will be added to both tables as it's assumed you are using it to get address of a secondary contact
+   *
+   * @param string $prefix prefix to add to table names
+   * @param array $extra extra join parameters
+   *
+   * @return bool true or false to denote whether extra filters can be appended to join
+   */
+  protected function joinAddressFromEvent($prefix = '', $extra = []) {
+
+    if ($this->isTableSelected($prefix . 'civicrm_address')) {
+      $this->_from .= " 
+        LEFT JOIN civicrm_loc_block elb ON elb.id = {$this->_aliases[$prefix . 'civicrm_event']}.loc_block_id 
+        LEFT JOIN  civicrm_address {$this->_aliases[$prefix . 'civicrm_address']}
+        ON {$this->_aliases[$prefix . 'civicrm_address']}.id = elb.address_id
     ";
       return TRUE;
     }
