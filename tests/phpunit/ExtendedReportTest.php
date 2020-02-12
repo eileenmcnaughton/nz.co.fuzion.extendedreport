@@ -95,6 +95,8 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
    * @dataProvider getDataForExtendedFields
    *
    * @param array $group_bys
+   *
+   * @throws \CRM_Core_Exception
    */
   public function testExtendedFields($group_bys = []) {
     $contact = $this->callAPISuccess('Contact', 'create', ['contact_type' => 'Individual', 'first_name' => 'first', 'last_name' => 'last']);
@@ -126,7 +128,7 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
     $this->assertEquals('boring name', $this->labels['civicrm_contact_civicrm_contact_last_name']);
     $this->assertEquals('first', $rows[0]['civicrm_contact_civicrm_contact_middle_name']);
     $this->assertEquals('last', $rows[0]['civicrm_contact_civicrm_contact_last_name']);
-    $this->callAPISuccess('Contact', 'delete', ['id' => $contact['id']]);
+    $this->callAPISuccess('Contact', 'delete', ['id' => $contact['id'], 'skip_undelete' => TRUE]);
   }
 
   /**
@@ -201,7 +203,7 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
     $this->assertEquals('b', $rows[3]['civicrm_contact_civicrm_contact_first_name']);
 
     foreach ($this->ids['Contact'] as $contactID) {
-      $this->callAPISuccess('Contact', 'delete', ['id' => $contactID]);
+      $this->callAPISuccess('Contact', 'delete', ['id' => $contactID 'skip_undelete' => TRUE]);
     }
   }
 
