@@ -203,7 +203,7 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
     $this->assertEquals('b', $rows[3]['civicrm_contact_civicrm_contact_first_name']);
 
     foreach ($this->ids['Contact'] as $contactID) {
-      $this->callAPISuccess('Contact', 'delete', ['id' => $contactID 'skip_undelete' => TRUE]);
+      $this->callAPISuccess('Contact', 'delete', ['id' => $contactID, 'skip_undelete' => TRUE]);
     }
   }
 
