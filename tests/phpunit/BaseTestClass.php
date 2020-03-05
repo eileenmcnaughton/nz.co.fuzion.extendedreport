@@ -51,12 +51,18 @@ class BaseTestClass extends \PHPUnit\Framework\TestCase implements HeadlessInter
       ->apply();
   }
 
+  /**
+   * Tear down after test.
+   *
+   * @throws \CRM_Core_Exception
+   */
   public function tearDown() {
     foreach ($this->ids as $entity => $entityIDs) {
       foreach ($entityIDs as $entityID) {
         try {
-          civicrm_api3($entity, 'delete', [
+          $this->callAPISuccess($entity, 'delete', [
             'id' => $entityID,
+            'skip_undelete' => TRUE,
           ]);
         }
         catch (CiviCRM_API3_Exception $e) {

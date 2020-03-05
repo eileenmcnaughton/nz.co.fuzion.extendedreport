@@ -128,7 +128,6 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
     $this->assertEquals('boring name', $this->labels['civicrm_contact_civicrm_contact_last_name']);
     $this->assertEquals('first', $rows[0]['civicrm_contact_civicrm_contact_middle_name']);
     $this->assertEquals('last', $rows[0]['civicrm_contact_civicrm_contact_last_name']);
-    $this->callAPISuccess('Contact', 'delete', ['id' => $contact['id'], 'skip_undelete' => TRUE]);
   }
 
   /**
