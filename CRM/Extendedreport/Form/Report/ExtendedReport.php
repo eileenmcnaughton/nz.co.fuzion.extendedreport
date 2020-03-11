@@ -580,7 +580,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    */
   public function setParams($params) {
     if (empty($params)) {
-      $this->_params = $params;
+      $this->_params = $this->_params ?? $params;
       return;
     }
     $extendedFieldKeys = $this->getConfiguredFieldsFlatArray();
@@ -5625,8 +5625,8 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
   protected function joinAddressFromEvent($prefix = '', $extra = []) {
 
     if ($this->isTableSelected($prefix . 'civicrm_address')) {
-      $this->_from .= " 
-        LEFT JOIN civicrm_loc_block elb ON elb.id = {$this->_aliases[$prefix . 'civicrm_event']}.loc_block_id 
+      $this->_from .= "
+        LEFT JOIN civicrm_loc_block elb ON elb.id = {$this->_aliases[$prefix . 'civicrm_event']}.loc_block_id
         LEFT JOIN  civicrm_address {$this->_aliases[$prefix . 'civicrm_address']}
         ON {$this->_aliases[$prefix . 'civicrm_address']}.id = elb.address_id
     ";
@@ -8437,8 +8437,8 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
           $this->metaData['order_bys'][$extendedOrderBy['name']]['field_on_null_usage'] = CRM_Utils_Array::value('field_on_null_usage', $extendedOrderBy, 'on_null');
         }
       }
+      $this->_formValues['order_bys'] = $orderBys;
     }
-    $this->_formValues['order_bys'] = $orderBys;
   }
 
   /**
