@@ -35,7 +35,10 @@ class ActivityExtendedTest extends BaseTestClass implements HeadlessInterface, H
   }
 
 
-  public function testCidFilter() {
+  /**
+   * Test a basic empty submit works.
+   */
+  public function testEmptyFilter() {
     $params = [
       'report_id' => 'activityextended',
       'fields' =>
