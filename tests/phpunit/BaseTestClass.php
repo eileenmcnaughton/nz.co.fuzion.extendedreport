@@ -105,15 +105,16 @@ class BaseTestClass extends \PHPUnit\Framework\TestCase implements HeadlessInter
   protected $labels = [];
 
   /**
-   * @param $params
+   * @param array $params
    *
    * @return array|int
+   * @throws \CRM_Core_Exception
    */
-  protected function getRows($params) {
+  protected function getRows(array $params) {
     $params['options']['metadata'] = ['title', 'labels', 'sql'];
     $rows = $this->callAPISuccess('ReportTemplate', 'getrows', $params);
     $this->sql = $rows['metadata']['sql'];
-    $this->labels = isset($rows['metadata']['labels']) ? $rows['metadata']['labels'] : [];
+    $this->labels = $rows['metadata']['labels'] ?? [];
     $rows = $rows['values'];
     return $rows;
   }
@@ -132,7 +133,7 @@ class BaseTestClass extends \PHPUnit\Framework\TestCase implements HeadlessInter
    *
    * @throws \CRM_Core_Exception
    */
-  protected function createCustomGroupWithField($inputParams = [], $entity = 'Contact') {
+  protected function createCustomGroupWithField($inputParams = [], $entity = 'Contact'): array {
     $params = ['title' => $entity];
     $params['extends'] = $entity;
     CRM_Core_PseudoConstant::flush();
@@ -184,6 +185,7 @@ class BaseTestClass extends \PHPUnit\Framework\TestCase implements HeadlessInter
    * @param array $params
    *
    * @return array
+   * @throws \CRM_Core_Exception
    */
   public function customGroupCreate($params = []) {
     $defaults = [
@@ -217,6 +219,8 @@ class BaseTestClass extends \PHPUnit\Framework\TestCase implements HeadlessInter
    *   (custom_group_id) is required.
    *
    * @return array
+   * @throws \CRM_Core_Exception
+   * @throws \Exception
    */
   protected function customFieldCreate($params) {
     $params = array_merge([
@@ -243,7 +247,7 @@ class BaseTestClass extends \PHPUnit\Framework\TestCase implements HeadlessInter
    *
    * @return array
    */
-  public function getContactData($contactType, $quantity) {
+  public function getContactData($contactType, $quantity): array {
     switch ($contactType) {
       case 'Individual':
         $contacts = $this->getIndividuals();
@@ -310,14 +314,16 @@ class BaseTestClass extends \PHPUnit\Framework\TestCase implements HeadlessInter
 
   /**
    * Enable all components.
+   *
+   * @throws \CRM_Core_Exception
    */
   protected function enableAllComponents() {
     $components = [];
-    $dao = CRM_Core_DAO::executeQuery("SELECT id, name FROM civicrm_component");
+    $dao = CRM_Core_DAO::executeQuery('SELECT id, name FROM civicrm_component');
     while ($dao->fetch()) {
       $components[$dao->id] = $dao->name;
     }
-    civicrm_api3('Setting', 'create', ['enable_components' => $components]);
+    $this->callAPISuccess('Setting', 'create', ['enable_components' => $components]);
   }
 
   /**
@@ -325,7 +331,7 @@ class BaseTestClass extends \PHPUnit\Framework\TestCase implements HeadlessInter
    *
    * @return array
    */
-  public function getAllNonLoggingReports() {
+  public function getAllNonLoggingReports(): array {
     $reports = $this->getAllReports();
     $return = [];
     foreach ($reports as $report) {
@@ -339,14 +345,21 @@ class BaseTestClass extends \PHPUnit\Framework\TestCase implements HeadlessInter
    *
    * @return array
    */
-  public function getAllReports() {
+  public function getAllReports(): array {
     $reports = [];
     extendedreport_civicrm_managed($reports);
     return $reports;
   }
 
   /**
+   * Create contacts for test.
+   *
+   * @param int $quantity
+   * @param string $type
+   *
    * @return array|int
+   *
+   * @throws \CRM_Core_Exception
    */
   protected function createContacts($quantity = 1, $type = 'Individual') {
     $data = $this->getContactData($type, $quantity);
@@ -440,7 +453,7 @@ class BaseTestClass extends \PHPUnit\Framework\TestCase implements HeadlessInter
           'actual_amount' => $contribution['total_amount'],
         ]);
       }
-      if (CRM_Utils_Array::value('organization_name', $params) == 'Heros Inc.') {
+      if (($params['organization_name'] ?? NULL) === 'Heros Inc.') {
         $this->callAPISuccess('PledgePayment', 'get', [
           'pledge_id' => $pledges['id'],
           'options' => ['limit' => 1, 'sort' => 'scheduled_date DESC'],
