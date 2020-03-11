@@ -107,7 +107,7 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
       'extended_fields' => [
         [
           'title' => 'special name',
-          'name' => "civicrm_contact_middle_name",
+          'name' => 'civicrm_contact_middle_name',
           'field_on_null' => [
             [
               'title' => 'First name',
@@ -117,7 +117,7 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
         ],
         [
           'title' => 'boring name',
-          'name' => "civicrm_contact_last_name",
+          'name' => 'civicrm_contact_last_name',
         ],
       ],
       'fields' => ['civicrm_contact_first_name' => 1, 'civicrm_contact_middle_name' => 1],
@@ -128,7 +128,6 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
     $this->assertEquals('boring name', $this->labels['civicrm_contact_civicrm_contact_last_name']);
     $this->assertEquals('first', $rows[0]['civicrm_contact_civicrm_contact_middle_name']);
     $this->assertEquals('last', $rows[0]['civicrm_contact_civicrm_contact_last_name']);
-    $this->callAPISuccess('Contact', 'delete', ['id' => $contact['id'], 'skip_undelete' => TRUE]);
   }
 
   /**
@@ -165,6 +164,8 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
    * @dataProvider getFieldsForExtendedOrderBys
    *
    * @param array $fields
+   *
+   * @throws \CRM_Core_Exception
    */
   public function testExtendedOrderBys($fields) {
     $this->ids['Contact'][0] = $this->callAPISuccess('Contact', 'create', ['contact_type' => 'Individual', 'first_name' => 'b', 'last_name' => 'a'])['id'];
@@ -201,10 +202,6 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
     $this->assertEquals('a', $rows[1]['civicrm_contact_civicrm_contact_first_name']);
     $this->assertEquals('z', $rows[2]['civicrm_contact_civicrm_contact_first_name']);
     $this->assertEquals('b', $rows[3]['civicrm_contact_civicrm_contact_first_name']);
-
-    foreach ($this->ids['Contact'] as $contactID) {
-      $this->callAPISuccess('Contact', 'delete', ['id' => $contactID, 'skip_undelete' => TRUE]);
-    }
   }
 
   /**
@@ -212,7 +209,7 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
    *
    * @return array
    */
-  public function getFieldsForExtendedOrderBys() {
+  public function getFieldsForExtendedOrderBys(): array {
     return [
       [['civicrm_contact_first_name' => 1, 'civicrm_contact_last_name' => 1]],
       [['civicrm_contact_first_name' => 1, 'civicrm_contact_nick_name' => 1]],
@@ -225,6 +222,7 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
    * @param string $reportID
    *
    * @dataProvider getAllNonLoggingReports
+   * @throws \CRM_Core_Exception
    */
   public function testReportsGroupFilter($reportID) {
     $group = $this->callAPISuccess('Group', 'create', ['title' => uniqid()]);
@@ -244,6 +242,7 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
    * @param string $reportID
    *
    * @dataProvider getAllNonLoggingReports
+   * @throws \CRM_Core_Exception
    */
   public function testReportsTagFilter($reportID) {
     $tag = $this->callAPISuccess('Tag', 'create', ['name' => uniqid()]);
@@ -259,6 +258,8 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
 
   /**
    * Test the group filter ... filters.
+   *
+   * @throws \CRM_Core_Exception
    */
   public function testReportsGroupFilterWorks() {
     $group = $this->callAPISuccess('Group', 'create', ['title' => 'bob']);
@@ -285,6 +286,8 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
 
   /**
    * Test the tag filter filters by tag
+   *
+   * @throws \CRM_Core_Exception
    */
   public function testReportsTagFilterWorks() {
     $tag = $this->callAPISuccess('Tag', 'create', ['name' => 'bob']);
@@ -310,6 +313,8 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
 
   /**
    * Test the future income report with some data.
+   *
+   * @throws \CRM_Core_Exception
    */
   public function testPledgeIncomeReport() {
     $this->setUpPledgeData();
@@ -329,6 +334,8 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
 
   /**
    * Test the future income report with some data.
+   *
+   * @throws \CRM_Core_Exception
    */
   public function testPledgeIncomeReportGroupByContact() {
     $this->setUpPledgeData();
@@ -348,6 +355,8 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
 
   /**
    * Test the future income report with some data.
+   *
+   * @throws \CRM_Core_Exception
    */
   public function testPledgeIncomeReportGroupByMonth() {
     $this->setUpPledgeData();
@@ -365,7 +374,7 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
     ];
     $pledgePayments = $this->callAPISuccess('PledgePayment', 'get', []);
     $rows = $this->getRows($params);
-    $this->assertEquals(5, count($rows));
+    $this->assertCount(5, $rows);
     $this->assertEquals(14285.74, $rows[0]['civicrm_pledge_payment_pledge_payment_scheduled_amount_sum']);
     $this->assertEquals(14285.74, $rows[0]['civicrm_pledge_payment_pledge_payment_scheduled_amount_cumulative']);
     $this->assertEquals(10000, $rows[1]['civicrm_pledge_payment_pledge_payment_scheduled_amount_sum']);

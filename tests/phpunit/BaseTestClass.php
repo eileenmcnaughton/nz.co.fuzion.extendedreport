@@ -51,19 +51,49 @@ class BaseTestClass extends \PHPUnit\Framework\TestCase implements HeadlessInter
       ->apply();
   }
 
+  /**
+   * Clean up after test.
+   *
+   * @throws \CRM_Core_Exception
+   */
   public function tearDown() {
     foreach ($this->ids as $entity => $entityIDs) {
       foreach ($entityIDs as $entityID) {
         try {
-          civicrm_api3($entity, 'delete', [
-            'id' => $entityID,
-          ]);
+          if (strtolower($entity) === 'contact') {
+            $this->cleanUpContact($entityID);
+          }
+          else {
+            civicrm_api3($entity, 'delete', ['id' => $entityID]);
+          }
         }
         catch (CiviCRM_API3_Exception $e) {
           // No harm done - it was a best effort cleanup
         }
       }
     }
+  }
+
+  /**
+   * Delete a contact, first removing blocking entities.
+   *
+   * @param int $contactId
+   *
+   * @throws \CRM_Core_Exception
+   */
+  public function cleanUpContact(int $contactId) {
+    $contributions = $this->callAPISuccess('Contribution', 'get', [
+      'contact_id' => $contactId,
+    ])['values'];
+    foreach ($contributions as $id => $details) {
+      $this->callAPISuccess('Contribution', 'delete', [
+        'id' => $id,
+      ]);
+    }
+    $this->callAPISuccess('Contact', 'delete', [
+      'id' => $contactId,
+      'skip_undelete' => TRUE,
+    ]);
   }
 
   /**
@@ -336,6 +366,8 @@ class BaseTestClass extends \PHPUnit\Framework\TestCase implements HeadlessInter
    *  - started one year ago $40,000 for Wonder Woman, 2 $10000 payments made (12 months & 6 months ago).
    *  - started just now $80,000 for Cat Woman, no payments made
    *  - started one month ago $100000 for Heros Inc, no payments made
+   *
+   * @throws \CRM_Core_Exception
    */
   public function setUpPledgeData() {
     $contacts = [
