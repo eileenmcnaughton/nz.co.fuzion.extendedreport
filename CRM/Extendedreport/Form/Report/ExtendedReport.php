@@ -3266,7 +3266,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
   /**
    * Function to add columns because I wasn't enjoying adding filters to each fn.
    *
-   * @param string $type
+   * @param string $metadataType
    * @param array $options
    *
    * @return array
@@ -3281,6 +3281,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       'filters' => TRUE,
       'join_filters' => FALSE,
       'join_fields' => FALSE,
+      'is_extendable' => TRUE,
       'fields_defaults' => [],
       'filters_defaults' => [],
       'group_bys_defaults' => [],
@@ -3316,6 +3317,10 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
           }
         }
       }
+    }
+    if ($options['is_extendable'] &&
+      !empty(CRM_Core_SelectValues::customGroupExtends()[$type])) {
+      $this->_customGroupExtends[] = $type;
     }
     return $columns;
   }
@@ -8711,6 +8716,66 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
       'title' => ts('Grouping(s)'),
       'value' => implode(' & ', $combinations),
     ];
+  }
+
+  /**
+   * Fetch array of DAO tables having columns included in SELECT or ORDER BY clause.
+   *
+   * If the array is unset it will be built.
+   *
+   * @return array
+   *   selectedTables
+   */
+  public function selectedTables() {
+    parent::selectedTables();
+    if (!$this->_selectedTables) {
+      $orderByColumns = [];
+      if (array_key_exists('order_bys', $this->_params) &&
+        is_array($this->_params['order_bys'])
+      ) {
+        foreach ($this->_params['order_bys'] as $orderBy) {
+          $orderByColumns[] = $orderBy['column'];
+        }
+      }
+
+      foreach ($this->_columns as $tableName => $table) {
+        if (array_key_exists('fields', $table)) {
+          foreach ($table['fields'] as $fieldName => $field) {
+            if (!empty($field['required']) ||
+              !empty($this->_params['fields'][$fieldName])
+            ) {
+              $this->_selectedTables[] = $tableName;
+              break;
+            }
+          }
+        }
+        if (array_key_exists('order_bys', $table)) {
+          foreach ($table['order_bys'] as $orderByName => $orderBy) {
+            if (in_array($orderByName, $orderByColumns)) {
+              $this->_selectedTables[] = $tableName;
+              break;
+            }
+          }
+        }
+        if (array_key_exists('filters', $table)) {
+          foreach ($table['filters'] as $filterName => $filter) {
+            if ((isset($this->_params["{$filterName}_value"])
+                && !CRM_Utils_System::isNull($this->_params["{$filterName}_value"]))
+              || !empty($this->_params["{$filterName}_relative"])
+              || CRM_Utils_Array::value("{$filterName}_op", $this->_params) ==
+              'nll'
+              || CRM_Utils_Array::value("{$filterName}_op", $this->_params) ==
+              'nnll'
+            ) {
+              $this->_selectedTables[] = $tableName;
+              $this->filteredTables[] = $tableName;
+              break;
+            }
+          }
+        }
+      }
+    }
+    return $this->_selectedTables;
   }
 
 }
