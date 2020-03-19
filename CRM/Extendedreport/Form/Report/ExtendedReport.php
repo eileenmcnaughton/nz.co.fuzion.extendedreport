@@ -2427,7 +2427,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   public function extendedCustomDataFrom() {
     foreach ($this->getMetadataByType('metadata') as $prop) {
       $table = $prop['table_name'];
-      if (empty($prop['extends']) || !$this->isCustomTableSelected($table)) {
+      if (empty($prop['extends']) || !$this->isCustomTableSelected($table) || !$this->isTableSelected($prop['extends_table'])) {
         continue;
       }
 
