@@ -2427,7 +2427,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   public function extendedCustomDataFrom() {
     foreach ($this->getMetadataByType('metadata') as $prop) {
       $table = $prop['table_name'];
-      if (empty($prop['extends']) || !$this->isCustomTableSelected($table)) {
+      if (empty($prop['extends']) || !$this->isCustomTableSelected($table) || !$this->isTableSelected($prop['extends_table'])) {
         continue;
       }
 
@@ -3344,9 +3344,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    */
   protected function buildColumns($specs, $tableName, $daoName = NULL, $tableAlias = NULL, $defaults = [], $options = []) {
 
-    if (!$tableAlias) {
-      $tableAlias = str_replace('civicrm_', '', $tableName);
-    }
+    $tableAlias = $tableAlias ?? $tableName;
     $types = ['filters', 'group_bys', 'order_bys', 'join_filters', 'aggregate_columns', 'aggregate_rows'];
     $columns = [$tableName => array_fill_keys($types, [])];
     if (!empty($daoName)) {
@@ -5933,7 +5931,8 @@ AND {$this->_aliases['civicrm_line_item']}.entity_table = 'civicrm_participant')
    * The parameters for this come from the relationship tab.
    */
   protected function joinRelatedContactFromParticipant() {
-    if (1 || !empty($this->joinClauses)
+    if (!empty($this->joinClauses)
+      || $this->isTableSelected($this->_aliases['related_civicrm_contact'])
       || $this->isTableSelected($this->_aliases['related_civicrm_contact'])
       || $this->isTableSelected($this->_aliases['related_civicrm_phone'])
     ) {
