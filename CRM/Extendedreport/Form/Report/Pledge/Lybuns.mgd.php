@@ -12,7 +12,7 @@ return [
       'label' => 'Extended Report - Pledge LYBUNS',
       'description' => 'Extended Report - Pledge Last Year but not Since',
       'class_name' => 'CRM_Extendedreport_Form_Report_Pledge_Lybuns',
-      'report_url' => 'pledgelybns',
+      'report_url' => 'pledge/lybns',
       'component' => 'CiviPledge',
     ],
   ],
