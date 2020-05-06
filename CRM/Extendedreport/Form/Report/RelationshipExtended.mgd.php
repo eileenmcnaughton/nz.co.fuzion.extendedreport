@@ -12,7 +12,7 @@ return [
       'label' => 'Extended Report - Relationships',
       'description' => 'Extended Report - Relationships, includes data from both sides of the relationship',
       'class_name' => 'CRM_Extendedreport_Form_Report_RelationshipExtended',
-      'report_url' => 'relationshipextended',
+      'report_url' => 'relationship/extended',
       'component' => '',
     ],
   ],
