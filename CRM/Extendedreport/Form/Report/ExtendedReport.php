@@ -3106,8 +3106,14 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       $entity_table = $this->_aliases[strtolower('civicrm_' . $entity)];
       $idKeyArray = [$entity_table . '.id'];
       if (empty($this->_groupByArray) || $this->_groupByArray == $idKeyArray) {
-        $entity_field = $entity_table . '_id';
-        $entityID = $row[$this->getMetadataByType('fields')[$entity_field]['alias']];
+        foreach ($this->getMetadataByType('fields') as $fieldName => $field) {
+          if ($field['name'] === 'id') {
+            $entity_field = $fieldName;
+            $alias = $field['alias'];
+            break;
+          }
+        }
+        $entityID = $row[$alias];
       }
     }
     if (CRM_Utils_System::isNull($value) && !in_array($customField['data_type'], [
