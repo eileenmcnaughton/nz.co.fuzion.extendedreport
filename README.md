@@ -3,6 +3,8 @@ Extended Reports for CiviCRM
 
 -----------------------------------------
 
+
+
 Once installed you need to go to Administer/CiviReport/Create Reports from template to create a report.
 
 These reports have been funded by various groups & if a given report doesn't work it may no longer have a funder.
