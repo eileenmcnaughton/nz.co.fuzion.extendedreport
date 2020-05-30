@@ -12,7 +12,7 @@ return [
       'label' => 'Extended Report - Activities',
       'description' => 'Extended Report - Activities, includes multi-contact custom fields',
       'class_name' => 'CRM_Extendedreport_Form_Report_ActivityExtended',
-      'report_url' => 'activityextended',
+      'report_url' => 'activity/extended',
       'component' => '',
     ],
   ],
