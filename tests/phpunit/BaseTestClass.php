@@ -54,6 +54,7 @@ class BaseTestClass extends \PHPUnit\Framework\TestCase implements HeadlessInter
   /**
    * Clean up after test.
    *
+   * @throws \API_Exception
    * @throws \CRM_Core_Exception
    */
   public function tearDown() {
@@ -71,6 +72,12 @@ class BaseTestClass extends \PHPUnit\Framework\TestCase implements HeadlessInter
           // No harm done - it was a best effort cleanup
         }
       }
+    }
+    if ($this->customFieldID) {
+      \Civi\Api4\CustomGroup::delete()->setCheckPermissions(FALSE)->addWhere('id', '=', $this->customFieldID)->execute();
+    }
+    if ($this->customGroupID) {
+      \Civi\Api4\CustomGroup::delete()->setCheckPermissions(FALSE)->addWhere('id', '=', $this->customGroupID)->execute();
     }
   }
 
@@ -187,7 +194,7 @@ class BaseTestClass extends \PHPUnit\Framework\TestCase implements HeadlessInter
    * @return array
    * @throws \CRM_Core_Exception
    */
-  public function customGroupCreate($params = []) {
+  public function customGroupCreate($params = []): array {
     $defaults = [
       'title' => 'new custom group',
       'extends' => 'Contact',

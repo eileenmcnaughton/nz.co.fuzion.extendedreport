@@ -2458,7 +2458,8 @@ LEFT JOIN civicrm_contact {$prop['alias']} ON {$prop['alias']}.id = {$this->_ali
    *
    * @return bool
    */
-  protected function isCustomTableSelected($table) {
+  protected function isCustomTableSelected($table): bool {
+
     $selected = array_merge(
       $this->getSelectedFilters(),
       $this->getSelectedFields(),
@@ -5632,8 +5633,8 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
   protected function joinAddressFromEvent($prefix = '', $extra = []) {
 
     if ($this->isTableSelected($prefix . 'civicrm_address')) {
-      $this->_from .= " 
-        LEFT JOIN civicrm_loc_block elb ON elb.id = {$this->_aliases[$prefix . 'civicrm_event']}.loc_block_id 
+      $this->_from .= "
+        LEFT JOIN civicrm_loc_block elb ON elb.id = {$this->_aliases[$prefix . 'civicrm_event']}.loc_block_id
         LEFT JOIN  civicrm_address {$this->_aliases[$prefix . 'civicrm_address']}
         ON {$this->_aliases[$prefix . 'civicrm_address']}.id = elb.address_id
     ";
