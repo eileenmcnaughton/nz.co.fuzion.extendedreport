@@ -104,7 +104,7 @@ class api_v3_ReportTemplate_GetmetadataTest extends BaseTestClass implements Hea
     $this->assertEquals(CRM_Report_Form::OP_INT, $filters['custom_' . $ids['custom_field_id']]['operatorType']);
     $this->assertEquals(CRM_Report_Form::OP_DATE, $filters['custom_' . $dateField['id']]['operatorType']);
     $this->assertEquals(CRM_Report_Form::OP_MULTISELECT, $filters['custom_' . $selectField['id']]['operatorType']);
-    $this->assertEquals(CRM_Report_Form::OP_MULTISELECT_SEPARATOR, $filters['custom_' . $multiSelectField['id']]['operatorType']);
+    $this->assertEquals(CRM_Report_Form::OP_MULTISELECT, $filters['custom_' . $multiSelectField['id']]['operatorType']);
     $this->assertEquals('Pledge', $filters['custom_' . $multiSelectField['id']]['table_label']);
     $this->assertEquals(CRM_Report_Form::OP_SELECT, $filters['custom_' . $booleanField['id']]['operatorType']);
 

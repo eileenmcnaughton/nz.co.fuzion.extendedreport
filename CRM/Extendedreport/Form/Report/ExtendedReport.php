@@ -2422,18 +2422,12 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   /**
    * Build custom data from clause.
    *
-   * Overridden to support custom data for multiple entities of the same type and pivot fields.
+   * Overridden to support custom data for multiple entities of the same type.
    */
   public function extendedCustomDataFrom() {
-    $pivotColumn = $this->_params['aggregate_column_headers'] ?? NULL;
-    $rowColumn = $this->_params['aggregate_row_headers'] ?? NULL;
-    foreach ($this->getMetadataByType('metadata') as $fieldName => $prop) {
+    foreach ($this->getMetadataByType('metadata') as $prop) {
       $table = $prop['table_name'];
-      if (empty($prop['extends']) ||
-          !$this->isCustomTableSelected($table) ||
-          !$this->isTableSelected($prop['extends_table']) &&
-          ($pivotColumn !== $fieldName && $rowColumn !== $fieldName)
-      ) {
+      if (empty($prop['extends']) || !$this->isCustomTableSelected($table)) {
         continue;
       }
 
