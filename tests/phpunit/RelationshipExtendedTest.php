@@ -36,6 +36,10 @@ class RelationshipExtendedTest extends BaseTestClass implements HeadlessInterfac
     return $env;
   }
 
+  /**
+   * @throws \CRM_Core_Exception
+   * @throws \CiviCRM_API3_Exception
+   */
   public function setUp() {
     parent::setUp();
     $components = [];
@@ -43,7 +47,7 @@ class RelationshipExtendedTest extends BaseTestClass implements HeadlessInterfac
     while ($dao->fetch()) {
       $components[$dao->id] = $dao->name;
     }
-    civicrm_api3('Setting', 'create', ['enable_components' => $components]);
+    $this->callAPISuccess('Setting', 'create', ['enable_components' => $components]);
     $this->createCustomGroupWithField();
 
     $contact = $this->callAPISuccess('Contact', 'create', [
@@ -77,6 +81,8 @@ class RelationshipExtendedTest extends BaseTestClass implements HeadlessInterfac
 
   /**
    * Test the report with group filter.
+   *
+   * @throws \CRM_Core_Exception
    */
   public function testReport() {
     $customFieldPrefix = 'custom_contact_a__' . $this->customFieldID;
@@ -89,12 +95,14 @@ class RelationshipExtendedTest extends BaseTestClass implements HeadlessInterfac
       $customFieldPrefix . '_value' => '%g%',
     ];
     $rows = $this->getRows($params);
-    $this->assertEquals(1, count($rows));
+    $this->assertCount(1, $rows);
     $this->assertEquals('Employee of', $rows[0]['civicrm_relationship_type_relationship_type_label_a_b']);
   }
 
   /**
    * Test the report with group filter.
+   *
+   * @throws \CRM_Core_Exception
    */
   public function testReportWithGroupFilter() {
     $params = [

@@ -267,14 +267,6 @@ ROUND(AVG({$this->_aliases['civicrm_contribution_soft']}.amount), 2) as civicrm_
   }
 
   /**
-   * Post process function.
-   */
-  public function postProcess() {
-    $this->buildACLClause($this->_aliases['civicrm_contact']);
-    parent::postProcess();
-  }
-
-  /**
    * Build table rows for output.
    *
    * @param string $sql
