@@ -87,7 +87,7 @@ class RelationshipExtendedTest extends BaseTestClass implements HeadlessInterfac
   public function testReport() {
     $customFieldPrefix = 'custom_contact_a__' . $this->customFieldID;
     $params = [
-      'report_id' => 'relationship/extended',
+      'report_id' => 'relationshipextended',
       'fields' => [
         'relationship_type_label_a_b' => '1',
       ],
@@ -106,7 +106,7 @@ class RelationshipExtendedTest extends BaseTestClass implements HeadlessInterfac
    */
   public function testReportWithGroupFilter() {
     $params = [
-      'report_id' => 'relationship/extended',
+      'report_id' => 'relationshipextended',
       'fields' => [
         'relationship_type_label_a_b' => '1',
       ],
