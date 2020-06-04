@@ -24,20 +24,26 @@ class ActivityExtendedTest extends BaseTestClass implements HeadlessInterface, H
 
   /**
    * Test the future income report with some data.
+   *
+   * @throws \CRM_Core_Exception
    */
   public function testReportDateSql() {
     $params = [
-      'report_id' => 'activityextended',
+      'report_id' => 'activity/extended',
       'activity_activity_date_time_relative' => 'previous.month',
     ];
     $this->getRows($params);
     $this->assertContains('235959', $this->sql[0]);
   }
 
-
+  /**
+   * Test filtering on cid.
+   *
+   * @throws \CRM_Core_Exception
+   */
   public function testCidFilter() {
     $params = [
-      'report_id' => 'activityextended',
+      'report_id' => 'activity/extended',
       'fields' =>
         [
           'activity_activity_type_id' => '1',

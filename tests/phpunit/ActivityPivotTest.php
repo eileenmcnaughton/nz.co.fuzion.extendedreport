@@ -24,6 +24,8 @@ class ActivityPivotTest extends BaseTestClass implements HeadlessInterface, Hook
 
   /**
    * Test the future income report with some data.
+   *
+   * @throws \CRM_Core_Exception
    */
   public function testPivotReport() {
     $contact = $this->callAPISuccess('Contact', 'create', ['contact_type' => 'Individual', 'email' => 'demo@example.com']);
