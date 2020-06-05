@@ -4722,6 +4722,51 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     return $this->buildColumns($spec, 'civicrm_pledge', 'CRM_Pledge_DAO_Pledge');
   }
 
+  
+  /**
+   * Show empty columns.
+   *
+   * @param array $options
+   *
+   * @return array
+   */
+  function getEmptyColumns($options = []) {
+   
+    $options = array_merge(['group_title' => E::ts('Empty')], $options);
+      
+      
+    $options = array_merge($defaultOptions, $options);
+      
+    $fields = [
+      'Empty1' => [
+        'title' => ts('Empty1'),
+        'name' => 'Empty1',
+        'is_fields' => TRUE,
+        'type' => CRM_Utils_Type::T_STRING,  
+      ],
+      'Empty2' => [
+        'title' => ts('Empty2'),
+        'name' => 'Empty2',
+        'is_fields' => TRUE,
+        'type' => CRM_Utils_Type::T_STRING,  
+      ],
+      'Empty3' => [
+        'title' => ts('Empty3'),
+        'name' => 'Empty3',
+        'is_fields' => TRUE,
+        'type' => CRM_Utils_Type::T_STRING,  
+      ],
+      'Empty4' => [
+        'title' => ts('Empty4'),
+        'name' => 'Empty4',
+        'is_fields' => TRUE,
+        'type' => CRM_Utils_Type::T_STRING,  
+      ],
+    ];
+    return $this->buildColumns($fields, 'Empty');
+  }
+  
+  
   /**
    * Get email columns.
    *
