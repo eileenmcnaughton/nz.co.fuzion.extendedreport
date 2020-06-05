@@ -4473,6 +4473,43 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     ];
     return $this->buildColumns($specs, 'civicrm_contribution', 'CRM_Contribute_BAO_Contribution', NULL, $this->getDefaultsFromOptions($options), $options);
   }
+  
+  /**
+   * Get Contributions First Columns grouped by rec contribution id.
+   *
+   * This is called by getColumns.
+   *
+   * @param array
+   *
+   * @return array
+   *
+   * @throws \CiviCRM_API3_Exception
+   */
+  function getFirstContributionColumns($options ) {
+
+    $options = array_merge(['group_title' => E::ts('view first contribution')], $options);
+      
+      
+    $options = array_merge($defaultOptions, $options);
+      
+    $specs = [
+      'first_contribution' => [
+        'title' => ts('First Contribution'),
+        'name' => 'first_contribution',
+        'type' => CRM_Utils_Type::T_BOOLEAN,
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+        'is_order_bys' => FALSE,
+        'is_group_bys' => FALSE,
+        'options' => [
+        '' => ts('- select -'),
+        1 => ts('Yes'),
+        0 => ts('No'),
+      ],
+      ],
+    ];
+    return $this->buildColumns($specs, 'civicrm_view_first_contribution', NULL, 'view_first_contribution', NULL, $options);
+  }
 
   /**
    * Get Columns for Contact Contribution Summary
@@ -5362,6 +5399,11 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'rightTable' => 'civicrm_contribution',
         'callback' => 'joinContributionFromContact',
       ],
+      'first_from_contribution' => [
+        'leftTable' => 'civicrm_contribution',
+        'rightTable' => 'civicrm_contribution',
+        'callback' => 'joinFirstFromContribution',
+      ],
       'contribution_from_participant' => [
         'leftTable' => 'civicrm_participant',
         'rightTable' => 'civicrm_contribution',
@@ -5543,6 +5585,9 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'rightTable' => 'civicrm_contact',
         'callback' => 'joinContactFromGrant',
       ],
+      'Empty_Columns' => [
+        'callback' => 'joinEmptyColumns',
+      ],
     ];
   }
 
@@ -5670,6 +5715,17 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     return TRUE;
   }
 
+  
+  /**
+   * Add cross join to generate empty columns.
+   * @param string $prefix
+   * @param array $extra
+   */
+  protected function joinEmptyColumns($prefix = '', $extra = []) {
+     $this->_from .= " CROSS JOIN (SELECT NULL as EMPTY1, NULL as EMPTY2, NULL as EMPTY3, NULL as EMPTY4) as EMPTY";
+  }
+  
+  
   /**
    * Add join from contact table to email.
    *
@@ -6232,6 +6288,27 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
       ON {$this->_aliases['civicrm_event_summary' . $prefix]}.event_id = {$this->_aliases['civicrm_event']}.id
     ";
   }
+  
+  
+  
+   /**
+   * Join the first entry view with contribution.
+   */
+  protected function joinFirstFromContribution() {
+ 
+      CRM_Core_DAO::executeQuery('
+        CREATE OR REPLACE VIEW civicrm_view_first_contribution AS 
+        SELECT id, CASE WHEN id IN 
+        (SELECT MIN(id) FROM `civicrm_contribution` 
+        GROUP BY contact_id, contribution_recur_id)
+        THEN 1 ELSE 0 END as first_contribution   FROM `civicrm_contribution` ;
+      ');
+      
+      $this->_from .= " LEFT JOIN civicrm_view_first_contribution as view_first_contribution  
+ON view_first_contribution.id = {$this->_aliases['civicrm_contribution']}.id";
+      
+  }
+  
 
   /**
    *

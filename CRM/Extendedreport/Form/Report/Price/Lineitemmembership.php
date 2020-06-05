@@ -29,6 +29,7 @@ class CRM_Extendedreport_Form_Report_Price_Lineitemmembership extends CRM_Extend
     $this->_columns = $this->getColumns('Contact') +
       $this->getColumns('Membership') +
       $this->getColumns('Contribution') +
+      $this->getColumns('FirstContribution') + 
       $this->getColumns('PriceField') +
       $this->getColumns('PriceFieldValue') +
       $this->getColumns('LineItem') +
@@ -52,6 +53,8 @@ class CRM_Extendedreport_Form_Report_Price_Lineitemmembership extends CRM_Extend
       'contact_from_membership',
       'address_from_contact',
       'contribution_from_lineItem',
+      'first_from_contribution',
+      'Empty_Columns',
     ];
   }
 
