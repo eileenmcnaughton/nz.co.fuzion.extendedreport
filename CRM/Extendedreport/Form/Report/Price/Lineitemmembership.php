@@ -34,8 +34,9 @@ class CRM_Extendedreport_Form_Report_Price_Lineitemmembership extends CRM_Extend
       $this->getColumns('PriceFieldValue') +
       $this->getColumns('LineItem') +
       $this->getColumns('Address', ['join_filters' => TRUE]) +
+      $this->getColumns('Tag') +      
       $this->getColumns('Empty');
-
+      $this->_groupFilter = TRUE;
     parent::__construct();
   }
 
@@ -56,6 +57,7 @@ class CRM_Extendedreport_Form_Report_Price_Lineitemmembership extends CRM_Extend
       'contribution_from_lineItem',
       'first_from_contribution',
       'Empty_Columns',
+      'entitytag_from_contact',
     ];
   }
 

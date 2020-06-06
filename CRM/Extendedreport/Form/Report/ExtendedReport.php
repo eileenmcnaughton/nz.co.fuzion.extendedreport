@@ -3620,6 +3620,36 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'is_group_bys' => TRUE,
         'operator' => 'like',
       ],
+      'is_active' => [
+        'title' => ts('Active'),
+        'name' => 'is_active',
+        'type' => CRM_Utils_Type::T_BOOLEAN,
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+        'is_order_bys' => FALSE,
+        'is_group_bys' => FALSE,
+        'options' => [
+        '' => ts('- select -'),
+        1 => ts('Yes'),
+        0 => ts('No'),
+      ],
+      ],
+      'active_on' => [
+        'name' => 'active_on',
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+        'title' => ts('Active on'),
+        'type' => CRM_Utils_Type::T_DATE,
+        'operatorType' => CRM_Report_Form::OP_DATE,
+      ],
+      'expire_on' => [
+        'name' => 'expire_on',
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+        'title' => ts('Expire on'),
+        'type' => CRM_Utils_Type::T_DATE,
+        'operatorType' => CRM_Report_Form::OP_DATE,
+      ],
     ];
     return $this->buildColumns($specs, 'civicrm_price_field', 'CRM_Price_BAO_PriceField');
   }
