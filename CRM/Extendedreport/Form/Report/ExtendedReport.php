@@ -7768,6 +7768,9 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
     $filters = $this->getMetadataByType('filters');
     foreach ($this->_params as $key => $value) {
       $field = '';
+      if ($key == 'membership_owner_membership_id_op') {
+        $key = 'membership_owner_membership_id_value';
+      }
       if (substr($key, -6, 6) === '_value' && ($value !== '' && $value !== NULL && $value !== "NULL" && $value !== [])) {
         $field = substr($key, 0, strlen($key) - 6);
       }
