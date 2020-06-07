@@ -4768,32 +4768,32 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     $options = array_merge($defaultOptions, $options);
       
     $fields = [
-      'Empty1' => [
-        'title' => ts('Empty1'),
-        'name' => 'Empty1',
+      'EMPTY1' => [
+        'title' => ts('EMPTY1'),
+        'name' => 'EMPTY1',
         'is_fields' => TRUE,
         'type' => CRM_Utils_Type::T_STRING,  
       ],
-      'Empty2' => [
-        'title' => ts('Empty2'),
-        'name' => 'Empty2',
+      'EMPTY2' => [
+        'title' => ts('EMPTY2'),
+        'name' => 'EMPTY2',
         'is_fields' => TRUE,
         'type' => CRM_Utils_Type::T_STRING,  
       ],
-      'Empty3' => [
-        'title' => ts('Empty3'),
-        'name' => 'Empty3',
+      'EMPTY3' => [
+        'title' => ts('EMPTY3'),
+        'name' => 'EMPTY3',
         'is_fields' => TRUE,
         'type' => CRM_Utils_Type::T_STRING,  
       ],
-      'Empty4' => [
-        'title' => ts('Empty4'),
-        'name' => 'Empty4',
+      'EMPTY4' => [
+        'title' => ts('EMPTY4'),
+        'name' => 'EMPTY4',
         'is_fields' => TRUE,
         'type' => CRM_Utils_Type::T_STRING,  
       ],
     ];
-    return $this->buildColumns($fields, 'Empty');
+    return $this->buildColumns($fields, 'EMPTY');
   }
   
   
