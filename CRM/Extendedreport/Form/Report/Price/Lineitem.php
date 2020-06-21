@@ -33,7 +33,7 @@
  */
 class CRM_Extendedreport_Form_Report_Price_Lineitem extends CRM_Extendedreport_Form_Report_ExtendedReport {
 
-  protected $_customGroupExtends = ['Contribution'];
+  protected $_customGroupExtends = ['Contribution', 'Individual', 'Contact'];
 
   protected $_baseTable = 'civicrm_line_item';
 
@@ -57,11 +57,15 @@ class CRM_Extendedreport_Form_Report_Price_Lineitem extends CRM_Extendedreport_F
       + $this->getColumns('Event')
       + $this->getColumns('Participant')
       + $this->getColumns('Contribution', ['order_by' => TRUE])
+      + $this->getColumns('FirstContribution')
       + $this->getColumns('PriceField', ['order_by' => TRUE])
       + $this->getColumns('PriceFieldValue', ['order_by' => TRUE])
       + $this->getColumns('LineItem', ['order_by' => TRUE, 'fields_defaults' => ['financial_type_id', 'line_total']]) +
       $this->getColumns('BillingAddress') +
-      $this->getColumns('Address');
+      $this->getColumns('Address') +
+      $this->getColumns('Tag') +      
+      $this->getColumns('Empty');
+      $this->_groupFilter = TRUE;
     parent::__construct();
   }
 
@@ -84,6 +88,9 @@ class CRM_Extendedreport_Form_Report_Price_Lineitem extends CRM_Extendedreport_F
       'address_from_contribution',
       'email_from_contact',
       'phone_from_contact',
+      'first_from_contribution',
+      'Empty_Columns',
+      'entitytag_from_contact',
     ];
 
   }
