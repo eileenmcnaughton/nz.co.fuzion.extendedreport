@@ -437,6 +437,12 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
         'type' => CRM_Utils_Type::T_INT,
         'is_fields' => TRUE,
       ],
+      'job_title' => [
+        'title' => E::ts($options['prefix_label'] . 'Job Title'),
+        'type' => CRM_Utils_Type::T_STRING,
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+      ],
     ];
     if (!$orgOnly) {
       $spec = array_merge($spec, $individualFields);
