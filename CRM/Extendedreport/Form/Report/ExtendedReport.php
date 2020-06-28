@@ -5632,8 +5632,8 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
   protected function joinAddressFromEvent($prefix = '', $extra = []) {
 
     if ($this->isTableSelected($prefix . 'civicrm_address')) {
-      $this->_from .= " 
-        LEFT JOIN civicrm_loc_block elb ON elb.id = {$this->_aliases[$prefix . 'civicrm_event']}.loc_block_id 
+      $this->_from .= "
+        LEFT JOIN civicrm_loc_block elb ON elb.id = {$this->_aliases[$prefix . 'civicrm_event']}.loc_block_id
         LEFT JOIN  civicrm_address {$this->_aliases[$prefix . 'civicrm_address']}
         ON {$this->_aliases[$prefix . 'civicrm_address']}.id = elb.address_id
     ";
@@ -6577,8 +6577,8 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
   }
 
   /**
-   * @param $value
-   * @param $row
+   * @param int $value
+   * @param array $row
    *
    * @return array|string
    */
@@ -6587,10 +6587,10 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
   }
 
   /**
-   * @param $value
-   * @param $row
-   * @param $selectedField
-   * @param $criteriaFieldName
+   * @param int $value
+   * @param array $row
+   * @param array $selectedField
+   * @param array $criteriaFieldName
    *
    * @return array
    */

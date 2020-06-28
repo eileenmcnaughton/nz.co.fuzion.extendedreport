@@ -77,6 +77,8 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
    * @dataProvider getAllNonLoggingReports
    *
    * @param int $reportID
+   *
+   * @throws \CRM_Core_Exception
    */
   public function testReportsRunAllFields($reportID) {
     $metadata = $this->callAPISuccess('ReportTemplate', 'getmetadata', ['report_id' => $reportID])['values'];
