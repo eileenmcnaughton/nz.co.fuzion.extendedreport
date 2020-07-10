@@ -12,7 +12,7 @@ return [
       'label' => 'Extended Report - Editable Activities',
       'description' => 'Extended Report - editable Activity Report',
       'class_name' => 'CRM_Extendedreport_Form_Report_ActivityEditable',
-      'report_url' => 'activity/editable',
+      'report_url' => 'activityeditable',
       'component' => '',
     ],
   ],
