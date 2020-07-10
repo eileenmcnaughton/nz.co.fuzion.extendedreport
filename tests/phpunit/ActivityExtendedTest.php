@@ -29,7 +29,7 @@ class ActivityExtendedTest extends BaseTestClass implements HeadlessInterface, H
    */
   public function testReportDateSql() {
     $params = [
-      'report_id' => 'activity/extended',
+      'report_id' => 'activityextended',
       'activity_activity_date_time_relative' => 'previous.month',
     ];
     $this->getRows($params);
@@ -43,7 +43,7 @@ class ActivityExtendedTest extends BaseTestClass implements HeadlessInterface, H
    */
   public function testCidFilter() {
     $params = [
-      'report_id' => 'activity/extended',
+      'report_id' => 'activityextended',
       'fields' =>
         [
           'activity_activity_type_id' => '1',
