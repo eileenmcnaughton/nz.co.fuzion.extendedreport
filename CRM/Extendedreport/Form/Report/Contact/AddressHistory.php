@@ -42,7 +42,7 @@ class CRM_Extendedreport_Form_Report_Contact_AddressHistory extends CRM_Extended
         //'fields_defaults' => array('address_name', 'street_address', 'supplemental_address_1', 'supplemental_address_2', 'city', 'state_province_id', 'country_id', 'postal_code', 'county_id'),
         'fields_defaults' => ['display_address'],
         // More work to be done to figure out how retrieving custom data for this report would look
-        'extended' => FALSE,
+        'is_extendable' => FALSE,
       ]
     )['civicrm_address']['metadata'];
 
