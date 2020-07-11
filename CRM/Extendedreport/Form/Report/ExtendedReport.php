@@ -3258,8 +3258,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       'filters' => TRUE,
       'join_filters' => FALSE,
       'join_fields' => FALSE,
-      // Change to true later...
-      'is_extendable' => FALSE,
+      'is_extendable' => TRUE,
       'fields_defaults' => [],
       'filters_defaults' => [],
       'group_bys_defaults' => [],
