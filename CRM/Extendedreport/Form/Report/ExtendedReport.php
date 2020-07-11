@@ -7268,9 +7268,11 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
           $this->_columns[$tableKey]['metadata'][$fieldName]['extends_table'] = $this->_columns[$tableKey]['extends_table'];
           $this->_columns[$tableKey]['filters'][$fieldName] = $this->_columns[$tableKey]['metadata'][$fieldName];
         }
-        $this->metaData['metadata'][$fieldName] = $this->_columns[$tableKey]['metadata'][$fieldName];
-        $this->metaData['metadata'][$fieldName]['is_aggregate_columns'] = TRUE;
-        $this->metaData['metadata'][$fieldName]['table_alias'] = $this->_columns[$tableKey]['alias'];
+        foreach ($this->_columns[$tableKey]['metadata'][$fieldName] as $fieldKey => $value) {
+          $this->setMetadataValue($fieldName, $fieldKey, $value);
+        }
+        $this->setMetadataValue($fieldName, 'is_aggregate_columns', TRUE);
+        $this->setMetadataValue($fieldName, 'table_alias', $this->_columns[$tableKey]['alias']);
         $this->metaData['aggregate_columns'][$fieldName] = $this->metaData['metadata'][$fieldName];
         $aggregateRowHeaderFields[$prefix . 'custom_' . $customField['id']] = $customField['prefix_label'] . $customField['label'];
         if (in_array($customField['html_type'], ['Select', 'CheckBox'])) {
@@ -8723,6 +8725,7 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
    */
   protected function appendFieldToMetadata($fieldSpec, string $tableKey, string $fieldName) {
     $this->_columns[$tableKey]['metadata'][$fieldName] = $fieldSpec;
+    // Empty metadata so it gets rebuild based off columns when next requested.
     $this->metaData = [];
   }
 
@@ -8786,6 +8789,25 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
     }
     // If set then unset it as metadata has changed so this might too.
     $this->_selectedTables = [];
+  }
+
+  /**
+   * Set a metadata value.
+   *
+   * Currently this adds to a build array but not to an un-built array
+   * (as that should be added when built and we don't want to block it building).
+   *
+   * @param string $fieldName
+   */
+  protected function setMetadataValue(string $fieldName, $key, $value)  {
+    if (!empty($this->metaData['metadata'])) {
+      $this->metaData['metadata'][$fieldName][$key] = $value;
+      foreach ($this->metaData as $type => $fields) {
+        if (isset($fields[$fieldName])) {
+          $this->metaData[$type][$fieldName][$key] = $value;
+        }
+      }
+    }
   }
 
 }
