@@ -93,11 +93,11 @@ class api_v3_ReportTemplate_GetmetadataTest extends BaseTestClass implements Hea
       $this->assertEquals(TRUE, $filter['is_filters']);
       $this->assertEquals($result['metadata'][$fieldName], $filter);
       $knownNoFieldFilters = ['effective_date', 'tagid', 'gid', 'pledge_payment_status_id'];
-      if (!in_array($fieldName, $knownNoFieldFilters)) {
-        $this->assertEquals($result['fields'][$fieldName], $filter);
+      if (!in_array($fieldName, $knownNoFieldFilters, TRUE)) {
+        $this->assertEquals($result['fields'][$fieldName], $filter, 'mismatch in ' . $fieldName);
       }
     }
-    $this->assertTrue(!empty($result['order_bys']['custom_' . $ids['custom_field_id']]));
+    $this->assertNotEmpty($result['order_bys']['custom_' . $ids['custom_field_id']]);
     $this->assertTrue(!empty($result['group_bys']['custom_' . $ids['custom_field_id']]));
     $this->assertEquals(CRM_Report_Form::OP_INT, $filters['custom_' . $ids['custom_field_id']]['operatorType']);
     $this->assertEquals(CRM_Report_Form::OP_DATE, $filters['custom_' . $dateField['id']]['operatorType']);
@@ -115,13 +115,17 @@ class api_v3_ReportTemplate_GetmetadataTest extends BaseTestClass implements Hea
    * Test getmetdata works on all reports.
    *
    * @dataProvider getAllNonLoggingReports
+   *
+   * @param string $reportID
+   *
+   * @throws \CiviCRM_API3_Exception
    */
   public function testApiMetadataAllReports($reportID) {
     $result = $this->callAPISuccess('ReportTemplate', 'Getmetadata', ['report_id' => $reportID, 'debug' => 1])['values'];
     $filters = $result['filters'];
     foreach ($filters as $fieldName => $filter) {
       $this->assertEquals(TRUE, $filter['is_filters']);
-      $this->assertEquals($result['metadata'][$fieldName], $filter);
+      $this->assertEquals($result['metadata'][$fieldName], $filter, 'for report ' . $reportID . ' and ' . $fieldName);
       $knownNoFieldFilters = ['effective_date', 'tagid', 'gid', 'pledge_payment_status_id'];
       if (!in_array($fieldName, $knownNoFieldFilters) && $filter['is_fields']) {
         $this->assertEquals($result['fields'][$fieldName], $filter);
