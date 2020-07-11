@@ -8723,6 +8723,7 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
    */
   protected function appendFieldToMetadata($fieldSpec, string $tableKey, string $fieldName) {
     $this->_columns[$tableKey]['metadata'][$fieldName] = $fieldSpec;
+    // Empty metadata so it gets rebuild based off columns when next requested.
     $this->metaData = [];
   }
 
