@@ -204,6 +204,37 @@ class ContributionContributionsTest extends BaseTestClass implements HeadlessInt
   public function testGetRowsFilterCustomData() {
     $this->enableAllComponents();
     $ids = $this->createCustomGroupWithField([]);
+    $contribution = $this->createTwoContactsWithContributions($ids);
+
+    $rows = $this->getRowsFilteredByCustomField($ids['custom_field_id'], $contribution['id']);
+    $this->assertCount(1, $rows);
+  }
+
+  /**
+   * Test we don't get a failed join pulling in address custom data but not the address.
+   *
+   * @throws \CRM_Core_Exception
+   */
+  public function testGetRowFilterAddressCustomData() {
+    $this->enableAllComponents();
+    $ids = $this->createCustomGroupWithField([], 'Address');
+    $contribution = $this->createTwoContactsWithContributions();
+
+    $this->callAPISuccess('Address', 'create', [
+      'contact_id' => $this->ids['Contact'][1],
+      'custom_' . $ids['custom_field_id'] => $contribution['id'],
+    ]);
+    $rows = $this->getRowsFilteredByCustomField($ids['custom_field_id'], $contribution['id']);
+    $this->assertCount(1, $rows);
+  }
+
+  /**
+   * @param array $ids
+   *
+   * @return array|int
+   * @throws \CRM_Core_Exception
+   */
+  protected function createTwoContactsWithContributions(array $ids = []) {
     $contacts = $this->createContacts(2);
     foreach ($contacts as $contact) {
       $contribution = $this->callAPISuccess('Contribution', 'create', [
@@ -211,17 +242,31 @@ class ContributionContributionsTest extends BaseTestClass implements HeadlessInt
         'financial_type_id' => 'Donation',
         'contact_id' => $contact['id'],
       ]);
-      $this->callAPISuccess('Contact', 'create', ['id' => $contact['id'], 'custom_' . $ids['custom_field_id'] => $contribution['id']]);
+      if (!empty($ids)) {
+        $contactParams = ['id' => $contact['id'], 'custom_' . $ids['custom_field_id'] => $contribution['id']];
+        $this->callAPISuccess('Contact', 'create', $contactParams);
+      }
     }
+    return $contribution;
+  }
 
+  /**
+   * Get rows filtered by the custom field having the given value.
+   *
+   * @param int $id
+   * @param string|int $value
+   *
+   * @return array
+   * @throws \CRM_Core_Exception
+   */
+  protected function getRowsFilteredByCustomField(int $id, $value): array {
     $params = [
       'report_id' => 'contribution/contributions',
       'fields' => ['contribution_id'],
-      'custom_' . $ids['custom_field_id'] . '_op' => 'eq',
-      'custom_' . $ids['custom_field_id'] . '_value' => $contribution['id'],
+      'custom_' . $id . '_op' => 'eq',
+      'custom_' . $id . '_value' => $value,
     ];
-    $rows = $this->callAPISuccess('ReportTemplate', 'getrows', $params)['values'];
-    $this->assertEquals(1, count($rows));
+    return $this->callAPISuccess('ReportTemplate', 'getrows', $params)['values'];
   }
 
 }
