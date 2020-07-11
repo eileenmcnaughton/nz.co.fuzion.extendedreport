@@ -32,10 +32,9 @@ class Pledge_DetailTest extends BaseTestClass implements HeadlessInterface, Hook
       ->apply();
   }
 
-  public function setUp() {
-    parent::setUp();
-  }
-
+  /**
+   * @throws \CRM_Core_Exception
+   */
   public function tearDown() {
     CRM_Core_DAO::executeQuery('DELETE FROM civicrm_pledge');
     CRM_Core_DAO::executeQuery('DELETE FROM civicrm_group');
@@ -44,6 +43,8 @@ class Pledge_DetailTest extends BaseTestClass implements HeadlessInterface, Hook
 
   /**
    * Test the future income report with some data.
+   *
+   * @throws \CRM_Core_Exception
    */
   public function testPledgeDetailReport() {
     $this->setUpPledgeData();
