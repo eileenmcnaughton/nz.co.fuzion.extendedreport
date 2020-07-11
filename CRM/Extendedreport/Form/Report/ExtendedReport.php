@@ -2206,6 +2206,8 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    *
    * @param bool $addFields
    * @param array $permCustomGroupIds
+   *
+   * @throws \CiviCRM_API3_Exception
    */
   function addCustomDataToColumns($addFields = TRUE, $permCustomGroupIds = []) {
     if (empty($this->_customGroupExtends)) {
@@ -2433,7 +2435,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
         continue;
       }
 
-      $baseJoin = CRM_Utils_Array::value($prop['extends'], $this->_customGroupExtendsJoin, "{$this->_aliases[$prop['extends_table']]}.id");
+      $baseJoin = $this->_customGroupExtendsJoin[$prop['extends']] ??  "{$this->_aliases[$prop['extends_table']]}.id";
       $customJoin = is_array($this->_customGroupJoin) ? $this->_customGroupJoin[$table] : $this->_customGroupJoin;
       $tableKey = CRM_Utils_Array::value('prefix', $prop) . $prop['table_name'];
       if (stripos($this->_from, $this->_aliases[$tableKey]) === FALSE) {
@@ -8017,7 +8019,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
       if (empty($permissionedCustomGroupIDs)) {
         return [];
       }
-      $customGroupWhere = "cg.id IN (" . implode(',', $permissionedCustomGroupIDs) . ") AND";
+      $customGroupWhere = 'cg.id IN (' . implode(',', $permissionedCustomGroupIDs) . ') AND';
     }
     $extendsMap = [];
     $extendsEntities = array_flip($extends);
@@ -8168,6 +8170,7 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
    * @param array $spec
    *
    * @return array
+   *
    * @throws CRM_Core_Exception
    */
   protected function getCustomFieldOptions($spec) {
