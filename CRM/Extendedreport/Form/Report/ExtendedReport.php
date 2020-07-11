@@ -7995,7 +7995,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
       $customGroupWhere = 'cg.id IN (' . implode(',', $permissionedCustomGroupIDs) . ') AND';
     }
     $extendsMap = [];
-    $extendsEntities = array_flip($extends);
+    $extendsEntities = array_fill_keys($extends, TRUE);
     foreach (array_keys($extendsEntities) as $extendsEntity) {
       if (in_array($extendsEntity, [
         'Individual',
