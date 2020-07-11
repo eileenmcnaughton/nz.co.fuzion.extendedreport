@@ -10,13 +10,9 @@
 
 class CRM_Extendedreport_Form_Report_Campaign_CampaignProgressReport extends CRM_Extendedreport_Form_Report_ExtendedReport {
 
-  protected $_summary = NULL;
-
   protected $_totalPaid = FALSE;
 
-  protected $_customGroupExtends = [
-    'Campaign',
-  ];
+  protected $_customGroupExtends = ['Campaign'];
 
   protected $_baseTable = 'civicrm_campaign';
 
@@ -24,6 +20,8 @@ class CRM_Extendedreport_Form_Report_Campaign_CampaignProgressReport extends CRM
 
   /**
    * Class constructor.
+   *
+   * @throws \CiviCRM_API3_Exception
    */
   public function __construct() {
     $progressSpec = [
@@ -125,7 +123,10 @@ class CRM_Extendedreport_Form_Report_Campaign_CampaignProgressReport extends CRM
     CRM_Core_DAO::disableFullGroupByMode();
   }
 
-  function from() {
+  /**
+   * Add from clause
+   */
+  public function from() {
     $this->_from = "
       FROM civicrm_campaign {$this->_aliases['civicrm_campaign']}";
 
@@ -141,6 +142,8 @@ class CRM_Extendedreport_Form_Report_Campaign_CampaignProgressReport extends CRM
 
   /**
    * Join on a progress summary.
+   *
+   * @throws \CRM_Core_Exception
    */
   protected function joinProgressTable() {
     $until = CRM_Utils_Array::value('effective_date_value', $this->_params);
@@ -205,7 +208,7 @@ LEFT JOIN
    * @return string
    */
   function selectClause(&$tableName, $tableKey, &$fieldName, &$field) {
-    if ($fieldName == 'progress_still_to_raise') {
+    if ($fieldName === 'progress_still_to_raise') {
       $alias = "{$tableName}_{$fieldName}";
       $this->_columnHeaders[$alias]['title'] = CRM_Utils_Array::value('title', $field);
       $this->_columnHeaders[$alias]['type'] = CRM_Utils_Array::value('type', $field);
@@ -219,7 +222,7 @@ LEFT JOIN
   /**
    * Block parent re-ordering of headers.
    */
-  function reOrderColumnHeaders() {
+  public function reOrderColumnHeaders() {
 
   }
 
@@ -230,14 +233,16 @@ LEFT JOIN
    *
    * @return string
    */
-  function alterIsPledge($value) {
+  public function alterIsPledge($value) {
     return str_replace([0, 1], [ts('Payment without pledge'), ts('Pledge')], $value);
   }
 
   /**
-   * @param $rows
+   * @param array $rows
+   *
+   * @throws \CRM_Core_Exception
    */
-  function alterDisplay(&$rows) {
+  public function alterDisplay(&$rows) {
     parent::alterDisplay($rows);
     $this->unsetUnreliableColumnsIfNotCampaignGrouped();
     if (isset($this->_columnHeaders['progress_still_to_raise'])) {
@@ -279,7 +284,7 @@ LEFT JOIN
    */
   protected function groupByCampaignTypeNotCampaign() {
     if (!empty($this->_groupByArray)) {
-      if (!in_array('campaign.id', $this->_groupByArray)) {
+      if (!in_array('campaign.id', $this->_groupByArray, TRUE)) {
         return TRUE;
       }
     }

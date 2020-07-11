@@ -294,6 +294,8 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
 
   /**
    * Class constructor.
+   *
+   * @throws \CiviCRM_API3_Exception
    */
   public function __construct() {
     parent::__construct();
@@ -3287,6 +3289,8 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       'filters' => TRUE,
       'join_filters' => FALSE,
       'join_fields' => FALSE,
+      // Change to true later...
+      'is_extendable' => FALSE,
       'fields_defaults' => [],
       'filters_defaults' => [],
       'group_bys_defaults' => [],
@@ -3322,6 +3326,10 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
           }
         }
       }
+    }
+    if ($options['is_extendable'] &&
+      !empty(CRM_Core_SelectValues::customGroupExtends()[$type])) {
+      $this->_customGroupExtends[] = $type;
     }
     return $columns;
   }
@@ -7768,11 +7776,11 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
     $filters = $this->getMetadataByType('filters');
     foreach ($this->_params as $key => $value) {
       $field = '';
-      if ($key == 'membership_owner_membership_id_op') {
+      if ($key === 'membership_owner_membership_id_op') {
         $key = 'membership_owner_membership_id_value';
       }
       if (substr($key, -6, 6) === '_value' && ($value !== '' && $value !== NULL && $value !== "NULL" && $value !== [])) {
-        $field = substr($key, 0, strlen($key) - 6);
+        $field = substr($key, 0, -6);
       }
       $validSuffixes = ['relative', 'from', 'to', 'max', 'min'];
       foreach ($validSuffixes as $suffix) {
@@ -7798,7 +7806,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
     $selectedFilters = [];
     $filters = $this->getMetadataByType('join_filters');
     foreach ($this->_params as $key => $value) {
-      if (substr($key, 0, 11) === 'join_filter') {
+      if (strpos($key, 'join_filter') === 0) {
         if (substr($key, -6, 6) === '_value' && ($value !== '' && $value !== NULL && $value !== "NULL" && $value !== [])) {
           $selectedFilters[] = str_replace('join_filter_', '', substr($key, 0, strlen($key) - 6));
         }
@@ -7849,12 +7857,12 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
   }
 
   /**
-   * @param $field
-   * @param $currentTable
+   * @param array $field
+   * @param string $currentTable
    * @param string $prefix
    * @param string $prefixLabel
    */
-  protected function addCustomDataTable($field, $currentTable, $prefix = '', $prefixLabel) {
+  protected function addCustomDataTable($field, $currentTable, $prefix, $prefixLabel) {
     $tableKey = $prefix . $currentTable;
 
     $fieldName = 'custom_' . ($prefix ? $prefix . '_' : '') . $field['id'];
@@ -7907,9 +7915,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
     switch ($field['data_type']) {
 
       case 'StateProvince':
-        if (in_array($field['html_type'], [
-          'Multi-Select State/Province',
-        ])
+        if ($field['html_type'] === 'Multi-Select State/Province'
         ) {
           $field['operatorType'] = CRM_Report_Form::OP_MULTISELECT_SEPARATOR;
         }
@@ -7920,9 +7926,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
         break;
 
       case 'Country':
-        if (in_array($field['html_type'], [
-          'Multi-Select Country',
-        ])
+        if ($field['html_type'] === 'Multi-Select Country'
         ) {
           $field['operatorType'] = CRM_Report_Form::OP_MULTISELECT_SEPARATOR;
         }
@@ -7941,6 +7945,11 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
     return $field;
   }
 
+  /**
+   * @param array $field
+   *
+   * @return int
+   */
   protected function getFieldType($field) {
     switch ($field['data_type']) {
       case 'Date':
@@ -7981,6 +7990,8 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
 
   /**
    * @param array $extends
+   *
+   * @throws \CiviCRM_API3_Exception
    */
   protected function addCustomDataForEntities($extends) {
     $fields = $this->getCustomDataDAOs($extends);
@@ -8161,10 +8172,10 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
   }
 
   /**
-   * @param $spec
+   * @param array $spec
    *
    * @return array
-   * @throws \Exception
+   * @throws CRM_Core_Exception
    */
   protected function getCustomFieldOptions($spec) {
     $options = [];
@@ -8173,7 +8184,7 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
     }
 
     // Data type is set for custom fields but not core fields.
-    if (CRM_Utils_Array::value('data_type', $spec) == 'Boolean') {
+    if (($spec['data_type'] ?? '') === 'Boolean') {
       $options = [
         'values' => [
           0 => ['label' => 'No', 'value' => 0],
@@ -8191,7 +8202,7 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
     }
     else {
       if (empty($spec['option_group_id'])) {
-        throw new Exception('currently column headers need to be radio or select');
+        throw new CRM_Core_Exception('currently column headers need to be radio or select');
       }
       $options = civicrm_api('option_value', 'get', [
         'version' => 3,
