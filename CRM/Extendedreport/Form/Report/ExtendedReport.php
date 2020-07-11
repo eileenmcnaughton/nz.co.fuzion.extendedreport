@@ -2461,14 +2461,7 @@ LEFT JOIN civicrm_contact {$prop['alias']} ON {$prop['alias']}.id = {$this->_ali
    * @return bool
    */
   protected function isCustomTableSelected($table) {
-    $selected = array_merge(
-      $this->getSelectedFilters(),
-      $this->getSelectedFields(),
-      $this->getSelectedOrderBys(),
-      $this->getSelectedAggregateRows(),
-      $this->getSelectedAggregateColumns(),
-      $this->getSelectedGroupBys()
-    );
+    $selected = $this->getAllUsedFields();
     foreach ($selected as $spec) {
       if ($spec['table_name'] === $table) {
         return TRUE;
@@ -8729,6 +8722,22 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
       'title' => ts('Grouping(s)'),
       'value' => implode(' & ', $combinations),
     ];
+  }
+
+  /**
+   * Get an array of all fields used to make up the query (in any capacity).
+   *
+   * @return array
+   */
+  protected function getAllUsedFields(): array {
+    return array_merge(
+      $this->getSelectedFilters(),
+      $this->getSelectedFields(),
+      $this->getSelectedOrderBys(),
+      $this->getSelectedAggregateRows(),
+      $this->getSelectedAggregateColumns(),
+      $this->getSelectedGroupBys()
+    );
   }
 
 }
