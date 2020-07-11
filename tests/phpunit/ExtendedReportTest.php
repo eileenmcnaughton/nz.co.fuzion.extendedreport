@@ -374,7 +374,7 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
         'pledge_payment_scheduled_amount' => '1',
       ],
     ];
-    $pledgePayments = $this->callAPISuccess('PledgePayment', 'get', []);
+    $this->callAPISuccess('PledgePayment', 'get', []);
     $rows = $this->getRows($params);
     $this->assertCount(5, $rows);
     $this->assertEquals(14285.74, $rows[0]['civicrm_pledge_payment_pledge_payment_scheduled_amount_sum']);
