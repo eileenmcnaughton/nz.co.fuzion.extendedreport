@@ -7694,7 +7694,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
           !== CRM_Utils_Array::value('field_on_null', $selectedFields[$fieldName], [])) {
           CRM_Core_Session::setStatus(E::ts('Selected field fallback altered to match order by fallback. Currently different configurations are not supported if both are selected'));
           $selectedFields[$fieldName]['field_on_null'] = CRM_Utils_Array::value('field_on_null', $orderBys[$fieldName], []);
-          $this->_formValues['extended_fields'][$fieldName] = $selectedFields[$fieldName];
+          $this->_formValues['extended_fields'][$fieldName] = ['name' => $fieldName, 'title' => $field['title']];
         }
       }
 
@@ -8467,7 +8467,7 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
    * @return mixed
    */
   protected function getExtendedFieldsSelection() {
-    return CRM_Utils_Array::value('extended_fields', $this->_formValues, CRM_Utils_Array::value('extended_fields', $this->_params, []));
+    return $this->_formValues['extended_fields'] ?? ($this->_params['extended_fields'] ?? []);
   }
 
   /**
