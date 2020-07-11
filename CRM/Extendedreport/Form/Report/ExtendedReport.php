@@ -8010,10 +8010,10 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
         unset($extendsEntities[$extendsEntity]);
       }
     }
-    foreach ($this->_columns as $table => $spec) {
+    foreach ($this->getMetadata()['metadata'] as $field => $spec) {
       $entityName = (isset($spec['bao']) ? CRM_Core_DAO_AllCoreTables::getBriefName(str_replace('BAO', 'DAO', $spec['bao'])) : '');
-      if ($entityName && in_array($entityName, $extendsEntities)) {
-        $extendsMap[$entityName][$spec['prefix']] = $spec['prefix_label'];
+      if ($entityName && !empty($extendsEntities[$entityName])) {
+        $extendsMap[$entityName][$spec['prefix'] ?? ''] = $spec['prefix_label'] ?? '';
       }
     }
     $extendsString = implode("','", $extends);
