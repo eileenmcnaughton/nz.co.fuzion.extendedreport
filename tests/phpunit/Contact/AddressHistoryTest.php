@@ -27,10 +27,9 @@ class Contact_AddressHistoryTest extends BaseTestClass implements HeadlessInterf
   public function setUpHeadless() {
     // Civi\Test has many helpers, like install(), uninstall(), sql(), and sqlFile().
     // See: https://github.com/civicrm/org.civicrm.testapalooza/blob/master/civi-test.md
-    $env = \Civi\Test::headless()
+    return \Civi\Test::headless()
       ->installMe(__DIR__)
       ->apply();
-    return $env;
   }
 
   public function setUp() {
@@ -40,6 +39,9 @@ class Contact_AddressHistoryTest extends BaseTestClass implements HeadlessInterf
     Civi::settings()->set('logging', TRUE);
   }
 
+  /**
+   * @throws \CRM_Core_Exception
+   */
   public function tearDown() {
     parent::tearDown();
     Civi::settings()->set('logging', FALSE);
@@ -47,6 +49,8 @@ class Contact_AddressHistoryTest extends BaseTestClass implements HeadlessInterf
 
   /**
    * Test rows retrieval.
+   *
+   * @throws \CRM_Core_Exception
    */
   public function testGetRows() {
     $params = [
