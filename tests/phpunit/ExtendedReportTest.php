@@ -76,7 +76,7 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
   /**
    * @dataProvider getAllNonLoggingReports
    *
-   * @param int $reportID
+   * @param string $reportID
    *
    * @throws \CRM_Core_Exception
    */
@@ -183,7 +183,7 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
       'extended_order_bys' => [
         [
           'title' => 'Nick Name',
-          'column' => "civicrm_contact_nick_name",
+          'column' => 'civicrm_contact_nick_name',
           'field_on_null' => [
             [
               'title' => 'First name',
@@ -193,7 +193,7 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
         ],
         [
           'title' => 'Last Name',
-          'column' => "civicrm_contact_last_name",
+          'column' => 'civicrm_contact_last_name',
           'order' => 'DESC',
         ],
       ],
