@@ -333,31 +333,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    */
   public function getMetadata():array {
     if (empty($this->metaData)) {
-      $definitionTypes = [
-        'fields',
-        'filters',
-        'join_filters',
-        'group_bys',
-        'order_bys',
-        'aggregate_columns',
-      ];
-      $this->metaData = array_fill_keys($definitionTypes, []);
-      $this->metaData['having'] = [];
-
-      foreach ($this->_columns as $table => $tableSpec) {
-        foreach ($definitionTypes as $type) {
-          foreach ($tableSpec['metadata'] as $fieldName => $fieldSpec) {
-            $fieldSpec = array_merge([
-              'table_name' => $table,
-              'group_title' => $tableSpec['group_title'],
-              'prefix' => $tableSpec['prefix'] ?? '',
-              'prefix_label' => $tableSpec['prefix_label'] ?? '',
-            ], $fieldSpec);
-            $this->addFieldToMetadata($fieldSpec, $table, $fieldName);
-
-          }
-        }
-      }
+      $this->rebuildMetadata();
     }
     return $this->metaData;
   }
@@ -2088,6 +2064,10 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     if (empty($this->_params)) {
       $this->_params = $this->controller->exportValues($this->_name);
     }
+    // Call selected tables as this may be unset.
+    // note test covers this so if it is later removed & tests don't fail it is no longer
+    // needed (which would be ideal).
+    $this->selectedTables();
     $this->buildGroupTempTable();
     $this->storeJoinFiltersArray();
     $this->storeWhereHavingClauseArray();
@@ -7864,12 +7844,10 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
     if ($this->_customGroupFilters) {
       $field = $this->addCustomDataFilters($field, $fieldName);
     }
-    $this->_columns[$tableKey]['metadata'][$fieldName] = $field;
-
-    $curFields[$fieldName] = $field;
+    $this->appendFieldToMetadata($field, $tableKey, $fieldName);
 
     // Add totals field
-    $this->_columns[$tableKey]['metadata'][$fieldName . '_qty'] = array_merge(
+    $this->appendFieldToMetadata(array_merge(
       $field, [
         'title' => "$prefixLabel{$field['label']} Count of Selected",
         'statistics' => ['count' => "$prefixLabel{$field['label']} Count of Selected"],
@@ -7878,9 +7856,10 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
         'is_filters' => FALSE,
         'is_join_filters' => FALSE,
       ]
-    );
-    if ($curFields[$fieldName]['type'] === CRM_Utils_Type::T_INT) {
-      $this->_columns[$tableKey]['metadata'][$fieldName . '_sum'] = array_merge(
+    ), $tableKey, $fieldName . '_qty');
+
+    if ($field['type'] === CRM_Utils_Type::T_INT) {
+      $this->appendFieldToMetadata(array_merge(
         $field, [
           'title' => "$prefixLabel{$field['label']} Selected Quantity",
           'statistics' => ['sum' => "$prefixLabel{$field['label']} Selected Quantity"],
@@ -7889,7 +7868,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
           'is_filters' => FALSE,
           'is_join_filters' => FALSE,
         ]
-      );
+      ), $tableKey, $fieldName . '_sum');
     }
   }
 
@@ -8742,6 +8721,16 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
    * @param string $tableKey
    * @param string $fieldName
    */
+  protected function appendFieldToMetadata($fieldSpec, string $tableKey, string $fieldName) {
+    $this->_columns[$tableKey]['metadata'][$fieldName] = $fieldSpec;
+    $this->metaData = [];
+  }
+
+  /**
+   * @param array $fieldSpec
+   * @param string $tableKey
+   * @param string $fieldName
+   */
   protected function addFieldToMetadata($fieldSpec, string $tableKey, string $fieldName) {
     $definitionTypes = [
       'fields',
@@ -8754,6 +8743,9 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
     $this->_columns[$tableKey]['metadata'][] = $fieldSpec;
     $this->metaData['metadata'][$fieldName] = $fieldSpec;
     foreach ($definitionTypes as $type) {
+      if (!isset($this->metaData[$type])) {
+        $this->metaData[$type] = [];
+      }
       if ($fieldSpec['is_' . $type]) {
         $this->metaData[$type][$fieldName] = $fieldSpec;
       }
@@ -8761,6 +8753,39 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
         $this->metaData['having'][$fieldName] = $fieldSpec;
       }
     }
+    if (!isset($this->metaData['having'])) {
+      $this->metaData['having'] = [];
+    }
+  }
+
+  /**
+   * Rebuild the metadata array.
+   */
+  protected function rebuildMetadata() {
+    $definitionTypes = [
+      'fields',
+      'filters',
+      'join_filters',
+      'group_bys',
+      'order_bys',
+      'aggregate_columns',
+    ];
+    $this->metaData = array_fill_keys($definitionTypes, []);
+    $this->metaData['having'] = [];
+
+    foreach ($this->_columns as $table => $tableSpec) {
+      foreach ($tableSpec['metadata'] as $fieldName => $fieldSpec) {
+        $fieldSpec = array_merge([
+          'table_name' => $table,
+          'group_title' => $tableSpec['group_title'],
+          'prefix' => $tableSpec['prefix'] ?? '',
+          'prefix_label' => $tableSpec['prefix_label'] ?? '',
+        ], $fieldSpec);
+        $this->addFieldToMetadata($fieldSpec, $table, $fieldName);
+      }
+    }
+    // If set then unset it as metadata has changed so this might too.
+    $this->_selectedTables = [];
   }
 
 }
