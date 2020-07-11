@@ -4,15 +4,11 @@
  *
  * @package CRM
  * @copyright CiviCRM LLC (c) 2004-2010
- *            $Id$
- *
  */
 
 use CRM_Extendedreport_ExtensionUtil as E;
 
 class CRM_Extendedreport_Form_Report_Pledge_Detail extends CRM_Extendedreport_Form_Report_ExtendedReport {
-
-  protected $_summary = NULL;
 
   protected $_totalPaid = FALSE;
 
@@ -22,6 +18,11 @@ class CRM_Extendedreport_Form_Report_Pledge_Detail extends CRM_Extendedreport_Fo
 
   protected $_baseTable = 'civicrm_pledge';
 
+  /**
+   * CRM_Extendedreport_Form_Report_Pledge_Detail constructor.
+   *
+   * @throws \CiviCRM_API3_Exception
+   */
   function __construct() {
     $this->_columns = $this->getColumns('Contact', [
           'fields' => TRUE,
@@ -78,7 +79,10 @@ class CRM_Extendedreport_Form_Report_Pledge_Detail extends CRM_Extendedreport_Fo
     parent::__construct();
   }
 
-  function from() {
+  /**
+   *  From function.
+   */
+  public function from() {
     $this->_from = "
             FROM civicrm_pledge {$this->_aliases['civicrm_pledge']}";
     $this->joinPledgePaymentFromPledge();
@@ -104,17 +108,17 @@ class CRM_Extendedreport_Form_Report_Pledge_Detail extends CRM_Extendedreport_Fo
    * @return string
    */
   function selectClause(&$tableName, $tableKey, &$fieldName, &$field) {
-    if ($fieldName == 'balance_amount') {
+    if ($fieldName === 'balance_amount') {
       $alias = $this->selectStatSum($tableName, $fieldName, $field);
       return " SUM(COALESCE(IF((pledge.status_id =3), {$this->_aliases['civicrm_pledge_payment']}.actual_amount, pledge.amount), 0))
        - COALESCE(sum({$this->_aliases['civicrm_pledge_payment']}.actual_amount), 0) as $alias ";
     }
-    if ($fieldName == 'pledge_amount') {
+    if ($fieldName === 'pledge_amount') {
       $alias = $this->selectStatSum($tableName, $fieldName, $field);
       return " SUM(COALESCE(IF((pledge.status_id =3), {$this->_aliases['civicrm_pledge_payment']}.actual_amount, pledge.amount), 0)) as $alias ";
     }
 
-    if ($fieldName == 'next_scheduled_amount') {
+    if ($fieldName === 'next_scheduled_amount') {
       $alias = $this->selectStatSum($tableName, $fieldName, $field);
       return " SUM(COALESCE(IF((pledge.status_id =3), {$this->_aliases['civicrm_pledge_payment']}.actual_amount, pledge.amount), 0)) as $alias ";
     }
