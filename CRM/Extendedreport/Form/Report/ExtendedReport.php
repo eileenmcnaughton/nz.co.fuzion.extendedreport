@@ -7694,7 +7694,10 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
           !== CRM_Utils_Array::value('field_on_null', $selectedFields[$fieldName], [])) {
           CRM_Core_Session::setStatus(E::ts('Selected field fallback altered to match order by fallback. Currently different configurations are not supported if both are selected'));
           $selectedFields[$fieldName]['field_on_null'] = CRM_Utils_Array::value('field_on_null', $orderBys[$fieldName], []);
-          $this->_formValues['extended_fields'][$fieldName] = ['name' => $fieldName, 'title' => $field['title']];
+          if (!empty($this->_formValues['extended_fields'])) {
+            // If we have fields stored this way then add this one in.
+            $this->_formValues['extended_fields'][$fieldName] = ['name' => $fieldName, 'title' => $field['title']];
+          }
         }
       }
 
@@ -8700,6 +8703,26 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
       'title' => ts('Grouping(s)'),
       'value' => implode(' & ', $combinations),
     ];
+  }
+
+  /**
+   * Fetch array of DAO tables having columns included in SELECT or ORDER BY clause.
+   *
+   * If the array is unset it will be built.
+   *
+   * @return array
+   *   selectedTables
+   */
+  public function selectedTables() {
+    if (!$this->_selectedTables) {
+      foreach ($this->getAllUsedFields() as $fieldSpec) {
+        $this->_selectedTables[$fieldSpec['table_key'] ?? $fieldSpec['table_name']] = $fieldSpec['table_key'] ?? $fieldSpec['table_name'];
+        if (!empty($fieldSpec['extends_table'])) {
+          $this->_selectedTables[$fieldSpec['extends_table']] = $fieldSpec['extends_table'];
+        }
+      }
+    }
+    return $this->_selectedTables;
   }
 
   /**
