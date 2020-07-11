@@ -347,16 +347,14 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       foreach ($this->_columns as $table => $tableSpec) {
         foreach ($definitionTypes as $type) {
           foreach ($tableSpec['metadata'] as $fieldName => $fieldSpec) {
-            $fieldSpec = array_merge(['table_name' => $table, 'group_title' => $tableSpec['group_title']], $fieldSpec);
-            if (!isset($this->metaData[$fieldName])) {
-              $this->metaData['metadata'][$fieldName] = $fieldSpec;
-            }
-            if ($fieldSpec['is_' . $type]) {
-              $this->metaData[$type][$fieldName] = $fieldSpec;
-            }
-            if ($type === 'filters' && !empty($fieldSpec['having'])) {
-              $this->metaData['having'][$fieldName] = $fieldSpec;
-            }
+            $fieldSpec = array_merge([
+              'table_name' => $table,
+              'group_title' => $tableSpec['group_title'],
+              'prefix' => $tableSpec['prefix'] ?? '',
+              'prefix_label' => $tableSpec['prefix_label'] ?? '',
+            ], $fieldSpec);
+            $this->addFieldToMetadata($fieldSpec, $table, $fieldName);
+
           }
         }
       }
@@ -840,8 +838,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    * Generally a rowHeader and a columnHeader will be defined.
    *
    * Column Header is optional - in which case a single total column will show.
-   *
-   * @throws \Exception
    */
   function aggregateSelect() {
     if (empty($this->_customGroupAggregates)) {
@@ -903,8 +899,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    * @param string $fieldName
    * @param string $dbAlias
    * @param array $spec
-   *
-   * @throws Exception
    */
   function addColumnAggregateSelect($fieldName, $dbAlias, $spec) {
     if (empty($fieldName)) {
@@ -2206,6 +2200,8 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    *
    * @param bool $addFields
    * @param array $permCustomGroupIds
+   *
+   * @throws \CiviCRM_API3_Exception
    */
   function addCustomDataToColumns($addFields = TRUE, $permCustomGroupIds = []) {
     if (empty($this->_customGroupExtends)) {
@@ -2433,7 +2429,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
         continue;
       }
 
-      $baseJoin = CRM_Utils_Array::value($prop['extends'], $this->_customGroupExtendsJoin, "{$this->_aliases[$prop['extends_table']]}.id");
+      $baseJoin = $this->_customGroupExtendsJoin[$prop['extends']] ??  "{$this->_aliases[$prop['extends_table']]}.id";
       $customJoin = is_array($this->_customGroupJoin) ? $this->_customGroupJoin[$table] : $this->_customGroupJoin;
       $tableKey = CRM_Utils_Array::value('prefix', $prop) . $prop['table_name'];
       if (stripos($this->_from, $this->_aliases[$tableKey]) === FALSE) {
@@ -8017,7 +8013,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
       if (empty($permissionedCustomGroupIDs)) {
         return [];
       }
-      $customGroupWhere = "cg.id IN (" . implode(',', $permissionedCustomGroupIDs) . ") AND";
+      $customGroupWhere = 'cg.id IN (' . implode(',', $permissionedCustomGroupIDs) . ') AND';
     }
     $extendsMap = [];
     $extendsEntities = array_flip($extends);
@@ -8168,6 +8164,7 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
    * @param array $spec
    *
    * @return array
+   *
    * @throws CRM_Core_Exception
    */
   protected function getCustomFieldOptions($spec) {
@@ -8738,6 +8735,32 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
       $this->getSelectedAggregateColumns(),
       $this->getSelectedGroupBys()
     );
+  }
+
+  /**
+   * @param array $fieldSpec
+   * @param string $tableKey
+   * @param string $fieldName
+   */
+  protected function addFieldToMetadata($fieldSpec, string $tableKey, string $fieldName) {
+    $definitionTypes = [
+      'fields',
+      'filters',
+      'join_filters',
+      'group_bys',
+      'order_bys',
+      'aggregate_columns',
+    ];
+    $this->_columns[$tableKey]['metadata'][] = $fieldSpec;
+    $this->metaData['metadata'][$fieldName] = $fieldSpec;
+    foreach ($definitionTypes as $type) {
+      if ($fieldSpec['is_' . $type]) {
+        $this->metaData[$type][$fieldName] = $fieldSpec;
+      }
+      if ($type === 'filters' && !empty($fieldSpec['having'])) {
+        $this->metaData['having'][$fieldName] = $fieldSpec;
+      }
+    }
   }
 
 }
