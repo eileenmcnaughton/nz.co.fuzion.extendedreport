@@ -29,15 +29,6 @@ class CRM_Extendedreport_Form_Report_Pledge_Sybuns extends CRM_Extendedreport_Fo
    * @throws \CiviCRM_API3_Exception
    */
   public function __construct() {
-    $yearsInPast = 8;
-    $yearsInFuture = 2;
-    $date = CRM_Core_SelectValues::date('custom', NULL, $yearsInPast, $yearsInFuture);
-    $count = $date['maxYear'];
-    while ($date['minYear'] <= $count) {
-      $optionYear[$date['minYear']] = $date['minYear'];
-      $date['minYear']++;
-    }
-
     $this->_columns = $this->getColumns('Contact')
       + $this->getColumns('Email')
       + $this->getColumns('Phone')
@@ -49,7 +40,7 @@ class CRM_Extendedreport_Form_Report_Pledge_Sybuns extends CRM_Extendedreport_Fo
       'title' => ts('This Year'),
       'operatorType' => CRM_Report_Form::OP_SELECT,
       'type' => CRM_Utils_Type::T_INT,
-      'options' => $optionYear,
+      'options' => $this->getYearOptions(),
       'default' => date('Y'),
       'is_filters' => TRUE,
       'is_join_filters' => TRUE,
@@ -273,4 +264,5 @@ class CRM_Extendedreport_Form_Report_Pledge_Sybuns extends CRM_Extendedreport_Fo
       }
     }
   }
+
 }
