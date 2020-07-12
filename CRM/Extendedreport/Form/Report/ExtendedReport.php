@@ -208,6 +208,13 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   protected $_preConstrained = FALSE;
 
   /**
+   * Tables required to ensure acls are present.
+   *
+   * @var array
+   */
+  protected $aclTables = [];
+
+  /**
    * Name of table that links activities to cases. The 'real' table can be replaced by a temp table
    * during processing when a pre-filter is required (e.g we want all cases whether or not they
    * have an activity of type x but we only want activities of type x)
@@ -2066,8 +2073,9 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    * @param boolean $applyLimit
    *
    * @return string
+   * @throws \CiviCRM_API3_Exception
+   * @throws \CRM_Core_Exception
    */
-
   function buildQuery($applyLimit = TRUE) {
     if (empty($this->_params)) {
       $this->_params = $this->controller->exportValues($this->_name);
@@ -2113,27 +2121,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       $sql .= $this->_limit;
     }
     return $sql;
-  }
-
-  /**
-   * We are over-riding this because the current choice is NO acls or automatically adding contact.is_deleted
-   * which is a pain when left joining form another table
-   *
-   * @param string $tableAlias
-   *
-   * @see CRM_Report_Form::buildACLClause($tableAlias)
-   *
-   */
-  function buildACLClause($tableAlias = 'contact_a') {
-    list($this->_aclFrom, $this->_aclWhere) = CRM_Contact_BAO_Contact_Permission::cacheClause($tableAlias);
-    if ($this->_skipACLContactDeletedClause && CRM_Core_Permission::check('access deleted contacts')) {
-      if (trim($this->_aclWhere) == "{$tableAlias}.is_deleted = 0") {
-        $this->_aclWhere = NULL;
-      }
-      else {
-        $this->_aclWhere = str_replace("AND {$tableAlias}.is_deleted = 0", '', $this->_aclWhere);
-      }
-    }
   }
 
   /**
@@ -3415,6 +3402,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     }
     $columns[$tableName]['prefix'] = isset($options['prefix']) ? $options['prefix'] : '';
     $columns[$tableName]['prefix_label'] = isset($options['prefix_label']) ? $options['prefix_label'] : '';
+    $columns[$tableName]['is_required_for_acls'] = $options['is_required_for_acls'] ?? FALSE;
     if (isset($options['group_title'])) {
       $groupTitle = $options['group_title'];
     }
@@ -6391,7 +6379,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
     if (!empty($specs['options'])) {
       $specs['options']['selected'] = $value;
       $extra = "data-type='select'";
-      $value = isset($specs['options'][$value]) ? $specs['options'][$value] : $value;
+      $value = $specs['options'][$value] ?? $value;
       $class = 'editable_select';
     }
     elseif (!empty($specs['data-type'])) {
@@ -6403,18 +6391,15 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
       "<span class='crm-editable crmf-{$fullSpec['field_name']} $class' data-action='create' $extra>" . $value . "</span></div>";
   }
 
-  /*
-* Retrieve text for contribution type from pseudoconstant
-*/
   /**
    * @param $value
    * @param $row
    *
    * @return string
    */
-  function alterNickName($value, &$row) {
+  protected function alterNickName($value, &$row): string {
     if (empty($row['civicrm_contact_id'])) {
-      return;
+      return '';
     }
     $contactID = $row['civicrm_contact_id'];
     return "<div id=contact-{$contactID} class='crm-entity'><span class='crm-editable crmf-nick_name crm-editable-enabled' data-action='create'>" . $value . "</span></div>";
@@ -6424,8 +6409,8 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
   /**
    * Retrieve text for contribution type from pseudoconstant.
    *
-   * @param $value
-   * @param $row
+   * @param int $value
+   * @param array $row
    *
    * @param $selectedField
    * @param $criteriaFieldName
@@ -6433,7 +6418,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    * @param $specs
    * @return string
    */
-  function alterFinancialType($value, &$row, $selectedField, $criteriaFieldName, $specs) {
+  protected function alterFinancialType($value, &$row, $selectedField, $criteriaFieldName, $specs) {
     if ($this->_drilldownReport) {
       // Issue #308 - drilldown report URLs should use original field name, not alias.
       $criteriaFieldName = $specs['fieldName'];
@@ -6464,7 +6449,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    *
    * @return array
    */
-  function alterContributionStatus($value, &$row) {
+  protected function alterContributionStatus($value, &$row) {
     return CRM_Contribute_PseudoConstant::contributionStatus($value);
   }
 
@@ -6479,7 +6464,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    * @param $spec
    * @return string
    */
-  function alterByOptions($value, &$row, $selectedField, $criteriaFieldName, $spec) {
+  protected function alterByOptions($value, &$row, $selectedField, $criteriaFieldName, $spec) {
     return CRM_Core_PseudoConstant::getLabel($spec['bao'], $spec['name'], $value);
   }
 
@@ -8763,7 +8748,38 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
         }
       }
     }
-    return $this->_selectedTables;
+    return array_merge($this->_selectedTables, $this->aclTables);
+  }
+
+
+  /**
+   * Build the permision clause for all entities in this report.
+   *
+   * Override this as it does not support table name prefixing & fails to determine the BAO.
+   */
+  public function buildPermissionClause() {
+    $ret = [];
+    foreach ($this->selectedTables() as $tableName) {
+      $baoName = str_replace('_DAO_', '_BAO_', $this->_columns[$tableName]['bao'] ?? '');
+      if ($baoName
+        // This clause seems pretty tricksy & expensive for likely no value. Let's looks at in core.
+        && $baoName !== 'CRM_Core_BAO_EntityTag'
+        && !empty($this->_columns[$tableName]['alias'])
+        && class_exists($baoName)) {
+
+        $tableAlias = $this->_columns[$tableName]['alias'];
+        $clauses = array_filter($baoName::getSelectWhereClause($tableAlias));
+        foreach ($clauses as $field => $clause) {
+          // Skip contact_id field if redundant
+          if ($field !== 'contact_id' || !in_array('civicrm_contact', $this->selectedTables())) {
+            $ret["$tableName.$field"] = $clause;
+          }
+        }
+      }
+    }
+    // Override output from buildACLClause
+    $this->_aclFrom = NULL;
+    $this->_aclWhere = implode(' AND ', $ret);
   }
 
   /**
@@ -8841,6 +8857,9 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
     $this->metaData['having'] = [];
 
     foreach ($this->_columns as $table => $tableSpec) {
+      if (!empty($tableSpec['is_required_for_acls'])) {
+        $this->aclTables[$table] = $table;
+      }
       foreach ($tableSpec['metadata'] as $fieldName => $fieldSpec) {
         $fieldSpec = array_merge([
           'table_name' => $table,
