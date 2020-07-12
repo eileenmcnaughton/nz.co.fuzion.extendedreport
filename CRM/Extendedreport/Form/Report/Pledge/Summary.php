@@ -3,9 +3,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
- *            $Id$
- *
+ * @copyright CiviCRM LLC https://civicrm.org/licensing
  */
 
 class CRM_Extendedreport_Form_Report_Pledge_Summary extends CRM_Extendedreport_Form_Report_ExtendedReport {

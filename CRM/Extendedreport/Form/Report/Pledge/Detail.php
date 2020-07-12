@@ -3,7 +3,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC https://civicrm.org/licensing
  */
 
 use CRM_Extendedreport_ExtensionUtil as E;

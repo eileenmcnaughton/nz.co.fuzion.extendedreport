@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2014
+ * @copyright CiviCRM LLC https://civicrm.org/licensing
  */
 class CRM_Extendedreport_Form_Report_Contribute_BookkeepingExtended extends CRM_Extendedreport_Form_Report_ExtendedReport {
 
@@ -179,7 +179,7 @@ class CRM_Extendedreport_Form_Report_Contribute_BookkeepingExtended extends CRM_
               LEFT JOIN civicrm_financial_account {$this->_aliases['debit_civicrm_financial_account']}
                     ON {$this->_aliases['civicrm_financial_trxn']}.to_financial_account_id =
                     {$this->_aliases['debit_civicrm_financial_account']}.id
-                    
+
               LEFT JOIN civicrm_financial_account {$this->_aliases['credit_civicrm_financial_account']}
                     ON {$this->_aliases['civicrm_financial_trxn']}.from_financial_account_id = {$this->_aliases['credit_civicrm_financial_account']}.id";
     if ($this->isTableSelected('civicrm_membership_log')) {
