@@ -2444,14 +2444,14 @@ LEFT JOIN civicrm_contact {$prop['alias']} ON {$prop['alias']}.id = {$this->_ali
   /**
    * Map extends = 'Entity' to a connection to the relevant table
    *
-   * @param $field
-   * @param $spec
+   * @param array $field
+   * @param array $spec
    *
    * @return string
    * @return string
    * @internal param $field
    */
-  private function mapFieldExtends($field, $spec) {
+  private function mapFieldExtends($field, $spec): string {
     $extendable = [
       'Activity' => 'civicrm_activity',
       'Relationship' => 'civicrm_relationship',
