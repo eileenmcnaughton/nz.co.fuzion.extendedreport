@@ -8876,4 +8876,24 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
     }
   }
 
+  /**
+   * Get the minimum year for the date box.
+   *
+   * @param int $yearsInPast
+   * @param int $yearsInFuture
+   *
+   * @return array
+   * @throws \CRM_Core_Exception
+   */
+  protected function getYearOptions($yearsInPast = 8, $yearsInFuture = 2): array {
+    $optionYear = [];
+    $date = CRM_Core_SelectValues::date('custom', NULL, $yearsInPast, $yearsInFuture);
+    $count = $date['maxYear'];
+    while ($date['minYear'] <= $count) {
+      $optionYear[$date['minYear']] = $date['minYear'];
+      $date['minYear']++;
+    }
+    return $optionYear;
+  }
+
 }

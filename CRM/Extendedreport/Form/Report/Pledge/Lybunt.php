@@ -29,32 +29,21 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
- * $Id$
- *
+ * @copyright CiviCRM LLC https://civicrm.org/licensing
  */
 class CRM_Extendedreport_Form_Report_Pledge_Lybunt extends CRM_Extendedreport_Form_Report_ExtendedReport {
 
-  protected $_customGroupExtends = [
-    'Pledge',
-  ];
+  protected $_customGroupExtends = ['Pledge'];
 
-  protected $lifeTime_from = NULL;
-
-  protected $lifeTime_where = NULL;
+  protected $_baseTable = 'civicrm_pledge';
 
   /**
+   * CRM_Extendedreport_Form_Report_Pledge_Lybunt constructor.
    *
+   * @throws \CRM_Core_Exception
+   * @throws \CiviCRM_API3_Exception
    */
   public function __construct() {
-    $yearsInPast = 8;
-    $yearsInFuture = 2;
-    $date = CRM_Core_SelectValues::date('custom', NULL, $yearsInPast, $yearsInFuture);
-    $count = $date['maxYear'];
-    while ($date['minYear'] <= $count) {
-      $optionYear[$date['minYear']] = $date['minYear'];
-      $date['minYear']++;
-    }
 
     $this->_columns = $this->getColumns('Contact')
       + $this->getColumns('Email')
@@ -67,7 +56,7 @@ class CRM_Extendedreport_Form_Report_Pledge_Lybunt extends CRM_Extendedreport_Fo
       'title' => ts('This Year'),
       'operatorType' => CRM_Report_Form::OP_SELECT,
       'type' => CRM_Utils_Type::T_INT,
-      'options' => $optionYear,
+      'options' => $this->getYearOptions(),
       'default' => date('Y'),
       'is_filters' => TRUE,
       'is_join_filters' => TRUE,
@@ -96,7 +85,7 @@ class CRM_Extendedreport_Form_Report_Pledge_Lybunt extends CRM_Extendedreport_Fo
         foreach ($table['fields'] as $fieldName => $field) {
 
           if (CRM_Utils_Array::value('required', $field) || CRM_Utils_Array::value($fieldName, $this->_params['fields'])) {
-            if ($fieldName == 'total_amount') {
+            if ($fieldName === 'total_amount') {
               $select[] = "SUM({$field['dbAlias']}) as {$tableName}_{$fieldName}";
 
               $this->_columnHeaders["{$previous_year}"]['type'] = $field['type'];
@@ -106,7 +95,7 @@ class CRM_Extendedreport_Form_Report_Pledge_Lybunt extends CRM_Extendedreport_Fo
               $this->_columnHeaders["civicrm_life_time_total"]['title'] = 'LifeTime';;
             }
             else {
-              if ($fieldName == 'receive_date') {
+              if ($fieldName === 'receive_date') {
                 $select[] = " Year ( {$field['dbAlias']} ) as {$tableName}_{$fieldName} ";
               }
               else {
@@ -124,21 +113,21 @@ class CRM_Extendedreport_Form_Report_Pledge_Lybunt extends CRM_Extendedreport_Fo
       }
     }
     $this->_selectClauses = $select;
-    $this->_select = "SELECT  " . implode(', ', $select) . " ";
+    $this->_select = 'SELECT  ' . implode(', ', $select) . " ";
   }
 
-  function from() {
-    $this->_from = "
-        FROM  civicrm_pledge  {$this->_aliases['civicrm_pledge']}
-              INNER JOIN civicrm_contact {$this->_aliases['civicrm_contact']}
-                      ON {$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_pledge']}.contact_id
-              {$this->_aclFrom}
-              LEFT  JOIN civicrm_email  {$this->_aliases['civicrm_email']}
-                      ON {$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_email']}.contact_id AND
-                         {$this->_aliases['civicrm_email']}.is_primary = 1
-              LEFT  JOIN civicrm_phone  {$this->_aliases['civicrm_phone']}
-                      ON {$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_phone']}.contact_id AND
-                         {$this->_aliases['civicrm_phone']}.is_primary = 1 ";
+  /**
+   * Declare from clauses used in the from clause for this report.
+   *
+   * @return array
+   */
+  public function fromClauses(): array {
+    return [
+      'contact_from_pledge',
+      'phone_from_contact',
+      'address_from_contact',
+      'email_from_contact',
+    ];
   }
 
   function where() {

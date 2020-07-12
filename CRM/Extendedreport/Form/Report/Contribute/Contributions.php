@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2015
+ * @copyright CiviCRM LLC https://civicrm.org/licensing
  */
 class CRM_Extendedreport_Form_Report_Contribute_Contributions extends CRM_Extendedreport_Form_Report_ExtendedReport {
 
