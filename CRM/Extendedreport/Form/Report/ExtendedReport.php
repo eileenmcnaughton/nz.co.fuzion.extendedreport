@@ -2405,7 +2405,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   public function extendedCustomDataFrom() {
     foreach ($this->getMetadataByType('metadata') as $prop) {
       $table = $prop['table_name'];
-      if (empty($prop['extends']) || !$this->isCustomTableSelected($table)) {
+      if (empty($prop['extends']) || !$this->isCustomTableSelected($prop['extends_table'])) {
         continue;
       }
 
@@ -2436,14 +2436,9 @@ LEFT JOIN civicrm_contact {$prop['alias']} ON {$prop['alias']}.id = {$this->_ali
    *
    * @return bool
    */
-  protected function isCustomTableSelected($table) {
-    $selected = $this->getAllUsedFields();
-    foreach ($selected as $spec) {
-      if ($spec['table_name'] === $table) {
-        return TRUE;
-      }
-    }
-    return FALSE;
+  protected function isCustomTableSelected($table): bool {
+    $selected = $this->selectedTables();
+    return isset($selected[$table]);
   }
 
   /**

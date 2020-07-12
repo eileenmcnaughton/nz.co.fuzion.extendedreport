@@ -84,4 +84,20 @@ class Event_ParticipantExtendedTest extends BaseTestClass {
     $this->getRows($params);
   }
 
+  /**
+   * Test custom data on main entity.
+   *
+   * @throws \CRM_Core_Exception
+   */
+  public function testCustomData() {
+    $ids = $this->createCustomGroupWithField([]);
+    $this->getRows([
+      'report_id' => 'event/participantlistex',
+      'fields' => [
+        'civicrm_contact_display_name' => 1,
+        'custom_' . $ids['custom_field_id'] => 1,
+      ],
+    ]);
+  }
+
 }
