@@ -5915,9 +5915,10 @@ AND {$this->_aliases['civicrm_line_item']}.entity_table = 'civicrm_participant')
    * The parameters for this come from the relationship tab.
    */
   protected function joinRelatedContactFromParticipant() {
-    if (1 || !empty($this->joinClauses)
+    if (!empty($this->joinClauses)
       || $this->isTableSelected($this->_aliases['related_civicrm_contact'])
       || $this->isTableSelected($this->_aliases['related_civicrm_phone'])
+      || $this->isTableSelected($this->_aliases['related_civicrm_email'])
     ) {
       $this->_from .= "
        LEFT JOIN civicrm_relationship {$this->_aliases['civicrm_relationship']}
