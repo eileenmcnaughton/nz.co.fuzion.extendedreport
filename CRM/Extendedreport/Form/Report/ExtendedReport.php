@@ -2405,7 +2405,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   public function extendedCustomDataFrom() {
     foreach ($this->getMetadataByType('metadata') as $prop) {
       $table = $prop['table_name'];
-      if (empty($prop['extends']) || !$this->isCustomTableSelected($table)) {
+      if (empty($prop['extends']) || !$this->isCustomTableSelected($prop['extends_table'])) {
         continue;
       }
 
@@ -2436,27 +2436,22 @@ LEFT JOIN civicrm_contact {$prop['alias']} ON {$prop['alias']}.id = {$this->_ali
    *
    * @return bool
    */
-  protected function isCustomTableSelected($table) {
-    $selected = $this->getAllUsedFields();
-    foreach ($selected as $spec) {
-      if ($spec['table_name'] === $table) {
-        return TRUE;
-      }
-    }
-    return FALSE;
+  protected function isCustomTableSelected($table): bool {
+    $selected = $this->selectedTables();
+    return isset($selected[$table]);
   }
 
   /**
    * Map extends = 'Entity' to a connection to the relevant table
    *
-   * @param $field
-   * @param $spec
+   * @param array $field
+   * @param array $spec
    *
    * @return string
    * @return string
    * @internal param $field
    */
-  private function mapFieldExtends($field, $spec) {
+  private function mapFieldExtends($field, $spec): string {
     $extendable = [
       'Activity' => 'civicrm_activity',
       'Relationship' => 'civicrm_relationship',
