@@ -25,4 +25,7 @@
   <civix>
     <namespace>CRM/Extendedreport</namespace>
   </civix>
+  <classloader>
+    <psr4 prefix="Civi\" path="Civi" />
+  </classloader>
 </extension>

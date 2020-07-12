@@ -20,6 +20,8 @@ class Event_ParticipantExtendedTest extends BaseTestClass {
 
   /**
    * Test the future income report with some data.
+   *
+   * @throws \CRM_Core_Exception
    */
   public function testReportDateSql() {
     $params = [
