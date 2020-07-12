@@ -1294,7 +1294,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       $filters = $filterGroups = [];
       $count = 1;
       foreach ($this->getMetadataByType($filterString) as $fieldName => $field) {
-        $table = $field['table_name'];
+        $table = $field['table_key'];
         if ($filterString === 'filters') {
           $filterGroups[$table] = [
             'group_title' => $this->_columns[$field['table_key']]['group_title'],
@@ -1306,7 +1306,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
         $this->addFilterFieldsToReport($field, $fieldName, $table, $count, $prefix);
       }
 
-      if (!empty($filters) && $filterString == 'filters') {
+      if (!empty($filters) && $filterString === 'filters') {
         $this->tabs['Filters'] = [
           'title' => ts('Filters'),
           'tpl' => 'Filters',
@@ -1757,9 +1757,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   function postProcess() {
 
     try {
-      if (!empty($this->_aclTable) && CRM_Utils_Array::value($this->_aclTable, $this->_aliases)) {
-        $this->buildACLClause($this->_aliases[$this->_aclTable]);
-      }
       $this->beginPostProcess();
 
       $sql = $this->buildQuery();
