@@ -299,6 +299,7 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
       'group_bys_defaults' => [],
       'order_by_defaults' => ['sort_name ASC'],
       'contact_type' => NULL,
+      'is_required_for_acls' => empty($options['prefix']),
     ];
 
     $options = array_merge($defaultOptions, $options);
