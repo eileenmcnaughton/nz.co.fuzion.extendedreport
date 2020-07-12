@@ -1757,9 +1757,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   function postProcess() {
 
     try {
-      if (!empty($this->_aclTable) && CRM_Utils_Array::value($this->_aclTable, $this->_aliases)) {
-        $this->buildACLClause($this->_aliases[$this->_aclTable]);
-      }
       $this->beginPostProcess();
 
       $sql = $this->buildQuery();
