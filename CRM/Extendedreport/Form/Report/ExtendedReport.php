@@ -4031,7 +4031,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    * @return array
    * @throws \CiviCRM_API3_Exception
    */
-  protected function getNextPledgePaymentColumns($options) {
+  protected function getNextPledgePaymentColumns($options): array {
     $specs = [
       $options['prefix'] . 'scheduled_date' => [
         'type' => CRM_Utils_Type::T_DATE,
@@ -5261,7 +5261,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    * @return array billing address columns definition
    * @throws \CiviCRM_API3_Exception
    */
-  function getBillingAddressColumns($options = []) {
+  protected function getBillingAddressColumns($options = []): array {
     $options['prefix'] = 'billing';
     $spec = [
       $options['prefix'] . 'name' => [
@@ -5300,7 +5300,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    * @return array
    * @throws \CiviCRM_API3_Exception
    */
-  protected function getTagColumns($options = []) {
+  protected function getTagColumns($options = []): array {
     $defaultOptions = [
       'prefix' => '',
       'prefix_label' => '',
@@ -5334,7 +5334,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    *
    * @return array
    */
-  protected function getAvailableJoins() {
+  protected function getAvailableJoins(): array {
     return [
       'batch_from_financialTrxn' => [
         'leftTable' => 'civicrm_financial_trxn',
@@ -6631,9 +6631,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
   protected function alterCountyID($value, &$row, $selectedfield, $criteriaFieldName) {
     $url = CRM_Utils_System::url(CRM_Utils_System::currentPath(), "reset=1&force=1&{$criteriaFieldName}_op=in&{$criteriaFieldName}_value={$value}", $this->_absoluteUrl);
     $row[$selectedfield . '_link'] = $url;
-    $row[$selectedfield . '_hover'] = ts("%1 for this county.", [
-      1 => $value,
-    ]);
+    $row[$selectedfield . '_hover'] = ts('%1 for this county.', [1 => $value]);
     $counties = CRM_Core_PseudoConstant::county($value);
     if (!is_array($counties)) {
       return $counties;
@@ -6696,7 +6694,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    *
    * @return array
    */
-  function alterStateProvinceID($value, &$row, $selectedfield, $criteriaFieldName) {
+  protected function alterStateProvinceID($value, &$row, $selectedfield, $criteriaFieldName) {
     $url = CRM_Utils_System::url(CRM_Utils_System::currentPath(), "reset=1&force=1&{$criteriaFieldName}_op=in&{$criteriaFieldName}_value={$value}", $this->_absoluteUrl);
     $row[$selectedfield . '_link'] = $url;
     $row[$selectedfield . '_hover'] = ts("%1 for this state.", [
@@ -7529,14 +7527,17 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    *
    * @return string
    */
-  public function getSQLOperator($operator = "like") {
+  public function getSQLOperator($operator = 'like'): string {
     if ($operator === 'rlike') {
       return 'RLIKE';
     }
     return parent::getSQLOperator($operator);
   }
 
-  protected function isInProcessOfPreconstraining() {
+  /**
+   * @return bool
+   */
+  protected function isInProcessOfPreconstraining(): bool {
     return $this->_preConstrain && !$this->_preConstrained;
   }
 
