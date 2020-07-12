@@ -340,6 +340,8 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
 
   /**
    * Build the tag filter field to display on the filters tab.
+   *
+   * @throws \CiviCRM_API3_Exception
    */
   public function buildTagFilter() {
     $entityTable = $this->_columns[$this->_tagFilterTable]['table_name'];
@@ -409,8 +411,9 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    * Wrapper for getOptions / pseudoconstant to get contact type options.
    *
    * @return array
+   * @throws \CiviCRM_API3_Exception
    */
-  function getLocationTypeOptions() {
+  public function getLocationTypeOptions() {
     return $this->_getOptions('address', 'location_type_id');
   }
 
@@ -814,8 +817,10 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    * Generally a rowHeader and a columnHeader will be defined.
    *
    * Column Header is optional - in which case a single total column will show.
+   *
+   * @throws \CRM_Core_Exception
    */
-  function aggregateSelect() {
+  protected function aggregateSelect() {
     if (empty($this->_customGroupAggregates)) {
       return;
     }
@@ -875,8 +880,10 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    * @param string $fieldName
    * @param string $dbAlias
    * @param array $spec
+   *
+   * @throws \CRM_Core_Exception
    */
-  function addColumnAggregateSelect($fieldName, $dbAlias, $spec) {
+  protected function addColumnAggregateSelect($fieldName, $dbAlias, $spec) {
     if (empty($fieldName)) {
       $this->addAggregateTotal($fieldName);
       return;
@@ -1116,6 +1123,8 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
 
   /**
    * Store join filters as an array in a similar way to the filters.
+   *
+   * @throws \CiviCRM_API3_Exception
    */
   protected function storeJoinFiltersArray() {
     foreach ($this->getSelectedJoinFilters() as $fieldName => $field) {
@@ -1664,6 +1673,8 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    * re-order column headers.
    *
    * This is based on the input field 'fields' and shuffling group bys to the left.
+   *
+   * @throws \CiviCRM_API3_Exception
    */
   function reOrderColumnHeaders() {
     $fieldMap = [];
@@ -1835,7 +1846,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
 
       if (function_exists('dpm')) {
         dpm($err);
-        dpm($this->_columns);;
+        dpm($this->_columns);
       }
       else {
         CRM_Core_Error::debug($err);
@@ -2961,8 +2972,8 @@ LEFT JOIN civicrm_contact {$prop['alias']} ON {$prop['alias']}.id = {$this->_ali
     ];
 
     // skip for type date and ContactReference since date format is already handled
-    $query = "
-SELECT cg.table_name, cg.extends, cf." . implode(", cf.", $customFieldCols) . "
+    $query = '
+SELECT cg.table_name, cg.extends, cf.' . implode(", cf.", $customFieldCols) . "
 FROM  civicrm_custom_field cf
 INNER JOIN civicrm_custom_group cg ON cg.id = cf.custom_group_id
 WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
@@ -3425,8 +3436,9 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    * @param array $options
    *
    * @return array
+   * @throws \CiviCRM_API3_Exception
    */
-  protected function getLineItemColumns($options) {
+  protected function getLineItemColumns($options): array {
     $defaultOptions = [
       'prefix' => '',
       'prefix_label' => '',
@@ -3551,8 +3563,10 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    * @param array $options [optional]
    *
    * @return array
+   *
+   * @throws \CiviCRM_API3_Exception
    */
-  function getPriceFieldValueColumns($options) {
+  protected function getPriceFieldValueColumns($options) {
     $pseudoMethod = $this->financialTypePseudoConstant;
     $specs = [
       'label' => [
@@ -3584,8 +3598,9 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    * Get column specs for civicrm_price_fields.
    *
    * @return array
+   * @throws \CiviCRM_API3_Exception
    */
-  protected function getPriceFieldColumns() {
+  protected function getPriceFieldColumns(): array {
     $specs = [
       'price_field_label' => [
         'title' => ts('Price Field Label'),
@@ -3605,8 +3620,9 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    * @param array $options
    *
    * @return array
+   * @throws \CiviCRM_API3_Exception
    */
-  protected function getParticipantColumns($options = []) {
+  protected function getParticipantColumns($options = []): array {
     static $_events = [];
     if (!isset($_events['all'])) {
       CRM_Core_PseudoConstant::populate($_events['all'], 'CRM_Event_DAO_Event', FALSE, 'title', 'is_active', "is_template IS NULL OR is_template = 0", 'title');
@@ -3686,8 +3702,9 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    * @param array $options
    *
    * @return array
+   * @throws \CiviCRM_API3_Exception
    */
-  protected function getMembershipColumns($options) {
+  protected function getMembershipColumns($options): array {
     $specs = [
       'membership_type_id' => [
         'title' => 'Membership Type',
@@ -3761,7 +3778,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    * @return array
    * @throws \CiviCRM_API3_Exception
    */
-  function getMembershipLogColumns($options = []) {
+  protected function getMembershipLogColumns($options = []): array {
     $columns = [
       'civicrm_membership_log' => [
         'grouping' => 'member-fields',
@@ -3812,7 +3829,13 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     return $this->buildColumns($columns['civicrm_membership_log']['fields'], $options['prefix'] . 'civicrm_membership_log', 'CRM_Member_DAO_MembershipLog', [], $options);
   }
 
-  function getFinancialAccountColumns($options = []) {
+  /**
+   * @param array $options
+   *
+   * @return array
+   * @throws \CiviCRM_API3_Exception
+   */
+  protected function getFinancialAccountColumns($options = []) {
     $defaultOptions = [
       'prefix' => '',
       'prefix_label' => '',
@@ -3853,6 +3876,11 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     return $this->buildColumns($spec, $options['prefix'] . 'civicrm_financial_account', 'CRM_Financial_DAO_FinancialAccount', NULL, $defaults);
   }
 
+  /**
+   * @return array
+   *
+   * @throws \CiviCRM_API3_Exception
+   */
   protected function getFinancialTrxnColumns() {
     $specs = [
       'check_number' => [
@@ -3923,6 +3951,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
 
   /**
    * @return array
+   * @throws \CiviCRM_API3_Exception
    */
   protected function getFinancialTypeColumns() {
     $specs = [
@@ -3948,8 +3977,9 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    * @param array $options
    *
    * @return array
+   * @throws \CiviCRM_API3_Exception
    */
-  protected function getPledgePaymentColumns($options) {
+  protected function getPledgePaymentColumns($options): array {
     $specs = [
       $options['prefix'] . 'actual_amount' => [
         'title' => ts($options['prefix'] . 'Amount Paid'),
@@ -3999,8 +4029,9 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    * @param array $options
    *
    * @return array
+   * @throws \CiviCRM_API3_Exception
    */
-  protected function getNextPledgePaymentColumns($options) {
+  protected function getNextPledgePaymentColumns($options): array {
     $specs = [
       $options['prefix'] . 'scheduled_date' => [
         'type' => CRM_Utils_Type::T_DATE,
@@ -4030,7 +4061,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    * @return array
    */
   protected function getPledgePaymentActions() {
-    $actions = [
+    return [
       'add_payment' => [
         'type' => CRM_Utils_Type::T_INT,
         'title' => ts('Payment Link'),
@@ -4040,13 +4071,13 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'is_fields' => TRUE,
       ],
     ];
-    return $actions;
   }
 
   /**
    * @param $options
    *
    * @return array
+   * @throws \CiviCRM_API3_Exception
    */
   function getMembershipTypeColumns($options) {
     $spec = [
@@ -4457,6 +4488,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    * @param array $options
    *
    * @return array
+   * @throws \CiviCRM_API3_Exception
    */
   function getContributionSummaryColumns($options = []) {
     $defaultOptions = [
@@ -4492,6 +4524,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    * Get columns for the batch.
    *
    * @return array
+   * @throws \CiviCRM_API3_Exception
    */
   public function getBatchColumns() {
     if (!CRM_Batch_BAO_Batch::singleValueQuery("SELECT COUNT(*) FROM civicrm_batch")) {
@@ -4533,6 +4566,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    *  - prefix_label Label to give columns from this phone table instance
    *
    * @return array phone columns definition
+   * @throws \CiviCRM_API3_Exception
    */
   function getPhoneColumns($options = []) {
     $defaultOptions = [
@@ -4580,8 +4614,9 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    *  - prefix_label Label to give columns from this phone table instance
    *
    * @return array pledge columns definition
+   * @throws \CiviCRM_API3_Exception
    */
-  protected function getPledgeColumns($options = []) {
+  protected function getPledgeColumns($options = []): array {
     $spec = [
       'id' => [
         'no_display' => TRUE,
@@ -4668,8 +4703,9 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    * @param array $options
    *
    * @return array
+   * @throws \CiviCRM_API3_Exception
    */
-  function getEmailColumns($options = []) {
+  protected function getEmailColumns($options = []): array {
     $defaultOptions = [
       'prefix' => '',
       'prefix_label' => '',
@@ -4705,8 +4741,9 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    * @param array $options
    *
    * @return array
+   * @throws \CiviCRM_API3_Exception
    */
-  function getWebsiteColumns($options = []) {
+  protected function getWebsiteColumns($options = []): array {
     $defaultOptions = [
       'prefix' => '',
       'prefix_label' => '',
@@ -4757,8 +4794,9 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    * @param array $options
    *
    * @return array
+   * @throws \CiviCRM_API3_Exception
    */
-  function getNoteColumns($options = []) {
+  protected function getNoteColumns($options = []): array {
     $defaultOptions = [
       'prefix' => '',
       'prefix_label' => '',
@@ -4784,6 +4822,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    * @param array $options
    *
    * @return array
+   * @throws \CiviCRM_API3_Exception
    */
   function getRelationshipColumns($options = []) {
     $defaultOptions = [
@@ -4959,6 +4998,8 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    * Filter statistics.
    *
    * @param array $statistics
+   *
+   * @throws \CiviCRM_API3_Exception
    */
   public function filterStat(&$statistics) {
     foreach ($this->getSelectedFilters() as $fieldName => $field) {
@@ -4991,6 +5032,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    *
    * @return array address columns definition
    * @throws \CRM_Core_Exception
+   * @throws \CiviCRM_API3_Exception
    */
   function getAddressColumns($options = []) {
     $defaultOptions = [
@@ -5219,7 +5261,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    * @return array billing address columns definition
    * @throws \CiviCRM_API3_Exception
    */
-  function getBillingAddressColumns($options = []) {
+  protected function getBillingAddressColumns($options = []): array {
     $options['prefix'] = 'billing';
     $spec = [
       $options['prefix'] . 'name' => [
@@ -5258,7 +5300,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    * @return array
    * @throws \CiviCRM_API3_Exception
    */
-  protected function getTagColumns($options = []) {
+  protected function getTagColumns($options = []): array {
     $defaultOptions = [
       'prefix' => '',
       'prefix_label' => '',
@@ -5292,7 +5334,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    *
    * @return array
    */
-  protected function getAvailableJoins() {
+  protected function getAvailableJoins(): array {
     return [
       'batch_from_financialTrxn' => [
         'leftTable' => 'civicrm_financial_trxn',
@@ -6360,9 +6402,8 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
     }
 
     //nodeName == "INPUT" && this.type=="checkbox"
-    $editableDiv = "<div data-id='{$entityID}' data-entity='{$entity}' class='crm-entity'>" .
+    return "<div data-id='{$entityID}' data-entity='{$entity}' class='crm-entity'>" .
       "<span class='crm-editable crmf-{$fullSpec['field_name']} $class' data-action='create' $extra>" . $value . "</span></div>";
-    return $editableDiv;
   }
 
   /*
@@ -6490,6 +6531,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    *
    * @return string
    *   Name of primary participant.
+   * @throws \CRM_Core_Exception
    */
   function alterRegisteredName($value, &$row, $selectedField) {
     if (empty($value)) {
@@ -6554,7 +6596,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    *
    * @return array|string
    */
-  function alterMembershipStatusID($value, &$row) {
+  protected function alterMembershipStatusID($value, &$row) {
     return is_string(CRM_Member_PseudoConstant::membershipStatus($value, FALSE)) ? CRM_Member_PseudoConstant::membershipStatus($value, FALSE) : '';
   }
 
@@ -6589,9 +6631,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
   protected function alterCountyID($value, &$row, $selectedfield, $criteriaFieldName) {
     $url = CRM_Utils_System::url(CRM_Utils_System::currentPath(), "reset=1&force=1&{$criteriaFieldName}_op=in&{$criteriaFieldName}_value={$value}", $this->_absoluteUrl);
     $row[$selectedfield . '_link'] = $url;
-    $row[$selectedfield . '_hover'] = ts("%1 for this county.", [
-      1 => $value,
-    ]);
+    $row[$selectedfield . '_hover'] = ts('%1 for this county.', [1 => $value]);
     $counties = CRM_Core_PseudoConstant::county($value);
     if (!is_array($counties)) {
       return $counties;
@@ -6607,26 +6647,28 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    * @return array
    */
   function alterCumulative($value, &$row, $selectedfield, $criteriaFieldName) {
-    if (!isset(\Civi::$statics[__CLASS__]) || !isset(\Civi::$statics[__CLASS__][$selectedfield . 'cumulative'])) {
-      \Civi::$statics[__CLASS__][$selectedfield . 'cumulative'] = 0;
+    if (!isset(Civi::$statics[__CLASS__]) || !isset(Civi::$statics[__CLASS__][$selectedfield . 'cumulative'])) {
+      Civi::$statics[__CLASS__][$selectedfield . 'cumulative'] = 0;
     }
 
     if (empty($row['is_rollup'])) {
-      \Civi::$statics[__CLASS__][$selectedfield . 'cumulative'] = \Civi::$statics[__CLASS__][$selectedfield . 'cumulative'] + $value;
+      Civi::$statics[__CLASS__][$selectedfield . 'cumulative'] = Civi::$statics[__CLASS__][$selectedfield . 'cumulative'] + $value;
     }
-    $row[str_replace('_sum', '_cumulative', $selectedfield)] = \Civi::$statics[__CLASS__][$selectedfield . 'cumulative'];
+    $row[str_replace('_sum', '_cumulative', $selectedfield)] = Civi::$statics[__CLASS__][$selectedfield . 'cumulative'];
     return $value;
   }
 
   /**
-   * @param $value
-   * @param $row
-   * @param $selectedfield
-   * @param $criteriaFieldName
+   * @param int $value
+   * @param array $row
+   * @param array $selectedfield
+   * @param string $criteriaFieldName
    *
-   * @return mixed
+   * @return string
+   *
+   * @throws \CiviCRM_API3_Exception
    */
-  function alterLocationTypeID($value, &$row, $selectedfield, $criteriaFieldName) {
+  public function alterLocationTypeID($value, &$row, $selectedfield, $criteriaFieldName) {
     $values = $this->getLocationTypeOptions();
     return CRM_Utils_Array::value($value, $values);
   }
@@ -6652,7 +6694,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    *
    * @return array
    */
-  function alterStateProvinceID($value, &$row, $selectedfield, $criteriaFieldName) {
+  protected function alterStateProvinceID($value, &$row, $selectedfield, $criteriaFieldName) {
     $url = CRM_Utils_System::url(CRM_Utils_System::currentPath(), "reset=1&force=1&{$criteriaFieldName}_op=in&{$criteriaFieldName}_value={$value}", $this->_absoluteUrl);
     $row[$selectedfield . '_link'] = $url;
     $row[$selectedfield . '_hover'] = ts("%1 for this state.", [
@@ -6816,7 +6858,11 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
 
   /**
    * Return "Yes" if a contribution_recur_id exists, "No" otherwise.
+   *
    * @param int $value
+   *
+   * @param $row
+   * @param $selectedField
    *
    * @return string
    */
@@ -6856,14 +6902,15 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    * @param $value
    *
    * @return array|string
+   * @throws \CiviCRM_API3_Exception
    */
-  function alterPhoneGroup($value) {
+  public function alterPhoneGroup($value) {
 
     $locationTypes = $this->getLocationTypeOptions();
     $phoneTypes = $this->_getOptions('phone', 'phone_type_id');
     $phones = explode(',', $value);
     $return = [];
-    $html = "<table>";
+    $html = '<table>';
     foreach ($phones as $phone) {
       if (empty($phone)) {
         continue;
@@ -7357,13 +7404,12 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    * @return array
    */
   protected function getDefaultsFromOptions($options):array {
-    $defaults = [
+    return [
       'fields_defaults' => $options['fields_defaults'],
       'filters_defaults' => $options['filters_defaults'],
       'group_bys_defaults' => $options['group_bys_defaults'],
       'order_by_defaults' => $options['order_by_defaults'],
     ];
-    return $defaults;
   }
 
   /**
@@ -7481,14 +7527,17 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    *
    * @return string
    */
-  public function getSQLOperator($operator = "like") {
+  public function getSQLOperator($operator = 'like'): string {
     if ($operator === 'rlike') {
       return 'RLIKE';
     }
     return parent::getSQLOperator($operator);
   }
 
-  protected function isInProcessOfPreconstraining() {
+  /**
+   * @return bool
+   */
+  protected function isInProcessOfPreconstraining(): bool {
     return $this->_preConstrain && !$this->_preConstrained;
   }
 
@@ -8816,6 +8865,8 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
    * (as that should be added when built and we don't want to block it building).
    *
    * @param string $fieldName
+   * @param $key
+   * @param $value
    */
   protected function setMetadataValue(string $fieldName, $key, $value)  {
     if (!empty($this->metaData['metadata'])) {
