@@ -565,8 +565,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    * @param array $params
    */
   public function setParams($params) {
-    if (empty($params)) {
-      $this->_params = $params;
+    if (empty($params) || $params === ['order_bys' => NULL]) {
       return;
     }
     $extendedFieldKeys = $this->getConfiguredFieldsFlatArray();
@@ -1605,8 +1604,10 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
 
     CRM_Report_Form_Instance::setDefaultValues($this, $this->_defaults);
     $contact_id = $this->getContactIdFilter();
-    $this->_defaults[$this->contactIDField . '_value'] = $contact_id;
-    $this->_defaults[$this->contactIDField . '_op'] = 'in';
+    if ($contact_id) {
+      $this->_defaults[$this->contactIDField . '_value'] = $contact_id;
+      $this->_defaults[$this->contactIDField . '_op'] = 'in';
+    }
     return $this->_defaults;
   }
 
