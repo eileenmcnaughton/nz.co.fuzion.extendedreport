@@ -1605,8 +1605,10 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
 
     CRM_Report_Form_Instance::setDefaultValues($this, $this->_defaults);
     $contact_id = $this->getContactIdFilter();
-    $this->_defaults[$this->contactIDField . '_value'] = $contact_id;
-    $this->_defaults[$this->contactIDField . '_op'] = 'in';
+    if ($contact_id) {
+      $this->_defaults[$this->contactIDField . '_value'] = $contact_id;
+      $this->_defaults[$this->contactIDField . '_op'] = 'in';
+    }
     return $this->_defaults;
   }
 
