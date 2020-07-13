@@ -565,8 +565,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    * @param array $params
    */
   public function setParams($params) {
-    if (empty($params)) {
-      $this->_params = $params;
+    if (empty($params) || $params === ['order_bys' => NULL]) {
       return;
     }
     $extendedFieldKeys = $this->getConfiguredFieldsFlatArray();
