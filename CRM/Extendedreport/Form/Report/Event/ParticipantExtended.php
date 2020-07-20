@@ -116,6 +116,38 @@ class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Exten
   }
 
   /**
+   * Overriding for the sake of handling relationship type ID.
+   */
+  function postProcess() {
+    $this->beginPostProcess();
+    $this->relationType = NULL;
+    $originalRelationshipTypes = [];
+
+    $relationships = [];
+    if ((array) $this->_params['relationship_relationship_type_id_value'] ?? FALSE) {
+      $originalRelationshipTypes = $this->_params['relationship_relationship_type_id_value'];
+      foreach ($this->_params['relationship_relationship_type_id_value'] as $relString) {
+        $relType = explode('_', $relString);
+        $this->relationType[] = $relType[1] . '_' . $relType[2];
+        $relationships[] = intval($relType[0]);
+      }
+    }
+    $this->_params['relationship_relationship_type_id_value'] = $relationships;
+    $this->buildACLClause([
+      $this->_aliases['contact_a_civicrm_contact'],
+      $this->_aliases['contact_b_civicrm_contact'],
+    ]);
+    $sql = $this->buildQuery();
+    $this->addToDeveloperTab($sql);
+    $rows = [];
+    $this->buildRows($sql, $rows);
+    $this->_params['relationship_type_id_value'] = $originalRelationshipTypes;
+    $this->formatDisplay($rows);
+    $this->doTemplateAssignment($rows);
+    $this->endPostProcess($rows);
+  }
+
+  /**
    * Declare from clauses used in the from clause for this report.
    *
    * @return array
