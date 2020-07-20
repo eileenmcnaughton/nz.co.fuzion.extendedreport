@@ -183,7 +183,7 @@ class CRM_Extendedreport_Form_Report_RelationshipExtended extends CRM_Extendedre
     $originalRelationshipTypes = [];
 
     $relationships = [];
-    if (CRM_Utils_Array::value('relationship_relationship_type_id_value', $this->_params) && is_array($this->_params['relationship_relationship_type_id_value'])) {
+    if ((array) $this->_params['relationship_relationship_type_id_value'] ?? FALSE) {
       $originalRelationshipTypes = $this->_params['relationship_relationship_type_id_value'];
       foreach ($this->_params['relationship_relationship_type_id_value'] as $relString) {
         $relType = explode('_', $relString);
