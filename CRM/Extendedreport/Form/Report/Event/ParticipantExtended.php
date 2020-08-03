@@ -95,6 +95,36 @@ class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Exten
       ],
     ];
 
+    $this->_columns['civicrm_contact']['metadata']['age_at_event_end'] = [
+      'title' => ts('Age at Event End'),
+      'is_fields' => TRUE,
+      'is_order_bys' => TRUE,
+      'is_filters' => TRUE,
+      'is_group_bys' => TRUE,
+      'is_join_filters' => FALSE,
+      'is_aggregate_columns' => FALSE,
+      'is_aggregate_rows' => FALSE,
+      'type' => CRM_Utils_Type::T_INT,
+      'table_key' => 'civicrm_contact',
+      'alias' => 'civicrm_contact_age_at_event_end',
+      'dbAlias' => 'TIMESTAMPDIFF(YEAR, civicrm_contact.birth_date, event.end_date)',
+    ];
+
+    $this->_columns['civicrm_contact']['metadata']['age_at_event_start'] = [
+      'title' => ts('Age at Event Start'),
+      'is_fields' => TRUE,
+      'is_order_bys' => TRUE,
+      'is_filters' => TRUE,
+      'is_group_bys' => TRUE,
+      'is_join_filters' => FALSE,
+      'is_aggregate_columns' => FALSE,
+      'is_aggregate_rows' => FALSE,
+      'type' => CRM_Utils_Type::T_INT,
+      'table_key' => 'civicrm_contact',
+      'alias' => 'civicrm_contact_age_at_event_start',
+      'dbAlias' => 'TIMESTAMPDIFF(YEAR, civicrm_contact.birth_date, event.start_date)',
+    ];
+
     // If we have active campaigns add those elements to both the fields and filters
     if ($campaignEnabled && !empty($this->activeCampaigns)) {
       $this->_columns['civicrm_participant']['fields']['campaign_id'] = [
