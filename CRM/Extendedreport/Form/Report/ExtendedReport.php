@@ -2328,7 +2328,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
         if (!empty($field['option_group_id'])) {
           if (in_array($htmlType, [
             'Multi-Select',
-            'AdvMulti-Select',
             'CheckBox',
           ] || $field['serialize'] == 1)
           ) {
@@ -3198,7 +3197,6 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
             break;
 
           case 'CheckBox':
-          case 'AdvMulti-Select':
           case 'Multi-Select':
             $value = explode(CRM_Core_DAO::VALUE_SEPARATOR, $value);
             $customData = [];
@@ -8165,7 +8163,6 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
     if (!empty($field['option_group_id'])) {
       if (in_array($field['html_type'], [
         'Multi-Select',
-        'AdvMulti-Select',
         'CheckBox',
       ]) || $field['serialize'] == 1) {
         $field['operatorType'] = CRM_Report_Form::OP_MULTISELECT_SEPARATOR;
