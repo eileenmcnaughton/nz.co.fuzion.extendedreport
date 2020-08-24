@@ -8223,7 +8223,6 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
   protected function createTemporaryTableFromColumns($identifier, $columns) {
     $isNotTrueTemporary = !$this->_temporary;
     $tmpTableName = CRM_Utils_SQL_TempTable::build()
-      ->setUtf8(TRUE)
       ->setId($identifier)
       ->createWithColumns($columns)
       ->getName();
