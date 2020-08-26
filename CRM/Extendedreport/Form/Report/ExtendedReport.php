@@ -7783,6 +7783,9 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
       if (substr($key, -6, 6) === '_value' && ($value !== '' && $value !== NULL && $value !== "NULL" && $value !== [])) {
         $field = substr($key, 0, -6);
       }
+      if (substr($key, -3, 3) === '_op' && in_array($value, ['nll', 'nnll'], TRUE)) {
+        $field = substr($key, 0, -3);
+      }
       $validSuffixes = ['relative', 'from', 'to', 'max', 'min'];
       foreach ($validSuffixes as $suffix) {
         $suffixLength = strlen($suffix) + 1;
