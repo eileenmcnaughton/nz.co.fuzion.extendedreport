@@ -71,6 +71,13 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   protected $_customFields = [];
 
   /**
+   * Array of tables with their statuses - relevant for things like Batch which mighht be absent from a DB.
+   *
+   * @var array
+   */
+  protected $tableStatuses = [];
+
+  /**
    * Denotes whether a temporary table should be defined as temporary.
    *
    * This can be set to empty when debugging.
@@ -4513,7 +4520,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    * @throws \CiviCRM_API3_Exception
    */
   public function getBatchColumns() {
-    if (!CRM_Batch_BAO_Batch::singleValueQuery("SELECT COUNT(*) FROM civicrm_batch")) {
+    if (!$this->includeBatches()) {
       return [];
     }
     $specs = [
@@ -4537,7 +4544,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         // make selection unwieldy.
         'alter_display' => 'alterBatchStatus',
         'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-        'options' => CRM_Batch_BAO_Batch::buildOptions("status_id"),
+        'options' => CRM_Batch_BAO_Batch::buildOptions('status_id'),
         'type' => CRM_Utils_Type::T_INT,
       ],
     ];
@@ -6103,7 +6110,7 @@ ON {$this->_aliases['civicrm_membership']}.membership_type_id = {$this->_aliases
    * Join batch table from Financial Trxn.
    */
   protected function joinBatchFromFinancialTrxn() {
-    if (!CRM_Batch_BAO_Batch::singleValueQuery("SELECT COUNT(*) FROM civicrm_batch")) {
+    if (!$this->isTableSelected('civicrm_batch')) {
       return [];
     }
     $this->_from .= "
@@ -6114,6 +6121,24 @@ ON {$this->_aliases['civicrm_membership']}.membership_type_id = {$this->_aliases
         ON {$this->_aliases['civicrm_batch']}.id = entity_batch.batch_id";
   }
 
+  /**
+   * Join batch table from Financial Trxn.
+   */
+  protected function joinBatchFromContribution() {
+    if (!$this->isTableSelected('civicrm_batch')) {
+      return [];
+    }
+    $this->_from .= "
+      LEFT JOIN civicrm_entity_financial_trxn eft
+        ON eft.entity_id = {$this->_aliases['civicrm_contribution']}.id AND
+          eft.entity_table = 'civicrm_contribution'
+      LEFT JOIN civicrm_entity_batch entity_batch
+        ON (entity_batch.entity_id = eft.financial_trxn_id
+        AND entity_batch.entity_table = 'civicrm_financial_trxn')
+      LEFT JOIN civicrm_batch {$this->_aliases['civicrm_batch']}
+      ON {$this->_aliases['civicrm_batch']}.id = entity_batch.batch_id
+    ";
+  }
 
   protected function joinContactFromParticipant() {
     $this->_from .= "
@@ -8920,6 +8945,18 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
       $date['minYear']++;
     }
     return $optionYear;
+  }
+
+  /**
+   * Should batches be included.
+   *
+   * @return bool
+   */
+  protected function includeBatches(): bool {
+    if (!isset($this->tableStatuses['batch'])) {
+      $this->tableStatuses['batch'] = (bool) CRM_Batch_BAO_Batch::singleValueQuery('SELECT COUNT(*) FROM civicrm_batch');
+    }
+    return $this->tableStatuses['batch'];
   }
 
 }
