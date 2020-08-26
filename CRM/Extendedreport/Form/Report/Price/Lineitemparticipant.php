@@ -26,6 +26,7 @@ class CRM_Extendedreport_Form_Report_Price_Lineitemparticipant extends CRM_Exten
       $this->getColumns('Event') +
       $this->getColumns('Participant') +
       $this->getColumns('Contribution') +
+      $this->getColumns('Batch', ['order_by' => TRUE]) +
       $this->getColumns('PriceField') +
       $this->getColumns('PriceFieldValue') +
       $this->getColumns('LineItem') +
@@ -54,6 +55,7 @@ class CRM_Extendedreport_Form_Report_Price_Lineitemparticipant extends CRM_Exten
       'priceField_from_lineItem',
       'participant_from_lineItem',
       'contribution_from_participant',
+      'batch_from_contribution',
       'contact_from_participant',
       'event_from_participant',
       'address_from_contact',

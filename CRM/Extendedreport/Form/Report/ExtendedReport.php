@@ -5334,6 +5334,11 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'rightTable' => 'civicrm_batch',
         'callback' => 'joinBatchFromFinancialTrxn',
       ],
+      'batch_from_contribution' => [
+        'leftTable' => 'contribution',
+        'rightTable' => 'civicrm_batch',
+        'callback' => 'joinBatchFromContribution',
+      ],
       'campaign_fromPledge' => [
         'leftTable' => 'civicrm_pledge',
         'rightTable' => 'civicrm_campaign',
