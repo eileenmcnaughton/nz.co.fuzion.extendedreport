@@ -75,6 +75,7 @@ class CRM_Extendedreport_Form_Report_Contribute_Overview extends CRM_Extendedrep
       + $this->getColumns('Email', ['group_by' => TRUE])
       + $this->getColumns('Phone', ['group_by' => TRUE])
       + $this->getColumns('Contribution', ['group_by' => TRUE])
+      + $this->getColumns('Batch', ['group_by' => TRUE])
       + $this->getColumns('Address');
 
     // If we have a campaign, build out the relevant elements
@@ -154,6 +155,7 @@ class CRM_Extendedreport_Form_Report_Contribute_Overview extends CRM_Extendedrep
                             {$this->_aliases['civicrm_address']}.contact_id AND
                             {$this->_aliases['civicrm_address']}.is_primary = 1\n";
     }
+    $this->joinBatchFromContribution();
   }
 
   /**

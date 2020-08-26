@@ -15,6 +15,7 @@ class CRM_Extendedreport_Form_Report_Price_Contributionbased extends CRM_Extende
     $this->_columns
       = $this->getColumns('Contact')
       + $this->getColumns('Contribution', ['filters_defaults' => ['is_test' => 0]])
+      + $this->getColumns('Batch', ['order_by' => TRUE])
       + $this->getColumns('PriceField')
       + $this->getColumns('PriceFieldValue')
       + $this->getColumns('LineItem')
@@ -28,6 +29,7 @@ class CRM_Extendedreport_Form_Report_Price_Contributionbased extends CRM_Extende
   function fromClauses() {
     return [
       'lineItem_from_contribution',
+      'batch_from_contribution',
       'contact_from_contribution',
       'priceFieldValue_from_lineItem',
       'priceField_from_lineItem',
