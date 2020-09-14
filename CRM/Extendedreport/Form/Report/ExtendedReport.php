@@ -4443,6 +4443,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       'contribution_recur_id' => [
         'title' => ts('Recurring Contribution ID'),
         'is_fields' => TRUE,
+        'is_filters' => TRUE,
         'type' => CRM_Utils_Type::T_INT,
       ],
       'contribution_recur_id_exists' => [
