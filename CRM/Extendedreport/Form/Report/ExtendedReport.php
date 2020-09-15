@@ -4183,7 +4183,14 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       'is_active' => [
         'title' => ts('Is Active'),
         'is_fields' => TRUE,
-        'type' => CRM_Utils_Type::T_INT,
+        'is_filters' => TRUE,
+        'type' => CRM_Utils_Type::T_BOOLEAN,
+        'operatorType' => CRM_Report_Form::OP_SELECT,
+        'options' => [
+          '' => ts('- select -'),
+          1 => ts('Yes'),
+          0 => ts('No'),
+        ],
         'crm_editable' => [
           'id_table' => 'civicrm_event',
           'id_field' => 'id',
