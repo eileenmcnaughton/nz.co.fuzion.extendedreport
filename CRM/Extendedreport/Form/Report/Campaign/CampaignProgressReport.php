@@ -243,10 +243,10 @@ LEFT JOIN
   public function alterDisplay(&$rows) {
     parent::alterDisplay($rows);
     $this->unsetUnreliableColumnsIfNotCampaignGrouped();
-    if (isset($this->_columnHeaders['progress_still_to_raise'])) {
-      $move = $this->_columnHeaders['progress_still_to_raise'];
-      unset($this->_columnHeaders['progress_still_to_raise']);
-      $this->_columnHeaders['progress_still_to_raise'] = $move;
+    if (isset($this->_columnHeaders['progress_progress_still_to_raise'])) {
+      $move = $this->_columnHeaders['progress_progress_still_to_raise'];
+      unset($this->_columnHeaders['progress_progress_still_to_raise']);
+      $this->_columnHeaders['progress_progress_still_to_raise'] = $move;
     }
 
     $runningTotalGoal = $runningTotalLeft = 0;
@@ -254,13 +254,13 @@ LEFT JOIN
     foreach ($rows as $index => $row) {
       if (isset($row['civicrm_campaign_campaign_goal_revenue']) && is_numeric($row['civicrm_campaign_campaign_goal_revenue'])) {
         $runningTotalGoal += $row['civicrm_campaign_campaign_goal_revenue'];
-        if (isset($row['progress_still_to_raise']) && is_numeric($row['progress_still_to_raise'])) {
-          $runningTotalLeft += $row['progress_still_to_raise'];
+        if (isset($row['progress_progress_still_to_raise']) && is_numeric($row['progress_progress_still_to_raise'])) {
+          $runningTotalLeft += $row['progress_progress_still_to_raise'];
         }
       }
       else {
         $rows[$index]['civicrm_campaign_campaign_goal_revenue'] = $runningTotalGoal;
-        $rows[$index]['progress_still_to_raise'] = $runningTotalLeft;
+        $rows[$index]['progress_progress_still_to_raise'] = $runningTotalLeft;
         $grandTotalLeft += $runningTotalLeft;
         $grandTotalGoal += $runningTotalGoal;
         $runningTotalGoal = $runningTotalLeft = 0;
@@ -272,8 +272,10 @@ LEFT JOIN
       }
 
     }
+    $grandTotalLeft += $runningTotalLeft;
+    $grandTotalGoal += $runningTotalGoal;
     $this->rollupRow['civicrm_campaign_campaign_goal_revenue'] = $grandTotalGoal;
-    $this->rollupRow['progress_still_to_raise'] = $grandTotalLeft;
+    $this->rollupRow['progress_progress_still_to_raise'] = $grandTotalLeft;
     $this->assign('grandStat', $this->rollupRow);
   }
 
