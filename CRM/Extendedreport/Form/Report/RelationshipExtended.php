@@ -5,33 +5,18 @@
  */
 class CRM_Extendedreport_Form_Report_RelationshipExtended extends CRM_Extendedreport_Form_Report_ExtendedReport {
 
-  protected $_summary = NULL;
-
-  protected $_emailField_a = FALSE;
-
-  protected $_emailField_b = FALSE;
-
   protected $_baseTable = 'civicrm_relationship';
 
   protected $_primaryContactPrefix = 'contact_a_';
-
-  protected $groupFilterNotOptimised = FALSE;
 
   protected $_customGroupExtends = ['Relationship', 'Contact', 'Individual', 'Household', 'Organization'];
 
   public $_tagFilterTable = 'contact_a_civicrm_contact';
 
   /**
-   * Can this report be used on a contact tab.
-   *
-   * The report must support contact_id in the url for this to work.
-   *
-   * @var bool
-   */
-  protected $isSupportsContactTab = TRUE;
-
-  /**
    * Class constructor.
+   *
+   * @throws \CiviCRM_API3_Exception
    */
   public function __construct() {
     $this->_tagFilter = TRUE;
@@ -82,13 +67,38 @@ class CRM_Extendedreport_Form_Report_RelationshipExtended extends CRM_Extendedre
     parent::__construct();
   }
 
+   /**
+     * Build where clause for tags.
+     *
+     * @param string $field
+     * @param mixed $value
+     * @param string $op
+     *
+     * @return string
+     */
+    public function whereTagClause($field, $value, $op) {
+      // not using left join in query because if any contact
+      // belongs to more than one tag, results duplicate
+      // entries.
+      $sqlOp = $this->getSQLOperator($op);
+      if (!is_array($value)) {
+        $value = [$value];
+      }
+      $clause = "{$field['dbAlias']} IN (" . implode(', ', $value) . ")";
+      $entity_table = $this->_tagFilterTable;
+      return " {$this->_aliases[$entity_table]}.id {$sqlOp} (
+                            SELECT DISTINCT {$this->_aliases['civicrm_tag']}.entity_id
+                            FROM civicrm_entity_tag {$this->_aliases['civicrm_tag']}
+                            WHERE entity_table = 'civicrm_contact' AND {$clause} ) ";
+  }
+
   function from() {
     $this->setFromBase('civicrm_contact', 'id', $this->_aliases['contact_a_civicrm_contact']);
     $this->_from .= "
       INNER JOIN civicrm_relationship {$this->_aliases['civicrm_relationship']}
           ON ( {$this->_aliases['civicrm_relationship']}.contact_id_a =
           {$this->_aliases['contact_a_civicrm_contact']}.id )
-          && ({$this->_aliases['contact_a_civicrm_contact']}.is_deleted = 0)          
+          && ({$this->_aliases['contact_a_civicrm_contact']}.is_deleted = 0)
 
           INNER JOIN civicrm_contact {$this->_aliases['contact_b_civicrm_contact']}
           ON ( {$this->_aliases['civicrm_relationship']}.contact_id_b =
@@ -152,7 +162,7 @@ class CRM_Extendedreport_Form_Report_RelationshipExtended extends CRM_Extendedre
    *
    * @return mixed
    */
-  function statistics(&$rows) {
+  public function statistics(&$rows) {
     $statistics = parent::statistics($rows);
 
     $isStatusFilter = FALSE;
@@ -166,13 +176,13 @@ class CRM_Extendedreport_Form_Report_RelationshipExtended extends CRM_Extendedre
     if (CRM_Utils_Array::value('filters', $statistics)) {
       foreach ($statistics['filters'] as $id => $value) {
         //for displaying relationship type filter
-        if ($value['title'] == 'Relationship') {
+        if ($value['title'] === 'Relationship') {
           $relTypes = CRM_Core_PseudoConstant::relationshipType();
           $statistics['filters'][$id]['value'] = 'Is equal to ' . $relTypes[$this->_params['relationship_type_id_value']]['label_' . $this->relationType];
         }
 
         //for displaying relationship status
-        if ($value['title'] == 'Relationship Status') {
+        if ($value['title'] === 'Relationship Status') {
           $isStatusFilter = TRUE;
           $statistics['filters'][$id]['value'] = $relStatus;
         }
@@ -188,25 +198,25 @@ class CRM_Extendedreport_Form_Report_RelationshipExtended extends CRM_Extendedre
     return $statistics;
   }
 
-  function postProcess() {
+  /**
+   * @throws \CRM_Core_Exception
+   * @throws \CiviCRM_API3_Exception
+   */
+  public function postProcess() {
     $this->beginPostProcess();
     $this->relationType = NULL;
     $originalRelationshipTypes = [];
 
     $relationships = [];
-    if (CRM_Utils_Array::value('relationship_relationship_type_id_value', $this->_params) && is_array($this->_params['relationship_relationship_type_id_value'])) {
+    if ((array) $this->_params['relationship_relationship_type_id_value'] ?? FALSE) {
       $originalRelationshipTypes = $this->_params['relationship_relationship_type_id_value'];
       foreach ($this->_params['relationship_relationship_type_id_value'] as $relString) {
         $relType = explode('_', $relString);
         $this->relationType[] = $relType[1] . '_' . $relType[2];
-        $relationships[] = intval($relType[0]);
+        $relationships[] = (int) $relType[0];
       }
     }
     $this->_params['relationship_relationship_type_id_value'] = $relationships;
-    $this->buildACLClause([
-      $this->_aliases['contact_a_civicrm_contact'],
-      $this->_aliases['contact_b_civicrm_contact'],
-    ]);
     $sql = $this->buildQuery();
     $this->addToDeveloperTab($sql);
     $rows = [];
@@ -220,7 +230,7 @@ class CRM_Extendedreport_Form_Report_RelationshipExtended extends CRM_Extendedre
   /**
    * @param $rows
    */
-  function alterDisplay(&$rows) {
+  public function alterDisplay(&$rows) {
     parent::alterDisplay($rows);
     // custom code to alter rows
     $entryFound = TRUE;

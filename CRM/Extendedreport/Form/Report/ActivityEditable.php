@@ -11,21 +11,16 @@ class CRM_Extendedreport_Form_Report_ActivityEditable extends CRM_Extendedreport
   protected $_customGroupExtends = ['Activity'];
 
   /**
-   * @var bool
-   */
-  protected $_customGroupGroupBy = FALSE;
-
-  /**
    * @var string
    */
   protected $_baseTable = 'civicrm_activity';
-
-  protected $skipACL = FALSE;
 
   protected $_aclTable = 'target_civicrm_contact';
 
   /**
    * Class constructor.
+   *
+   * @throws \CiviCRM_API3_Exception
    */
   public function __construct() {
     $this->_columns = $this->getColumns('Activity', ['fields_defaults' => ['activity_type_id', 'details', 'subject']])
@@ -37,7 +32,7 @@ class CRM_Extendedreport_Form_Report_ActivityEditable extends CRM_Extendedreport
   /**
    * Generate From clause.
    */
-  function fromClauses() {
+  public function fromClauses() {
     return [
       'activity_target_from_activity',
     ];

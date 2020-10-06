@@ -26,6 +26,7 @@ class BookkeepingExtendedTest extends BaseTestClass implements HeadlessInterface
 
   /**
    * @return \Civi\Test\CiviEnvBuilder
+   * @throws \CRM_Extension_Exception_ParseException
    */
   public function setUpHeadless() {
     // Civi\Test has many helpers, like install(), uninstall(), sql(), and sqlFile().
@@ -35,6 +36,9 @@ class BookkeepingExtendedTest extends BaseTestClass implements HeadlessInterface
       ->apply();
   }
 
+  /**
+   * @throws \CRM_Core_Exception
+   */
   public function setUp() {
     parent::setUp();
     $this->enableAllComponents();
@@ -42,12 +46,10 @@ class BookkeepingExtendedTest extends BaseTestClass implements HeadlessInterface
     $this->ids['Contact'][] = $contact['id'];
   }
 
-  public function tearDown() {
-    parent::tearDown();
-  }
-
   /**
    * Test the bookkeeping report with some data.
+   *
+   * @throws \CRM_Core_Exception
    */
   public function testBookkeepingReport() {
     $contribution = $this->callAPISuccess('Order', 'create', [

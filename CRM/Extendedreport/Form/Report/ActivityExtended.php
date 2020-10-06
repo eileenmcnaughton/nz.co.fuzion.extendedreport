@@ -10,26 +10,14 @@ class CRM_Extendedreport_Form_Report_ActivityExtended extends CRM_Extendedreport
   protected $_editableFields = FALSE;
 
   /**
-   * Can this report be used on a contact tab.
-   *
-   * The report must support contact_id in the url for this to work.
-   *
-   * @var bool
-   */
-  protected $isSupportsContactTab = TRUE;
-
-  /**
-   * @var bool
-   */
-  protected $_exposeContactID = FALSE;
-
-  /**
    * @var string
    */
   protected $_baseTable = 'civicrm_activity';
 
   /**
    * Class constructor.
+   *
+   * @throws \CiviCRM_API3_Exception
    */
   public function __construct() {
     $this->_columns = $this->getColumns(
@@ -97,13 +85,4 @@ class CRM_Extendedreport_Form_Report_ActivityExtended extends CRM_Extendedreport
     }
   }
 
-  /**
-   *
-   */
-  function postProcess() {
-    // get the acl clauses built before we assemble the query
-    //@todo - find out why the parent doesn't do this - or if it now does
-    $this->buildACLClause($this->_aliases['civicrm_contact']);
-    parent::postProcess();
-  }
 }

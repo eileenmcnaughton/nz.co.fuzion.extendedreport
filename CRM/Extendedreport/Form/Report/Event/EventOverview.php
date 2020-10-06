@@ -22,7 +22,8 @@ class CRM_Extendedreport_Form_Report_Event_EventOverview extends CRM_Extendedrep
    */
   public function __construct() {
     $this->_columns = $this->getColumns('Event', []) +
-      $this->getColumns('EventSummary');
+      $this->getColumns('EventSummary')
+    + $this->getColumns('Address');
     $this->_whereClauses[] = 'event.is_template = 0';
     parent::__construct();
   }
@@ -35,6 +36,7 @@ class CRM_Extendedreport_Form_Report_Event_EventOverview extends CRM_Extendedrep
   public function fromClauses() {
     return [
       'eventsummary_from_event',
+      'address_from_event',
     ];
   }
 }

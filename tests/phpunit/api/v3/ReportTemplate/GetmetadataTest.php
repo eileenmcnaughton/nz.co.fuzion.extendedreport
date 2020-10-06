@@ -17,6 +17,8 @@ class api_v3_ReportTemplate_GetmetadataTest extends BaseTestClass implements Hea
   /**
    * Civi\Test has many helpers, like install(), uninstall(), sql(), and sqlFile().
    * See: https://github.com/civicrm/org.civicrm.testapalooza/blob/master/civi-test.md
+   *
+   * @throws \CRM_Extension_Exception_ParseException
    */
   public function setUpHeadless() {
     return \Civi\Test::headless()
@@ -26,6 +28,8 @@ class api_v3_ReportTemplate_GetmetadataTest extends BaseTestClass implements Hea
 
   /**
    * The setup() method is executed before the test is executed (optional).
+   *
+   * @throws \CRM_Core_Exception
    */
   public function setUp() {
     parent::setUp();
@@ -39,17 +43,11 @@ class api_v3_ReportTemplate_GetmetadataTest extends BaseTestClass implements Hea
   }
 
   /**
-   * The tearDown() method is executed after the test was executed (optional)
-   * This can be used for cleanup.
-   */
-  public function tearDown() {
-    parent::tearDown();
-  }
-
-  /**
    * Simple example test case.
    *
    * Note how the function name begins with the word "test".
+   *
+   * @throws \CRM_Core_Exception
    */
   public function testApiMetadata() {
     $ids = $this->createCustomGroupWithField(['CustomField' => ['data_type' => 'Int', 'default_value' => 2]], 'Pledge');
@@ -88,23 +86,23 @@ class api_v3_ReportTemplate_GetmetadataTest extends BaseTestClass implements Hea
       'label' => 'bool_select_field',
     ]);
 
-    $result = civicrm_api3('ReportTemplate', 'Getmetadata', ['debug' => 1, 'report_id' => 'pledge/details'])['values'];
+    $result = $this->callAPISuccess('ReportTemplate', 'Getmetadata', ['debug' => 1, 'report_id' => 'pledge/details'])['values'];
     $filters = $result['filters'];
 
     foreach ($filters as $fieldName => $filter) {
       $this->assertEquals(TRUE, $filter['is_filters']);
       $this->assertEquals($result['metadata'][$fieldName], $filter);
-      $knownNoFieldFilters = ['effective_date', 'tagid', 'gid', 'pledge_payment_status_id'];
-      if (!in_array($fieldName, $knownNoFieldFilters)) {
-        $this->assertEquals($result['fields'][$fieldName], $filter);
+      $knownNoFieldFilters = ['effective_date', 'tagid', 'gid', 'pledge_payment_status_id', 'civicrm_contact_is_deleted'];
+      if (!in_array($fieldName, $knownNoFieldFilters, TRUE)) {
+        $this->assertEquals($result['fields'][$fieldName], $filter, 'mismatch in ' . $fieldName);
       }
     }
-    $this->assertTrue(!empty($result['order_bys']['custom_' . $ids['custom_field_id']]));
+    $this->assertNotEmpty($result['order_bys']['custom_' . $ids['custom_field_id']]);
     $this->assertTrue(!empty($result['group_bys']['custom_' . $ids['custom_field_id']]));
     $this->assertEquals(CRM_Report_Form::OP_INT, $filters['custom_' . $ids['custom_field_id']]['operatorType']);
     $this->assertEquals(CRM_Report_Form::OP_DATE, $filters['custom_' . $dateField['id']]['operatorType']);
     $this->assertEquals(CRM_Report_Form::OP_MULTISELECT, $filters['custom_' . $selectField['id']]['operatorType']);
-    $this->assertEquals(CRM_Report_Form::OP_MULTISELECT_SEPARATOR, $filters['custom_' . $multiSelectField['id']]['operatorType']);
+    $this->assertEquals(CRM_Report_Form::OP_MULTISELECT, $filters['custom_' . $multiSelectField['id']]['operatorType']);
     $this->assertEquals('Pledge', $filters['custom_' . $multiSelectField['id']]['table_label']);
     $this->assertEquals(CRM_Report_Form::OP_SELECT, $filters['custom_' . $booleanField['id']]['operatorType']);
 
@@ -117,13 +115,17 @@ class api_v3_ReportTemplate_GetmetadataTest extends BaseTestClass implements Hea
    * Test getmetdata works on all reports.
    *
    * @dataProvider getAllNonLoggingReports
+   *
+   * @param string $reportID
+   *
+   * @throws \CiviCRM_API3_Exception
    */
   public function testApiMetadataAllReports($reportID) {
-    $result = civicrm_api3('ReportTemplate', 'Getmetadata', ['report_id' => $reportID, 'debug' => 1])['values'];
+    $result = $this->callAPISuccess('ReportTemplate', 'Getmetadata', ['report_id' => $reportID, 'debug' => 1])['values'];
     $filters = $result['filters'];
     foreach ($filters as $fieldName => $filter) {
       $this->assertEquals(TRUE, $filter['is_filters']);
-      $this->assertEquals($result['metadata'][$fieldName], $filter);
+      $this->assertEquals($result['metadata'][$fieldName], $filter, 'for report ' . $reportID . ' and ' . $fieldName);
       $knownNoFieldFilters = ['effective_date', 'tagid', 'gid', 'pledge_payment_status_id'];
       if (!in_array($fieldName, $knownNoFieldFilters) && $filter['is_fields']) {
         $this->assertEquals($result['fields'][$fieldName], $filter);
@@ -136,9 +138,9 @@ class api_v3_ReportTemplate_GetmetadataTest extends BaseTestClass implements Hea
    * Test the metadata generated for the address history report.
    */
   public function testApiMetadataContactFilters() {
-    $result = civicrm_api3('ReportTemplate', 'Getmetadata', ['report_id' => 'contact/addresshistory'])['values'];
+    $result = $this->callAPISuccess('ReportTemplate', 'Getmetadata', ['report_id' => 'contact/addresshistory'])['values'];
     $this->assertEquals(TRUE, $result['metadata']['contact_id']['is_contact_filter']);
-    $this->assertTrue(empty($result['order_bys']));
+    $this->assertEmpty($result['order_bys']);
   }
 
 }

@@ -29,17 +29,13 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
- * $Id$
- *
+ * @copyright CiviCRM LLC https://civicrm.org/licensing
  */
 class CRM_Extendedreport_Form_Report_Pledge_Sybunt extends CRM_Extendedreport_Form_Report_ExtendedReport {
 
   protected $_add2groupSupported = FALSE;
 
-  protected $_customGroupExtends = [
-    'Pledge',
-  ];
+  protected $_customGroupExtends = ['Pledge'];
 
   /**
    *
@@ -211,7 +207,7 @@ class CRM_Extendedreport_Form_Report_Pledge_Sybunt extends CRM_Extendedreport_Fo
     // get ready with post process params
     $this->beginPostProcess();
 
-    $this->buildACLClause($this->_aliases['civicrm_contact']);
+    $this->buildPermissionClause();
     $this->select();
     $this->from();
     $this->extendedCustomDataFrom();

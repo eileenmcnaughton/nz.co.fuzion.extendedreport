@@ -105,6 +105,11 @@ class ContributionDetailExtendedTest extends BaseTestClass implements HeadlessIn
     ]);
   }
 
+  /**
+   * Test rows from after the first page are included in the summary.
+   *
+   * @throws \CRM_Core_Exception
+   */
   public function testReportWithMoreThanTwentyFiveContributions() {
     $this->createMoreThanTwentyFiveContributions();
     $params = [
@@ -122,7 +127,7 @@ class ContributionDetailExtendedTest extends BaseTestClass implements HeadlessIn
       ],
     ];
     $rows = $this->getRows($params);
-    $this->assertEquals(61, count($rows));
+    $this->assertCount(61, $rows);
     $rollupRow = $rows[60];
     $this->assertEquals('', $rollupRow['civicrm_contact_civicrm_contact_display_name']);
     unset($rows[60]);
@@ -135,6 +140,11 @@ class ContributionDetailExtendedTest extends BaseTestClass implements HeadlessIn
     $this->assertEquals('$ 9,150.00 (60)', $stats['counts']['amount']['value']);
   }
 
+  /**
+   * Setup contributions.
+   *
+   * @throws \CRM_Core_Exception
+   */
   public function createMoreThanTwentyFiveContributions() {
     $amount = 5;
     $contactData = array_merge(
@@ -158,7 +168,7 @@ class ContributionDetailExtendedTest extends BaseTestClass implements HeadlessIn
         'financial_type_id' => 'Donation',
         'receive_date' => '2018-11-09',
       ]);
-      $amount = $amount + 5;
+      $amount += 5;
     }
   }
 

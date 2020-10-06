@@ -24,6 +24,8 @@ class ActivityPivotTest extends BaseTestClass implements HeadlessInterface, Hook
 
   /**
    * Test the future income report with some data.
+   *
+   * @throws \CRM_Core_Exception
    */
   public function testPivotReport() {
     $contact = $this->callAPISuccess('Contact', 'create', ['contact_type' => 'Individual', 'email' => 'demo@example.com']);
@@ -49,6 +51,20 @@ class ActivityPivotTest extends BaseTestClass implements HeadlessInterface, Hook
     $this->assertEquals(1, $rows[1]['status_id_total']);
     $this->assertEquals(1, $rows[1]['status_id_' . $completedStatusID]);
     $this->assertEquals(0, $rows[1]['status_id_' . $scheduledStatusID]);
+  }
+
+  /**
+   * Test that there is not an sql error from the custom join failing.
+   *
+   * @throws \CRM_Core_Exception
+   */
+  public function testCustomDataInPivot() {
+    $ids = $this->createCustomGroupWithField([], 'Activity');
+    $this->getRows([
+      'report_id' => 'activity/pivot',
+      'aggregate_column_headers' => 'activity_activity_type_id',
+      'aggregate_row_headers' => 'custom_' . $ids['custom_field_id'],
+    ]);
   }
 
 }

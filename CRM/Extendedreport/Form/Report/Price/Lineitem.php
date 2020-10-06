@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC https://civicrm.org/licensing
  */
 class CRM_Extendedreport_Form_Report_Price_Lineitem extends CRM_Extendedreport_Form_Report_ExtendedReport {
 
@@ -57,6 +57,7 @@ class CRM_Extendedreport_Form_Report_Price_Lineitem extends CRM_Extendedreport_F
       + $this->getColumns('Event')
       + $this->getColumns('Participant')
       + $this->getColumns('Contribution', ['order_by' => TRUE])
+      + $this->getColumns('Batch', ['order_by' => TRUE])
       + $this->getColumns('PriceField', ['order_by' => TRUE])
       + $this->getColumns('PriceFieldValue', ['order_by' => TRUE])
       + $this->getColumns('LineItem', ['order_by' => TRUE, 'fields_defaults' => ['financial_type_id', 'line_total']]) +
@@ -79,6 +80,7 @@ class CRM_Extendedreport_Form_Report_Price_Lineitem extends CRM_Extendedreport_F
       'participant_from_lineItem',
       'contribution_from_lineItem',
       'contact_from_contribution',
+      'batch_from_contribution',
       'event_from_participant',
       'address_from_contact',
       'address_from_contribution',

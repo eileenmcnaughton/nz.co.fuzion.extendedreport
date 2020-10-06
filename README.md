@@ -29,17 +29,13 @@ These reports have been funded by various groups & if a given report doesn't wor
 | Extended Report - Pivot data membership report ||
 | Extended Report - Membership Price Set Report ||
 | Extended Report - Future income |Cash flow for when pledge payments are expected|
-| Extended Report - Pledge TBNS ||
-| Extended Report - Pledge LYBUNS ||
-| Extended Report - Pledge LYBUNS ||
-| Extended Report - Pledge SYBUNS ||
 | Extended Report - Pledge SYBUNT ||
 | Extended Report - Activity Pivot Chart (CiviCase) ||
 | Extended Report - Case Pivot Chart ||
 | Extended Report - Case with Activity Pivot Chart ||
 
 # Support
-If you hit an issue please create an issue against this repo. I do look at these & fix as many as I can. 
+If you hit an issue please create an issue against this repo. I do look at these & fix as many as I can.
 
 This extension is supported for the 5.x series as of the release of 5.0 and there is no intention to issue further
 releases for CiviCRM 4.x. That applies to bug fixes, new features and security patches.

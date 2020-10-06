@@ -51,19 +51,49 @@ class BaseTestClass extends \PHPUnit\Framework\TestCase implements HeadlessInter
       ->apply();
   }
 
+  /**
+   * Clean up after test.
+   *
+   * @throws \CRM_Core_Exception
+   */
   public function tearDown() {
     foreach ($this->ids as $entity => $entityIDs) {
       foreach ($entityIDs as $entityID) {
         try {
-          civicrm_api3($entity, 'delete', [
-            'id' => $entityID,
-          ]);
+          if (strtolower($entity) === 'contact') {
+            $this->cleanUpContact($entityID);
+          }
+          else {
+            civicrm_api3($entity, 'delete', ['id' => $entityID]);
+          }
         }
         catch (CiviCRM_API3_Exception $e) {
           // No harm done - it was a best effort cleanup
         }
       }
     }
+  }
+
+  /**
+   * Delete a contact, first removing blocking entities.
+   *
+   * @param int $contactId
+   *
+   * @throws \CRM_Core_Exception
+   */
+  public function cleanUpContact(int $contactId) {
+    $contributions = $this->callAPISuccess('Contribution', 'get', [
+      'contact_id' => $contactId,
+    ])['values'];
+    foreach ($contributions as $id => $details) {
+      $this->callAPISuccess('Contribution', 'delete', [
+        'id' => $id,
+      ]);
+    }
+    $this->callAPISuccess('Contact', 'delete', [
+      'id' => $contactId,
+      'skip_undelete' => TRUE,
+    ]);
   }
 
   /**
@@ -75,15 +105,16 @@ class BaseTestClass extends \PHPUnit\Framework\TestCase implements HeadlessInter
   protected $labels = [];
 
   /**
-   * @param $params
+   * @param array $params
    *
    * @return array|int
+   * @throws \CRM_Core_Exception
    */
-  protected function getRows($params) {
+  protected function getRows(array $params) {
     $params['options']['metadata'] = ['title', 'labels', 'sql'];
     $rows = $this->callAPISuccess('ReportTemplate', 'getrows', $params);
     $this->sql = $rows['metadata']['sql'];
-    $this->labels = isset($rows['metadata']['labels']) ? $rows['metadata']['labels'] : [];
+    $this->labels = $rows['metadata']['labels'] ?? [];
     $rows = $rows['values'];
     return $rows;
   }
@@ -99,8 +130,10 @@ class BaseTestClass extends \PHPUnit\Framework\TestCase implements HeadlessInter
    *
    * @return array
    *   ids of created objects
+   *
+   * @throws \CRM_Core_Exception
    */
-  protected function createCustomGroupWithField($inputParams = [], $entity = 'Contact') {
+  protected function createCustomGroupWithField($inputParams = [], $entity = 'Contact'): array {
     $params = ['title' => $entity];
     $params['extends'] = $entity;
     CRM_Core_PseudoConstant::flush();
@@ -152,6 +185,7 @@ class BaseTestClass extends \PHPUnit\Framework\TestCase implements HeadlessInter
    * @param array $params
    *
    * @return array
+   * @throws \CRM_Core_Exception
    */
   public function customGroupCreate($params = []) {
     $defaults = [
@@ -185,6 +219,8 @@ class BaseTestClass extends \PHPUnit\Framework\TestCase implements HeadlessInter
    *   (custom_group_id) is required.
    *
    * @return array
+   * @throws \CRM_Core_Exception
+   * @throws \Exception
    */
   protected function customFieldCreate($params) {
     $params = array_merge([
@@ -211,7 +247,7 @@ class BaseTestClass extends \PHPUnit\Framework\TestCase implements HeadlessInter
    *
    * @return array
    */
-  public function getContactData($contactType, $quantity) {
+  public function getContactData($contactType, $quantity): array {
     switch ($contactType) {
       case 'Individual':
         $contacts = $this->getIndividuals();
@@ -278,14 +314,16 @@ class BaseTestClass extends \PHPUnit\Framework\TestCase implements HeadlessInter
 
   /**
    * Enable all components.
+   *
+   * @throws \CRM_Core_Exception
    */
   protected function enableAllComponents() {
     $components = [];
-    $dao = CRM_Core_DAO::executeQuery("SELECT id, name FROM civicrm_component");
+    $dao = CRM_Core_DAO::executeQuery('SELECT id, name FROM civicrm_component');
     while ($dao->fetch()) {
       $components[$dao->id] = $dao->name;
     }
-    civicrm_api3('Setting', 'create', ['enable_components' => $components]);
+    $this->callAPISuccess('Setting', 'create', ['enable_components' => $components]);
   }
 
   /**
@@ -293,7 +331,7 @@ class BaseTestClass extends \PHPUnit\Framework\TestCase implements HeadlessInter
    *
    * @return array
    */
-  public function getAllNonLoggingReports() {
+  public function getAllNonLoggingReports(): array {
     $reports = $this->getAllReports();
     $return = [];
     foreach ($reports as $report) {
@@ -307,14 +345,21 @@ class BaseTestClass extends \PHPUnit\Framework\TestCase implements HeadlessInter
    *
    * @return array
    */
-  public function getAllReports() {
+  public function getAllReports(): array {
     $reports = [];
     extendedreport_civicrm_managed($reports);
     return $reports;
   }
 
   /**
+   * Create contacts for test.
+   *
+   * @param int $quantity
+   * @param string $type
+   *
    * @return array|int
+   *
+   * @throws \CRM_Core_Exception
    */
   protected function createContacts($quantity = 1, $type = 'Individual') {
     $data = $this->getContactData($type, $quantity);
@@ -334,6 +379,8 @@ class BaseTestClass extends \PHPUnit\Framework\TestCase implements HeadlessInter
    *  - started one year ago $40,000 for Wonder Woman, 2 $10000 payments made (12 months & 6 months ago).
    *  - started just now $80,000 for Cat Woman, no payments made
    *  - started one month ago $100000 for Heros Inc, no payments made
+   *
+   * @throws \CRM_Core_Exception
    */
   public function setUpPledgeData() {
     $contacts = [
@@ -406,7 +453,7 @@ class BaseTestClass extends \PHPUnit\Framework\TestCase implements HeadlessInter
           'actual_amount' => $contribution['total_amount'],
         ]);
       }
-      if (CRM_Utils_Array::value('organization_name', $params) == 'Heros Inc.') {
+      if (($params['organization_name'] ?? NULL) === 'Heros Inc.') {
         $this->callAPISuccess('PledgePayment', 'get', [
           'pledge_id' => $pledges['id'],
           'options' => ['limit' => 1, 'sort' => 'scheduled_date DESC'],

@@ -299,6 +299,7 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
       'group_bys_defaults' => [],
       'order_by_defaults' => ['sort_name ASC'],
       'contact_type' => NULL,
+      'is_required_for_acls' => empty($options['prefix']),
     ];
 
     $options = array_merge($defaultOptions, $options);
@@ -327,6 +328,15 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
         'is_filters' => TRUE,
         'is_contact_filter' => TRUE,
       ],
+      $options['prefix'] . 'is_deleted' => [
+        'title' => $options['prefix_label'] . ts('Is deleted'),
+        'name' => 'is_deleted',
+        'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+        'options' => CRM_Contact_BAO_Contact::buildOptions('is_deleted'),
+        'is_fields' => FALSE,
+        'is_filters' => TRUE,
+        'is_group_bys' => FALSE,
+      ],
       $options['prefix'] . 'external_identifier' => [
         'name' => 'external_identifier',
         'title' => E::ts($options['prefix_label'] . 'External ID'),
@@ -354,6 +364,14 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
         'name' => 'contact_sub_type',
         'operatorType' => CRM_Report_Form::OP_MULTISELECT,
         'options' => CRM_Contact_BAO_Contact::buildOptions('contact_sub_type'),
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+        'is_group_bys' => TRUE,
+      ],
+      $options['prefix'] . 'organization_name' => [
+        'title' => $options['prefix_label'] . E::ts('Organization Name'),
+        'name' => 'organization_name',
+        'operatorType' => CRM_Report_Form::OP_STRING,
         'is_fields' => TRUE,
         'is_filters' => TRUE,
         'is_group_bys' => TRUE,
@@ -428,6 +446,12 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
         'dbAlias' => 'TIMESTAMPDIFF(YEAR, ' . $tableAlias . '.birth_date, CURDATE())',
         'type' => CRM_Utils_Type::T_INT,
         'is_fields' => TRUE,
+      ],
+      'job_title' => [
+        'title' => E::ts($options['prefix_label'] . 'Job Title'),
+        'type' => CRM_Utils_Type::T_STRING,
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
       ],
     ];
     if (!$orgOnly) {
