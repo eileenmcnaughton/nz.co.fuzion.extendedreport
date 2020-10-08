@@ -374,6 +374,7 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
         'operatorType' => CRM_Report_Form::OP_STRING,
         'is_fields' => TRUE,
         'is_filters' => TRUE,
+        'is_order_bys' => TRUE,
         'is_group_bys' => TRUE,
       ],
       $options['prefix'] . 'email_greeting_display' => [
