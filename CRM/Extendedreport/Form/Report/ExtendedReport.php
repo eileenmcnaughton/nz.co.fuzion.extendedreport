@@ -4474,6 +4474,16 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'default' => NULL,
         'type' => CRM_Utils_Type::T_STRING,
       ],
+      'is_pay_later' => [
+        'is_fields' => FALSE,
+        'is_filters' => TRUE,
+        'is_order_bys' => FALSE,
+        'title' => 'Is Pay Later?',
+        'operatorType' => CRM_Report_Form::OP_SELECT,
+        'options' => ['' => '--select--'] + CRM_Contribute_BAO_Contribution::buildOptions('is_pay_later'),
+        'default' => NULL,
+        'type' => CRM_Utils_Type::T_STRING,
+      ],
       'contact_id' => [
         'title' => ts('Contribution Contact ID'),
         'name' => 'contact_id',
