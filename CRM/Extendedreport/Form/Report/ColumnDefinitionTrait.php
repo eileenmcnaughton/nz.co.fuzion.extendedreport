@@ -471,6 +471,14 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
         'type' => CRM_Utils_Type::T_INT,
         'is_fields' => TRUE,
       ],
+      $options['prefix'] . 'is_deceased' => [
+        'title' => $options['prefix_label'] . E::ts('Is deceased'),
+        'name' => 'is_deceased',
+        'type' => CRM_Utils_Type::T_BOOLEAN,
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+        'is_group_bys' => FALSE,
+      ],
       $options['prefix'] . 'job_title' => [
         'name' => 'job_title',
         'title' => E::ts($options['prefix_label'] . 'Job Title'),
