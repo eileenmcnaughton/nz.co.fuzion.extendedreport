@@ -428,6 +428,11 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
         'is_fields' => TRUE,
         'is_filters' => TRUE,
         'is_group_bys' => FALSE,
+        'options' =>  [
+          '' => ts('Any'),
+          '0' => ts('No'),
+          '1' => ts('Yes'),
+        ],
       ];
     }
     $individualFields = [
@@ -504,6 +509,11 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
         'is_fields' => TRUE,
         'is_filters' => TRUE,
         'is_group_bys' => FALSE,
+        'options' =>  [
+          '' => ts('Any'),
+          '0' => ts('No'),
+          '1' => ts('Yes'),
+        ],
       ],
       $options['prefix'] . 'job_title' => [
         'name' => 'job_title',
