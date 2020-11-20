@@ -373,6 +373,31 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
         'is_order_bys' => TRUE,
         'is_group_bys' => TRUE,
       ],
+      $options['prefix'] . 'external_identifier' => [
+        'title' => $options['prefix_label'] . ts('Contact identifier from external system'),
+        'name' => 'external_identifier',
+        'is_fields' => TRUE,
+        'is_filters' => FALSE,
+        'is_group_bys' => FALSE,
+        'is_order_bys' => TRUE,
+      ],
+      $options['prefix'] . 'preferred_language' => [
+        'title' => $options['prefix_label'] . ts('Preferred Language'),
+        'name' => 'preferred_language',
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+        'is_group_bys' => TRUE,
+        'is_order_bys' => TRUE,
+      ],
+      $options['prefix'] . 'preferred_communication_method' => [
+        'title' => $options['prefix_label'] . ts('Preferred Communication Method'),
+        'alter_display' => 'alterCommunicationtMethod',
+        'name' => 'preferred_communication_method',
+        'is_fields' => TRUE,
+        'is_filters' => FALSE,
+        'is_group_bys' => FALSE,
+        'is_order_bys' => FALSE,
+      ],
       $options['prefix'] . 'email_greeting_display' => [
         'name' => 'email_greeting_display',
         'title' => E::ts($options['prefix_label'] . 'Email Greeting'),
@@ -395,6 +420,15 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
         'is_order_bys' => TRUE,
       ],
     ];
+    foreach (['do_not_email', 'do_not_phone', 'do_not_mail', 'do_not_sms', 'is_opt_out'] as $field) {
+      $spec[$options['prefix'] . $field] = [
+        'name' => $field,
+        'type' => CRM_Utils_Type::T_BOOLEAN,
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+        'is_group_bys' => FALSE,
+      ];
+    }
     $individualFields = [
       $options['prefix'] . 'first_name' => [
         'name' => 'first_name',
@@ -461,6 +495,14 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
         'dbAlias' => 'TIMESTAMPDIFF(YEAR, ' . $tableAlias . '.birth_date, CURDATE())',
         'type' => CRM_Utils_Type::T_INT,
         'is_fields' => TRUE,
+      ],
+      $options['prefix'] . 'is_deceased' => [
+        'title' => $options['prefix_label'] . ts('Is deceased'),
+        'name' => 'is_deceased',
+        'type' => CRM_Utils_Type::T_BOOLEAN,
+        'is_fields' => FALSE,
+        'is_filters' => TRUE,
+        'is_group_bys' => FALSE,
       ],
       $options['prefix'] . 'job_title' => [
         'name' => 'job_title',
