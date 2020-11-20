@@ -285,7 +285,7 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
    *
    * @return array
    */
-  public function getContactColumns($options = []): array {
+  protected function getContactColumns($options = []) {
     $defaultOptions = [
       'prefix' => '',
       'prefix_label' => '',
