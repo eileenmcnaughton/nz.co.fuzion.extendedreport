@@ -303,10 +303,6 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
     ];
 
     $options = array_merge($defaultOptions, $options);
-    $orgOnly = FALSE;
-    if (CRM_Utils_Array::value('contact_type', $options) == 'Organization') {
-      $orgOnly = TRUE;
-    }
     $tableAlias = $options['prefix'] . 'civicrm_contact';
 
     $spec = [
@@ -421,10 +417,28 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
       ],
       $options['prefix'] . 'nick_name' => [
         'name' => 'nick_name',
-        'title' => E::ts($options['prefix_label'] . 'Nick Name'),
+        'title' => $options['prefix_label'] . ts('Nick Name'),
         'is_fields' => TRUE,
         'is_filters' => TRUE,
         'is_order_bys' => TRUE,
+      ],
+      $options['prefix'] . 'prefix_id' => [
+        'name' => 'prefix_id',
+        'title' => $options['prefix_label'] . ts('Prefix'),
+        'options' => CRM_Contact_BAO_Contact::buildOptions('prefix_id'),
+        'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+        'alter_display' => 'alterPseudoConstant',
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+      ],
+      $options['prefix'] . 'suffix_id' => [
+        'name' => 'suffix_id',
+        'title' => $options['prefix_label'] . ts('Suffix'),
+        'options' => CRM_Contact_BAO_Contact::buildOptions('suffix_id'),
+        'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+        'alter_display' => 'alterPseudoConstant',
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
       ],
       $options['prefix'] . 'gender_id' => [
         'name' => 'gender_id',
@@ -448,14 +462,23 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
         'type' => CRM_Utils_Type::T_INT,
         'is_fields' => TRUE,
       ],
-      'job_title' => [
+      $options['prefix'] . 'job_title' => [
+        'name' => 'job_title',
         'title' => E::ts($options['prefix_label'] . 'Job Title'),
         'type' => CRM_Utils_Type::T_STRING,
         'is_fields' => TRUE,
         'is_filters' => TRUE,
       ],
+      $options['prefix'] . 'employer_id' => [
+        'title' => $options['prefix_label'] . ts('Current Employer'),
+        'type' => CRM_Utils_Type::T_INT,
+        'name' => 'employer_id',
+        'is_fields' => TRUE,
+        'is_filters' => FALSE,
+        'is_group_bys' => TRUE,
+      ],
     ];
-    if (!$orgOnly) {
+    if ($options['contact_type'] !== 'Organization') {
       $spec = array_merge($spec, $individualFields);
     }
 
