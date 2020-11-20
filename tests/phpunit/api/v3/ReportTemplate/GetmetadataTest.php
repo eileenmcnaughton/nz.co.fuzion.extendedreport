@@ -2,10 +2,6 @@
 
 require_once __DIR__ . '/../../../BaseTestClass.php';
 
-use Civi\Test\HeadlessInterface;
-use Civi\Test\HookInterface;
-use Civi\Test\TransactionalInterface;
-
 /**
  * ReportTemplate.Getmetadata API Test Case
  * This is a generic test class implemented with PHPUnit.
@@ -86,11 +82,11 @@ class api_v3_ReportTemplate_GetmetadataTest extends BaseTestClass {
       }
     }
     $this->assertNotEmpty($result['order_bys']['custom_' . $ids['custom_field_id']]);
-    $this->assertTrue(!empty($result['group_bys']['custom_' . $ids['custom_field_id']]));
+    $this->assertNotTrue(empty($result['group_bys']['custom_' . $ids['custom_field_id']]));
     $this->assertEquals(CRM_Report_Form::OP_INT, $filters['custom_' . $ids['custom_field_id']]['operatorType']);
     $this->assertEquals(CRM_Report_Form::OP_DATE, $filters['custom_' . $dateField['id']]['operatorType']);
     $this->assertEquals(CRM_Report_Form::OP_MULTISELECT, $filters['custom_' . $selectField['id']]['operatorType']);
-    $this->assertEquals(CRM_Report_Form::OP_MULTISELECT, $filters['custom_' . $multiSelectField['id']]['operatorType']);
+    $this->assertEquals(CRM_Report_Form::OP_MULTISELECT_SEPARATOR, $filters['custom_' . $multiSelectField['id']]['operatorType']);
     $this->assertEquals('Pledge', $filters['custom_' . $multiSelectField['id']]['table_label']);
     $this->assertEquals(CRM_Report_Form::OP_SELECT, $filters['custom_' . $booleanField['id']]['operatorType']);
 

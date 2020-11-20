@@ -8132,17 +8132,7 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
     $field['is_aggregate_columns'] = in_array($field['html_type'], ['Select', 'Radio']);
 
     if (!empty($field['option_group_id'])) {
-      if (in_array($field['html_type'], [
-        'Multi-Select',
-        'AdvMulti-Select',
-        'CheckBox',
-      ])) {
-        $field['operatorType'] = CRM_Report_Form::OP_MULTISELECT_SEPARATOR;
-      }
-      else {
-        $field['operatorType'] = CRM_Report_Form::OP_MULTISELECT;
-      }
-
+      $field['operatorType'] = CRM_Core_BAO_CustomField::isSerialized($field) ? CRM_Report_Form::OP_MULTISELECT_SEPARATOR : CRM_Report_Form::OP_MULTISELECT;
       $field['options'] = civicrm_api3($field['extends'], 'getoptions', ['field' => 'custom_' . $field['id']])['values'];
     }
 
