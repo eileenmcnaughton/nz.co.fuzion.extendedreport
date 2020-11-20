@@ -2982,7 +2982,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     foreach ($rows as $rowNum => $row) {
       foreach ($row as $tableCol => $val) {
         if (array_key_exists($tableCol, $customFields)) {
-          $rows[$rowNum][$tableCol] = $this->formatCustomValues($val, $customFields[$tableCol], $fieldValueMap, $row);
+          $rows[$rowNum][$tableCol] =  CRM_Core_BAO_CustomField::displayValue($val, $customFields[$tableCol]);
           if (!empty($this->_drilldownReport)) {
             foreach ($this->_drilldownReport as $baseUrl => $label) {
               // Only one - that was a crap way of grabbing it. Too late to think of
