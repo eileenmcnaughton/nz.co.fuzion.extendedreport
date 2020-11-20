@@ -68,6 +68,10 @@ class CRM_Extendedreport_Form_Report_Contribute_BookkeepingExtended extends CRM_
           'contribution_status_id' => [1],
         ],
       ])
+      + $this->getColumns('ContributionRecur', ['group_by' => TRUE])
+      + $this->getColumns('Product', ['group_by' => TRUE])
+      + $this->getColumns('ContributionProduct', ['group_by' => TRUE])
+      + $this->getColumns('Note', ['prefix' => 'contribution_', 'prefix_label' => ' ' . E::ts('Contribution')])
       + $this->getColumns('FinancialTrxn', [
         'filters_defaults' => [
           'status_id' => ['IN' => [1]],
@@ -198,6 +202,9 @@ class CRM_Extendedreport_Form_Report_Contribute_BookkeepingExtended extends CRM_
   function fromClauses() {
     return [
       'contact_from_contribution',
+      'contribution_recur_from_contribution',
+      'note_from_contribution',
+      'product_from_contribution',
       'financial_trxn_from_contribution',
       'lineItem_from_financialTrxn',
       'batch_from_financialTrxn',
