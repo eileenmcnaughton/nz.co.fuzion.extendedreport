@@ -2333,17 +2333,8 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
         $filter['type'] = CRM_Utils_Type::T_STRING;
 
         if (!empty($field['option_group_id'])) {
-          if (in_array($htmlType, [
-            'Multi-Select',
-            'AdvMulti-Select',
-            'CheckBox',
-          ])
-          ) {
-            $filter['operatorType'] = CRM_Report_Form::OP_MULTISELECT_SEPARATOR;
-          }
-          else {
-            $filter['operatorType'] = CRM_Report_Form::OP_MULTISELECT;
-          }
+          $filter['operatorType'] = CRM_Core_BAO_CustomField::isSerialized($field) ? CRM_Report_Form::OP_MULTISELECT_SEPARATOR : CRM_Report_Form::OP_MULTISELECT;
+
           if ($this->_customGroupFilters) {
             $filter['options'] = [];
             $ogDAO = CRM_Core_DAO::executeQuery("SELECT ov.value, ov.label FROM civicrm_option_value ov WHERE ov.option_group_id = %1 ORDER BY ov.weight", [
@@ -2947,6 +2938,7 @@ LEFT JOIN civicrm_contact {$prop['alias']} ON {$prop['alias']}.id = {$this->_ali
       'html_type',
       'option_group_id',
       'id',
+      'serialize',
     ];
 
     // skip for type date and ContactReference since date format is already handled
@@ -3177,7 +3169,6 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
             break;
 
           case 'CheckBox':
-          case 'AdvMulti-Select':
           case 'Multi-Select':
             $value = explode(CRM_Core_DAO::VALUE_SEPARATOR, $value);
             $customData = [];
@@ -8150,7 +8141,8 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
     $extendsString = implode("','", $extends);
     $sql = "
 SELECT cg.table_name, cg.title, cg.extends, cf.id as cf_id, cf.label,
-       cf.column_name, cf.data_type, cf.html_type, cf.option_group_id, cf.time_format
+       cf.column_name, cf.data_type, cf.html_type, cf.option_group_id,
+       cf.time_format, cf.serialize
 FROM   civicrm_custom_group cg
 INNER  JOIN civicrm_custom_field cf ON cg.id = cf.custom_group_id
 WHERE cg.extends IN ('" . $extendsString . "') AND
@@ -8185,6 +8177,7 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
           'table_key' => $prefix . $customDAO->table_name,
           'prefix_label' => $label,
           'table_name' => $customDAO->table_name,
+          'serialize' => $customDAO->serialize,
         ];
         $fields[$prefix . $customDAO->column_name]['type'] = $this->getFieldType($fields[$prefix . $customDAO->column_name]);
       }
@@ -8250,17 +8243,7 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
     $field['is_aggregate_columns'] = in_array($field['html_type'], ['Select', 'Radio']);
 
     if (!empty($field['option_group_id'])) {
-      if (in_array($field['html_type'], [
-        'Multi-Select',
-        'AdvMulti-Select',
-        'CheckBox',
-      ])) {
-        $field['operatorType'] = CRM_Report_Form::OP_MULTISELECT_SEPARATOR;
-      }
-      else {
-        $field['operatorType'] = CRM_Report_Form::OP_MULTISELECT;
-      }
-
+      $field['operatorType'] = CRM_Core_BAO_CustomField::isSerialized($field) ? CRM_Report_Form::OP_MULTISELECT_SEPARATOR : CRM_Report_Form::OP_MULTISELECT;
       $field['options'] = civicrm_api3($field['extends'], 'getoptions', ['field' => 'custom_' . $field['id']])['values'];
     }
 
