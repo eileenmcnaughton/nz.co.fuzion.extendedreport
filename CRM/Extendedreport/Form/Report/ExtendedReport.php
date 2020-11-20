@@ -2827,6 +2827,7 @@ LEFT JOIN civicrm_contact {$prop['alias']} ON {$prop['alias']}.id = {$this->_ali
       'html_type',
       'option_group_id',
       'id',
+      'serialize',
     ];
 
     // skip for type date and ContactReference since date format is already handled
@@ -3057,7 +3058,6 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
             break;
 
           case 'CheckBox':
-          case 'AdvMulti-Select':
           case 'Multi-Select':
             $value = explode(CRM_Core_DAO::VALUE_SEPARATOR, $value);
             $customData = [];
@@ -8030,7 +8030,8 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
     $extendsString = implode("','", $extends);
     $sql = "
 SELECT cg.table_name, cg.title, cg.extends, cf.id as cf_id, cf.label,
-       cf.column_name, cf.data_type, cf.html_type, cf.option_group_id, cf.time_format
+       cf.column_name, cf.data_type, cf.html_type, cf.option_group_id,
+       cf.time_format, cf.serialize
 FROM   civicrm_custom_group cg
 INNER  JOIN civicrm_custom_field cf ON cg.id = cf.custom_group_id
 WHERE cg.extends IN ('" . $extendsString . "') AND
@@ -8065,6 +8066,7 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
           'table_key' => $prefix . $customDAO->table_name,
           'prefix_label' => $label,
           'table_name' => $customDAO->table_name,
+          'serialize' => $customDAO->serialize,
         ];
         $fields[$prefix . $customDAO->column_name]['type'] = $this->getFieldType($fields[$prefix . $customDAO->column_name]);
       }
