@@ -23,7 +23,7 @@ class Event_ParticipantExtendedTest extends BaseTestClass {
    *
    * @throws \CRM_Core_Exception
    */
-  public function testReportDateSql() {
+  public function testReportDateSql(): void {
     $params = [
       'report_id' => 'event/participantlistex',
       'fields' => [
@@ -89,7 +89,7 @@ class Event_ParticipantExtendedTest extends BaseTestClass {
    *
    * @throws \CRM_Core_Exception
    */
-  public function testCustomData() {
+  public function testCustomData(): void {
     $ids = $this->createCustomGroupWithField([]);
     $this->getRows([
       'report_id' => 'event/participantlistex',

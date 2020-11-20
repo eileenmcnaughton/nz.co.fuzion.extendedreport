@@ -34,15 +34,7 @@ class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Exten
   public function __construct() {
     $this->_autoIncludeIndexedFieldsAsOrderBys = 1;
     $this->_customGroupGroupBy = 1;
-
-    // Check if CiviCampaign is a) enabled and b) has active campaigns
-    $config = CRM_Core_Config::singleton();
-    $campaignEnabled = in_array("CiviCampaign", $config->enableComponents);
-    if ($campaignEnabled) {
-      $getCampaigns = CRM_Campaign_BAO_Campaign::getPermissionedCampaigns(NULL, NULL, TRUE, FALSE, TRUE);
-      $this->activeCampaigns = $getCampaigns['campaigns'];
-      asort($this->activeCampaigns);
-    }
+    $campaignEnabled = $this->isCampaignEnabled();
 
     $this->_columns = $this->getColumns('Contact')
       + $this->getColumns('Email')
@@ -165,10 +157,6 @@ class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Exten
       }
     }
     $this->_params['relationship_relationship_type_id_value'] = $relationships;
-    $this->buildACLClause([
-      $this->_aliases['contact_a_civicrm_contact'],
-      $this->_aliases['contact_b_civicrm_contact'],
-    ]);
     $sql = $this->buildQuery();
     $this->addToDeveloperTab($sql);
     $rows = [];
@@ -455,4 +443,5 @@ class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Exten
     }
     parent::alterDisplay($rows);
   }
+
 }

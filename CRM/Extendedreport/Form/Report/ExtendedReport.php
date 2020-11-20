@@ -2408,7 +2408,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   public function extendedCustomDataFrom() {
     foreach ($this->getMetadataByType('metadata') as $prop) {
       $table = $prop['table_name'];
-      if (empty($prop['extends']) || !$this->isCustomTableSelected($prop['extends_table'])) {
+      if (empty($prop['extends']) || !$this->isTableSelected($prop['prefix'] . $table)) {
         continue;
       }
 
@@ -2428,20 +2428,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
 LEFT JOIN civicrm_contact {$prop['alias']} ON {$prop['alias']}.id = {$this->_aliases[$tableKey]}.{$prop['column_name']} ";
       }
     }
-  }
-
-  /**
-   * Is the custom table selected for any purpose.
-   *
-   * If we retrieve fields from it, filter on it etc we need to join it in.
-   *
-   * @param string $table
-   *
-   * @return bool
-   */
-  protected function isCustomTableSelected($table): bool {
-    $selected = $this->selectedTables();
-    return isset($selected[$table]);
   }
 
   /**
@@ -9077,6 +9063,20 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
         LEFT JOIN {$this->temporaryTables[$tableAlias]['name']} {$this->_aliases[$tableAlias]}
         ON ( {$this->_aliases['civicrm_' . $entity]}.id = {$this->_aliases[$tableAlias]}.entity_id)";
     }
+  }
+
+  /**
+   * @return bool
+   */
+  protected function isCampaignEnabled(): bool {
+    // Check if CiviCampaign is a) enabled and b) has active campaigns
+    $campaignEnabled = in_array("CiviCampaign", CRM_Core_Config::singleton()->enableComponents);
+    if ($campaignEnabled) {
+      $getCampaigns = CRM_Campaign_BAO_Campaign::getPermissionedCampaigns(NULL, NULL, TRUE, FALSE, TRUE);
+      $this->activeCampaigns = $getCampaigns['campaigns'];
+      asort($this->activeCampaigns);
+    }
+    return $campaignEnabled;
   }
 
 }
