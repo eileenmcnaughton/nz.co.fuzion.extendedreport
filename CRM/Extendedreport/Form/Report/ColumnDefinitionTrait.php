@@ -395,6 +395,15 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
         'is_order_bys' => TRUE,
       ],
     ];
+    foreach (['do_not_email', 'do_not_phone', 'do_not_mail', 'do_not_sms', 'is_opt_out'] as $field) {
+      $spec[$options['prefix'] . $field] = [
+        'name' => $field,
+        'type' => CRM_Utils_Type::T_BOOLEAN,
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+        'is_group_bys' => FALSE,
+      ];
+    }
     $individualFields = [
       $options['prefix'] . 'first_name' => [
         'name' => 'first_name',
