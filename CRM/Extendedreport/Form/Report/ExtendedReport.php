@@ -5583,6 +5583,16 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'rightTable' => 'civicrm_note',
         'callback' => 'joinNoteFromParticipant',
       ],
+      'note_from_contribution' => [
+        'leftTable' => 'civicrm_contribution',
+        'rightTable' => 'civicrm_note',
+        'callback' => 'joinNoteFromContribution',
+      ],
+      'note_from_contact' => [
+        'leftTable' => 'civicrm_contact',
+        'rightTable' => 'civicrm_note',
+        'callback' => 'joinNoteFromContact',
+      ],
       'contact_from_grant' => [
         'leftTable' => 'civicrm_grant',
         'rightTable' => 'civicrm_contact',
@@ -6210,10 +6220,27 @@ ON {$this->_aliases['civicrm_participant']}.contact_id = {$this->_aliases['civic
 
   }
 
-  function joinNoteFromParticipant() {
+  /**
+   * Join in participant notes
+   */
+  protected function joinNoteFromParticipant(): void {
     $this->_from .= " LEFT JOIN civicrm_note {$this->_aliases['civicrm_note']}
 ON ( {$this->_aliases['civicrm_participant']}.id = {$this->_aliases['civicrm_note']}.entity_id
 AND {$this->_aliases['civicrm_note']}.entity_table = 'civicrm_participant') ";
+  }
+
+  /**
+   * Join in contribution notes
+   */
+  protected function joinNoteFromContribution(): void {
+    $this->joinNoteForEntity('contribution');
+  }
+
+  /**
+   * Join in contact notes
+   */
+  protected function joinNoteFromContact(): void {
+    $this->joinNoteForEntity('contact');
   }
 
   function joinContactFromGrant() {
@@ -9019,6 +9046,37 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
       $this->tableStatuses['batch'] = (bool) CRM_Batch_BAO_Batch::singleValueQuery('SELECT COUNT(*) FROM civicrm_batch');
     }
     return $this->tableStatuses['batch'];
+  }
+
+  /**
+   * Join in the note table for the given entity, using group_concat to prevent multiple rows.
+   *
+   * This is a many to one relationship, although for many tables that might not be UI-exposed.
+   * If there are many it could mess with totals so we use an temp table, as is done
+   * for entity tags. There is some risk of performance issues but they don't seem to have been reported
+   * in other similar places - we could go down the preconstrain path if we had to.
+   *
+   * @param string $entity
+   */
+  protected function joinNoteForEntity(string $entity): void {
+    $tableAlias = $entity . '_civicrm_note';
+    if ($this->isTableSelected($tableAlias)) {
+      if (!isset($this->temporaryTables[$tableAlias])) {
+        $tmpTableName = $this->createTemporaryTableFromColumns($tableAlias, '`entity_id` INT(10) NOT NULL, `id` INT(10) NOT NULL, `entity_table` varchar(64) NULL, `note` longtext NULL, index (entity_id), index (id)');
+        $sql = " INSERT INTO $tmpTableName
+          # we need id & entity_table to 'fool' the acl clause but id just has to be not null.
+          SELECT entity_id, MAX(id), 'civicrm_{$entity}' as entity_table, GROUP_CONCAT(note SEPARATOR ', ') as note
+          FROM civicrm_note note
+          WHERE entity_table = 'civicrm_{$entity}'
+          GROUP BY note.entity_id
+        ";
+
+        $this->executeReportQuery($sql);
+      }
+      $this->_from .= "
+        LEFT JOIN {$this->temporaryTables[$tableAlias]['name']} {$this->_aliases[$tableAlias]}
+        ON ( {$this->_aliases['civicrm_' . $entity]}.id = {$this->_aliases[$tableAlias]}.entity_id)";
+    }
   }
 
 }

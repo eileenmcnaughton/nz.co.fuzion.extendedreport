@@ -26,6 +26,8 @@
  +--------------------------------------------------------------------+
 */
 
+use CRM_Extendedreport_ExtensionUtil as E;
+
 /**
  *
  * @package CRM

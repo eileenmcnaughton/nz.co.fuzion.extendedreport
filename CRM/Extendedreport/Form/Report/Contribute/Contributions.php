@@ -25,6 +25,8 @@
  +--------------------------------------------------------------------+
  */
 
+use CRM_Extendedreport_ExtensionUtil as E;
+
 /**
  *
  * @package CRM
@@ -61,15 +63,19 @@ class CRM_Extendedreport_Form_Report_Contribute_Contributions extends CRM_Extend
    * @throws \CiviCRM_API3_Exception
    */
   public function __construct() {
-    $this->_columns = $this->getColumns('Contribution', ['group_by' => TRUE])
+    $this->_columns = $this->getColumns('Contribution', ['group_by' => TRUE, 'group_bys_defaults' => 'id'])
       + $this->getColumns('ContributionRecur', ['group_by' => TRUE])
       + $this->getColumns('Product', ['group_by' => TRUE])
       + $this->getColumns('ContributionProduct', ['group_by' => TRUE])
+      + $this->getColumns('Note', ['prefix' => 'contribution_', 'prefix_label' => ' ' . E::ts('Contribution')])
       + $this->getColumns('Contact', ['group_by' => TRUE])
       + $this->getColumns('Email', ['group_by' => TRUE])
       + $this->getColumns('Address', ['group_by' => TRUE])
       + $this->getColumns('Phone', ['group_by' => TRUE])
-      + $this->getColumns('Website', ['group_by' => TRUE, 'join_filters' => TRUE]);
+      + $this->getColumns('Website', ['group_by' => TRUE, 'join_filters' => TRUE])
+      + $this->getColumns('Note', ['prefix' => 'contact_', 'prefix_label' => ' ' . E::ts('Contact')])
+    ;
+
     parent::__construct();
   }
 
@@ -82,7 +88,9 @@ class CRM_Extendedreport_Form_Report_Contribute_Contributions extends CRM_Extend
     return [
       'contact_from_contribution',
       'contribution_recur_from_contribution',
+      'note_from_contribution',
       'product_from_contribution',
+      'note_from_contact',
       'email_from_contact',
       'phone_from_contact',
       'address_from_contact',
