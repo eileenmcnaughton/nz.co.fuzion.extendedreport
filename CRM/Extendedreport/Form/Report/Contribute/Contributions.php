@@ -63,6 +63,8 @@ class CRM_Extendedreport_Form_Report_Contribute_Contributions extends CRM_Extend
   public function __construct() {
     $this->_columns = $this->getColumns('Contribution', ['group_by' => TRUE])
       + $this->getColumns('ContributionRecur', ['group_by' => TRUE])
+      + $this->getColumns('Product', ['group_by' => TRUE])
+      + $this->getColumns('ContributionProduct', ['group_by' => TRUE])
       + $this->getColumns('Contact', ['group_by' => TRUE])
       + $this->getColumns('Email', ['group_by' => TRUE])
       + $this->getColumns('Address', ['group_by' => TRUE])
@@ -72,12 +74,15 @@ class CRM_Extendedreport_Form_Report_Contribute_Contributions extends CRM_Extend
   }
 
   /**
+   * Get the from clauses to be included.
+   *
    * @return array
    */
   public function fromClauses() :array {
     return [
       'contact_from_contribution',
       'contribution_recur_from_contribution',
+      'product_from_contribution',
       'email_from_contact',
       'phone_from_contact',
       'address_from_contact',

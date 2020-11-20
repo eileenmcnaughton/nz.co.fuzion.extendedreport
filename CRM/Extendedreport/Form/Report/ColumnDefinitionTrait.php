@@ -18,16 +18,13 @@ use CRM_Extendedreport_ExtensionUtil as E;
  */
 trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
 
-  /*
- * Function to get Activity Columns
- * @param array $options column options
- */
   /**
-   * @param array $options
+   * Function to get Activity Columns
+   * @param array $options column options
    *
    * @return array
    */
-  function getActivityColumns($options = []) {
+  public function getActivityColumns(array $options = []): array {
     $defaultOptions = [
       'prefix' => '',
       'prefix_label' => '',
@@ -207,10 +204,11 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
    * @param $options
    *
    * @return array
+   *
+   * @throws \CiviCRM_API3_Exception
    */
-  function getCaseColumns($options) {
-    $config = CRM_Core_Config::singleton();
-    if (!in_array('CiviCase', $config->enableComponents)) {
+  public function getCaseColumns(array $options): array {
+    if (!in_array('CiviCase', CRM_Core_Config::singleton()->enableComponents)) {
       return ['civicrm_case' => ['fields' => [], 'metadata' => []]];
     }
 
@@ -281,11 +279,13 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
   }
 
   /**
+   * Get columns for the contact table.
+   *
    * @param array $options
    *
    * @return array
    */
-  function getContactColumns($options = []) {
+  public function getContactColumns($options = []): array {
     $defaultOptions = [
       'prefix' => '',
       'prefix_label' => '',
@@ -514,7 +514,7 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
    *
    * @return array
    */
-  function getContributionRecurColumns($options = []) {
+  protected function getContributionRecurColumns($options = []): array {
     $spec = [
       'id' => [
         'is_fields' => TRUE,
@@ -674,7 +674,7 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
    *
    * @return array
    */
-  function getContributionSoftColumns($options = []) {
+  protected function getContributionSoftColumns($options = []): array {
     $spec = [
       'id' => [
         'is_fields' => FALSE,
@@ -727,18 +727,8 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
    *
    * @return array
    */
-  protected function getGrantColumns($options = []) {
-    $defaultOptions = [
-      'prefix' => '',
-      'prefix_label' => '',
-      'group_by' => FALSE,
-      'order_by' => TRUE,
-      'filters' => TRUE,
-      'fields_defaults' => [],
-      'filters_defaults' => [],
-      'group_bys_defaults' => [],
-      'order_by_defaults' => ['sort_name ASC'],
-    ];
+  protected function getGrantColumns(array $options = []): array {
+    $defaultOptions = $this->getDefaultOptions();
 
     $options = array_merge($defaultOptions, $options);
     $defaults = $this->getDefaultsFromOptions($options);
@@ -820,6 +810,89 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
       ],
     ];
     return $this->buildColumns($specs, 'civicrm_grant', 'CRM_Grant_BAO_Grant', 'grants', $defaults);
+  }
+
+  /**
+   * Function to get Product columns.
+   *
+   * @param array $options column options
+   *
+   * @return array
+   */
+  protected function getProductColumns(array $options = []): array {
+    $defaultOptions = $this->getDefaultOptions();
+
+    $options = array_merge($defaultOptions, $options);
+    $defaults = $this->getDefaultsFromOptions($options);
+    $specs = [
+      'name' => [
+        'is_fields' => 1,
+        'is_filters' => 1,
+        'is_group_bys' => 1,
+        'is_order_bys' => 1,
+      ],
+      'description' => [
+        'is_fields' => 1,
+        'is_filters' => 1,
+        'is_group_bys' => 1,
+        'is_order_bys' => 1,
+      ],
+      'sku' => [
+        'is_fields' => 1,
+        'is_filters' => 1,
+        'is_group_bys' => 1,
+        'is_order_bys' => 1,
+      ],
+    ];
+    return $this->buildColumns($specs, 'civicrm_product', 'CRM_Contribute_DAO_Product', 'product', $defaults);
+  }
+
+  /**
+   * Function to get Product Contribution columns.
+   *
+   * @param array $options column options
+   *
+   * @return array
+   */
+  protected function getContributionProductColumns(array $options = []): array {
+    $defaultOptions = $this->getDefaultOptions();
+
+    $options = array_merge($defaultOptions, $options);
+    $defaults = $this->getDefaultsFromOptions($options);
+    $specs = [
+      'product_option' => [
+        'is_fields' => 1,
+        'is_filters' => 1,
+        'is_group_bys' => 1,
+        'is_order_bys' => 1,
+      ],
+      'fulfilled_date' => [
+        'is_fields' => 1,
+        'is_filters' => 1,
+        'is_group_bys' => 1,
+        'is_order_bys' => 1,
+      ],
+    ];
+    return $this->buildColumns($specs, 'civicrm_contribution_product', 'CRM_Contribute_DAO_ContributionProduct', 'contribution_product', $defaults);
+  }
+
+  /**
+   * Get generic default options.
+   *
+   * @return array
+   */
+  protected function getDefaultOptions(): array {
+    return [
+      'prefix' => '',
+      'prefix_label' => '',
+      'group_by' => FALSE,
+      'order_by' => TRUE,
+      'filters' => TRUE,
+      'fields_defaults' => [],
+      'filters_defaults' => [],
+      'group_bys_defaults' => [],
+      'order_by_defaults' => ['sort_name ASC'],
+    ];
   }
 
 }
