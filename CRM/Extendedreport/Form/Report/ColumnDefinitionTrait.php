@@ -285,7 +285,7 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
    *
    * @return array
    */
-  public function getContactColumns($options = []): array {
+  protected function getContactColumns($options = []) {
     $defaultOptions = [
       'prefix' => '',
       'prefix_label' => '',
@@ -325,7 +325,7 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
         'is_contact_filter' => TRUE,
       ],
       $options['prefix'] . 'is_deleted' => [
-        'title' => $options['prefix_label'] . ts('Is deleted'),
+        'title' => $options['prefix_label'] . E::ts('Is deleted'),
         'name' => 'is_deleted',
         'operatorType' => CRM_Report_Form::OP_MULTISELECT,
         'options' => CRM_Contact_BAO_Contact::buildOptions('is_deleted'),
@@ -335,13 +335,13 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
       ],
       $options['prefix'] . 'external_identifier' => [
         'name' => 'external_identifier',
-        'title' => E::ts($options['prefix_label'] . 'External ID'),
+        'title' => $options['prefix_label'] . E::ts('External ID'),
         'type' => CRM_Utils_Type::T_INT,
         'is_fields' => TRUE,
       ],
       $options['prefix'] . 'sort_name' => [
         'name' => 'sort_name',
-        'title' => E::ts($options['prefix_label'] . 'Contact Name (in sort format)'),
+        'title' => $options['prefix_label'] . E::ts('Contact Name (in sort format)'),
         'is_fields' => TRUE,
         'is_filters' => TRUE,
         'is_order_bys' => TRUE,
@@ -398,33 +398,33 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
     $individualFields = [
       $options['prefix'] . 'first_name' => [
         'name' => 'first_name',
-        'title' => E::ts($options['prefix_label'] . 'First Name'),
+        'title' => $options['prefix_label'] . E::ts('First Name'),
         'is_fields' => TRUE,
         'is_filters' => TRUE,
         'is_order_bys' => TRUE,
       ],
       $options['prefix'] . 'middle_name' => [
         'name' => 'middle_name',
-        'title' => E::ts($options['prefix_label'] . 'Middle Name'),
+        'title' => $options['prefix_label'] . E::ts('Middle Name'),
         'is_fields' => TRUE,
       ],
       $options['prefix'] . 'last_name' => [
         'name' => 'last_name',
-        'title' => E::ts($options['prefix_label'] . 'Last Name'),
+        'title' => $options['prefix_label'] . E::ts('Last Name'),
         'is_fields' => TRUE,
         'is_filters' => TRUE,
         'is_order_bys' => TRUE,
       ],
       $options['prefix'] . 'nick_name' => [
         'name' => 'nick_name',
-        'title' => $options['prefix_label'] . ts('Nick Name'),
+        'title' => $options['prefix_label'] . E::ts('Nick Name'),
         'is_fields' => TRUE,
         'is_filters' => TRUE,
         'is_order_bys' => TRUE,
       ],
       $options['prefix'] . 'prefix_id' => [
         'name' => 'prefix_id',
-        'title' => $options['prefix_label'] . ts('Prefix'),
+        'title' => $options['prefix_label'] . E::ts('Prefix'),
         'options' => CRM_Contact_BAO_Contact::buildOptions('prefix_id'),
         'operatorType' => CRM_Report_Form::OP_MULTISELECT,
         'alter_display' => 'alterPseudoConstant',
@@ -433,7 +433,7 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
       ],
       $options['prefix'] . 'suffix_id' => [
         'name' => 'suffix_id',
-        'title' => $options['prefix_label'] . ts('Suffix'),
+        'title' => $options['prefix_label'] . E::ts('Suffix'),
         'options' => CRM_Contact_BAO_Contact::buildOptions('suffix_id'),
         'operatorType' => CRM_Report_Form::OP_MULTISELECT,
         'alter_display' => 'alterPseudoConstant',
@@ -442,7 +442,7 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
       ],
       $options['prefix'] . 'gender_id' => [
         'name' => 'gender_id',
-        'title' => E::ts($options['prefix_label'] . 'Gender'),
+        'title' => $options['prefix_label'] . E::ts('Gender'),
         'options' => CRM_Contact_BAO_Contact::buildOptions('gender_id'),
         'operatorType' => CRM_Report_Form::OP_MULTISELECT,
         'alter_display' => 'alterGenderID',
@@ -450,14 +450,14 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
         'is_filters' => TRUE,
       ],
       'birth_date' => [
-        'title' => E::ts($options['prefix_label'] . 'Birth Date'),
+        'title' => $options['prefix_label'] . E::ts('Birth Date'),
         'operatorType' => CRM_Report_Form::OP_DATE,
         'type' => CRM_Utils_Type::T_DATE,
         'is_fields' => TRUE,
         'is_filters' => TRUE,
       ],
       'age' => [
-        'title' => E::ts($options['prefix_label'] . 'Age'),
+        'title' => $options['prefix_label'] . E::ts('Age'),
         'dbAlias' => 'TIMESTAMPDIFF(YEAR, ' . $tableAlias . '.birth_date, CURDATE())',
         'type' => CRM_Utils_Type::T_INT,
         'is_fields' => TRUE,
