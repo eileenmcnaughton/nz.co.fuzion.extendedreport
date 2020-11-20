@@ -49,7 +49,7 @@ class api_v3_ReportTemplate_GetmetadataTest extends BaseTestClass implements Hea
    *
    * @throws \CRM_Core_Exception
    */
-  public function testApiMetadata() {
+  public function testApiMetadata(): void {
     $ids = $this->createCustomGroupWithField(['CustomField' => ['data_type' => 'Int', 'default_value' => 2]], 'Pledge');
     $dateField = $this->customFieldCreate([
       'custom_group_id' => $ids['custom_group_id'],
@@ -136,6 +136,8 @@ class api_v3_ReportTemplate_GetmetadataTest extends BaseTestClass implements Hea
 
   /**
    * Test the metadata generated for the address history report.
+   *
+   * @throws \CRM_Core_Exception
    */
   public function testApiMetadataContactFilters() {
     $result = $this->callAPISuccess('ReportTemplate', 'Getmetadata', ['report_id' => 'contact/addresshistory'])['values'];

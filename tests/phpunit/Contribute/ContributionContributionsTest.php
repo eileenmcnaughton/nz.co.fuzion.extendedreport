@@ -35,7 +35,7 @@ class ContributionContributionsTest extends BaseTestClass implements HeadlessInt
   /**
    * Test metadata retrieval.
    */
-  public function testGetMetadata() {
+  public function testGetMetadata(): void {
     $metadata = $this->callAPISuccess('ReportTemplate', 'getmetadata', ['report_id' => 'contribution/contributions'])['values'];
     $this->assertEquals('Contribution ID', $metadata['fields']['contribution_id']['title']);
     $this->assertTrue(is_array($metadata['fields']['contribution_id']));
@@ -48,8 +48,9 @@ class ContributionContributionsTest extends BaseTestClass implements HeadlessInt
    *   array to override function parameters
    *
    * @dataProvider getRowVariants
+   * @throws \CRM_Core_Exception
    */
-  public function testGetRows($overrides) {
+  public function testGetRows(array $overrides): void {
     $params = array_merge([
       'report_id' => 'contribution/contributions',
       'fields' => [
@@ -67,7 +68,7 @@ class ContributionContributionsTest extends BaseTestClass implements HeadlessInt
    *
    * @return array
    */
-  public function getRowVariants() {
+  public function getRowVariants(): array {
     return [
       [
         [
@@ -135,7 +136,7 @@ class ContributionContributionsTest extends BaseTestClass implements HeadlessInt
   /**
    * Test that is doesn't matter if the having filter is selected.
    */
-  public function testGetRowsHavingFilterNotSelected() {
+  public function testGetRowsHavingFilterNotSelected(): void {
     $params = [
       'report_id' => 'contribution/contributions',
       'contribution_total_amount_sum_op' => 'lte',
@@ -151,8 +152,10 @@ class ContributionContributionsTest extends BaseTestClass implements HeadlessInt
 
   /**
    * Test that between filter is respected.
+   *
+   * @throws \CRM_Core_Exception
    */
-  public function testGetRowsHavingFilterBetween() {
+  public function testGetRowsHavingFilterBetween(): void {
     // Create 2 contacts - one with total of $50 & one with total of $100.
     $this->createContacts(2);
     $this->callAPISuccess('Contribution', 'create', [
