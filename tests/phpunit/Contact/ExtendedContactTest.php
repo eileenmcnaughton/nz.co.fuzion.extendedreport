@@ -24,15 +24,6 @@ class Contact_ExtendedContactTest extends BaseTestClass implements HeadlessInter
 
   protected $contacts = [];
 
-  public function setUpHeadless() {
-    // Civi\Test has many helpers, like install(), uninstall(), sql(), and sqlFile().
-    // See: https://github.com/civicrm/org.civicrm.testapalooza/blob/master/civi-test.md
-    $env = \Civi\Test::headless()
-      ->installMe(__DIR__)
-      ->apply();
-    return $env;
-  }
-
   public function setUp() {
     parent::setUp();
     $this->enableAllComponents();
