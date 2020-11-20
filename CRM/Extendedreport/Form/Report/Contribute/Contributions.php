@@ -33,22 +33,6 @@
 class CRM_Extendedreport_Form_Report_Contribute_Contributions extends CRM_Extendedreport_Form_Report_ExtendedReport {
 
   /**
-   * Can this report be used on a contact tab.
-   *
-   * The report must support contact_id in the url for this to work.
-   *
-   * @var bool
-   */
-  protected $isSupportsContactTab = TRUE;
-
-  /**
-   * Add order bys for custom fields.
-   *
-   * @var bool
-   */
-  protected $_customGroupOrderBy = TRUE;
-
-  /**
    * Add group bys for custom fields.
    *
    * @var bool
@@ -78,6 +62,7 @@ class CRM_Extendedreport_Form_Report_Contribute_Contributions extends CRM_Extend
    */
   public function __construct() {
     $this->_columns = $this->getColumns('Contribution', ['group_by' => TRUE])
+      + $this->getColumns('ContributionRecur', ['group_by' => TRUE])
       + $this->getColumns('Contact', ['group_by' => TRUE])
       + $this->getColumns('Email', ['group_by' => TRUE])
       + $this->getColumns('Address', ['group_by' => TRUE])
@@ -89,9 +74,10 @@ class CRM_Extendedreport_Form_Report_Contribute_Contributions extends CRM_Extend
   /**
    * @return array
    */
-  function fromClauses() {
+  public function fromClauses() :array {
     return [
       'contact_from_contribution',
+      'contribution_recur_from_contribution',
       'email_from_contact',
       'phone_from_contact',
       'address_from_contact',

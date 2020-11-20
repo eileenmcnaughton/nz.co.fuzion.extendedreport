@@ -2613,7 +2613,7 @@ LEFT JOIN civicrm_contact {$prop['alias']} ON {$prop['alias']}.id = {$this->_ali
     if (empty($rows)) {
       return;
     }
-    list($firstRow) = $rows;
+    [$firstRow] = $rows;
     // no result to alter
     if (empty($firstRow)) {
       return;
@@ -3065,7 +3065,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     if (!empty($this->_customGroupExtends) && count($this->_customGroupExtends) == 1) {
       //lets only extend apply editability where only one entity extended
       // we can easily extend to contact combos
-      list($entity) = $this->_customGroupExtends;
+      [$entity] = $this->_customGroupExtends;
       $entity_table = $this->_aliases[strtolower('civicrm_' . $entity)];
       $idKeyArray = [$entity_table . '.id'];
       if (empty($this->_groupByArray) || $this->_groupByArray == $idKeyArray) {
@@ -5412,6 +5412,11 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'rightTable' => 'civicrm_financial_trxn',
         'callback' => 'joinFinancialTrxnFromContribution',
       ],
+      'contribution_recur_from_contribution' => [
+        'leftTable' => 'civicrm_contribution',
+        'rightTable' => 'civicrm_contribution_recur',
+        'callback' => 'joinContributionRecurFromContribution',
+      ],
       'membership_from_contribution' => [
         'leftTable' => 'civicrm_contribution',
         'rightTable' => 'civicrm_membership',
@@ -6050,11 +6055,24 @@ ON pp.contribution_id = {$this->_aliases['civicrm_contribution']}.id
 ";
   }
 
-  function joinParticipantFromContribution() {
+  /**
+   * Join the participant table from the contribution table.
+   */
+  public function joinContributionRecurFromContribution(): void {
+    if ($this->isTableSelected('civicrm_contribution_recur')) {
+      $this->_from .= " LEFT JOIN civicrm_contribution_recur {$this->_aliases['civicrm_contribution_recur']}
+      ON {$this->_aliases['civicrm_contribution_recur']}.id = {$this->_aliases['civicrm_contribution']}.contribution_recur_id";
+    }
+  }
+
+  /**
+   * Join the participant table from the contribution table.
+   */
+  public function joinParticipantFromContribution(): void {
     $this->_from .= " LEFT JOIN civicrm_participant_payment pp
-ON {$this->_aliases['civicrm_contribution']}.id = pp.contribution_id
-LEFT JOIN civicrm_participant {$this->_aliases['civicrm_participant']}
-ON pp.participant_id = {$this->_aliases['civicrm_participant']}.id";
+    ON {$this->_aliases['civicrm_contribution']}.id = pp.contribution_id
+    LEFT JOIN civicrm_participant {$this->_aliases['civicrm_participant']}
+    ON pp.participant_id = {$this->_aliases['civicrm_participant']}.id";
   }
 
   function joinMembershipFromContribution() {
@@ -8338,7 +8356,7 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
       $from = $this->_params["{$prefix}{$fieldName}_from"] ?? NULL;
       $to = $this->_params["{$prefix}{$fieldName}_to"] ?? NULL;
       if (!empty($this->_params["{$prefix}{$fieldName}_relative"])) {
-        list($from, $to) = CRM_Utils_Date::getFromTo($this->_params["{$prefix}{$fieldName}_relative"], NULL, NULL);
+        [$from, $to] = CRM_Utils_Date::getFromTo($this->_params["{$prefix}{$fieldName}_relative"], NULL, NULL);
       }
       if (strlen($to) === 10) {
         // If we just have the date we assume the end of that day.
