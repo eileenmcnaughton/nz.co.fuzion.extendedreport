@@ -9079,4 +9079,18 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
     }
   }
 
+  /**
+   * @return bool
+   */
+  protected function isCampaignEnabled(): bool {
+    // Check if CiviCampaign is a) enabled and b) has active campaigns
+    $campaignEnabled = in_array("CiviCampaign", CRM_Core_Config::singleton()->enableComponents);
+    if ($campaignEnabled) {
+      $getCampaigns = CRM_Campaign_BAO_Campaign::getPermissionedCampaigns(NULL, NULL, TRUE, FALSE, TRUE);
+      $this->activeCampaigns = $getCampaigns['campaigns'];
+      asort($this->activeCampaigns);
+    }
+    return $campaignEnabled;
+  }
+
 }
