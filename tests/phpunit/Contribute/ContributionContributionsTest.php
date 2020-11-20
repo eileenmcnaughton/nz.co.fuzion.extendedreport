@@ -20,17 +20,9 @@ use Civi\Test\TransactionalInterface;
  *
  * @group headless
  */
-class ContributionContributionsTest extends BaseTestClass implements HeadlessInterface, HookInterface, TransactionalInterface {
+class ContributionContributionsTest extends BaseTestClass {
 
   protected $contacts = [];
-
-  public function setUpHeadless() {
-    // Civi\Test has many helpers, like install(), uninstall(), sql(), and sqlFile().
-    // See: https://github.com/civicrm/org.civicrm.testapalooza/blob/master/civi-test.md
-    return \Civi\Test::headless()
-      ->installMe(__DIR__)
-      ->apply();
-  }
 
   /**
    * Test metadata retrieval.
@@ -135,6 +127,8 @@ class ContributionContributionsTest extends BaseTestClass implements HeadlessInt
 
   /**
    * Test that is doesn't matter if the having filter is selected.
+   *
+   * @throws \CRM_Core_Exception
    */
   public function testGetRowsHavingFilterNotSelected(): void {
     $params = [
@@ -185,7 +179,7 @@ class ContributionContributionsTest extends BaseTestClass implements HeadlessInt
       'fields' => array_fill_keys(['contribution_financial_type_id', 'contribution_total_amount', 'civicrm_contact_contact_id'], 1),
     ];
     $rows = $this->callAPISuccess('ReportTemplate', 'getrows', $params)['values'];
-    $this->assertEquals(1, count($rows));
+    $this->assertCount(1, $rows);
     $this->assertEquals(100, $rows[0]['civicrm_contribution_contribution_total_amount_sum']);
     $this->assertEquals(2, $rows[0]['civicrm_contribution_contribution_total_amount_count']);
     // Make sure total amount is optional
@@ -204,7 +198,7 @@ class ContributionContributionsTest extends BaseTestClass implements HeadlessInt
    *
    * @throws \CRM_Core_Exception
    */
-  public function testGetRowsFilterCustomData() {
+  public function testGetRowsFilterCustomData(): void {
     $this->enableAllComponents();
     $ids = $this->createCustomGroupWithField([]);
     $contribution = $this->createTwoContactsWithContributions($ids);
@@ -218,7 +212,7 @@ class ContributionContributionsTest extends BaseTestClass implements HeadlessInt
    *
    * @throws \CRM_Core_Exception
    */
-  public function testGetRowFilterAddressCustomData() {
+  public function testGetRowFilterAddressCustomData(): void {
     $this->enableAllComponents();
     $ids = $this->createCustomGroupWithField([], 'Address');
     $contribution = $this->createTwoContactsWithContributions();
@@ -234,13 +228,14 @@ class ContributionContributionsTest extends BaseTestClass implements HeadlessInt
   /**
    * @param array $ids
    *
-   * @return array|int
+   * @return array
    * @throws \CRM_Core_Exception
    */
-  protected function createTwoContactsWithContributions(array $ids = []) {
+  protected function createTwoContactsWithContributions(array $ids = []): array {
+    $contribution = [];
     $contacts = $this->createContacts(2);
     foreach ($contacts as $contact) {
-      $contribution = $this->callAPISuccess('Contribution', 'create', [
+      $contribution = (array) $this->callAPISuccess('Contribution', 'create', [
         'total_amount' => 4,
         'financial_type_id' => 'Donation',
         'contact_id' => $contact['id'],
