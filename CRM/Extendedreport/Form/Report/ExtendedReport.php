@@ -3313,8 +3313,8 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    *
    * @param array $specs
    * @param string $tableName
-   * @param string $daoName
-   * @param string $tableAlias
+   * @param null $daoName
+   * @param null $tableAlias
    * @param array $defaults
    * @param array $options Options
    *    - group_title
@@ -3344,7 +3344,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       if (empty($spec['dbAlias'])) {
         $spec['dbAlias'] = $tableAlias . '.' . $spec['name'];
       }
-      $daoSpec = CRM_Utils_Array::value($spec['name'], $exportableFields, CRM_Utils_Array::value($tableAlias . '_' . $spec['name'], $exportableFields, []));
+      $daoSpec = (array) CRM_Utils_Array::value($spec['name'], $exportableFields, ($exportableFields[$tableAlias . '_' . $spec['name']] ?? []));
       $spec = array_merge($daoSpec, $spec);
       if (!isset($columns[$tableName]['table_name']) && isset($spec['table_name'])) {
         $columns[$tableName]['table_name'] = $spec['table_name'];
@@ -5417,6 +5417,11 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'rightTable' => 'civicrm_contribution_recur',
         'callback' => 'joinContributionRecurFromContribution',
       ],
+      'product_from_contribution' => [
+        'leftTable' => 'civicrm_contribution',
+        'rightTable' => 'civicrm_product',
+        'callback' => 'joinProductFromContribution',
+      ],
       'membership_from_contribution' => [
         'leftTable' => 'civicrm_contribution',
         'rightTable' => 'civicrm_membership',
@@ -6056,12 +6061,25 @@ ON pp.contribution_id = {$this->_aliases['civicrm_contribution']}.id
   }
 
   /**
-   * Join the participant table from the contribution table.
+   * Join the recurring contribution table from the contribution table.
    */
   public function joinContributionRecurFromContribution(): void {
     if ($this->isTableSelected('civicrm_contribution_recur')) {
       $this->_from .= " LEFT JOIN civicrm_contribution_recur {$this->_aliases['civicrm_contribution_recur']}
       ON {$this->_aliases['civicrm_contribution_recur']}.id = {$this->_aliases['civicrm_contribution']}.contribution_recur_id";
+    }
+  }
+
+  /**
+   * Join the product (premium) table from the contribution table.
+   */
+  public function joinProductFromContribution(): void {
+    if ($this->isTableSelected('civicrm_product') || $this->isTableSelected('civicrm_contribution_product')) {
+      $this->_from .= "
+       LEFT JOIN  civicrm_contribution_product {$this->_aliases['civicrm_contribution_product']}
+         ON ({$this->_aliases['civicrm_contribution_product']}.contribution_id = {$this->_aliases['civicrm_contribution']}.id)
+       LEFT JOIN  civicrm_product {$this->_aliases['civicrm_product']}
+       ON ({$this->_aliases['civicrm_product']}.id = {$this->_aliases['civicrm_contribution_product']}.product_id)";
     }
   }
 
@@ -6075,7 +6093,10 @@ ON pp.contribution_id = {$this->_aliases['civicrm_contribution']}.id
     ON pp.participant_id = {$this->_aliases['civicrm_participant']}.id";
   }
 
-  function joinMembershipFromContribution() {
+  /**
+   * Join the membership table from the contribution table.
+   */
+  public function joinMembershipFromContribution(): void {
     $this->_from .= "
 LEFT JOIN civicrm_membership_payment pp
 ON {$this->_aliases['civicrm_contribution']}.id = pp.contribution_id
@@ -6083,7 +6104,7 @@ LEFT JOIN civicrm_membership {$this->_aliases['civicrm_membership']}
 ON pp.membership_id = {$this->_aliases['civicrm_membership']}.id";
   }
 
-  function joinMembershipTypeFromMembership() {
+  public function joinMembershipTypeFromMembership():void {
     $this->_from .= "
 LEFT JOIN civicrm_membership_type {$this->_aliases['civicrm_membership_type']}
 ON {$this->_aliases['civicrm_membership']}.membership_type_id = {$this->_aliases['civicrm_membership_type']}.id
