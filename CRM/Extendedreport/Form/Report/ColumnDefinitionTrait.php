@@ -325,7 +325,7 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
         'is_contact_filter' => TRUE,
       ],
       $options['prefix'] . 'is_deleted' => [
-        'title' => $options['prefix_label'] . ts('Is deleted'),
+        'title' => $options['prefix_label'] . E::ts('Is deleted'),
         'name' => 'is_deleted',
         'operatorType' => CRM_Report_Form::OP_MULTISELECT,
         'options' => CRM_Contact_BAO_Contact::buildOptions('is_deleted'),
@@ -398,7 +398,7 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
     $individualFields = [
       $options['prefix'] . 'first_name' => [
         'name' => 'first_name',
-        'title' => E::ts($options['prefix_label'] . 'First Name'),
+        'title' => $options['prefix_label'] . E::ts('First Name'),
         'is_fields' => TRUE,
         'is_filters' => TRUE,
         'is_order_bys' => TRUE,
@@ -433,7 +433,7 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
       ],
       $options['prefix'] . 'suffix_id' => [
         'name' => 'suffix_id',
-        'title' => $options['prefix_label'] . ts('Suffix'),
+        'title' => $options['prefix_label'] . E::ts('Suffix'),
         'options' => CRM_Contact_BAO_Contact::buildOptions('suffix_id'),
         'operatorType' => CRM_Report_Form::OP_MULTISELECT,
         'alter_display' => 'alterPseudoConstant',
@@ -450,7 +450,7 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
         'is_filters' => TRUE,
       ],
       'birth_date' => [
-        'title' => E::ts($options['prefix_label'] . 'Birth Date'),
+        'title' => $options['prefix_label'] . E::ts('Birth Date'),
         'operatorType' => CRM_Report_Form::OP_DATE,
         'type' => CRM_Utils_Type::T_DATE,
         'is_fields' => TRUE,
