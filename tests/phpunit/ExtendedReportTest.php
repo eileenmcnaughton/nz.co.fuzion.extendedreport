@@ -22,16 +22,6 @@ use Civi\Test\TransactionalInterface;
  */
 class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, HookInterface {
 
-  protected $ids = [];
-
-  public function setUpHeadless() {
-    // Civi\Test has many helpers, like install(), uninstall(), sql(), and sqlFile().
-    // See: https://github.com/civicrm/org.civicrm.testapalooza/blob/master/civi-test.md
-    return \Civi\Test::headless()
-      ->installMe(__DIR__)
-      ->apply();
-  }
-
   public function setUp() {
     parent::setUp();
     $this->enableAllComponents();
@@ -100,7 +90,7 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
    *
    * @throws \CRM_Core_Exception
    */
-  public function testExtendedFields($group_bys = []) {
+  public function testExtendedFields($group_bys = []): void {
     $contact = $this->callAPISuccess('Contact', 'create', ['contact_type' => 'Individual', 'first_name' => 'first', 'last_name' => 'last']);
     $this->ids['Contact'][] = $contact['id'];
     $this->callAPISuccess('Contribution', 'create', ['financial_type_id' => 'Donation', 'total_amount' => 10, 'contact_id' => $contact['id']]);
