@@ -312,6 +312,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    * @throws \CiviCRM_API3_Exception
    */
   public function __construct() {
+    CRM_Core_DAO::executeQuery("SET group_concat_max_len=1500000");
     parent::__construct();
     $this->addTemplateSelector();
     if ($this->_customGroupAggregates) {
@@ -6224,22 +6225,17 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    * @param string $prefix
    * @param array $extra
    */
-  function joinContributionSummaryTableFromContact($prefix, $extra) {
-    CRM_Core_DAO::executeQuery("SET group_concat_max_len=15000");
-    $tempTable = 'civicrm_report_temp_contsumm' . $prefix . date('d_H_I') . rand(1, 10000);
-    $dropSql = "DROP TABLE IF EXISTS $tempTable";
+  public function joinContributionSummaryTableFromContact($prefix, $extra): void {
     $criteria = " is_test = 0 ";
     if (!empty($extra['criteria'])) {
       $criteria .= " AND " . implode(' AND ', $extra['criteria']);
     }
-    $createSql = "
-      CREATE TABLE $tempTable (
-      `contact_id` INT(10) UNSIGNED NOT NULL COMMENT 'Foreign key to civicrm_contact.id .',
+    $tempTable = $this->createTemporaryTable('contribution_summary',
+      "`contact_id` INT(10) UNSIGNED NOT NULL COMMENT 'Foreign key to civicrm_contact.id .',
       `contributionsummary{$prefix}` longtext NULL DEFAULT NULL COLLATE 'utf8_unicode_ci',
       INDEX `contact_id` (`contact_id`)
-      )
-      COLLATE='utf8_unicode_ci'
-      ENGINE=InnoDB";
+      )", TRUE
+    );
     $insertSql = "
       INSERT INTO
       $tempTable
@@ -6262,8 +6258,6 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
       ORDER BY NULL
      ";
 
-    CRM_Core_DAO::executeQuery($dropSql);
-    CRM_Core_DAO::executeQuery($createSql);
     CRM_Core_DAO::executeQuery($insertSql);
     $this->_from .= " LEFT JOIN $tempTable {$this->_aliases['civicrm_contribution_summary' . $prefix]}
       ON {$this->_aliases['civicrm_contribution_summary' . $prefix]}.contact_id = {$this->_aliases['civicrm_contact']}.id";
