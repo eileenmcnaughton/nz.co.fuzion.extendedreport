@@ -92,7 +92,7 @@ class CRM_Extendedreport_Form_Report_Contribute_Contributions extends CRM_Extend
       'product_from_contribution',
       'note_from_contact',
       'email_from_contact',
-      'phone_from_contact',
+      'primary_phone_from_contact',
       'address_from_contact',
       'website_from_contact',
     ];

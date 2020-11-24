@@ -34,7 +34,7 @@ class CRM_Extendedreport_Form_Report_Grant_Detail extends CRM_Extendedreport_For
     return [
       'contact_from_grant',
       'email_from_contact',
-      'phone_from_contact',
+      'primary_phone_from_contact',
     ];
   }
 

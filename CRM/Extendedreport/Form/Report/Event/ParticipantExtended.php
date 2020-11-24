@@ -177,7 +177,7 @@ class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Exten
       'event_from_participant',
       'contact_from_participant',
       'note_from_participant',
-      'phone_from_contact',
+      'primary_phone_from_contact',
       'address_from_contact',
       'email_from_contact',
       'related_contact_from_participant',
