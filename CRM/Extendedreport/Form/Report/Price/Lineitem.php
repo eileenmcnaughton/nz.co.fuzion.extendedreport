@@ -85,7 +85,7 @@ class CRM_Extendedreport_Form_Report_Price_Lineitem extends CRM_Extendedreport_F
       'address_from_contact',
       'address_from_contribution',
       'email_from_contact',
-      'phone_from_contact',
+      'primary_phone_from_contact',
     ];
 
   }
