@@ -2528,7 +2528,11 @@ LEFT JOIN civicrm_contact {$prop['alias']} ON {$prop['alias']}.id = {$this->_ali
       }
       // Add any alters that can be intuited from the field specs.
       // So far only boolean but a lot more could be.
-      if (empty($alterSpecs[$fieldAlias]) && $specs['type'] == CRM_Utils_Type::T_BOOLEAN) {
+      if (empty($alterSpecs[$fieldAlias])
+        && $specs['type'] == CRM_Utils_Type::T_BOOLEAN
+        // Do not handle custom fields in alter functions
+        // as they are otherwise handled.
+        && empty($specs['extends'])) {
         $alterFunctions[$fieldAlias] = 'alterBoolean';
         $alterMap[$fieldAlias] = $fieldAlias;
         $alterSpecs[$fieldAlias] = NULL;
@@ -2821,7 +2825,7 @@ LEFT JOIN civicrm_contact {$prop['alias']} ON {$prop['alias']}.id = {$this->_ali
       return;
     }
 
-    $customFields = $fieldValueMap = [];
+    $customFields = [];
     $customFieldCols = [
       'column_name',
       'data_type',
@@ -2855,9 +2859,6 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
             }
           }
         }
-      }
-      if ($dao->option_group_id) {
-        $fieldValueMap[$dao->option_group_id] = civicrm_api3($dao->extends, 'getoptions', ['field' => 'custom_' . $dao->id])['values'];
       }
     }
     $entryFound = FALSE;
