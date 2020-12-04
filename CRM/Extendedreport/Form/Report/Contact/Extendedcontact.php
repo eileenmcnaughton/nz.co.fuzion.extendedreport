@@ -32,4 +32,18 @@ class CRM_Extendedreport_Form_Report_Contact_Extendedcontact extends CRM_Extende
     $this->_columns['civicrm_contact']['fields']['id']['required'] = TRUE;
     parent::__construct();
   }
+
+  /**
+   * Remove is_primary from contact table to phone join.
+   *
+   * @param string $prefix
+   * @param array $extra
+   */
+  protected function joinPhoneFromContact($prefix = '', $extra = []) {
+    if ($this->isTableSelected($prefix . 'civicrm_phone')) {
+      $this->_from .= " LEFT JOIN civicrm_phone {$this->_aliases[$prefix . 'civicrm_phone']}
+      ON {$this->_aliases[$prefix . 'civicrm_phone']}.contact_id = {$this->_aliases[$prefix . 'civicrm_contact']}.id";
+    }
+  }
+
 }
