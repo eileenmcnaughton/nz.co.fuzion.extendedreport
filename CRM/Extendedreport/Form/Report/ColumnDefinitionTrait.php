@@ -86,7 +86,6 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
         'default' => TRUE,
         'name' => 'activity_date_time',
         'operatorType' => CRM_Report_Form::OP_DATE,
-        'type' => CRM_Utils_Type::T_DATE,
         'is_fields' => TRUE,
         'is_filters' => TRUE,
         'is_order_bys' => TRUE,
