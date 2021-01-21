@@ -330,6 +330,7 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
         'options' => CRM_Contact_BAO_Contact::buildOptions('is_deleted'),
         'is_fields' => FALSE,
         'is_filters' => TRUE,
+        'default' => 0,
         'is_group_bys' => FALSE,
       ],
       $options['prefix'] . 'external_identifier' => [
