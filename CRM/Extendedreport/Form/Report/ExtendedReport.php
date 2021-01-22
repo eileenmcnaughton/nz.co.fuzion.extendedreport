@@ -1803,17 +1803,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
               $rows[$key][$columnName] = CRM_Utils_Money::format(number_format($amount, 2), "USD");
               $endNew[$columnName] += $amount;
             }
-            elseif ($columnName == 'civicrm_contribution_contribution_contribution_page_id') {
-              $contributionPageId = $amount;
-              $contributionResult = civicrm_api3('ContributionPage', 'get', [
-                'sequential' => 1,
-                'return' => ["title"],
-                'id' => $contributionPageId,
-              ]);
-              if (!empty($contributionResult['id'])) {
-                $rows[$key][$columnName] = $contributionResult['values'][0]['title'];
-              }
-            }
           }
         }
         if (!empty($rows) && !empty($endNew)) {
@@ -4304,6 +4293,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'operatorType' => CRM_Report_Form::OP_MULTISELECT,
         'options' => $this->_getOptions('Contribution', 'contribution_page_id'),
         'type' => CRM_Utils_Type::T_INT,
+        'alter_display' => 'alterContributionPage',
       ],
       'currency' => [
         'is_fields' => TRUE,
@@ -6452,6 +6442,16 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
   function alterCampaign($value, &$row) {
     $campaigns = CRM_Campaign_BAO_Campaign::getCampaigns();
     return CRM_Utils_Array::value($value, $campaigns);
+  }
+
+  /**
+   * @param $value
+   *
+   * @return mixed
+   */
+  function alterContributionPage($value) {
+    $title = CRM_Contribute_PseudoConstant::contributionPage($value);
+    return $title;
   }
 
   /**
