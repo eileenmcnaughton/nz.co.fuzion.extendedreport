@@ -2795,6 +2795,10 @@ LEFT JOIN civicrm_contact {$prop['alias']} ON {$prop['alias']}.id = {$this->_ali
       $this->_params['fields'] = [];
     }
     foreach ($this->_params['fields'] as $fieldAlias => $value) {
+      $prefix = $this->metaData['fields'][$fieldAlias]['prefix'] ?? "";
+      if ($prefix) {
+        $fieldAlias = str_replace('_' . $prefix, '', $fieldAlias);
+      }
       $fieldId = CRM_Core_BAO_CustomField::getKeyID($fieldAlias);
       if ($fieldId) {
         $customFieldIds[$fieldAlias] = $fieldId;
@@ -2851,17 +2855,29 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       }
     }
     $entryFound = FALSE;
+    $columnKeys = array_keys($this->_columns);
     foreach ($rows as $rowNum => $row) {
       foreach ($row as $tableCol => $val) {
-        if (array_key_exists($tableCol, $customFields)) {
-          $rows[$rowNum][$tableCol] =  CRM_Core_BAO_CustomField::displayValue($val, $customFields[$tableCol]);
+        $customField = NULL;
+        $columnMatchedKeys = array_filter($columnKeys, function($key) use ($tableCol) {
+          return strpos($tableCol, $key . '_') !== FALSE;
+        });
+        $columnMatchedKey = array_pop($columnMatchedKeys);
+        if (!empty($columnMatchedKey)) {
+          $alias = $this->_columns[$columnMatchedKey]['alias'] ?? "";
+          $name = $this->_columns[$columnMatchedKey]['name'] ?? "";
+          $customFieldsIndex = str_replace($alias, $name, $tableCol);
+          $customField = isset($customFields[$customFieldsIndex]) ? $customFields[$customFieldsIndex] : NULL;
+        }
+        if ($customField) {
+          $rows[$rowNum][$tableCol] =  CRM_Core_BAO_CustomField::displayValue($val, $customField);
           if (!empty($this->_drilldownReport)) {
             foreach ($this->_drilldownReport as $baseUrl => $label) {
               // Only one - that was a crap way of grabbing it. Too late to think of
               // an elegant one.
             }
 
-            $fieldName = 'custom_' . $customFields[$tableCol]['id'];
+            $fieldName = 'custom_' . $customField['id'];
             $criteriaQueryParams = CRM_Report_Utils_Report::getPreviewCriteriaQueryParams($this->_defaults, $this->_params);
             $groupByCriteria = $this->getGroupByCriteria($tableCol, $row);
 
