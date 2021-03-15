@@ -461,6 +461,13 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
         'is_filters' => TRUE,
         'is_order_bys' => TRUE,
       ],
+      $options['prefix'] . 'formal_title' => [
+        'name' => 'formal_title',
+        'title' => $options['prefix_label'] . E::ts( 'Formal Title'),
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+        'is_order_bys' => TRUE,
+      ],
       $options['prefix'] . 'prefix_id' => [
         'name' => 'prefix_id',
         'title' => $options['prefix_label'] . E::ts('Prefix'),
