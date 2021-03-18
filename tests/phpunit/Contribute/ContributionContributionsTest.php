@@ -32,7 +32,7 @@ class ContributionContributionsTest extends BaseTestClass {
   public function testGetMetadata(): void {
     $metadata = $this->callAPISuccess('ReportTemplate', 'getmetadata', ['report_id' => 'contribution/contributions'])['values'];
     $this->assertEquals('Contribution ID', $metadata['fields']['contribution_id']['title']);
-    $this->assertIsArray($metadata['fields']['contribution_id']);
+    $this->assertTrue(is_array($metadata['fields']['contribution_id']));
   }
 
   /**
