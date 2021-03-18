@@ -1142,21 +1142,20 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    */
   protected function storeJoinFiltersArray() {
     foreach ($this->getSelectedJoinFilters() as $fieldName => $field) {
-      $clause = NULL;
       $clause = $this->generateFilterClause($field, $fieldName, 'join_filter_');
       if (!empty($clause)) {
         $this->joinClauses[$field['table_name']][] = $clause;
-        if ($field['name'] == 'relationship_type_id') {
+        if ($field['name'] === 'relationship_type_id') {
           $relationshipLabel = civicrm_api3('relationship_type', 'getvalue', [
             'id' => $this->_params["{$fieldName}_value"],
             'return' => 'label_a_b',
           ]);
           foreach (array_keys($this->_columns) as $columnLabel) {
-            if (stristr($columnLabel, 'related_civicrm')) {
+            if (stripos($columnLabel, 'related_civicrm') !== FALSE) {
               if (!empty($this->_columns[$columnLabel]['fields'])) {
-                foreach ($this->_columns[$columnLabel]['fields'] as &$field) {
-                  $field['title'] = str_replace('Related Contact', $relationshipLabel, $field['title']);
-                  $field['title'] = str_replace('of ', '', $field['title']);
+                foreach ($this->_columns[$columnLabel]['fields'] as &$columnField) {
+                  $columnField['title'] = str_replace('Related Contact', $relationshipLabel, $columnField['title']);
+                  $columnField['title'] = str_replace('of ', '', $columnField['title']);
                 }
               }
             }
