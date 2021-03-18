@@ -27,7 +27,7 @@ class RelationshipExtendedTest extends BaseTestClass implements HeadlessInterfac
   /**
    * @throws \CRM_Core_Exception
    */
-  public function setUp() {
+  public function setUp(): void {
     parent::setUp();
     $components = [];
     $dao = new CRM_Core_DAO_Component();
@@ -58,7 +58,7 @@ class RelationshipExtendedTest extends BaseTestClass implements HeadlessInterfac
   /**
    * @throws \CRM_Core_Exception
    */
-  public function tearDown() {
+  public function tearDown(): void {
     parent::tearDown();
     $this->callAPISuccess('CustomField', 'delete', ['id' => $this->customFieldID]);
     $this->callAPISuccess('CustomGroup', 'delete', ['id' => $this->customGroupID]);

@@ -24,7 +24,7 @@ class Contact_AddressHistoryTest extends BaseTestClass implements HeadlessInterf
 
   protected $contacts = [];
 
-  public function setUp() {
+  public function setUp():void {
     parent::setUp();
     $contact = $this->callAPISuccess('Contact', 'create', ['first_name' => 'Wonder', 'last_name' => 'Woman', 'contact_type' => 'Individual']);
     $this->contacts[] = $contact['id'];
@@ -34,7 +34,7 @@ class Contact_AddressHistoryTest extends BaseTestClass implements HeadlessInterf
   /**
    * @throws \CRM_Core_Exception
    */
-  public function tearDown() {
+  public function tearDown(): void {
     parent::tearDown();
     Civi::settings()->set('logging', FALSE);
   }

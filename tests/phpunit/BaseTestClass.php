@@ -1,8 +1,12 @@
 <?php
 
+use Civi\Test;
+use Civi\Test\Api3TestTrait;
+use Civi\Test\CiviEnvBuilder;
 use Civi\Test\HeadlessInterface;
 use Civi\Test\HookInterface;
 use Civi\Test\TransactionalInterface;
+use PHPUnit\Framework\TestCase;
 
 require_once __DIR__ . '/../../extendedreport.php';
 
@@ -20,9 +24,9 @@ require_once __DIR__ . '/../../extendedreport.php';
  *
  * @group headless
  */
-class BaseTestClass extends \PHPUnit\Framework\TestCase implements HeadlessInterface, HookInterface, TransactionalInterface {
+class BaseTestClass extends TestCase implements HeadlessInterface, HookInterface, TransactionalInterface {
 
-  use \Civi\Test\Api3TestTrait;
+  use Api3TestTrait;
 
   /**
    * @var int
@@ -43,10 +47,10 @@ class BaseTestClass extends \PHPUnit\Framework\TestCase implements HeadlessInter
    *
    * @throws \CRM_Extension_Exception_ParseException
    */
-  public function setUpHeadless(): \Civi\Test\CiviEnvBuilder {
+  public function setUpHeadless(): CiviEnvBuilder {
     // Civi\Test has many helpers, like install(), uninstall(), sql(), and sqlFile().
     // See: https://github.com/civicrm/org.civicrm.testapalooza/blob/master/civi-test.md
-    return \Civi\Test::headless()
+    return Test::headless()
       ->installMe(__DIR__)
       ->apply();
   }
@@ -56,7 +60,7 @@ class BaseTestClass extends \PHPUnit\Framework\TestCase implements HeadlessInter
    *
    * @throws \CRM_Core_Exception
    */
-  public function tearDown() {
+  public function tearDown(): void {
     foreach ($this->ids as $entity => $entityIDs) {
       foreach ($entityIDs as $entityID) {
         try {

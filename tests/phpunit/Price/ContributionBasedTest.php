@@ -24,7 +24,7 @@ class ContributionBasedTest extends BaseTestClass implements HeadlessInterface, 
 
   protected $contacts = [];
 
-  public function setUp() {
+  public function setUp():void {
     parent::setUp();
     $this->enableAllComponents();
     $contact = $this->callAPISuccess('Contact', 'create', ['first_name' => 'Wonder', 'last_name' => 'Woman', 'contact_type' => 'Individual']);

@@ -24,15 +24,11 @@ class CampaignProgressReportTest extends BaseTestClass implements HeadlessInterf
 
   protected $contacts = [];
 
-  public function setUp() {
+  public function setUp(): void {
     parent::setUp();
     $this->enableAllComponents();
     $contact = $this->callAPISuccess('Contact', 'create', ['first_name' => 'Wonder', 'last_name' => 'Woman', 'contact_type' => 'Individual']);
     $this->contacts[] = $contact['id'];
-  }
-
-  public function tearDown() {
-    parent::tearDown();
   }
 
   /**

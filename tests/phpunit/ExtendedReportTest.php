@@ -22,12 +22,12 @@ use Civi\Test\TransactionalInterface;
  */
 class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, HookInterface {
 
-  public function setUp() {
+  public function setUp(): void {
     parent::setUp();
     $this->enableAllComponents();
   }
 
-  public function tearDown() {
+  public function tearDown(): void {
     CRM_Core_DAO::executeQuery('DELETE FROM civicrm_pledge');
     CRM_Core_DAO::executeQuery('DELETE FROM civicrm_group');
     parent::tearDown();
