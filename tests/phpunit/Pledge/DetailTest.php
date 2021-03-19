@@ -25,7 +25,7 @@ class Pledge_DetailTest extends BaseTestClass implements HeadlessInterface, Hook
   /**
    * @throws \CRM_Core_Exception
    */
-  public function tearDown() {
+  public function tearDown(): void {
     CRM_Core_DAO::executeQuery('DELETE FROM civicrm_pledge');
     CRM_Core_DAO::executeQuery('DELETE FROM civicrm_group');
     parent::tearDown();

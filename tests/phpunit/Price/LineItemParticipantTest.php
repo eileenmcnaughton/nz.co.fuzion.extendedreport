@@ -24,7 +24,7 @@ class LineItemParticipantTest extends BaseTestClass implements HeadlessInterface
 
   protected $contacts = [];
 
-  public function setUp() {
+  public function setUp(): void {
     parent::setUp();
     $components = [];
     $dao = new CRM_Core_DAO_Component();
@@ -43,6 +43,8 @@ class LineItemParticipantTest extends BaseTestClass implements HeadlessInterface
    *
    * @param array $params
    *   Parameters to pass to the report
+   *
+   * @throws \CRM_Core_Exception
    */
   public function testReport($params) {
     // Just checking no error at the moment.

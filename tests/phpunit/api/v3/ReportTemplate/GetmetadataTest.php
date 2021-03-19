@@ -15,7 +15,7 @@ class api_v3_ReportTemplate_GetmetadataTest extends BaseTestClass {
    *
    * @throws \CRM_Core_Exception
    */
-  public function setUp() {
+  public function setUp(): void {
     parent::setUp();
     if (\Civi::settings()->get('logging')) {
       // Hack alert - there is a bug whereby the table is deleted but the row isn't after ActivityExtendedTest.
@@ -102,9 +102,9 @@ class api_v3_ReportTemplate_GetmetadataTest extends BaseTestClass {
    *
    * @param string $reportID
    *
-   * @throws \CiviCRM_API3_Exception
+   * @throws \CRM_Core_Exception
    */
-  public function testApiMetadataAllReports($reportID) {
+  public function testApiMetadataAllReports(string $reportID): void {
     $result = $this->callAPISuccess('ReportTemplate', 'Getmetadata', ['report_id' => $reportID, 'debug' => 1])['values'];
     $filters = $result['filters'];
     foreach ($filters as $fieldName => $filter) {
@@ -113,7 +113,7 @@ class api_v3_ReportTemplate_GetmetadataTest extends BaseTestClass {
       $knownNoFieldFilters = ['effective_date', 'tagid', 'gid', 'pledge_payment_status_id'];
       if (!in_array($fieldName, $knownNoFieldFilters) && $filter['is_fields']) {
         $this->assertEquals($result['fields'][$fieldName], $filter);
-        $this->assertTrue(!empty($filter['operatorType']), $fieldName . ' has no operator Type');
+        $this->assertNotEmpty($filter['operatorType'], $fieldName . ' has no operator Type');
       }
     }
   }
@@ -123,7 +123,7 @@ class api_v3_ReportTemplate_GetmetadataTest extends BaseTestClass {
    *
    * @throws \CRM_Core_Exception
    */
-  public function testApiMetadataContactFilters() {
+  public function testApiMetadataContactFilters(): void {
     $result = $this->callAPISuccess('ReportTemplate', 'Getmetadata', ['report_id' => 'contact/addresshistory'])['values'];
     $this->assertEquals(TRUE, $result['metadata']['contact_id']['is_contact_filter']);
     $this->assertEmpty($result['order_bys']);

@@ -50,10 +50,6 @@ class ContributionOverviewExtendedTest extends BaseTestClass implements Headless
     ]);
   }
 
-  public function tearDown() {
-    parent::tearDown();
-  }
-
   /**
    * Test the ContributionOverviewExtended report with group by.
    *
