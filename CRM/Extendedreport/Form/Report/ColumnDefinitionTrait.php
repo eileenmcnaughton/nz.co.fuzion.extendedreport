@@ -502,6 +502,13 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
         'is_fields' => TRUE,
         'is_filters' => TRUE,
       ],
+      'deceased_date' => [
+        'title' => $options['prefix_label'] . E::ts('Deceased Date'),
+        'operatorType' => CRM_Report_Form::OP_DATE,
+        'type' => CRM_Utils_Type::T_DATE,
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+      ],
       'age' => [
         'title' => $options['prefix_label'] . E::ts('Age'),
         'dbAlias' => 'TIMESTAMPDIFF(YEAR, ' . $tableAlias . '.birth_date, CURDATE())',
