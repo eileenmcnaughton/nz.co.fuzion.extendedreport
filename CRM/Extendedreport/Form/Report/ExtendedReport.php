@@ -1520,7 +1520,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
         if (!empty($field['frequency'])) {
           $this->_defaults['group_bys_freq'][$fieldName] = 'MONTH';
         }
-        $this->_defaults['group_bys'][$fieldName] = $field['default'];
+        $this->_defaults['group_bys'][$fieldName] = TRUE;
       }
     }
 
@@ -3272,8 +3272,10 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
           }
           $columns[$tableName][$type][$fieldAlias] = $spec;
           if (isset($defaults[$type . '_defaults']) && isset($defaults[$type . '_defaults'][$spec['name']])) {
-            $columns[$tableName]['metadata'][$fieldAlias]['default'] = $defaults[$type . '_defaults'][$spec['name']];
-            if ($type === 'group_bys') {
+            if ($type === 'filters' || $type === 'join_filters') {
+              $columns[$tableName]['metadata'][$fieldAlias]['default'] = $defaults[$type . '_defaults'][$spec['name']];
+            }
+            elseif ($type === 'group_bys') {
               $columns[$tableName]['metadata'][$fieldAlias]['is_group_bys_default'] = $defaults[$type . '_defaults'][$spec['name']];
             }
           }
