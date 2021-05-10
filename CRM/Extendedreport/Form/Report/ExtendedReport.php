@@ -4598,6 +4598,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       'group_by' => FALSE,
       'order_by' => TRUE,
       'filters' => TRUE,
+      'join_filters' => TRUE,
       'fields_defaults' => ['display_name', 'id'],
       'filters_defaults' => [],
       'group_bys_defaults' => [],
@@ -4616,6 +4617,16 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'is_order_bys' => TRUE,
         'type' => CRM_Utils_Type::T_STRING,
         'operatorType' => CRM_Report_Form::OP_STRING,
+      ],
+      'on_hold' => [
+        'title' => ts($options['prefix_label'] . 'On Hold'),
+        'name' => 'on_hold',
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+        'is_group_bys' => TRUE,
+        'is_order_bys' => TRUE,
+        'type' => CRM_Utils_Type::T_BOOLEAN,
+        'operatorType' => CRM_Report_Form::OP_SELECT,
       ],
     ];
     return $this->buildColumns($fields, $options['prefix'] . 'civicrm_email', 'CRM_Core_DAO_Email', NULL, $defaults, $options);
