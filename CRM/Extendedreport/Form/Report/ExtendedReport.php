@@ -1718,7 +1718,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
 
     $fieldMap = array_merge(CRM_Utils_Array::value('fields', $this->_params, []), $fieldMap);
     $this->_columnHeaders = array_merge(array_intersect_key(array_flip($fieldMap), $this->_columnHeaders), $this->_columnHeaders);
-    $this->wrangleColumnHeadersForContributionPivotWithReceiveDateAggregate();
   }
 
   /**
@@ -2476,6 +2475,7 @@ LEFT JOIN civicrm_contact {$prop['alias']} ON {$prop['alias']}.id = {$this->_ali
   public function formatDisplay(&$rows, $pager = TRUE): void {
     // Check aggregate column header.
     if (isset($this->_params['aggregate_column_headers']) && ($this->_params['aggregate_column_headers'] === 'contribution_total_amount_year' || $this->_params['aggregate_column_headers'] === 'contribution_total_amount_month') && !empty($rows)) {
+      $this->wrangleColumnHeadersForContributionPivotWithReceiveDateAggregate();
       $this->formatTotalAmountAggregateRows($rows);
       // format result set.
       $pager = FALSE;
