@@ -1784,45 +1784,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       $this->addToDeveloperTab($sql);
       $this->buildRows($sql, $rows);
       $this->addAggregatePercentRow($rows);
-
-      // Check aggregate column header.
-      if (isset($this->_params['aggregate_column_headers']) && ($this->_params['aggregate_column_headers'] === 'contribution_total_amount_year' || $this->_params['aggregate_column_headers'] === 'contribution_total_amount_month') && !empty($rows)) {
-        $columnType = explode('_', $this->_params['aggregate_column_headers']);
-        $columnType = end($columnType);
-
-        // Get the row field data for adding conditions.
-        $rowFields = $this->getAggregateFieldSpec('row');
-        foreach ($rows as $rowsKey => $rowsData) {
-          $rowFieldId = $rowsData[$rowFields[0]['alias']];
-          $rows[$rowsKey] = $this->buildContributionTotalAmountBybreakdown($rowFieldId, $columnType, $this->_params['aggregate_column_headers'], $this->_params);
-        }
-        array_pop($rows);
-        $endNew = [];
-        foreach ($rows as $key => $value) {
-          foreach ($value as $columnName => $amount) {
-            if ($columnName != $rowFields[0]['alias']) {
-              $rows[$key][$columnName] = CRM_Utils_Money::format(number_format($amount, 2), "USD");
-              $endNew[$columnName] += $amount;
-            }
-          }
-        }
-        if (!empty($rows) && !empty($endNew)) {
-          foreach ($endNew as $newKey => $newValue) {
-            $new[$newKey] = CRM_Utils_Money::format(number_format($newValue, 2), "USD");
-          }
-
-          array_push($rows, $new);
-
-          // Add total.
-          $this->_statFields = array_keys($new);
-        }
-        // format result set.
-        $this->formatDisplay($rows, FALSE);
-      }
-      else {
-        // format result set.
-        $this->formatDisplay($rows);
-      }
+      $this->formatDisplay($rows);
 
       // assign variables to templates
       $this->doTemplateAssignment($rows);
@@ -2561,7 +2523,13 @@ LEFT JOIN civicrm_contact {$prop['alias']} ON {$prop['alias']}.id = {$this->_ali
    * @throws \CRM_Core_Exception
    * @throws \CiviCRM_API3_Exception
    */
-  public function formatDisplay(&$rows, $pager = TRUE) {
+  public function formatDisplay(&$rows, $pager = TRUE): void {
+    // Check aggregate column header.
+    if (isset($this->_params['aggregate_column_headers']) && ($this->_params['aggregate_column_headers'] === 'contribution_total_amount_year' || $this->_params['aggregate_column_headers'] === 'contribution_total_amount_month') && !empty($rows)) {
+      $this->formatTotalAmountAggregateRows($rows);
+      // format result set.
+      $pager = FALSE;
+    }
     // set pager based on if any limit was applied in the query.
     if ($pager) {
       $this->setPager();
@@ -9001,6 +8969,46 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
       asort($this->activeCampaigns);
     }
     return $campaignEnabled;
+  }
+
+  /**
+   * Format rows when aggregating by total amount.
+   *
+   * @param array $rows
+   *
+   * @throws \CRM_Core_Exception
+   * @throws \CiviCRM_API3_Exception
+   */
+  protected function formatTotalAmountAggregateRows(array &$rows): void {
+    $columnType = explode('_', $this->_params['aggregate_column_headers']);
+    $columnType = end($columnType);
+
+    // Get the row field data for adding conditions.
+    $rowFields = $this->getAggregateFieldSpec('row');
+    foreach ($rows as $rowsKey => $rowsData) {
+      $rowFieldId = $rowsData[$rowFields[0]['alias']];
+      $rows[$rowsKey] = $this->buildContributionTotalAmountBybreakdown($rowFieldId, $columnType, $this->_params['aggregate_column_headers'], $this->_params);
+    }
+    array_pop($rows);
+    $endNew = [];
+    foreach ($rows as $key => $value) {
+      foreach ($value as $columnName => $amount) {
+        if ($columnName != $rowFields[0]['alias']) {
+          $rows[$key][$columnName] = CRM_Utils_Money::format(number_format($amount, 2), "USD");
+          $endNew[$columnName] += $amount;
+        }
+      }
+    }
+    if (!empty($rows) && !empty($endNew)) {
+      foreach ($endNew as $newKey => $newValue) {
+        $new[$newKey] = CRM_Utils_Money::format(number_format($newValue, 2), "USD");
+      }
+
+      array_push($rows, $new);
+
+      // Add total.
+      $this->_statFields = array_keys($new);
+    }
   }
 
 }
