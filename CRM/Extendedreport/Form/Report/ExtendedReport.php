@@ -1852,9 +1852,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       elseif (!empty($rowFieldId) && is_string($rowFieldId) && $rowFieldId !== 'HEADER') {
         $where = "Where " . $rowFields[0]['dbAlias'] . " LIKE '%" . $rowFieldId . "%'";
       }
-      elseif (empty($rowFieldId) && $rowFieldId !== 'HEADER') {
-        $where = "Where " . $rowFields[0]['dbAlias'] . " IS NULL";
-      }
 
       // Custom fields join.
       $customJoin = '';
@@ -8984,16 +8981,15 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
     $columnType = end($columnType);
 
     // Get the row field data for adding conditions.
-    $rowFields = $this->getAggregateFieldSpec('row');
     foreach ($rows as $rowsKey => $rowsData) {
-      $rowFieldId = $rowsData[$rowFields[0]['alias']];
+      $rowFieldId = $rowsData[$this->getAggregateRowFieldAlias()] ?? '';
       $rows[$rowsKey] = $this->buildContributionTotalAmountBybreakdown($rowFieldId, $columnType, $this->_params['aggregate_column_headers'], $this->_params);
     }
     array_pop($rows);
     $endNew = [];
     foreach ($rows as $key => $value) {
       foreach ($value as $columnName => $amount) {
-        if ($columnName != $rowFields[0]['alias']) {
+        if ($columnName != $this->getAggregateRowFieldAlias()) {
           $rows[$key][$columnName] = CRM_Utils_Money::format(number_format($amount, 2), "USD");
           $endNew[$columnName] += $amount;
         }
@@ -9009,6 +9005,16 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
       // Add total.
       $this->_statFields = array_keys($new);
     }
+  }
+
+  /**
+   * Get the alias for the aggregate row field.
+   *
+   * @return string
+   */
+  protected function getAggregateRowFieldAlias(): string {
+    $rowFields = $this->getAggregateFieldSpec('row')[0] ?? [];
+    return $rowFields['alias'] ?? '';
   }
 
 }
