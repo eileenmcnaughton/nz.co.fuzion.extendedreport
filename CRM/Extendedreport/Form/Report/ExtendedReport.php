@@ -1730,9 +1730,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       // Get the row field data for adding conditions.
       $rowFields = $this->getAggregateFieldSpec('row');
       foreach ($header as $key => $value) {
-        if ($value == $rowFields[0]['alias']) {
-          $amountYearLabel[$value]['title'] = $title;
-        }
         if ($value !== 'total_amount_total' && strpos($value, 'total_amount_') !== FALSE) {
           $title = preg_replace('/\D/', '', $value);
           if ($columnType === 'month') {
