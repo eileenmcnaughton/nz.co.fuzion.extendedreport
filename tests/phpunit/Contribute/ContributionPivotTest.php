@@ -50,7 +50,8 @@ class ContributionPivotTest extends BaseTestClass {
 
   public function getRowVariants(): array {
     return [
-      [['aggregate_column_headers' => 'contribution_total_amount_year']]
+      [['aggregate_column_headers' => 'contribution_total_amount_year']],
+      [['aggregate_column_headers' => 'contribution_total_amount_year', 'aggregate_row_headers' => 'contribution_financial_type_id']],
     ];
   }
 
