@@ -45,7 +45,8 @@ class ContributionPivotTest extends BaseTestClass {
       'report_id' => 'contribution/pivot'
     ], $overrides);
 
-    $this->callAPISuccess('ReportTemplate', 'getrows', $params)['values'];
+    $rows = $this->callAPISuccess('ReportTemplate', 'getrows', $params)['values'];
+    $this->assertNotEmpty($rows);
   }
 
   public function getRowVariants(): array {

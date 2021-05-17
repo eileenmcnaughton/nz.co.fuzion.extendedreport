@@ -8938,26 +8938,18 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
       $rowFieldId = $rowsData[$this->getAggregateRowFieldAlias()] ?? '';
       $rows[$rowsKey] = $this->buildContributionTotalAmountBybreakdown($rowFieldId, $columnType, $this->_params['aggregate_column_headers'], $this->_params);
     }
-    array_pop($rows);
-    $endNew = [];
-    foreach ($rows as $key => $value) {
-      foreach ($value as $columnName => $amount) {
+
+    $row = [];
+    foreach ($rows as $key => $row) {
+      foreach ($row as $columnName => $amount) {
         if ($columnName !== $this->getAggregateRowFieldAlias()) {
           $rows[$key][$columnName] = CRM_Utils_Money::format($amount);
-          $endNew[$columnName] = $amount;
         }
       }
     }
-    if (!empty($rows) && !empty($endNew)) {
-      foreach ($endNew as $newKey => $newValue) {
-        $new[$newKey] = CRM_Utils_Money::format($newValue);
-      }
-
-      array_push($rows, $new);
-
-      // Add total.
-      $this->_statFields = array_keys($new);
-    }
+    // If there is a rollup it will be the last one - so that one will have 'all' the
+    // columns.
+    $this->_statFields = array_keys($row);
   }
 
   /**
