@@ -1852,7 +1852,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       $result = [];
       $result['total_amount_total'] = 0;
       while ($dao->fetch()) {
-        $result[$rowFields[0]['alias']] = $rowFieldId;
+        $result[$this->getAggregateRowFieldAlias()] = $rowFieldId;
         $result['total_amount_total'] += $dao->amount;
 
         if (!empty($dao->month_year) && $columnType === 'month') {
@@ -8942,7 +8942,7 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
     $endNew = [];
     foreach ($rows as $key => $value) {
       foreach ($value as $columnName => $amount) {
-        if ($columnName != $this->getAggregateRowFieldAlias()) {
+        if ($columnName !== $this->getAggregateRowFieldAlias()) {
           $rows[$key][$columnName] = CRM_Utils_Money::format(number_format($amount, 2), "USD");
           $endNew[$columnName] += $amount;
         }
