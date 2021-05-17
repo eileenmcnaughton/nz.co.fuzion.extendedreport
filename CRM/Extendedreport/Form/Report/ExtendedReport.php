@@ -1728,8 +1728,11 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       $header = array_keys($result);
 
       // Get the row field data for adding conditions.
-      $rowFields = $this->getAggregateFieldSpec('row');
-      foreach ($header as $key => $value) {
+      $rowFields = $this->getAggregateFieldSpec('row')[0];
+      foreach ($header as $value) {
+        if ($value === $rowFields['alias']) {
+          $amountYearLabel[$value]['title'] = $rowFields['title'];
+        }
         if ($value !== 'total_amount_total' && strpos($value, 'total_amount_') !== FALSE) {
           $title = preg_replace('/\D/', '', $value);
           if ($columnType === 'month') {
@@ -1751,7 +1754,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       $amountYearLabel['total_amount_total']['title'] = E::ts('Total');
       if (!empty($headerWeight)) {
         $amountYearLabel = [];
-        $amountYearLabel[$rowFields[0]['alias']]['title'] = $this->_columnHeaders[$rowFields[0]['alias']]['title'];
+        $amountYearLabel[$rowFields['alias']]['title'] = $this->_columnHeaders[$rowFields['alias']]['title'];
         ksort($headerWeight);
         foreach ($headerWeight as $headerWeightkey => $headerWeightvalue) {
           foreach ($headerWeightvalue as $headerKey => $headerTitle) {
@@ -1797,7 +1800,8 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
         $endNew = [];
         foreach ($rows as $key => $value) {
           foreach ($value as $columnName => $amount) {
-            if ($columnName != $rowFields[0]['alias']) {
+            $endNew[$columnName] = $endNew[$columnName] ?? 0;
+            if ($columnName !== $rowFields[0]['alias']) {
               $rows[$key][$columnName] = CRM_Utils_Money::format(number_format($amount, 2), "USD");
               $endNew[$columnName] += $amount;
             }
