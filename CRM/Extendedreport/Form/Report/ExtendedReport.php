@@ -8943,14 +8943,14 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
     foreach ($rows as $key => $value) {
       foreach ($value as $columnName => $amount) {
         if ($columnName !== $this->getAggregateRowFieldAlias()) {
-          $rows[$key][$columnName] = CRM_Utils_Money::format(number_format($amount, 2), "USD");
-          $endNew[$columnName] += $amount;
+          $rows[$key][$columnName] = CRM_Utils_Money::format($amount);
+          $endNew[$columnName] = $amount;
         }
       }
     }
     if (!empty($rows) && !empty($endNew)) {
       foreach ($endNew as $newKey => $newValue) {
-        $new[$newKey] = CRM_Utils_Money::format(number_format($newValue, 2), "USD");
+        $new[$newKey] = CRM_Utils_Money::format($newValue);
       }
 
       array_push($rows, $new);
