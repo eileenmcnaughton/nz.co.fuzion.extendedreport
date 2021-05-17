@@ -1,5 +1,7 @@
 <?php
 
+use Civi\API\Exception\UnauthorizedException;
+use Civi\Api4\Contact;
 use CRM_Extendedreport_ExtensionUtil as E;
 
 /**
@@ -6718,6 +6720,34 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
       $row[$fieldname . '_link'] = CRM_Utils_System::url("civicrm/contact/view", 'reset=1&cid=' . $value, $this->_absoluteUrl);
     }
     return $value;
+  }
+
+  /**
+   * Alter Employer ID value for display.
+   *
+   * @param int|null $value
+   * @param array $row
+   * @param string $fieldname
+   *
+   * @return string|null
+   * @throws \API_Exception
+   */
+  public function alterEmployerID($value, &$row, $fieldname): ?string {
+    if ($value) {
+      try {
+        $row[$fieldname] = Contact::get()
+          ->addWhere('id', '=', $value)
+          ->addSelect('display_name')->execute()->first()['display_name'];
+        $row[$fieldname . '_link'] = CRM_Utils_System::url('civicrm/contact/view', 'reset=1&cid=' . $value, $this->_absoluteUrl);
+        $row[$fieldname . '_hover'] = E::ts('View Contact Summary for Employer.');
+        return $row[$fieldname];
+      }
+      catch (UnauthorizedException $e ) {
+        // Let's just not show anything if they have no permission to view the employer.
+        return NULL;
+      }
+    }
+    return NULL;
   }
 
   /**
