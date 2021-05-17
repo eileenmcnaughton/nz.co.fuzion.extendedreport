@@ -26,8 +26,25 @@ class ContributionPivotTest extends BaseTestClass {
    * @throws \CRM_Core_Exception
    */
   public function testGetRows($overrides): void {
+    $contactID = $this->callAPISuccess('Contact', 'create', [
+      'contact_type' => 'Individual',
+      'first_name' => 'Charlie',
+      'last_name' => 'Chaplin',
+    ])['id'];
+    foreach ([2, 3, 4] as $year) {
+      $this->callAPISuccess('Contribution', 'create', [
+        'contact_id' => $contactID,
+        'financial_type_id' => 'Donation',
+        'receive_date' => (2000 + $year) . '09-09',
+        'payment_instrument_id' => 'Cash',
+        'total_amount' => 2345.44,
+        'skipRecentView' => TRUE,
+      ]);
+    }
     $params = array_merge([
-      'report_id' => 'contribution/pivot'], $overrides);
+      'report_id' => 'contribution/pivot'
+    ], $overrides);
+
     $this->callAPISuccess('ReportTemplate', 'getrows', $params)['values'];
   }
 

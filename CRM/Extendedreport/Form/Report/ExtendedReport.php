@@ -1718,7 +1718,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
 
     $fieldMap = array_merge(CRM_Utils_Array::value('fields', $this->_params, []), $fieldMap);
     $this->_columnHeaders = array_merge(array_intersect_key(array_flip($fieldMap), $this->_columnHeaders), $this->_columnHeaders);
-    $this->wrangleColumnHeadersForContributionPivotWithReceiveDateAggregate();
   }
 
   /**
@@ -1853,7 +1852,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       $result = [];
       $result['total_amount_total'] = 0;
       while ($dao->fetch()) {
-        $result[$rowFields[0]['alias']] = $rowFieldId;
+        $result[$this->getAggregateRowFieldAlias()] = $rowFieldId;
         $result['total_amount_total'] += $dao->amount;
 
         if (!empty($dao->month_year) && $columnType === 'month') {
@@ -2476,6 +2475,7 @@ LEFT JOIN civicrm_contact {$prop['alias']} ON {$prop['alias']}.id = {$this->_ali
   public function formatDisplay(&$rows, $pager = TRUE): void {
     // Check aggregate column header.
     if (isset($this->_params['aggregate_column_headers']) && ($this->_params['aggregate_column_headers'] === 'contribution_total_amount_year' || $this->_params['aggregate_column_headers'] === 'contribution_total_amount_month') && !empty($rows)) {
+      $this->wrangleColumnHeadersForContributionPivotWithReceiveDateAggregate();
       $this->formatTotalAmountAggregateRows($rows);
       // format result set.
       $pager = FALSE;
@@ -8942,7 +8942,7 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
     $endNew = [];
     foreach ($rows as $key => $value) {
       foreach ($value as $columnName => $amount) {
-        if ($columnName != $this->getAggregateRowFieldAlias()) {
+        if ($columnName !== $this->getAggregateRowFieldAlias()) {
           $rows[$key][$columnName] = CRM_Utils_Money::format(number_format($amount, 2), "USD");
           $endNew[$columnName] += $amount;
         }
@@ -8968,11 +8968,23 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
   protected function getAggregateRowFieldAlias(): string {
     $rowFields = $this->getAggregateFieldSpec('row')[0] ?? [];
     return $rowFields['alias'] ?? '';
-  }/**
- * @param $title
- * @return array
- * @throws \CiviCRM_API3_Exception
- */
+  }
+
+  /**
+   * Get the title for the aggregate row field.
+   *
+   * @return string
+   */
+  protected function getAggregateRowFieldTitle(): string {
+    $rowFields = $this->getAggregateFieldSpec('row')[0] ?? [];
+    return $rowFields['title'] ?? '';
+  }
+
+  /**
+   * @param $title
+   * @return array
+   * @throws \CiviCRM_API3_Exception
+   */
   protected function wrangleColumnHeadersForContributionPivotWithReceiveDateAggregate() {
     // Change column header.
     if (isset($this->_params['aggregate_column_headers']) && ($this->_params['aggregate_column_headers'] === 'contribution_total_amount_year' || $this->_params['aggregate_column_headers'] === 'contribution_total_amount_month')) {
@@ -8982,11 +8994,9 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
 
       $header = array_keys($result);
 
-      // Get the row field data for adding conditions.
-      $rowFields = $this->getAggregateFieldSpec('row');
-      foreach ($header as $key => $value) {
-        if ($value == $rowFields[0]['alias']) {
-          $amountYearLabel[$value]['title'] = $title;
+      foreach ($header as $value) {
+        if ($value === $this->getAggregateRowFieldAlias()) {
+          $amountYearLabel[$value]['title'] = $this->getAggregateRowFieldTitle();
         }
         if ($value !== 'total_amount_total' && strpos($value, 'total_amount_') !== FALSE) {
           $title = preg_replace('/\D/', '', $value);
@@ -9009,9 +9019,9 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
       $amountYearLabel['total_amount_total']['title'] = E::ts('Total');
       if (!empty($headerWeight)) {
         $amountYearLabel = [];
-        $amountYearLabel[$rowFields[0]['alias']]['title'] = $this->_columnHeaders[$rowFields[0]['alias']]['title'];
+        $amountYearLabel[$this->getAggregateRowFieldAlias()]['title'] = $this->_columnHeaders[$this->getAggregateRowFieldAlias()]['title'];
         ksort($headerWeight);
-        foreach ($headerWeight as $headerWeightkey => $headerWeightvalue) {
+        foreach ($headerWeight as $headerWeightvalue) {
           foreach ($headerWeightvalue as $headerKey => $headerTitle) {
             $amountYearLabel[$headerKey]['title'] = $headerTitle;
           }
