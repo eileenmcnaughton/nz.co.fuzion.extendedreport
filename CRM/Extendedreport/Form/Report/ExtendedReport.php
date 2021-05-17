@@ -1723,7 +1723,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     if (isset($this->_params['aggregate_column_headers']) && ($this->_params['aggregate_column_headers'] === 'contribution_total_amount_year' || $this->_params['aggregate_column_headers'] === 'contribution_total_amount_month')) {
       $columnType = explode('_', $this->_params['aggregate_column_headers']);
       $columnType = end($columnType);
-      $result = self::buildContributionTotalAmountBybreakdown('HEADER', $columnType, $this->_params['aggregate_column_headers'], $this->_params);
+      $result = $this->buildContributionTotalAmountBybreakdown('HEADER', $columnType, $this->_params['aggregate_column_headers'], $this->_params);
 
       $header = array_keys($result);
 
@@ -1794,7 +1794,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
         $rowFields = $this->getAggregateFieldSpec('row');
         foreach ($rows as $rowsKey => $rowsData) {
           $rowFieldId = $rowsData[$rowFields[0]['alias']];
-          $rows[$rowsKey] = self::buildContributionTotalAmountBybreakdown($rowFieldId, $columnType, $this->_params['aggregate_column_headers'], $this->_params);
+          $rows[$rowsKey] = $this->buildContributionTotalAmountBybreakdown($rowFieldId, $columnType, $this->_params['aggregate_column_headers'], $this->_params);
         }
         array_pop($rows);
         $endNew = [];
@@ -1871,7 +1871,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    * @throws \CiviCRM_API3_Exception
    * @throws \CiviCRM_API3_Exception
    */
-  function buildContributionTotalAmountBybreakdown($rowFieldId, $columnType, $header) {
+  public function buildContributionTotalAmountBybreakdown($rowFieldId, $columnType, $header): array {
     if ($header === 'contribution_total_amount_year' || $header === 'contribution_total_amount_month') {
       $where = '';
       $clause = '';
