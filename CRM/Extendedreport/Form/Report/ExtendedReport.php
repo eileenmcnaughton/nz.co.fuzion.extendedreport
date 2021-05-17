@@ -1718,54 +1718,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
 
     $fieldMap = array_merge(CRM_Utils_Array::value('fields', $this->_params, []), $fieldMap);
     $this->_columnHeaders = array_merge(array_intersect_key(array_flip($fieldMap), $this->_columnHeaders), $this->_columnHeaders);
-
-    // Change column header.
-    if (isset($this->_params['aggregate_column_headers']) && ($this->_params['aggregate_column_headers'] === 'contribution_total_amount_year' || $this->_params['aggregate_column_headers'] === 'contribution_total_amount_month')) {
-      $columnType = explode('_', $this->_params['aggregate_column_headers']);
-      $columnType = end($columnType);
-      $result = $this->buildContributionTotalAmountBybreakdown('HEADER', $columnType, $this->_params['aggregate_column_headers'], $this->_params);
-
-      $header = array_keys($result);
-
-      // Get the row field data for adding conditions.
-      $rowFields = $this->getAggregateFieldSpec('row');
-      foreach ($header as $key => $value) {
-        if ($value == $rowFields[0]['alias']) {
-          $amountYearLabel[$value]['title'] = $title;
-        }
-        if ($value !== 'total_amount_total' && strpos($value, 'total_amount_') !== FALSE) {
-          $title = preg_replace('/\D/', '', $value);
-          if ($columnType === 'month') {
-            if (strlen($title) > 2) {
-              $year = substr($title, -4);
-              if (!empty($year)) {
-                $month = str_replace($year, '', $title);
-                $title = date("M", mktime(0, 0, 0, (int) $month, 10)) . ' ' . $year;
-                $headerWeight[$year][$value] = $title;
-              }
-            }
-            else {
-              $title = date("M", mktime(0, 0, 0, (int) $title, 10));
-            }
-          }
-          $amountYearLabel[$value]['title'] = $title;
-        }
-      }
-      $amountYearLabel['total_amount_total']['title'] = E::ts('Total');
-      if (!empty($headerWeight)) {
-        $amountYearLabel = [];
-        $amountYearLabel[$rowFields[0]['alias']]['title'] = $this->_columnHeaders[$rowFields[0]['alias']]['title'];
-        ksort($headerWeight);
-        foreach ($headerWeight as $headerWeightkey => $headerWeightvalue) {
-          foreach ($headerWeightvalue as $headerKey => $headerTitle) {
-            $amountYearLabel[$headerKey]['title'] = $headerTitle;
-          }
-        }
-        $amountYearLabel['total_amount_total']['title'] = E::ts('Total');
-      }
-
-      $this->_columnHeaders = $amountYearLabel;
-    }
+    $this->wrangleColumnHeadersForContributionPivotWithReceiveDateAggregate();
   }
 
   /**
@@ -1851,9 +1804,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       }
       elseif (!empty($rowFieldId) && is_string($rowFieldId) && $rowFieldId !== 'HEADER') {
         $where = "Where " . $rowFields[0]['dbAlias'] . " LIKE '%" . $rowFieldId . "%'";
-      }
-      elseif (empty($rowFieldId) && $rowFieldId !== 'HEADER') {
-        $where = "Where " . $rowFields[0]['dbAlias'] . " IS NULL";
       }
 
       // Custom fields join.
@@ -8984,16 +8934,15 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
     $columnType = end($columnType);
 
     // Get the row field data for adding conditions.
-    $rowFields = $this->getAggregateFieldSpec('row');
     foreach ($rows as $rowsKey => $rowsData) {
-      $rowFieldId = $rowsData[$rowFields[0]['alias']];
+      $rowFieldId = $rowsData[$this->getAggregateRowFieldAlias()] ?? '';
       $rows[$rowsKey] = $this->buildContributionTotalAmountBybreakdown($rowFieldId, $columnType, $this->_params['aggregate_column_headers'], $this->_params);
     }
     array_pop($rows);
     $endNew = [];
     foreach ($rows as $key => $value) {
       foreach ($value as $columnName => $amount) {
-        if ($columnName != $rowFields[0]['alias']) {
+        if ($columnName != $this->getAggregateRowFieldAlias()) {
           $rows[$key][$columnName] = CRM_Utils_Money::format(number_format($amount, 2), "USD");
           $endNew[$columnName] += $amount;
         }
@@ -9008,6 +8957,69 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
 
       // Add total.
       $this->_statFields = array_keys($new);
+    }
+  }
+
+  /**
+   * Get the alias for the aggregate row field.
+   *
+   * @return string
+   */
+  protected function getAggregateRowFieldAlias(): string {
+    $rowFields = $this->getAggregateFieldSpec('row')[0] ?? [];
+    return $rowFields['alias'] ?? '';
+  }/**
+ * @param $title
+ * @return array
+ * @throws \CiviCRM_API3_Exception
+ */
+  protected function wrangleColumnHeadersForContributionPivotWithReceiveDateAggregate() {
+    // Change column header.
+    if (isset($this->_params['aggregate_column_headers']) && ($this->_params['aggregate_column_headers'] === 'contribution_total_amount_year' || $this->_params['aggregate_column_headers'] === 'contribution_total_amount_month')) {
+      $columnType = explode('_', $this->_params['aggregate_column_headers']);
+      $columnType = end($columnType);
+      $result = $this->buildContributionTotalAmountBybreakdown('HEADER', $columnType, $this->_params['aggregate_column_headers'], $this->_params);
+
+      $header = array_keys($result);
+
+      // Get the row field data for adding conditions.
+      $rowFields = $this->getAggregateFieldSpec('row');
+      foreach ($header as $key => $value) {
+        if ($value == $rowFields[0]['alias']) {
+          $amountYearLabel[$value]['title'] = $title;
+        }
+        if ($value !== 'total_amount_total' && strpos($value, 'total_amount_') !== FALSE) {
+          $title = preg_replace('/\D/', '', $value);
+          if ($columnType === 'month') {
+            if (strlen($title) > 2) {
+              $year = substr($title, -4);
+              if (!empty($year)) {
+                $month = str_replace($year, '', $title);
+                $title = date("M", mktime(0, 0, 0, (int) $month, 10)) . ' ' . $year;
+                $headerWeight[$year][$value] = $title;
+              }
+            }
+            else {
+              $title = date("M", mktime(0, 0, 0, (int) $title, 10));
+            }
+          }
+          $amountYearLabel[$value]['title'] = $title;
+        }
+      }
+      $amountYearLabel['total_amount_total']['title'] = E::ts('Total');
+      if (!empty($headerWeight)) {
+        $amountYearLabel = [];
+        $amountYearLabel[$rowFields[0]['alias']]['title'] = $this->_columnHeaders[$rowFields[0]['alias']]['title'];
+        ksort($headerWeight);
+        foreach ($headerWeight as $headerWeightkey => $headerWeightvalue) {
+          foreach ($headerWeightvalue as $headerKey => $headerTitle) {
+            $amountYearLabel[$headerKey]['title'] = $headerTitle;
+          }
+        }
+        $amountYearLabel['total_amount_total']['title'] = E::ts('Total');
+      }
+
+      $this->_columnHeaders = $amountYearLabel;
     }
   }
 
