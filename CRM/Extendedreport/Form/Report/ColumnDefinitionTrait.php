@@ -539,6 +539,7 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
         'title' => $options['prefix_label'] . ts('Current Employer'),
         'type' => CRM_Utils_Type::T_INT,
         'name' => 'employer_id',
+        'alter_display' => 'alterEmployerID',
         'is_fields' => TRUE,
         'is_filters' => FALSE,
         'is_group_bys' => TRUE,
