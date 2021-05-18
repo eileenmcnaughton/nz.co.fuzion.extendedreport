@@ -103,6 +103,7 @@ class CRM_Extendedreport_Form_Report_RelationshipExtended extends CRM_Extendedre
           INNER JOIN civicrm_contact {$this->_aliases['contact_b_civicrm_contact']}
           ON ( {$this->_aliases['civicrm_relationship']}.contact_id_b =
           {$this->_aliases['contact_b_civicrm_contact']}.id )
+          && ({$this->_aliases['contact_b_civicrm_contact']}.is_deleted = 0)
 
           {$this->_aclFrom}
           LEFT JOIN civicrm_relationship rc ON ({$this->_aliases['contact_b_civicrm_contact']}.id = rc.contact_id_a AND rc.relationship_type_id = 15)
