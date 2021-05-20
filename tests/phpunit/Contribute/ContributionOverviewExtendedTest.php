@@ -24,7 +24,7 @@ class ContributionOverviewExtendedTest extends BaseTestClass implements Headless
 
   protected $contacts = [];
 
-  public function setUp() {
+  public function setUp(): void {
     parent::setUp();
     $this->enableAllComponents();
     $contact = $this->callAPISuccess('Contact', 'create', ['first_name' => 'Wonder', 'last_name' => 'Woman', 'contact_type' => 'Individual']);
@@ -55,7 +55,7 @@ class ContributionOverviewExtendedTest extends BaseTestClass implements Headless
    *
    * @throws \CRM_Core_Exception
    */
-  public function testContributionExtendedReport() {
+  public function testContributionExtendedReport(): void {
     $this->callAPISuccess('Order', 'create', ['contact_id' => $this->contacts[0], 'total_amount' => 5, 'financial_type_id' => 2, 'contribution_status_id' => 'Pending', 'api.Payment.create' => ['total_amount' => 5]]);
     $params = [
       'report_id' => 'contribution/overview',
@@ -79,7 +79,7 @@ class ContributionOverviewExtendedTest extends BaseTestClass implements Headless
   /**
    * Test the ContributionOverviewExtended report with to filter.
    */
-  public function testContributionExtendedReportFilterReceiveDate() {
+  public function testContributionExtendedReportFilterReceiveDate(): void {
     $rows = $this->getRows([
       'report_id' => 'contribution/overview',
       'fields' => ['civicrm_contact_display_name' => '1'],
