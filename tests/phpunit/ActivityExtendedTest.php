@@ -33,7 +33,7 @@ class ActivityExtendedTest extends BaseTestClass implements HeadlessInterface, H
       'activity_activity_date_time_relative' => 'previous.month',
     ];
     $this->getRows($params);
-    $this->assertContains('235959', $this->sql[0]);
+    $this->assertStringContainsString('235959', $this->sql[0]);
   }
 
   /**

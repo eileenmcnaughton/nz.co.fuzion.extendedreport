@@ -42,7 +42,7 @@ class ActivityPivotTest extends BaseTestClass implements HeadlessInterface, Hook
     $completedStatusID = CRM_Core_PseudoConstant::getKey('CRM_Activity_BAO_Activity', 'status_id', 'Completed');
     $scheduledStatusID = CRM_Core_PseudoConstant::getKey('CRM_Activity_BAO_Activity', 'status_id', 'Scheduled');
     $rows = $this->getRows($params);
-    $this->assertContains('SUM( CASE', $this->sql[0]);
+    $this->assertStringContainsString('SUM( CASE', $this->sql[0]);
     $this->assertEquals('Meeting', $rows[0]['civicrm_activity_activity_activity_type_id']);
     $this->assertEquals(2, $rows[0]['status_id_total']);
     $this->assertEquals(1, $rows[0]['status_id_' . $completedStatusID]);
