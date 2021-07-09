@@ -1,5 +1,8 @@
 <?php
 
+
+use CRM_Extendedreport_ExtensionUtil as E;
+
 /**
  * Class CRM_Extendedreport_Form_Report_ActivityExtended
  */
@@ -26,6 +29,8 @@ class CRM_Extendedreport_Form_Report_ActivityExtended extends CRM_Extendedreport
           'prefix' => '',
           'prefix_label' => 'Source Contact ::',
           'filters' => TRUE,
+          'grouping' => 'source',
+          'group_title' => E::ts('Source Contact'),
         ]
       ) + $this->getColumns(
         'Email',
@@ -33,14 +38,18 @@ class CRM_Extendedreport_Form_Report_ActivityExtended extends CRM_Extendedreport
           'prefix' => '',
           'prefix_label' => 'Source Contact Email ::',
           'filters' => TRUE,
+          'grouping' => 'source',
+          'group_title' => E::ts('Source Contact'),
         ]
-      ) + $this->getColumns(        
+      ) + $this->getColumns(
         'Contact',
         [
           'prefix' => 'target_',
           'group_by' => TRUE,
           'prefix_label' => 'Target Contact ::',
           'filters' => TRUE,
+          'grouping' => 'target',
+          'group_title' => E::ts('Target Contact'),
         ]
       ) + $this->getColumns(
         'Email',
@@ -48,12 +57,16 @@ class CRM_Extendedreport_Form_Report_ActivityExtended extends CRM_Extendedreport
           'prefix' => 'target_',
           'prefix_label' => 'Target Contact Email ::',
           'filters' => TRUE,
+          'grouping' => 'target',
+          'group_title' => E::ts('Target Contact'),
         ]
       ) + $this->getColumns(
         'Contact', [
           'prefix' => 'assignee_',
           'prefix_label' => 'Assignee Contact ::',
           'filters' => TRUE,
+          'grouping' => 'assignee',
+          'group_title' => E::ts('Assignee Contact'),
         ]
       ) + $this->getColumns(
         'Email',
@@ -61,8 +74,11 @@ class CRM_Extendedreport_Form_Report_ActivityExtended extends CRM_Extendedreport
           'prefix' => 'assignee_',
           'prefix_label' => 'Assignee Contact Email ::',
           'filters' => TRUE,
+          'grouping' => 'assignee',
+          'group_title' => E::ts('Assignee Contact'),
         ]
       ) + $this->getColumns('Activity', ['group_by' => TRUE]);
+
     parent::__construct();
   }
 
@@ -85,8 +101,7 @@ class CRM_Extendedreport_Form_Report_ActivityExtended extends CRM_Extendedreport
        LEFT JOIN civicrm_case
          ON case_activity_civireport.case_id = civicrm_case.id ";
     }
-    
-    
+
     $this->joinEmailFromContact();
     $this->joinEmailFromContact('target_');
     $this->joinEmailFromContact('assignee_');
