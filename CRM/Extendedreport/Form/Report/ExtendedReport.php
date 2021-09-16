@@ -1310,13 +1310,18 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       $count = 1;
       foreach ($this->getMetadataByType($filterString) as $fieldName => $field) {
         $table = $field['table_key'];
+        $groupingKey = $field['group_title'] ?? '';
         if ($filterString === 'filters') {
-          $filterGroups[$table] = [
-            'group_title' => $this->_columns[$field['table_key']]['group_title'],
-            'use_accordian_for_field_selection' => TRUE,
-          ];
+          $filterGroups[$groupingKey]['group_title'] = $field['group_title'] ?? '';
+          if (isset($field['use_accordion_for_field_selection'])) {
+            $filterGroups[$groupingKey]['use_accordion_for_field_selection'] = $field['table_key']['use_accordion_for_field_selection'];
+          }
+          else {
+            $filterGroups[$groupingKey]['use_accordion_for_field_selection'] = TRUE;
+          }
         }
         $prefix = ($filterString === 'join_filters') ? 'join_filter_' : '';
+        $filterGroups[$groupingKey]['tables'][$table][$prefix . $fieldName] = $field;
         $filters[$table][$prefix . $fieldName] = $field;
         $this->addFilterFieldsToReport($field, $fieldName, $table, $count, $prefix);
       }
@@ -3206,14 +3211,14 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     $columns[$tableName]['prefix_label'] = isset($options['prefix_label']) ? $options['prefix_label'] : '';
     $columns[$tableName]['is_required_for_acls'] = $options['is_required_for_acls'] ?? FALSE;
     if (isset($options['group_title'])) {
-      $groupTitle = $options['group_title'];
+      $columns[$tableName]['group_title'] = $options['group_title'];
+      $columns[$tableName]['grouping'] = $options['grouping'];
     }
     else {
-
       // We can make one up but it won't be translated....
-      $groupTitle = ucfirst(str_replace('_', ' ', str_replace('civicrm_', '', $tableName)));
+      $columns[$tableName]['group_title'] = ucfirst(str_replace('_', ' ', str_replace('civicrm_', '', $tableName)));
     }
-    $columns[$tableName]['group_title'] = $groupTitle;
+
     return $columns;
   }
 
