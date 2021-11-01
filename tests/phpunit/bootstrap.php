@@ -1,9 +1,17 @@
 <?php
 
 ini_set('memory_limit', '2G');
-ini_set('safe_mode', 0);
+
+// phpcs:disable
 eval(cv('php:boot --level=classloader', 'phpcode'));
-require_once('BaseTestClass.php');
+// phpcs:enable
+// Allow autoloading of PHPUnit helper classes in this extension.
+$loader = new \Composer\Autoload\ClassLoader();
+$loader->add('CRM_', __DIR__);
+$loader->add('Civi\\', __DIR__);
+$loader->add('api_', __DIR__);
+$loader->add('api\\', __DIR__);
+$loader->register();
 
 /**
  * Call the "cv" command.
@@ -12,17 +20,22 @@ require_once('BaseTestClass.php');
  *   The rest of the command to send.
  * @param string $decode
  *   Ex: 'json' or 'phpcode'.
- *
- * @return string
+ * @return mixed
  *   Response output (if the command executed normally).
+ *   For 'raw' or 'phpcode', this will be a string. For 'json', it could be any JSON value.
  * @throws \RuntimeException
  *   If the command terminates abnormally.
  */
-function cv($cmd, $decode = 'json') {
+function cv(string $cmd, string $decode = 'json') {
   $cmd = 'cv ' . $cmd;
-  $descriptorSpec = [0 => ["pipe", "r"], 1 => ["pipe", "w"], 2 => STDERR];
+  $descriptorSpec = [0 => ['pipe', 'r'], 1 => ['pipe', 'w'], 2 => STDERR];
   $oldOutput = getenv('CV_OUTPUT');
-  putenv("CV_OUTPUT=json");
+  putenv('CV_OUTPUT=json');
+
+  // Execute `cv` in the original folder. This is a work-around for
+  // phpunit/codeception, which seem to manipulate PWD.
+  $cmd = sprintf('cd %s; %s', escapeshellarg(getenv('PWD')), $cmd);
+
   $process = proc_open($cmd, $descriptorSpec, $pipes, __DIR__);
   putenv("CV_OUTPUT=$oldOutput");
   fclose($pipes[0]);
@@ -37,7 +50,7 @@ function cv($cmd, $decode = 'json') {
 
     case 'phpcode':
       // If the last output is /*PHPCODE*/, then we managed to complete execution.
-      if (substr(trim($result), 0, 12) !== "/*BEGINPHP*/" || substr(trim($result), -10) !== "/*ENDPHP*/") {
+      if (substr(trim($result), 0, 12) !== '/*BEGINPHP*/' || substr(trim($result), -10) !== '/*ENDPHP*/') {
         throw new \RuntimeException("Command failed ($cmd):\n$result");
       }
       return $result;
