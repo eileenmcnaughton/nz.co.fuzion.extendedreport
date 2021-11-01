@@ -4143,7 +4143,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    */
   protected function getContributionColumns($options) {
 
-    $options = array_merge(['group_title' => E::ts('Contributions')], $options);
+    $options = array_merge(['group_title' => E::ts('Contributions'), 'grouping' => 'contribution'], $options);
     $specs = [
       'id' => [
         'title' => ts('Contribution ID'),
