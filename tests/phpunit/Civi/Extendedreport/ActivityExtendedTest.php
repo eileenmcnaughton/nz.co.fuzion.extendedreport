@@ -1,6 +1,6 @@
 <?php
 
-require_once __DIR__ . '/BaseTestClass.php';
+namespace Civi\Extendedreport;
 
 use Civi\Test\HeadlessInterface;
 use Civi\Test\HookInterface;
@@ -27,7 +27,7 @@ class ActivityExtendedTest extends BaseTestClass implements HeadlessInterface, H
    *
    * @throws \CRM_Core_Exception
    */
-  public function testReportDateSql() {
+  public function testReportDateSql(): void {
     $params = [
       'report_id' => 'activityextended',
       'activity_activity_date_time_relative' => 'previous.month',
