@@ -1,10 +1,11 @@
 <?php
 
-require_once __DIR__ . '/BaseTestClass.php';
+namespace Civi\Extendedreport;
 
 use Civi\Test\HeadlessInterface;
 use Civi\Test\HookInterface;
 use Civi\Test\TransactionalInterface;
+use CRM_Core_PseudoConstant;
 
 /**
  * FIXME - Add test description.
