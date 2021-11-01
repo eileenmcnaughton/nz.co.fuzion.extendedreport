@@ -1,10 +1,9 @@
 <?php
-
-require_once __DIR__ . '/BaseTestClass.php';
+namespace Civi\Extendedreport;
 
 use Civi\Test\HeadlessInterface;
 use Civi\Test\HookInterface;
-use Civi\Test\TransactionalInterface;
+use CRM_Core_DAO_Component;
 
 /**
  * Test contribution DetailExtended class.
@@ -65,8 +64,8 @@ class RelationshipExtendedTest extends BaseTestClass implements HeadlessInterfac
     foreach ($this->contacts as $contact) {
       $this->callAPISuccess('Contact', 'delete', ['id' => $contact]);
     }
-    CRM_Core_DAO::executeQuery('DELETE FROM civicrm_cache');
-    CRM_Core_PseudoConstant::flush();
+    \CRM_Core_DAO::executeQuery('DELETE FROM civicrm_cache');
+    \CRM_Core_PseudoConstant::flush();
   }
 
   /**
