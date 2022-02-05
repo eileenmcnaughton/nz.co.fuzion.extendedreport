@@ -249,20 +249,25 @@ LEFT JOIN
       $this->_columnHeaders['progress_progress_still_to_raise'] = $move;
     }
 
-    $runningTotalGoal = $runningTotalLeft = 0;
-    $grandTotalGoal = $grandTotalLeft = 0;
+    $runningTotalGoal = $runningTotalLeft = $runningTotalReceived = 0;
+    $grandTotalGoal = $grandTotalLeft = $grandTotalReceived = 0;
     foreach ($rows as $index => $row) {
       if (isset($row['civicrm_campaign_campaign_goal_revenue']) && is_numeric($row['civicrm_campaign_campaign_goal_revenue'])) {
         $runningTotalGoal += $row['civicrm_campaign_campaign_goal_revenue'];
         if (isset($row['progress_progress_still_to_raise']) && is_numeric($row['progress_progress_still_to_raise'])) {
           $runningTotalLeft += $row['progress_progress_still_to_raise'];
         }
+        if (isset($row['progress_progress_paid_amount_sum']) && is_numeric($row['progress_progress_paid_amount_sum'])) {
+          $runningTotalReceived += $row['progress_progress_paid_amount_sum'];
+        }
       }
       else {
         $rows[$index]['civicrm_campaign_campaign_goal_revenue'] = $runningTotalGoal;
         $rows[$index]['progress_progress_still_to_raise'] = $runningTotalLeft;
+        $rows[$index]['progress_progress_paid_amount_sum'] = $runningTotalReceived;
         $grandTotalLeft += $runningTotalLeft;
         $grandTotalGoal += $runningTotalGoal;
+        $grandTotalReceived += $runningTotalReceived;
         $runningTotalGoal = $runningTotalLeft = 0;
         foreach ($rows[$index] as $field => $value) {
           if (is_numeric($value)) {
@@ -274,8 +279,10 @@ LEFT JOIN
     }
     $grandTotalLeft += $runningTotalLeft;
     $grandTotalGoal += $runningTotalGoal;
+    $grandTotalReceived += $runningTotalReceived;
     $this->rollupRow['civicrm_campaign_campaign_goal_revenue'] = $grandTotalGoal;
     $this->rollupRow['progress_progress_still_to_raise'] = $grandTotalLeft;
+    $this->rollupRow['progress_progress_paid_amount_sum'] = $grandTotalReceived;
     $this->assign('grandStat', $this->rollupRow);
   }
 
