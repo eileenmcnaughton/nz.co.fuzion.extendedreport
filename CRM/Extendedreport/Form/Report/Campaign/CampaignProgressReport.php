@@ -271,7 +271,7 @@ LEFT JOIN
         $runningTotalGoal = $runningTotalLeft = 0;
         foreach ($rows[$index] as $field => $value) {
           if (is_numeric($value)) {
-            $rows[$index][$field] = '<span class="report-label">' . str_replace('$', '', CRM_Utils_Money::format($value)) . '</span>';
+            $rows[$index][$field] = $value;
           }
         }
       }
