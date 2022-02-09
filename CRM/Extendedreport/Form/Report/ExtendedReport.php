@@ -6398,7 +6398,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    * @return array
    */
   function alterCampaign($value, &$row) {
-    $campaigns = CRM_Campaign_BAO_Campaign::getCampaigns();
+    $campaigns = CRM_Campaign_BAO_Campaign::getCampaigns(NULL, NULL, FALSE, FALSE, FALSE, TRUE);
     return CRM_Utils_Array::value($value, $campaigns);
   }
 
