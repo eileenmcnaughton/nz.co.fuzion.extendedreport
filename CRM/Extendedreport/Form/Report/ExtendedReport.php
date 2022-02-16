@@ -4432,7 +4432,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    * @return array pledge columns definition
    * @throws \CiviCRM_API3_Exception
    */
-  protected function getPledgeColumns($options = []): array {
+  protected function getPledgeColumns(array $options = []): array {
     $spec = [
       'id' => [
         'no_display' => TRUE,
@@ -4494,6 +4494,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'operatorType' => CRM_Report_Form::OP_MULTISELECT,
         'options' => CRM_Core_OptionGroup::values('contribution_status'),
         'is_fields' => TRUE,
+        'is_filters' => TRUE,
         'is_group_bys' => TRUE,
         'type' => CRM_Utils_Type::T_INT,
       ],
