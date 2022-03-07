@@ -1,5 +1,6 @@
 <?php
-if (!in_array('CiviGrant', Civi::settings()->get('enable_components'), TRUE)) {
+$extensionCheck = civicrm_api3('Extension', 'get', ['key' => 'civigrant', 'sequential' => 1])['values'];
+if (!in_array('CiviGrant', Civi::settings()->get('enable_components'), TRUE) || empty($extensionCheck) || $extensionCheck[0]['status'] !== 'installed') {
   return [];
 }
 // This file declares a managed database record of type "ReportTemplate".
