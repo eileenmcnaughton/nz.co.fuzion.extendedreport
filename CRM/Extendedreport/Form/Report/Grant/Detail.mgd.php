@@ -5,7 +5,7 @@ $civiGrant = civicrm_api3('Extension', 'get', [
 ]);
 
 if (empty($civiGrant['values'])) {
-  return;
+  return [];
 }
 // This file declares a managed database record of type "ReportTemplate".
 // The record will be automatically inserted, updated, or deleted from the
