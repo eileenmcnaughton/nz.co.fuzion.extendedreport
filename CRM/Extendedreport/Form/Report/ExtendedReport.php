@@ -2030,11 +2030,12 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       $this->limit();
     }
 
-    CRM_Utils_Hook::alterReportVar('sql', $this, $this);
     $sql = "{$this->_select} {$this->_from} {$this->_where} {$this->_groupBy} {$this->_having} {$this->_orderBy} ";
     if (!$this->_rollup) {
       $sql .= $this->_limit;
     }
+
+    CRM_Utils_Hook::alterReportVar('sql', $sql, $this);
     return $sql;
   }
 
