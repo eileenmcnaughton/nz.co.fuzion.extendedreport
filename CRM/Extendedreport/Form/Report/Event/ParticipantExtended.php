@@ -54,7 +54,6 @@ class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Exten
       $this->getColumns('Contact', [
         'fields' => TRUE,
         'join_fields' => TRUE,
-        'filters' => FALSE,
         'prefix' => 'related_',
         'prefix_label' => 'Related Contact ',
       ]) +
