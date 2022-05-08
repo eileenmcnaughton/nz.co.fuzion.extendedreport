@@ -24,8 +24,13 @@
   </comments>
   <civix>
     <namespace>CRM/Extendedreport</namespace>
+    <format>22.05.0</format>
   </civix>
   <classloader>
-    <psr4 prefix="Civi\" path="Civi" />
+    <psr4 prefix="Civi\" path="Civi"/>
   </classloader>
+  <mixins>
+    <mixin>ang-php@1.0.0</mixin>
+    <mixin>mgd-php@1.0.0</mixin>
+  </mixins>
 </extension>

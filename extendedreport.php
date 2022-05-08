@@ -12,15 +12,6 @@ function extendedreport_civicrm_config(&$config) {
 }
 
 /**
- * Implementation of hook_civicrm_xmlMenu
- *
- * @param $files array(string)
- */
-function extendedreport_civicrm_xmlMenu(&$files) {
-  _extendedreport_civix_civicrm_xmlMenu($files);
-}
-
-/**
  * Implementation of hook_civicrm_install
  */
 function extendedreport_civicrm_install() {
@@ -59,27 +50,6 @@ function extendedreport_civicrm_disable() {
  */
 function extendedreport_civicrm_upgrade($op, CRM_Queue_Queue $queue = NULL) {
   return _extendedreport_civix_civicrm_upgrade($op, $queue);
-}
-
-/**
- * Implements hook_civicrm_angularModules().
- *
- * Generate a list of Angular modules.
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_caseTypes
- */
-function extendedreport_civicrm_angularModules(&$angularModules) {
-  _extendedreport_civix_civicrm_angularModules($angularModules);
-}
-
-/**
- * Implements hook_civicrm_managed().
- *
- * Generate a list of entities to create/deactivate/delete when this module
- * is installed, disabled, uninstalled.
- */
-function extendedreport_civicrm_managed(&$entities) {
-  return _extendedreport_civix_civicrm_managed($entities);
 }
 
 /**
@@ -176,4 +146,22 @@ function extendedreport_civicrm_contactSummaryBlocks(&$blocks) {
     ];
   }
 
+}
+
+/**
+ * Implements hook_civicrm_postInstall().
+ *
+ * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_postInstall
+ */
+function extendedreport_civicrm_postInstall() {
+  _extendedreport_civix_civicrm_postInstall();
+}
+
+/**
+ * Implements hook_civicrm_entityTypes().
+ *
+ * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_entityTypes
+ */
+function extendedreport_civicrm_entityTypes(&$entityTypes) {
+  _extendedreport_civix_civicrm_entityTypes($entityTypes);
 }
