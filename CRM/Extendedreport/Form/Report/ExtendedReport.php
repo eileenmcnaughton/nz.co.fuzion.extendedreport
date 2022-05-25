@@ -5391,6 +5391,11 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'rightTable' => 'civicrm_activity_contact',
         'callback' => 'joinActivityTargetFromActivity',
       ],
+      'activity_assignee_from_activity' => [
+        'leftTable' => 'civicrm_activity',
+        'rightTable' => 'civicrm_activity_contact',
+        'callback' => 'joinActivityAssigneeFromActivity',
+      ],
       'related_contact_from_participant' => [
         'leftTable' => 'civicrm_participant',
         'rightTable' => 'civicrm_contact',
