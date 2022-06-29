@@ -4,7 +4,6 @@ require_once __DIR__ . '/BaseTestClass.php';
 
 use Civi\Test\HeadlessInterface;
 use Civi\Test\HookInterface;
-use Civi\Test\TransactionalInterface;
 
 /**
  * FIXME - Add test description.
@@ -37,10 +36,8 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
   /**
    * Example: Test that a version is returned.
    */
-  public function testReportsRun() {
-    $reports = [];
-    extendedreport_civicrm_managed($reports);
-    foreach ($reports as $report) {
+  public function testReportsRun(): void {
+    foreach ($this->getAllReports() as $report) {
       try {
         if (!empty($report['is_require_logging'])) {
           // Hack alert - there is a bug whereby the table is deleted but the row isn't after ActivityExtendedTest.

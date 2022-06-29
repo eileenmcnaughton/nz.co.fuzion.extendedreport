@@ -2,6 +2,7 @@
 
 namespace Civi\Extendedreport;
 
+use Civi\Api4\Managed;
 use Civi\Test;
 use Civi\Test\Api3TestTrait;
 use Civi\Test\CiviEnvBuilder;
@@ -350,11 +351,12 @@ class BaseTestClass extends TestCase implements HeadlessInterface, HookInterface
    * Get all extended reports reports.
    *
    * @return array
+   *
+   * @noinspection PhpDocMissingThrowsInspection
+   * @noinspection PhpUnhandledExceptionInspection
    */
   public function getAllReports(): array {
-    $reports = [];
-    extendedreport_civicrm_managed($reports);
-    return $reports;
+    return (array) Managed::get(FALSE)->addWhere('module', '=', 'nz.co.fuzion.extendedreport')->execute();
   }
 
   /**
