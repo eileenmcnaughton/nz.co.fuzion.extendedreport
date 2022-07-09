@@ -54,6 +54,8 @@ class BaseTestClass extends TestCase implements HeadlessInterface, HookInterface
     // Civi\Test has many helpers, like install(), uninstall(), sql(), and sqlFile().
     // See: https://github.com/civicrm/org.civicrm.testapalooza/blob/master/civi-test.md
     return Test::headless()
+      ->install('org.civicrm.search_kit')
+      ->install(['org.civicrm.afform', 'civigrant'])
       ->installMe(__DIR__)
       ->apply();
   }
@@ -71,7 +73,7 @@ class BaseTestClass extends TestCase implements HeadlessInterface, HookInterface
             $this->cleanUpContact($entityID);
           }
           else {
-            civicrm_api3($entity, 'delete', ['id' => $entityID]);
+            \civicrm_api3($entity, 'delete', ['id' => $entityID]);
           }
         }
         catch (\CiviCRM_API3_Exception $e) {
@@ -356,7 +358,26 @@ class BaseTestClass extends TestCase implements HeadlessInterface, HookInterface
    * @noinspection PhpUnhandledExceptionInspection
    */
   public function getAllReports(): array {
-    return (array) Managed::get(FALSE)->addWhere('module', '=', 'nz.co.fuzion.extendedreport')->execute();
+    if (!defined('ASSUME_GRANT_INSTALLED') || !ASSUME_GRANT_INSTALLED) {
+      define('ASSUME_GRANT_INSTALLED', TRUE);
+    }
+    $reports = [];
+    require_once __DIR__ . '/../../../../extendedreport.civix.php';
+    $mgdFiles = \CRM_Utils_File::findFiles(\CRM_Extendedreport_ExtensionUtil::path(), '*.mgd.php');
+    sort($mgdFiles);
+    foreach ($mgdFiles as $file) {
+      $es = include $file;
+      foreach ($es as $e) {
+        if (empty($e['module'])) {
+          $e['module'] = \CRM_Extendedreport_ExtensionUtil::LONG_NAME;
+        }
+        if (empty($e['params']['version'])) {
+          $e['params']['version'] = '3';
+        }
+      }
+      $reports[] = $e;
+    }
+    return $reports;
   }
 
   /**
