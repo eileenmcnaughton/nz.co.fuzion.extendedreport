@@ -27,11 +27,11 @@ class LineItemParticipantTest extends BaseTestClass implements HeadlessInterface
   public function setUp(): void {
     parent::setUp();
     $components = [];
-    $dao = new CRM_Core_DAO_Component();
+    $dao = new \CRM_Core_DAO_Component();
     while ($dao->fetch()) {
       $components[$dao->id] = $dao->name;
     }
-    civicrm_api3('Setting', 'create', ['enable_components' => $components]);
+    \civicrm_api3('Setting', 'create', ['enable_components' => $components]);
     $contact = $this->callAPISuccess('Contact', 'create', ['first_name' => 'Wonder', 'last_name' => 'Woman', 'contact_type' => 'Individual']);
     $this->contacts[] = $contact['id'];
   }
