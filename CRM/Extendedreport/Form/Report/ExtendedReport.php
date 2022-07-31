@@ -2685,7 +2685,7 @@ LEFT JOIN civicrm_contact {$prop['alias']} ON {$prop['alias']}.id = {$this->_ali
       }
       return NULL;
     }
-    $value = trim($value, CRM_Core_DAO::VALUE_SEPARATOR);
+    $value = trim(($value ?? ''), CRM_Core_DAO::VALUE_SEPARATOR);
     $options = $this->getCustomFieldOptions($specs);
     return CRM_Utils_Array::value($value, $options, $value);
   }
@@ -6853,7 +6853,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
 
     $locationTypes = $this->getLocationTypeOptions();
     $phoneTypes = $this->_getOptions('phone', 'phone_type_id');
-    $phones = explode(',', $value);
+    $phones = explode(',', ($value ?? ''));
     $return = [];
     $html = '<table>';
     foreach ($phones as $phone) {
