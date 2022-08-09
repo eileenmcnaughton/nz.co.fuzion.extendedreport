@@ -26,7 +26,7 @@ class CRM_Extendedreport_Form_Report_Price_Contributionbased extends CRM_Extende
   /**
    * @return array
    */
-  function fromClauses() {
+  function fromClauses(): array {
     return [
       'lineItem_from_contribution',
       'batch_from_contribution',

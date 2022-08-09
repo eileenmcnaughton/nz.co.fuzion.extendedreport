@@ -56,7 +56,7 @@ class CRM_Extendedreport_Form_Report_Contribute_ContributionPivot extends CRM_Ex
    *
    * @return array
    */
-  public function fromClauses() {
+  public function fromClauses(): array {
     return [
       'contact_from_contribution',
       'address_from_contact',

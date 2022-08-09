@@ -87,7 +87,7 @@ class CRM_Extendedreport_Form_Report_Contribute_RecurringContributions extends C
   /**
    * @return array
    */
-  function fromClauses() {
+  function fromClauses(): array {
     return [
       'contact_from_contribution_recur',
       'email_from_contact',

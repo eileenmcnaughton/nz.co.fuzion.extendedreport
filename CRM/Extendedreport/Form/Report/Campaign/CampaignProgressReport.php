@@ -307,7 +307,7 @@ LEFT JOIN
    *
    * @return array
    */
-  function getOperationPair($type = "string", $fieldName = NULL) {
+  function getOperationPair($type = "string", $fieldName = NULL): array {
     if ($type == self::OP_SINGLEDATE) {
       return [
         'to' => ts('Until Date'),

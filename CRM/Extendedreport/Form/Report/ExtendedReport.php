@@ -5484,6 +5484,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     ";
       return TRUE;
     }
+    return FALSE;
   }
 
   /**
@@ -5506,6 +5507,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     ";
       return TRUE;
     }
+    return FALSE;
   }
 
   /**
@@ -5838,6 +5840,7 @@ AND {$this->_aliases['civicrm_line_item']}.entity_table = 'civicrm_participant')
       ON ( {$this->_aliases['civicrm_relationship']}.relationship_type_id  =
       {$this->_aliases['civicrm_relationship_type']}.id  )
     ";
+    return TRUE;
   }
 
   /**
@@ -5849,6 +5852,7 @@ AND {$this->_aliases['civicrm_line_item']}.entity_table = 'civicrm_participant')
       ON {$this->_aliases['civicrm_line_item']}.entity_id = {$this->_aliases['civicrm_membership']}.id
       AND {$this->_aliases['civicrm_line_item']}.entity_table = 'civicrm_membership'
     ";
+    return TRUE;
   }
 
   /**
@@ -5862,6 +5866,7 @@ AND {$this->_aliases['civicrm_line_item']}.entity_table = 'civicrm_participant')
     ON {$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_contribution']}.contact_id
     AND {$this->_aliases['civicrm_contribution']}.is_test = 0
   ";
+    return TRUE;
   }
 
   /**
@@ -5873,6 +5878,7 @@ ON {$this->_aliases['civicrm_participant']}.id = pp.participant_id
 LEFT JOIN civicrm_contribution {$this->_aliases['civicrm_contribution']}
 ON pp.contribution_id = {$this->_aliases['civicrm_contribution']}.id
 ";
+    return TRUE;
   }
 
   /**
@@ -5885,6 +5891,7 @@ ON pp.contribution_id = {$this->_aliases['civicrm_contribution']}.id
   LEFT JOIN civicrm_contribution {$this->_aliases['civicrm_contribution']}
   ON pp.contribution_id = {$this->_aliases['civicrm_contribution']}.id
 ";
+    return TRUE;
   }
 
   /**
@@ -6372,9 +6379,9 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    * @param $value
    * @param $row
    *
-   * @return array
+   * @return string|array
    */
-  protected function alterContributionStatus($value, &$row): array {
+  protected function alterContributionStatus($value, &$row) {
     return CRM_Contribute_PseudoConstant::contributionStatus($value);
   }
 
@@ -6387,9 +6394,9 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    * @param $selectedField
    * @param $criteriaFieldName
    * @param $spec
-   * @return string
+   * @return string|NULL
    */
-  protected function alterByOptions($value, &$row, $selectedField, $criteriaFieldName, $spec): string {
+  protected function alterByOptions($value, &$row, $selectedField, $criteriaFieldName, $spec): ?string {
     return CRM_Core_PseudoConstant::getLabel($spec['bao'], $spec['name'], $value);
   }
 

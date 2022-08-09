@@ -171,7 +171,7 @@ class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Exten
    *
    * @return array
    */
-  public function fromClauses() {
+  public function fromClauses(): array {
     $fromClauses = [
       'event_from_participant',
       'contact_from_participant',

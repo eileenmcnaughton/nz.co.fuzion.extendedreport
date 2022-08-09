@@ -53,7 +53,7 @@ class CRM_Extendedreport_Form_Report_Contact_Basiccontact extends CRM_Extendedre
   /**
    * @return array
    */
-  function fromClauses() {
+  function fromClauses(): array {
     return [
       'address_from_contact',
       'email_from_contact',

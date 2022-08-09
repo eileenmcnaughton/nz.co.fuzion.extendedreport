@@ -199,7 +199,7 @@ class CRM_Extendedreport_Form_Report_Contribute_BookkeepingExtended extends CRM_
   /**
    * @return array
    */
-  function fromClauses() {
+  function fromClauses(): array {
     return [
       'contact_from_contribution',
       'contribution_recur_from_contribution',
