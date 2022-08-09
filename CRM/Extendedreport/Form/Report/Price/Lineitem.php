@@ -73,7 +73,7 @@ class CRM_Extendedreport_Form_Report_Price_Lineitem extends CRM_Extendedreport_F
    *
    * @return array
    */
-  public function fromClauses() {
+  public function fromClauses(): array {
     return [
       'priceFieldValue_from_lineItem',
       'priceField_from_lineItem',

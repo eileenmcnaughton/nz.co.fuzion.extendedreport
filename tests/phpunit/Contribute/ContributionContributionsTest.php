@@ -27,7 +27,6 @@ class ContributionContributionsTest extends BaseTestClass {
   /**
    * Test metadata retrieval.
    *
-   * @throws \CRM_Core_Exception
    */
   public function testGetMetadata(): void {
     $metadata = $this->callAPISuccess('ReportTemplate', 'getmetadata', ['report_id' => 'contribution/contributions'])['values'];
@@ -42,7 +41,6 @@ class ContributionContributionsTest extends BaseTestClass {
    *   array to override function parameters
    *
    * @dataProvider getRowVariants
-   * @throws \CRM_Core_Exception
    */
   public function testGetRows(array $overrides): void {
     $params = array_merge([
@@ -130,7 +128,6 @@ class ContributionContributionsTest extends BaseTestClass {
   /**
    * Test that is doesn't matter if the having filter is selected.
    *
-   * @throws \CRM_Core_Exception
    */
   public function testGetRowsHavingFilterNotSelected(): void {
     $params = [
@@ -291,7 +288,6 @@ class ContributionContributionsTest extends BaseTestClass {
    * @param string|int $value
    *
    * @return array
-   * @throws \CRM_Core_Exception
    */
   protected function getRowsFilteredByCustomField(int $id, $value): array {
     $params = [

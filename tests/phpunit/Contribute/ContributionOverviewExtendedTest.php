@@ -36,13 +36,13 @@ class ContributionOverviewExtendedTest extends BaseTestClass implements Headless
       'total_amount' => 5,
       'financial_type_id' => 'Donation',
     ]);
-    $contribution = $this->callAPISuccess('Contribution', 'create', [
+    $this->callAPISuccess('Contribution', 'create', [
       'contact_id' => $contact['id'],
       'receive_date' => '1 month ago',
       'total_amount' => 500,
       'financial_type_id' => 'Donation',
     ]);
-    $contribution = $this->callAPISuccess('Contribution', 'create', [
+    $this->callAPISuccess('Contribution', 'create', [
       'contact_id' => $contact['id'],
       'receive_date' => '1 month ago',
       'total_amount' => 10,

@@ -41,7 +41,7 @@ class CampaignProgressReportTest extends BaseTestClass implements HeadlessInterf
    *
    * @throws \CRM_Core_Exception
    */
-  public function testProgressReport($params) {
+  public function testProgressReport(array $params) {
     $this->callAPISuccess('Order', 'create', ['contact_id' => $this->contacts[0], 'total_amount' => 5, 'financial_type_id' => 2, 'contribution_status_id' => 'Pending', 'api.Payment.create' => ['total_amount' => 5]]);
     // Just checking no error at the moment.
     $this->getRows($params);

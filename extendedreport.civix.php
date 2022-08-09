@@ -175,7 +175,7 @@ function _extendedreport_civix_civicrm_enable() {
  * (Delegated) Implements hook_civicrm_disable().
  *
  * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_disable
- * @return mixed
+ * @return void
  */
 function _extendedreport_civix_civicrm_disable() {
   _extendedreport_civix_civicrm_config();
@@ -190,7 +190,7 @@ function _extendedreport_civix_civicrm_disable() {
  * (Delegated) Implements hook_civicrm_upgrade().
  *
  * @param $op string, the type of operation being performed; 'check' or 'enqueue'
- * @param $queue CRM_Queue_Queue, (for 'enqueue') the modifiable list of pending up upgrade tasks
+ * @param \CRM_Queue_Queue|null $queue CRM_Queue_Queue, (for 'enqueue') the modifiable list of pending up upgrade tasks
  *
  * @return mixed
  *   based on op. for 'check', returns array(boolean) (TRUE if upgrades are pending)

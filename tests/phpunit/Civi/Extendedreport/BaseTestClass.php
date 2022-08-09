@@ -63,7 +63,6 @@ class BaseTestClass extends TestCase implements HeadlessInterface, HookInterface
   /**
    * Clean up after test.
    *
-   * @throws \CRM_Core_Exception
    */
   public function tearDown(): void {
     foreach ($this->ids as $entity => $entityIDs) {
@@ -88,7 +87,6 @@ class BaseTestClass extends TestCase implements HeadlessInterface, HookInterface
    *
    * @param int $contactId
    *
-   * @throws \CRM_Core_Exception
    */
   public function cleanUpContact(int $contactId) {
     $contributions = $this->callAPISuccess('Contribution', 'get', [
@@ -117,7 +115,6 @@ class BaseTestClass extends TestCase implements HeadlessInterface, HookInterface
    * @param array $params
    *
    * @return array|int
-   * @throws \CRM_Core_Exception
    */
   protected function getRows(array $params) {
     $params['options']['metadata'] = ['title', 'labels', 'sql'];
@@ -142,7 +139,7 @@ class BaseTestClass extends TestCase implements HeadlessInterface, HookInterface
    *
    * @throws \CRM_Core_Exception
    */
-  protected function createCustomGroupWithField($inputParams = [], $entity = 'Contact'): array {
+  protected function createCustomGroupWithField(array $inputParams = [], string $entity = 'Contact'): array {
     $params = ['title' => $entity];
     $params['extends'] = $entity;
     CRM_Core_PseudoConstant::flush();
@@ -194,9 +191,8 @@ class BaseTestClass extends TestCase implements HeadlessInterface, HookInterface
    * @param array $params
    *
    * @return array
-   * @throws \CRM_Core_Exception
    */
-  public function customGroupCreate($params = []) {
+  public function customGroupCreate(array $params = []): array {
     $defaults = [
       'title' => 'new custom group',
       'extends' => 'Contact',
@@ -231,7 +227,7 @@ class BaseTestClass extends TestCase implements HeadlessInterface, HookInterface
    * @throws \CRM_Core_Exception
    * @throws \Exception
    */
-  protected function customFieldCreate($params) {
+  protected function customFieldCreate(array $params): array {
     $params = array_merge([
       'label' => 'Custom Field',
       'data_type' => 'String',
@@ -256,7 +252,7 @@ class BaseTestClass extends TestCase implements HeadlessInterface, HookInterface
    *
    * @return array
    */
-  public function getContactData($contactType, $quantity): array {
+  public function getContactData(string $contactType, int $quantity): array {
     switch ($contactType) {
       case 'Individual':
         $contacts = $this->getIndividuals();
@@ -276,7 +272,7 @@ class BaseTestClass extends TestCase implements HeadlessInterface, HookInterface
     return array_intersect_key($contacts, range(0, ($quantity - 1)));
   }
 
-  public function getIndividuals() {
+  public function getIndividuals(): array {
     return [
       ['first_name' => 'Nelson', 'last_name' => 'Mandela'],
       ['first_name' => 'William', 'last_name' => 'Wallace'],
@@ -291,7 +287,7 @@ class BaseTestClass extends TestCase implements HeadlessInterface, HookInterface
     ];
   }
 
-  public function getHouseholds() {
+  public function getHouseholds(): array {
     return [
       ['household_name' => 'The Shaw household'],
       ['household_name' => 'The Brady bunch'],
@@ -306,7 +302,7 @@ class BaseTestClass extends TestCase implements HeadlessInterface, HookInterface
     ];
   }
 
-  public function getOrganizations() {
+  public function getOrganizations(): array {
     return [
       ['organization_name' => 'Shady Inc'],
       ['organization_name' => 'Dodgey Corp'],
@@ -324,7 +320,6 @@ class BaseTestClass extends TestCase implements HeadlessInterface, HookInterface
   /**
    * Enable all components.
    *
-   * @throws \CRM_Core_Exception
    */
   protected function enableAllComponents() {
     $components = [];
@@ -386,11 +381,10 @@ class BaseTestClass extends TestCase implements HeadlessInterface, HookInterface
    * @param int $quantity
    * @param string $type
    *
-   * @return array|int
+   * @return array
    *
-   * @throws \CRM_Core_Exception
    */
-  protected function createContacts($quantity = 1, $type = 'Individual') {
+  protected function createContacts(int $quantity = 1, string $type = 'Individual'): array {
     $data = $this->getContactData($type, $quantity);
     $contacts = [];
     foreach ($data as $params) {
@@ -409,7 +403,6 @@ class BaseTestClass extends TestCase implements HeadlessInterface, HookInterface
    *  - started just now $80,000 for Cat Woman, no payments made
    *  - started one month ago $100000 for Heros Inc, no payments made
    *
-   * @throws \CRM_Core_Exception
    */
   public function setUpPledgeData() {
     $contacts = [

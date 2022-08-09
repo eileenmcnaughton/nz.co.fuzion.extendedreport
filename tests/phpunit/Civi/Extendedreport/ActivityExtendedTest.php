@@ -2,10 +2,6 @@
 
 namespace Civi\Extendedreport;
 
-use Civi\Test\HeadlessInterface;
-use Civi\Test\HookInterface;
-use Civi\Test\TransactionalInterface;
-
 /**
  * FIXME - Add test description.
  *
@@ -20,12 +16,11 @@ use Civi\Test\TransactionalInterface;
  *
  * @group headless
  */
-class ActivityExtendedTest extends BaseTestClass implements HeadlessInterface, HookInterface, TransactionalInterface {
+class ActivityExtendedTest extends BaseTestClass {
 
   /**
    * Test the future income report with some data.
    *
-   * @throws \CRM_Core_Exception
    */
   public function testReportDateSql(): void {
     $params = [
@@ -39,9 +34,8 @@ class ActivityExtendedTest extends BaseTestClass implements HeadlessInterface, H
   /**
    * Test filtering on cid.
    *
-   * @throws \CRM_Core_Exception
    */
-  public function testCidFilter() {
+  public function testCidFilter(): void {
     $params = [
       'report_id' => 'activityextended',
       'fields' =>

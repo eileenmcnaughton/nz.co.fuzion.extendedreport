@@ -45,7 +45,7 @@ class CRM_Extendedreport_Form_Report_Price_Lineitemmembership extends CRM_Extend
    *
    * @return array
    */
-  public function fromClauses() {
+  public function fromClauses():array {
     return [
       'priceFieldValue_from_lineItem',
       'priceField_from_lineItem',
