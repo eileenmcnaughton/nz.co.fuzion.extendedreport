@@ -35,7 +35,6 @@
                   <td colspan=3>
                     <table style="border-top-style:solid; width:100%">
                       <tr>
-                        </td>
                         <td><p>Latest Activity</p></td>
                       </tr>
                       <tr>

@@ -37,10 +37,12 @@ class CRM_Extendedreport_Form_Report_Contribute_BookkeepingExtended extends CRM_
 
   protected $_baseTable = 'civicrm_contribution';
 
-  protected $_rollup = '';
+  protected $_rollup;
 
   /**
    * Class constructor.
+   *
+   * @throws \CiviCRM_API3_Exception
    */
   public function __construct() {
     $this->_columns = $this->getColumns('Contact')
@@ -116,9 +118,9 @@ class CRM_Extendedreport_Form_Report_Contribute_BookkeepingExtended extends CRM_
    *
    * @return bool|string
    */
-  function selectClause(&$tableName, $tableKey, &$fieldName, &$field) {
-    $alias = "{$tableName}_{$fieldName}";
-    if ($fieldName == 'credit_financial_account_accounting_code') {
+  public function selectClause(&$tableName, $tableKey, &$fieldName, &$field) {
+    $alias = "{$tableName}_$fieldName";
+    if ($fieldName === 'credit_financial_account_accounting_code') {
       $this->setHeaders($tableName, $fieldName, $field, $alias);
       return "
         CASE
@@ -128,7 +130,7 @@ class CRM_Extendedreport_Form_Report_Contribute_BookkeepingExtended extends CRM_
         END AS $alias ";
     }
 
-    if ($fieldName == 'credit_financial_account_name') {
+    if ($fieldName === 'credit_financial_account_name') {
       $this->setHeaders($tableName, $fieldName, $field, $alias);
       return "
         CASE
@@ -138,7 +140,7 @@ class CRM_Extendedreport_Form_Report_Contribute_BookkeepingExtended extends CRM_
         END AS $alias ";
     }
 
-    if ($fieldName == 'debit_financial_account_accounting_code') {
+    if ($fieldName === 'debit_financial_account_accounting_code') {
       $this->setHeaders($tableName, $fieldName, $field, $alias);
       return "
         CASE
@@ -149,7 +151,7 @@ class CRM_Extendedreport_Form_Report_Contribute_BookkeepingExtended extends CRM_
     }
 
 
-    if ($fieldName == 'debit_financial_account_name') {
+    if ($fieldName === 'debit_financial_account_name') {
       $this->setHeaders($tableName, $fieldName, $field, $alias);
       return "
         CASE
@@ -159,9 +161,9 @@ class CRM_Extendedreport_Form_Report_Contribute_BookkeepingExtended extends CRM_
         END AS $alias ";
     }
 
-    if ($fieldName == 'amount') {
-      $field['dbAlias'] =
-        $this->setHeaders($tableName, $fieldName, $field, $alias);
+    if ($fieldName === 'amount') {
+      $field['dbAlias'] = '';
+      $this->setHeaders($tableName, $fieldName, $field, $alias);
       $clause = "(
         CASE
         WHEN  {$this->_aliases['civicrm_entity_financial_trxn']}_item.entity_id IS NOT NULL
@@ -169,7 +171,7 @@ class CRM_Extendedreport_Form_Report_Contribute_BookkeepingExtended extends CRM_
         ELSE {$this->_aliases['civicrm_entity_financial_trxn']}.amount
         END) AS civicrm_entity_financial_trxn_amount ";
       if (!empty($this->_groupByArray) || $this->isForceGroupBy) {
-        return " SUM{$clause}";
+        return " SUM" . $clause;
       }
       return $clause;
     }
@@ -177,7 +179,7 @@ class CRM_Extendedreport_Form_Report_Contribute_BookkeepingExtended extends CRM_
     return parent::selectClause($tableName, $tableKey, $fieldName, $field);
   }
 
-  function from() {
+  public function from(): void {
     parent::from();
     // @todo break these out to be like the other ones.
     $this->_from .=
@@ -199,7 +201,7 @@ class CRM_Extendedreport_Form_Report_Contribute_BookkeepingExtended extends CRM_
   /**
    * @return array
    */
-  function fromClauses() {
+  public function fromClauses(): array {
     return [
       'contact_from_contribution',
       'contribution_recur_from_contribution',
@@ -215,7 +217,7 @@ class CRM_Extendedreport_Form_Report_Contribute_BookkeepingExtended extends CRM_
     ];
   }
 
-  function orderBy() {
+  public function orderBy(): void {
     parent::orderBy();
 
     // please note this will just add the order-by columns to select query, and not display in column-headers.
@@ -229,7 +231,7 @@ class CRM_Extendedreport_Form_Report_Contribute_BookkeepingExtended extends CRM_
     }
   }
 
-  public function where() {
+  public function where(): void {
     parent::where();
     if ($this->isTableSelected('civicrm_membership_log')) {
       $this->_where .= "AND {$this->_aliases['civicrm_membership_log']}.modified_date = DATE({$this->_aliases['civicrm_financial_trxn']}.trxn_date)";
@@ -249,15 +251,15 @@ class CRM_Extendedreport_Form_Report_Contribute_BookkeepingExtended extends CRM_
    *
    * @return null|string
    */
-  public function whereClause(&$field, $op, $value, $min, $max) {
-    if ($field['dbAlias'] == "{$this->_aliases['credit_civicrm_financial_account']}.accounting_code") {
+  public function whereClause(&$field, $op, $value, $min, $max): ?string {
+    if ($field['dbAlias'] === "{$this->_aliases['credit_civicrm_financial_account']}.accounting_code") {
       $field['dbAlias'] = "CASE
               WHEN financial_trxn_civireport.from_financial_account_id IS NOT NULL
               THEN  {$this->_aliases['credit_civicrm_financial_account']}.accounting_code
               ELSE  credit_financial_item_financial_account.accounting_code
               END";
     }
-    if ($field['dbAlias'] == 'credit_financial_account.name') {
+    if ($field['dbAlias'] === 'credit_financial_account.name') {
       $field['dbAlias'] = "CASE
               WHEN financial_trxn_civireport.from_financial_account_id IS NOT NULL
               THEN {$this->_aliases['credit_civicrm_financial_account']}.id
@@ -272,8 +274,9 @@ class CRM_Extendedreport_Form_Report_Contribute_BookkeepingExtended extends CRM_
    * @param $rows
    *
    * @return array
+   * @throws \CRM_Core_Exception
    */
-  function statistics(&$rows) {
+  public function statistics(&$rows): array {
     $statistics = parent::statistics($rows);
 
     $select = " SELECT COUNT({$this->_aliases['civicrm_financial_trxn']}.id ) as count,
@@ -285,8 +288,7 @@ class CRM_Extendedreport_Form_Report_Contribute_BookkeepingExtended extends CRM_
                 END) as amount
 ";
 
-    $sql = "{$select} {$this->_from} {$this->_where}
-            GROUP BY {$this->_aliases['civicrm_contribution']}.currency
+    $sql = $select . " " . $this->_from . " " . $this->_where . " GROUP BY " . $this->_aliases['civicrm_contribution'] . ".currency
 ";
 
     $dao = CRM_Core_DAO::executeQuery($sql);
@@ -312,15 +314,17 @@ class CRM_Extendedreport_Form_Report_Contribute_BookkeepingExtended extends CRM_
   }
 
   /**
-   * @param $rows
+   * @param array $rows
+   *
+   * @throws \CRM_Core_Exception
    */
-  function alterDisplay(&$rows) {
+  public function alterDisplay(&$rows): void {
     $contributionTypes = CRM_Contribute_PseudoConstant::financialType();
     $contributionStatus = CRM_Contribute_PseudoConstant::contributionStatus();
     foreach ($rows as $rowNum => $row) {
       // convert display name to links
       if (array_key_exists('civicrm_contact_sort_name', $row) &&
-        !empty($rows[$rowNum]['civicrm_contact_sort_name']) &&
+        !empty($row['civicrm_contact_sort_name']) &&
         array_key_exists('civicrm_contact_id', $row)
       ) {
         $url = CRM_Utils_System::url('civicrm/contact/view',
@@ -340,7 +344,7 @@ class CRM_Extendedreport_Form_Report_Contribute_BookkeepingExtended extends CRM_
       if ($value = CRM_Utils_Array::value('civicrm_line_item_financial_type_id', $row)) {
         $rows[$rowNum]['civicrm_line_item_financial_type_id'] = $contributionTypes[$value];
       }
-      if ($value = CRM_Utils_Array::value('civicrm_entity_financial_trxn_amount', $row)) {
+      if (CRM_Utils_Array::value('civicrm_entity_financial_trxn_amount', $row)) {
         $rows[$rowNum]['civicrm_entity_financial_trxn_amount'] = CRM_Utils_Money::format($rows[$rowNum]['civicrm_entity_financial_trxn_amount'], $rows[$rowNum]['civicrm_financial_trxn_financial_trxn_currency']);
       }
     }
@@ -353,14 +357,14 @@ class CRM_Extendedreport_Form_Report_Contribute_BookkeepingExtended extends CRM_
    * @param $field
    * @param $alias
    */
-  protected function setHeaders(&$tableName, &$fieldName, &$field, $alias) {
-    $this->_columnHeaders["{$tableName}_{$fieldName}"]['title'] = CRM_Utils_Array::value('title', $field);
-    $this->_columnHeaders["{$tableName}_{$fieldName}"]['type'] = CRM_Utils_Array::value('type', $field);
-    $this->_columnHeaders["{$tableName}_{$fieldName}"]['dbAlias'] = CRM_Utils_Array::value('dbAlias', $field);
+  protected function setHeaders($tableName, $fieldName, $field, $alias): void {
+    $this->_columnHeaders["{$tableName}_$fieldName"]['title'] = CRM_Utils_Array::value('title', $field);
+    $this->_columnHeaders["{$tableName}_$fieldName"]['type'] = CRM_Utils_Array::value('type', $field);
+    $this->_columnHeaders["{$tableName}_$fieldName"]['dbAlias'] = CRM_Utils_Array::value('dbAlias', $field);
     $this->_selectAliases[$alias] = $alias;
   }
 
-  public function storeGroupByArray() {
+  public function storeGroupByArray(): void {
     parent::storeGroupByArray();
     if (empty($this->_groupByArray)) {
       $this->_groupByArray = [

@@ -102,7 +102,6 @@ class api_v3_ReportTemplate_GetmetadataTest extends BaseTestClass {
    *
    * @param string $reportID
    *
-   * @throws \CRM_Core_Exception
    */
   public function testApiMetadataAllReports(string $reportID): void {
     $result = $this->callAPISuccess('ReportTemplate', 'Getmetadata', ['report_id' => $reportID, 'debug' => 1])['values'];
@@ -121,7 +120,6 @@ class api_v3_ReportTemplate_GetmetadataTest extends BaseTestClass {
   /**
    * Test the metadata generated for the address history report.
    *
-   * @throws \CRM_Core_Exception
    */
   public function testApiMetadataContactFilters(): void {
     $result = $this->callAPISuccess('ReportTemplate', 'Getmetadata', ['report_id' => 'contact/addresshistory'])['values'];

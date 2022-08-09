@@ -121,7 +121,7 @@ class CRM_Extendedreport_Form_Report_Contact_AddressHistory extends CRM_Extended
    *
    * @return null|string
    */
-  public function whereClause(&$field, $op, $value, $min, $max) {
+  public function whereClause(&$field, $op, $value, $min, $max): ?string {
     if ($field['name'] === 'contact_id' && $value) {
       $this->contactID = (int) $value;
       $mergedContactIDs = $this->getContactsMergedIntoThisOne($this->contactID);
@@ -137,7 +137,7 @@ class CRM_Extendedreport_Form_Report_Contact_AddressHistory extends CRM_Extended
    *
    * @return array
    */
-  protected function getContactsMergedIntoThisOne($contactID) {
+  protected function getContactsMergedIntoThisOne(int $contactID): array {
     // @todo get api joins working properly.
     $result = civicrm_api3('Activity', 'get', [
       'assignee_contact_id' => $contactID,

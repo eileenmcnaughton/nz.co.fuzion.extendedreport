@@ -31,9 +31,11 @@ class CRM_Extendedreport_Form_Report_ActivityEditable extends CRM_Extendedreport
   }
 
   /**
-   * Generate From clause.
+   * Generate from clause.
+   *
+   * @return array
    */
-  public function fromClauses() {
+  public function fromClauses(): array {
     return [
       'activity_target_from_activity',
       'activity_assignee_from_activity',

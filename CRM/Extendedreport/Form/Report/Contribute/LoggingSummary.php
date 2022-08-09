@@ -119,9 +119,9 @@ class CRM_Extendedreport_Form_Report_Contribute_LoggingSummary extends CRM_Exten
    * @param array $row
    * @param string $fieldname
    *
-   * @return mixed
+   * @return string
    */
-  function alterContactID($value, &$row, $fieldname) {
+  public function alterContactID($value, &$row, $fieldname): string {
     if (!$value) {
       return ts('System');
     }

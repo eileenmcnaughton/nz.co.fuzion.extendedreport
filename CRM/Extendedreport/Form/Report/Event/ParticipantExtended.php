@@ -147,7 +147,7 @@ class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Exten
     $originalRelationshipTypes = [];
 
     $relationships = [];
-    if ((array) $this->_params['relationship_relationship_type_id_value'] ?? FALSE) {
+    if ($this->_params['relationship_relationship_type_id_value'] ?? FALSE) {
       $originalRelationshipTypes = $this->_params['relationship_relationship_type_id_value'];
       foreach ($this->_params['relationship_relationship_type_id_value'] as $relString) {
         $relType = explode('_', $relString);
@@ -171,7 +171,7 @@ class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Exten
    *
    * @return array
    */
-  public function fromClauses() {
+  public function fromClauses(): array {
     $fromClauses = [
       'event_from_participant',
       'contact_from_participant',
@@ -213,7 +213,7 @@ class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Exten
    *
    * @throws \CiviCRM_API3_Exception
    */
-  public function alterDisplay(&$rows) {
+  public function alterDisplay(&$rows): void {
     // custom code to alter rows
 
     $entryFound = FALSE;

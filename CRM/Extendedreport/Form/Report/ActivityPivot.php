@@ -52,7 +52,7 @@ class CRM_Extendedreport_Form_Report_ActivityPivot extends CRM_Extendedreport_Fo
    *
    * @return array
    */
-  public function fromClauses() {
+  public function fromClauses(): array {
     return [];
   }
 }

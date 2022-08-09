@@ -39,6 +39,7 @@ class CRM_Extendedreport_Form_Report_Pledge_Sybunt extends CRM_Extendedreport_Fo
 
   /**
    *
+   * @throws \CRM_Core_Exception
    */
   public function __construct() {
     $yearsInPast = 8;
@@ -80,7 +81,7 @@ class CRM_Extendedreport_Form_Report_Pledge_Sybunt extends CRM_Extendedreport_Fo
     CRM_Core_DAO::disableFullGroupByMode();
   }
 
-  function select() {
+  public function select(): void {
     $select = [];
     $this->_columnHeaders = [];
     $current_year = $this->_params['yid_value'];
@@ -94,36 +95,34 @@ class CRM_Extendedreport_Form_Report_Pledge_Sybunt extends CRM_Extendedreport_Fo
         foreach ($table['fields'] as $fieldName => $field) {
 
           if (CRM_Utils_Array::value('required', $field) || CRM_Utils_Array::value($fieldName, $this->_params['fields'])) {
-            if ($fieldName == 'amount') {
-              $select[] = "SUM({$field['dbAlias']}) as {$tableName}_{$fieldName}";
+            if ($fieldName === 'amount') {
+              $select[] = "SUM({$field['dbAlias']}) as {$tableName}_$fieldName";
 
-              $this->_columnHeaders["civicrm_upto_{$upTo_year}"]['type'] = $field['type'];
-              $this->_columnHeaders["civicrm_upto_{$upTo_year}"]['title'] = "Up To $upTo_year";
+              $this->_columnHeaders["civicrm_upto_$upTo_year"]['type'] = $field['type'];
+              $this->_columnHeaders["civicrm_upto_$upTo_year"]['title'] = "Up To $upTo_year";
 
-              $this->_columnHeaders["{$previous_ppyear}"]['type'] = $field['type'];
-              $this->_columnHeaders["{$previous_ppyear}"]['title'] = $previous_ppyear;
+              $this->_columnHeaders[$previous_ppyear]['type'] = $field['type'];
+              $this->_columnHeaders[$previous_ppyear]['title'] = $previous_ppyear;
 
-              $this->_columnHeaders["{$previous_pyear}"]['type'] = $field['type'];
-              $this->_columnHeaders["{$previous_pyear}"]['title'] = $previous_pyear;
+              $this->_columnHeaders[$previous_pyear]['type'] = $field['type'];
+              $this->_columnHeaders[$previous_pyear]['title'] = $previous_pyear;
 
-              $this->_columnHeaders["{$previous_year}"]['type'] = $field['type'];
-              $this->_columnHeaders["{$previous_year}"]['title'] = $previous_year;
+              $this->_columnHeaders[$previous_year]['type'] = $field['type'];
+              $this->_columnHeaders[$previous_year]['title'] = $previous_year;
 
               $this->_columnHeaders["civicrm_life_time_total"]['type'] = $field['type'];
-              $this->_columnHeaders["civicrm_life_time_total"]['title'] = 'LifeTime';;
+              $this->_columnHeaders["civicrm_life_time_total"]['title'] = 'LifeTime';
+            }
+            else if ($fieldName === 'start_date') {
+              $select[] = "Year({$field['dbAlias']} ) as {$tableName}_$fieldName";
             }
             else {
-              if ($fieldName == 'start_date') {
-                $select[] = "Year({$field['dbAlias']} ) as {$tableName}_{$fieldName}";
-              }
-              else {
-                $select[] = "{$field['dbAlias']} as {$tableName}_{$fieldName}";
-                $this->_columnHeaders["{$tableName}_{$fieldName}"]['type'] = CRM_Utils_Array::value('type', $field);
-                $this->_columnHeaders["{$tableName}_{$fieldName}"]['title'] = $field['title'];
-              }
+              $select[] = "{$field['dbAlias']} as {$tableName}_$fieldName";
+              $this->_columnHeaders["{$tableName}_$fieldName"]['type'] = CRM_Utils_Array::value('type', $field);
+              $this->_columnHeaders["{$tableName}_$fieldName"]['title'] = $field['title'];
             }
             if (CRM_Utils_Array::value('no_display', $field)) {
-              $this->_columnHeaders["{$tableName}_{$fieldName}"]['no_display'] = TRUE;
+              $this->_columnHeaders["{$tableName}_$fieldName"]['no_display'] = TRUE;
             }
           }
         }
@@ -133,12 +132,12 @@ class CRM_Extendedreport_Form_Report_Pledge_Sybunt extends CRM_Extendedreport_Fo
     $this->_select = "SELECT " . implode(', ', $select) . " ";
   }
 
-  function from() {
+  public function from(): void {
     $this->_from = "
         FROM  civicrm_pledge  {$this->_aliases['civicrm_pledge']}
              INNER JOIN civicrm_contact {$this->_aliases['civicrm_contact']}
                          ON {$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_pledge']}.contact_id
-             {$this->_aclFrom}
+             $this->_aclFrom
              LEFT  JOIN civicrm_email  {$this->_aliases['civicrm_email']}
                          ON {$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_email']}.contact_id
                          AND {$this->_aliases['civicrm_email']}.is_primary = 1
@@ -157,9 +156,10 @@ class CRM_Extendedreport_Form_Report_Pledge_Sybunt extends CRM_Extendedreport_Fo
    * @param float $max
    *
    * @return string
+   * @throws \CRM_Core_Exception
    */
-  public function whereClause(&$field, $op, $value, $min, $max) {
-    if ($field['name'] == 'start_date') {
+  public function whereClause(&$field, $op, $value, $min, $max): string {
+    if ($field['name'] === 'start_date') {
       $value = CRM_Utils_Type::escape($value, 'Int');
       return "
         {$this->_aliases['civicrm_pledge']}.contact_id NOT IN (
@@ -172,7 +172,7 @@ class CRM_Extendedreport_Form_Report_Pledge_Sybunt extends CRM_Extendedreport_Fo
     return parent::whereClause($field, $op, $value, $min, $max);
   }
 
-  function groupBy() {
+  public function groupBy() : void{
     $this->_groupByArray = [$this->_aliases['civicrm_pledge'] . '.contact_id'];
     $this->_groupBy = CRM_Contact_BAO_Query::getGroupByFromSelectColumns($this->_selectClauses, $this->_groupByArray) . ", Year({$this->_aliases['civicrm_pledge']}.start_date) WITH ROLLUP ";
   }
@@ -180,9 +180,9 @@ class CRM_Extendedreport_Form_Report_Pledge_Sybunt extends CRM_Extendedreport_Fo
   /**
    * @param $rows
    *
-   * @return mixed
+   * @return array
    */
-  function statistics(&$rows) {
+  public function statistics(&$rows): array {
     $statistics = parent::statistics($rows);
 
     if (!empty($rows)) {
@@ -203,7 +203,11 @@ class CRM_Extendedreport_Form_Report_Pledge_Sybunt extends CRM_Extendedreport_Fo
     return $statistics;
   }
 
-  function postProcess() {
+  /**
+   * @throws \CiviCRM_API3_Exception
+   * @throws \CRM_Core_Exception
+   */
+  public function postProcess(): void {
     // get ready with post process params
     $this->beginPostProcess();
 
@@ -238,7 +242,7 @@ class CRM_Extendedreport_Form_Report_Pledge_Sybunt extends CRM_Extendedreport_Fo
       $current_year = $this->_params['yid_value'];
       $upTo_year = $current_year - 4;
 
-      $rows = $row = [];
+      $rows = [];
       $dao = CRM_Core_DAO::executeQuery($sql);
       $contributionSum = 0;
 
@@ -277,9 +281,9 @@ class CRM_Extendedreport_Form_Report_Pledge_Sybunt extends CRM_Extendedreport_Fo
   }
 
   /**
-   * @param $rows
+   * @param array $rows
    */
-  function alterDisplay(&$rows) {
+  public function alterDisplay(&$rows): void {
     foreach ($rows as $rowNum => $row) {
       //Convert Display name into link
       if (array_key_exists('civicrm_contact_display_name', $row) && array_key_exists('civicrm_pledge_contact_id', $row)) {

@@ -23,7 +23,7 @@ class ContributionPivotTest extends BaseTestClass {
    *
    * @dataProvider getRowVariants
    *
-   * @throws \CRM_Core_Exception
+   * @param $overrides
    */
   public function testGetRows($overrides): void {
     $contactID = $this->callAPISuccess('Contact', 'create', [

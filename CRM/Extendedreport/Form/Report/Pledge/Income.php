@@ -56,7 +56,7 @@ class CRM_Extendedreport_Form_Report_Pledge_Income extends CRM_Extendedreport_Fo
    *
    * @return array
    */
-  public function fromClauses() {
+  public function fromClauses(): array {
     return [
       'pledge_from_pledge_payment',
       'next_payment_from_pledge',
@@ -74,8 +74,8 @@ class CRM_Extendedreport_Form_Report_Pledge_Income extends CRM_Extendedreport_Fo
    *
    * @return string
    */
-  function selectClause(&$tableName, $tableKey, &$fieldName, &$field) {
-    if ($fieldName == 'pledge_payment_scheduled_amount') {
+  public function selectClause(&$tableName, $tableKey, &$fieldName, &$field): string {
+    if ($fieldName === 'pledge_payment_scheduled_amount') {
       $pledgePaymentStatuses = civicrm_api3('PledgePayment', 'getoptions', ['field' => 'status_id']);
       $toPayIDs = [array_search('Pending', $pledgePaymentStatuses['values']), array_search('Overdue', $pledgePaymentStatuses['values'])];
       $alias = $this->selectStatSum($tableName, $fieldName, $field);

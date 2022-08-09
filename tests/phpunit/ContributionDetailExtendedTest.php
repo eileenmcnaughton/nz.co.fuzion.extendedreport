@@ -81,7 +81,6 @@ class ContributionDetailExtendedTest extends BaseTestClass implements HeadlessIn
   /**
    * Set up for test.
    *
-   * @throws \CRM_Core_Exception
    */
   protected function setupData() {
     $this->callAPISuccess('Order', 'create', [
@@ -131,7 +130,6 @@ class ContributionDetailExtendedTest extends BaseTestClass implements HeadlessIn
   /**
    * Setup contributions.
    *
-   * @throws \CRM_Core_Exception
    */
   public function createMoreThanTwentyFiveContributions() {
     $amount = 5;

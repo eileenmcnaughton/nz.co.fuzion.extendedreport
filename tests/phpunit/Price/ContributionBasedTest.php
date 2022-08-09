@@ -41,7 +41,7 @@ class ContributionBasedTest extends BaseTestClass implements HeadlessInterface, 
    *
    * @throws \CRM_Core_Exception
    */
-  public function testReport($params) {
+  public function testReport(array $params) {
     $this->callAPISuccess('Order', 'create', [
       'contact_id' => $this->contacts[0],
       'total_amount' => 5,

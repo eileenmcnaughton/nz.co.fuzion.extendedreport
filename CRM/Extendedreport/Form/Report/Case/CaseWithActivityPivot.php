@@ -109,7 +109,7 @@ class CRM_Extendedreport_Form_Report_Case_CaseWithActivityPivot extends CRM_Exte
   /**
    * @return array
    */
-  function fromClauses() {
+  function fromClauses(): array {
     return [
       'contact_from_case',
       'activity_from_case',

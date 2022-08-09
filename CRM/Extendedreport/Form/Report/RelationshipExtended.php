@@ -76,7 +76,7 @@ class CRM_Extendedreport_Form_Report_RelationshipExtended extends CRM_Extendedre
      *
      * @return string
      */
-    public function whereTagClause($field, $value, $op) {
+    public function whereTagClause($field, $value, $op): string {
       // not using left join in query because if any contact
       // belongs to more than one tag, results duplicate
       // entries.
@@ -161,9 +161,9 @@ class CRM_Extendedreport_Form_Report_RelationshipExtended extends CRM_Extendedre
   /**
    * @param $rows
    *
-   * @return mixed
+   * @return array
    */
-  public function statistics(&$rows) {
+  public function statistics(&$rows): array {
     $statistics = parent::statistics($rows);
 
     $isStatusFilter = FALSE;
@@ -231,7 +231,7 @@ class CRM_Extendedreport_Form_Report_RelationshipExtended extends CRM_Extendedre
   /**
    * @param $rows
    */
-  public function alterDisplay(&$rows) {
+  public function alterDisplay(&$rows): void {
     parent::alterDisplay($rows);
     // custom code to alter rows
     $entryFound = TRUE;

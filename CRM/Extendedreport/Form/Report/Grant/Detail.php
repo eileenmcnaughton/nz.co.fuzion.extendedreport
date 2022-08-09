@@ -22,6 +22,8 @@ class CRM_Extendedreport_Form_Report_Grant_Detail extends CRM_Extendedreport_For
 
   /**
    * Class constructor.
+   *
+   * @throws \CRM_Core_Exception
    */
   public function __construct() {
     $this->_columns = $this->getColumns('Contact') + $this->getColumns('Email') + $this->getColumns('Phone') + $this->getColumns('Grant');
@@ -30,7 +32,7 @@ class CRM_Extendedreport_Form_Report_Grant_Detail extends CRM_Extendedreport_For
     CRM_Core_DAO::disableFullGroupByMode();
   }
 
-  function fromClauses() {
+  public function fromClauses(): array {
     return [
       'contact_from_grant',
       'email_from_contact',

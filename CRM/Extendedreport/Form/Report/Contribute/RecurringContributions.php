@@ -33,22 +33,6 @@
 class CRM_Extendedreport_Form_Report_Contribute_RecurringContributions extends CRM_Extendedreport_Form_Report_ExtendedReport {
 
   /**
-   * Can this report be used on a contact tab.
-   *
-   * The report must support contact_id in the url for this to work.
-   *
-   * @var bool
-   */
-  protected $isSupportsContactTab = TRUE;
-
-  /**
-   * Add order bys for custom fields.
-   *
-   * @var bool
-   */
-  protected $_customGroupOrderBy = TRUE;
-
-  /**
    * Add group bys for custom fields.
    *
    * @var bool
@@ -70,6 +54,8 @@ class CRM_Extendedreport_Form_Report_Contribute_RecurringContributions extends C
 
   /**
    * Class constructor.
+   *
+   * @throws \CRM_Core_Exception
    */
   public function __construct() {
     $this->_columns = $this->getColumns('Contact', ['group_by' => TRUE])
@@ -87,7 +73,7 @@ class CRM_Extendedreport_Form_Report_Contribute_RecurringContributions extends C
   /**
    * @return array
    */
-  function fromClauses() {
+  public function fromClauses(): array {
     return [
       'contact_from_contribution_recur',
       'email_from_contact',

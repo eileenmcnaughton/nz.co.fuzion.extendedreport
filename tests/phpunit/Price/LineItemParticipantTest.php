@@ -54,7 +54,7 @@ class LineItemParticipantTest extends BaseTestClass implements HeadlessInterface
   /**
    * Get datasets for testing the report
    */
-  public function getReportParameters() {
+  public function getReportParameters(): array {
     return [
       'basic' => [
         [

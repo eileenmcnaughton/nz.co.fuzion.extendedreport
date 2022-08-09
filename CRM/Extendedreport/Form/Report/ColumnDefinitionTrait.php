@@ -200,7 +200,7 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
   /**
    * Get columns for Case.
    *
-   * @param $options
+   * @param array $options
    *
    * @return array
    *
@@ -569,7 +569,7 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
    *
    * @return array
    */
-  function getLatestActivityColumns($options) {
+  function getLatestActivityColumns(array $options) {
     $defaultOptions = [
       'prefix' => '',
       'prefix_label' => '',
@@ -604,7 +604,7 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
    *
    * @return array
    */
-  protected function getContributionRecurColumns($options = []): array {
+  protected function getContributionRecurColumns(array $options = []): array {
     $spec = [
       'id' => [
         'is_fields' => TRUE,
@@ -764,7 +764,7 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
    *
    * @return array
    */
-  protected function getContributionSoftColumns($options = []): array {
+  protected function getContributionSoftColumns(array $options = []): array {
     $spec = [
       'id' => [
         'is_fields' => FALSE,

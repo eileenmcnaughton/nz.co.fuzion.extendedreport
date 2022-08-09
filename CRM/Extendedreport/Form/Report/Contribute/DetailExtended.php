@@ -185,7 +185,7 @@ class CRM_Extendedreport_Form_Report_Contribute_DetailExtended extends CRM_Exten
     return $statistics;
   }
 
-  function alterDisplay(&$rows) {
+  public function alterDisplay(&$rows): void {
     $entryFound = FALSE;
     $display_flag = $prev_cid = $cid = 0;
     $contributionPages = CRM_Contribute_PseudoConstant::contributionPage();
