@@ -8930,10 +8930,9 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
   }
 
   /**
-   * @return array
-   * @throws \CiviCRM_API3_Exception
+   * @throws \CRM_Core_Exception
    */
-  protected function wrangleColumnHeadersForContributionPivotWithReceiveDateAggregate(): array {
+  protected function wrangleColumnHeadersForContributionPivotWithReceiveDateAggregate(): void {
     // Change column header.
     if (isset($this->_params['aggregate_column_headers']) && ($this->_params['aggregate_column_headers'] === 'contribution_total_amount_year' || $this->_params['aggregate_column_headers'] === 'contribution_total_amount_month')) {
       $columnType = explode('_', $this->_params['aggregate_column_headers']);
