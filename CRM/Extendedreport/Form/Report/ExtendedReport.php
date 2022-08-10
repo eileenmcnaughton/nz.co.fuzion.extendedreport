@@ -1626,9 +1626,9 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
 
     foreach (array_keys($this->_groupByArray) as $groupByField) {
       if (stripos($groupByField, '_start') !== FALSE) {
-        $ungroupedField = str_replace(['_start'], '', $groupByField);
+        $ungroupedField = str_replace('_start', '', $groupByField);
         unset($this->_columnHeaders[$ungroupedField]);
-        $fieldMapKey = array_search($ungroupedField, $fieldMap);
+        $fieldMapKey = array_search($ungroupedField, $fieldMap, TRUE);
         if ($fieldMapKey) {
           $fieldMap[$fieldMapKey] = $fieldMap[$fieldMapKey] . '_start';
         }
@@ -2265,7 +2265,7 @@ LEFT JOIN civicrm_contact {$prop['alias']} ON {$prop['alias']}.id = {$this->_ali
    * @param $rows
    */
   public function alterDisplay(&$rows): void {
-    if (!empty($this->_defaults['report_id']) && $this->_defaults['report_id'] == reset($this->_drilldownReport)) {
+    if (!empty($this->_defaults['report_id']) && $this->_defaults['report_id'] === reset($this->_drilldownReport)) {
       $this->linkedReportID = $this->_id;
     }
     parent::alterDisplay($rows);
@@ -2313,8 +2313,7 @@ LEFT JOIN civicrm_contact {$prop['alias']} ON {$prop['alias']}.id = {$this->_ali
         $alterMap[$fieldAlias] = $fieldAlias;
         $alterSpecs[$fieldAlias] = $specs;
       }
-      if (in_array($fieldAlias . '_sum', $selectedFields)
-        && !empty($this->_groupByArray) && isset($specs['statistics']) && isset($specs['statistics']['cumulative'])) {
+      if (!empty($this->_groupByArray) && isset($specs['statistics']['cumulative']) && in_array($fieldAlias . '_sum', $selectedFields, TRUE)) {
         $this->_columnHeaders[$fieldAlias . '_cumulative']['title'] = $specs['statistics']['cumulative'];
         $this->_columnHeaders[$fieldAlias . '_cumulative']['type'] = $specs['type'];
         $alterFunctions[$fieldAlias . '_sum'] = 'alterCumulative';
