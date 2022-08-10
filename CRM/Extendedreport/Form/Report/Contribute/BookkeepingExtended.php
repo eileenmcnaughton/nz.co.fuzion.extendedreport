@@ -278,6 +278,7 @@ class CRM_Extendedreport_Form_Report_Contribute_BookkeepingExtended extends CRM_
    */
   public function statistics(&$rows): array {
     $statistics = parent::statistics($rows);
+    $avg = [];
 
     $select = " SELECT COUNT({$this->_aliases['civicrm_financial_trxn']}.id ) as count,
                 {$this->_aliases['civicrm_contribution']}.currency,

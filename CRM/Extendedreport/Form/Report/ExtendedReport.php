@@ -7831,7 +7831,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    *
    * @throws \CiviCRM_API3_Exception
    */
-  protected function addCustomDataForEntities($extends) {
+  protected function addCustomDataForEntities($extends): void {
     $fields = $this->getCustomDataDAOs($extends);
     foreach ($fields as $field) {
       $prefixLabel = trim(CRM_Utils_Array::value('prefix_label', $field));
@@ -7851,7 +7851,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    *
    * @return array
    */
-  protected function getCustomDataDAOs($extends) {
+  protected function getCustomDataDAOs(array $extends): array {
     $extendsKey = implode(',', $extends);
     if (isset($this->customDataDAOs[$extendsKey])) {
       return $this->customDataDAOs[$extendsKey];
@@ -7878,7 +7878,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
     }
     foreach ($this->_columns as $spec) {
       $entityName = (isset($spec['bao']) ? CRM_Core_DAO_AllCoreTables::getBriefName(str_replace('BAO', 'DAO', $spec['bao'])) : '');
-      if ($entityName && in_array($entityName, $extendsEntities)) {
+      if ($entityName && in_array($entityName, $extendsEntities, TRUE)) {
         $extendsMap[$entityName][$spec['prefix']] = $spec['prefix_label'];
       }
     }
@@ -7930,13 +7930,13 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
   }
 
   /**
-   * @param $field
-   * @param $currentTable
+   * @param array $field
+   * @param string $currentTable
    * @param $prefix
    * @param $prefixLabel
    * @param $tableKey
    */
-  protected function addCustomTableToColumns($field, $currentTable, $prefix, $prefixLabel, $tableKey) {
+  protected function addCustomTableToColumns(array $field, $currentTable, $prefix, $prefixLabel, $tableKey): void {
     $entity = $field['extends'];
     if (in_array($entity, ['Individual', 'Organization', 'Household'])) {
       $entity = 'Contact';
@@ -8007,7 +8007,7 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
    *
    * @throws CRM_Core_Exception
    */
-  protected function getCustomFieldOptions($spec): array {
+  protected function getCustomFieldOptions(array $spec): array {
     $options = [];
     if (!empty($spec['options'])) {
       return $spec['options'];
@@ -8049,7 +8049,7 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
    *
    * @return string
    */
-  protected function createTemporaryTableFromColumns($identifier, $columns) {
+  protected function createTemporaryTableFromColumns(string $identifier, string $columns): string {
     $isNotTrueTemporary = !$this->_temporary;
     $tmpTableName = CRM_Utils_SQL_TempTable::build()
       ->setId($identifier)
@@ -8088,14 +8088,6 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
       CRM_Utils_Type::T_TIMESTAMP => CRM_Report_Form::OP_DATE,
     ];
     return $typeMap[$type];
-    /* could we still need this?
-    /    if (!empty($table['bao']) &&
-          array_key_exists('pseudoconstant', $spec)
-        ) {
-          // with multiple options operator-type is generally multi-select
-          return CRM_Report_Form::OP_MULTISELECT;
-        }
-    */
   }
 
   /**
@@ -8106,17 +8098,17 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
    * @return array
    * @throws \CiviCRM_API3_Exception
    */
-  protected function getQillForField($field, $fieldName, $prefix = '') {
+  protected function getQillForField($field, $fieldName, string $prefix = ''): array {
     if ((CRM_Utils_Array::value('type', $field) & CRM_Utils_Type::T_DATE ||
         CRM_Utils_Array::value('type', $field) & CRM_Utils_Type::T_TIME) &&
       CRM_Utils_Array::value('operatorType', $field) !=
       CRM_Report_Form::OP_MONTH
     ) {
 
-      $from = $this->_params["{$prefix}{$fieldName}_from"] ?? NULL;
+      $from = $this->_params["$prefix{$fieldName}_from"] ?? NULL;
       $to = $this->_params["{$prefix}{$fieldName}_to"] ?? NULL;
-      if (!empty($this->_params["{$prefix}{$fieldName}_relative"])) {
-        [$from, $to] = CRM_Utils_Date::getFromTo($this->_params["{$prefix}{$fieldName}_relative"], NULL, NULL);
+      if (!empty($this->_params["$prefix{$fieldName}_relative"])) {
+        [$from, $to] = CRM_Utils_Date::getFromTo($this->_params["$prefix{$fieldName}_relative"]);
       }
       if (strlen($to) === 10) {
         // If we just have the date we assume the end of that day.
@@ -8136,7 +8128,7 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
         ];
       }
 
-      if (in_array($rel = CRM_Utils_Array::value("{$prefix}{$fieldName}_relative", $this->_params),
+      if (in_array($rel = CRM_Utils_Array::value("$prefix{$fieldName}_relative", $this->_params),
         array_keys($this->getOperationPair(CRM_Report_Form::OP_DATE))
       )) {
         $pair = $this->getOperationPair(CRM_Report_Form::OP_DATE);
@@ -8147,18 +8139,18 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
       }
     }
     else {
-      $op = CRM_Utils_Array::value("{$prefix}{$fieldName}_op", $this->_params);
+      $op = CRM_Utils_Array::value("$prefix{$fieldName}_op", $this->_params);
       $value = NULL;
       if ($op) {
         $pair = $this->getOperationPair(
           CRM_Utils_Array::value('operatorType', $field),
           $fieldName
         );
-        $min = CRM_Utils_Array::value("{$prefix}{$fieldName}_min", $this->_params);
-        $max = CRM_Utils_Array::value("{$prefix}{$fieldName}_max", $this->_params);
-        $val = CRM_Utils_Array::value("{$prefix}{$fieldName}_value", $this->_params);
+        $min = CRM_Utils_Array::value("$prefix{$fieldName}_min", $this->_params);
+        $max = CRM_Utils_Array::value("$prefix{$fieldName}_max", $this->_params);
+        $val = CRM_Utils_Array::value("$prefix{$fieldName}_value", $this->_params);
         if (in_array($op, ['bw', 'nbw']) && ($min || $max)) {
-          $value = "{$pair[$op]} $min " . ts('and') . " $max";
+          $value = "$pair[$op] $min " . ts('and') . " $max";
         }
         elseif ($val && CRM_Utils_Array::value('operatorType', $field) & self::OP_ENTITYREF) {
           $this->setEntityRefDefaults($field, $field['table_name']);
@@ -8169,7 +8161,7 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
           foreach ($result['values'] as $v) {
             $values[] = $v['label'];
           }
-          $value = "{$pair[$op]} " . implode(', ', $values);
+          $value = "$pair[$op] " . implode(', ', $values);
         }
         elseif ($op === 'nll' || $op === 'nnll') {
           $value = $pair[$op];
@@ -8181,10 +8173,10 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
               $val[$key] = $options[$valIds];
             }
           }
-          $pair[$op] = (count($val) == 1) ? (($op === 'notin' || $op ===
+          $pair[$op] = (count($val) === 1) ? (($op === 'notin' || $op ===
             'mnot') ? ts('Is Not') : ts('Is')) : CRM_Utils_Array::value($op, $pair);
           $val = implode(', ', $val);
-          $value = "{$pair[$op]} " . $val;
+          $value = "$pair[$op] " . $val;
         }
         elseif (!is_array($val) && (!empty($val) || $val == '0') &&
           isset($field['options']) &&
@@ -8218,7 +8210,7 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
    *
    * @return bool
    */
-  protected function isValidTitle($string):bool {
+  protected function isValidTitle(string $string):bool {
     return CRM_Utils_Rule::alphanumeric(str_replace(' ', '', $string));
   }
 
@@ -8253,7 +8245,7 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
    *
    * The QF page already saves order by data in an array. However, it may be lost :-(
    */
-  protected function mergeExtendedConfigurationIntoReportData() {
+  protected function mergeExtendedConfigurationIntoReportData(): void {
     $this->mergeExtendedFieldConfiguration();
     $this->mergeExtendedOrderByConfiguration();
   }
@@ -8261,7 +8253,7 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
   /**
    * Merge 'extended_order_bys' into fields
    */
-  protected function mergeExtendedOrderByConfiguration() {
+  protected function mergeExtendedOrderByConfiguration(): void {
     $orderBys = CRM_Utils_Array::value('order_bys', $this->_formValues);
     $extendedOrderBys = CRM_Utils_Array::value('extended_order_bys', $this->_formValues);
     $metadata = $this->getMetadataByType('order_bys');
@@ -8296,7 +8288,7 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
   /**
    * Merge 'extended_fields' into fields
    */
-  protected function mergeExtendedFieldConfiguration() {
+  protected function mergeExtendedFieldConfiguration(): void {
     $orderedFieldsArray = $this->getConfiguredFieldsFlatArray();
     foreach ($this->getExtendedFieldsSelection() as $configuredExtendedField) {
       $fieldName = $configuredExtendedField['name'];
@@ -8343,7 +8335,7 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
    *
    * @return array
    */
-  protected function getConfiguredOrderBys($params) {
+  protected function getConfiguredOrderBys(array $params): array {
     $orderBys = [];
     $quickFormOrderBys = isset($params['order_bys']) ? (array) $params['order_bys'] : [];
     foreach ($quickFormOrderBys as $index => $quickFormOrderBy) {
@@ -8383,7 +8375,7 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
    *
    * @return array
    */
-  protected function getExtendedOrderBysSelection($params) {
+  protected function getExtendedOrderBysSelection(array $params): array {
     return CRM_Utils_Array::value('extended_order_bys', $params, CRM_Utils_Array::value('extended_order_bys', $this->_formValues, CRM_Utils_Array::value('extended_order_bys', $this->_params, [])));
   }
 
@@ -8393,7 +8385,7 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
    *
    * @return string
    */
-  protected function getBasicFieldSelectClause($field, $alias) {
+  protected function getBasicFieldSelectClause(array $field, string $alias): string {
     $fieldString = $field['dbAlias'];
     if (!empty($field['field_on_null'])) {
       $fallbacks = [];
@@ -8407,14 +8399,12 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
         $fieldString = 'COALESCE(NULLIF(' . $fieldString . ', ""),' . implode(',', $fallbacks) . ')';
       }
     }
-    if ($this->isGroupByMode()) {
-      if ((empty($field['statistics']) || in_array('GROUP_CONCAT', $field['statistics']))) {
+    if ($this->isGroupByMode() && (empty($field['statistics']) || in_array('GROUP_CONCAT', $field['statistics']))) {
 
-        if (empty($this->_groupByArray[$alias])) {
-          return "GROUP_CONCAT(DISTINCT ({$fieldString}))";
-        }
-        return "({$fieldString}) ";
+      if (empty($this->_groupByArray[$alias])) {
+        return "GROUP_CONCAT(DISTINCT ($fieldString))";
       }
+      return "($fieldString) ";
     }
     return "$fieldString ";
   }
@@ -8428,11 +8418,11 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
    *
    * @return string
    */
-  protected function getStatisticsAlias($tableName, $fieldName, $stat) {
+  protected function getStatisticsAlias(string $tableName, string $fieldName, string $stat): string {
     if ($stat === 'cumulative') {
       $stat = 'sum';
     }
-    return "{$tableName}_{$fieldName}_{$stat}";
+    return "{$tableName}_{$fieldName}_$stat";
   }
 
   /**
@@ -8442,7 +8432,7 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
    *
    * @return array
    */
-  protected function getFieldStatistics($field) {
+  protected function getFieldStatistics(array $field): array {
     return empty($this->_groupByArray) ? [] : CRM_Utils_Array::value('statistics', $field, []);
   }
 
@@ -8451,7 +8441,7 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
    *
    * @return bool
    */
-  protected function isGroupByMode() {
+  protected function isGroupByMode(): bool {
     return (!empty($this->_groupByArray) || $this->isForceGroupBy);
   }
 
@@ -8534,7 +8524,7 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
   /**
    * @param $fieldKey
    */
-  protected function setFieldAsNoDisplay($fieldKey) {
+  protected function setFieldAsNoDisplay($fieldKey): void {
     $this->metaData['fields'][$fieldKey]['no_display'] = TRUE;
   }
 
@@ -8542,7 +8532,7 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
    * @param $field
    * @param $alias
    */
-  protected function addFieldToColumnHeaders($field, $alias) {
+  protected function addFieldToColumnHeaders($field, $alias): void {
     if (!isset($field['no_display'])) {
       $this->_columnHeaders[$alias]['title'] = $field['title'];
       $this->_columnHeaders[$alias]['type'] = $field['type'];
@@ -8554,7 +8544,7 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
    *
    * @param array $statistics
    */
-  public function groupByStat(&$statistics) {
+  public function groupByStat(&$statistics): void {
     $combinations = [];
     foreach ($this->getSelectedGroupBys() as $field) {
       $combinations[] = $field['title'];
@@ -8591,7 +8581,7 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
    *
    * Override this as it does not support table name prefixing & fails to determine the BAO.
    */
-  public function buildPermissionClause() {
+  public function buildPermissionClause(): void {
     $ret = [];
     foreach ($this->selectedTables() as $tableName) {
       $baoName = str_replace('_DAO_', '_BAO_', $this->_columns[$tableName]['bao'] ?? '');
@@ -8637,7 +8627,7 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
    * @param string $tableKey
    * @param string $fieldName
    */
-  protected function appendFieldToMetadata($fieldSpec, string $tableKey, string $fieldName) {
+  protected function appendFieldToMetadata(array $fieldSpec, string $tableKey, string $fieldName): void {
     $this->_columns[$tableKey]['metadata'][$fieldName] = $fieldSpec;
     // Empty metadata so it gets rebuild based off columns when next requested.
     $this->metaData = [];
@@ -8648,7 +8638,7 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
    * @param string $tableKey
    * @param string $fieldName
    */
-  protected function addFieldToMetadata($fieldSpec, string $tableKey, string $fieldName) {
+  protected function addFieldToMetadata(array $fieldSpec, string $tableKey, string $fieldName): void {
     $definitionTypes = [
       'fields',
       'filters',
@@ -8678,7 +8668,7 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
   /**
    * Rebuild the metadata array.
    */
-  protected function rebuildMetadata() {
+  protected function rebuildMetadata(): void {
     $definitionTypes = [
       'fields',
       'filters',
@@ -8718,7 +8708,7 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
    * @param $key
    * @param $value
    */
-  protected function setMetadataValue(string $fieldName, $key, $value)  {
+  protected function setMetadataValue(string $fieldName, $key, $value): void {
     if (!empty($this->metaData['metadata'])) {
       $this->metaData['metadata'][$fieldName][$key] = $value;
       foreach ($this->metaData as $type => $fields) {
@@ -8778,9 +8768,9 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
         $tmpTableName = $this->createTemporaryTableFromColumns($tableAlias, '`entity_id` INT(10) NOT NULL, `id` INT(10) NOT NULL, `entity_table` varchar(64) NULL, `note` longtext NULL, index (entity_id), index (id)');
         $sql = " INSERT INTO $tmpTableName
           # we need id & entity_table to 'fool' the acl clause but id just has to be not null.
-          SELECT entity_id, MAX(id), 'civicrm_{$entity}' as entity_table, GROUP_CONCAT(note SEPARATOR ', ') as note
+          SELECT entity_id, MAX(id), 'civicrm_$entity' as entity_table, GROUP_CONCAT(note SEPARATOR ', ') as note
           FROM civicrm_note note
-          WHERE entity_table = 'civicrm_{$entity}'
+          WHERE entity_table = 'civicrm_$entity'
           GROUP BY note.entity_id
         ";
 

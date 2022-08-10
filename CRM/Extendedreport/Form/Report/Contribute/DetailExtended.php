@@ -118,7 +118,7 @@ class CRM_Extendedreport_Form_Report_Contribute_DetailExtended extends CRM_Exten
     parent::__construct();
   }
 
-  function from() {
+  public function from(): void {
     $this->setFromBase('civicrm_contact');
     $this->_from .= "
               INNER JOIN civicrm_contribution {$this->_aliases['civicrm_contribution']}

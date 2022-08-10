@@ -92,7 +92,7 @@ class CRM_Extendedreport_Form_Report_RelationshipExtended extends CRM_Extendedre
                             WHERE entity_table = 'civicrm_contact' AND {$clause} ) ";
   }
 
-  function from() {
+  public function from(): void {
     $this->setFromBase('civicrm_contact', 'id', $this->_aliases['contact_a_civicrm_contact']);
     $this->_from .= "
       INNER JOIN civicrm_relationship {$this->_aliases['civicrm_relationship']}
@@ -203,7 +203,7 @@ class CRM_Extendedreport_Form_Report_RelationshipExtended extends CRM_Extendedre
    * @throws \CRM_Core_Exception
    * @throws \CiviCRM_API3_Exception
    */
-  public function postProcess() {
+  public function postProcess(): void {
     $this->beginPostProcess();
     $this->relationType = NULL;
     $originalRelationshipTypes = [];

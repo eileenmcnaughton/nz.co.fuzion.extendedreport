@@ -30,7 +30,7 @@ class ContributionOverviewExtendedTest extends BaseTestClass implements Headless
     $contact = $this->callAPISuccess('Contact', 'create', ['first_name' => 'Wonder', 'last_name' => 'Woman', 'contact_type' => 'Individual']);
     $this->contacts[] = $contact['id'];
 
-    $contribution = $this->callAPISuccess('Contribution', 'create', [
+    $this->callAPISuccess('Contribution', 'create', [
       'contact_id' => $contact['id'],
       'receive_date' => '2017-08-09',
       'total_amount' => 5,
