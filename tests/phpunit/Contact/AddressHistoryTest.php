@@ -2,10 +2,6 @@
 
 require_once __DIR__ . '../../BaseTestClass.php';
 
-use Civi\Test\HeadlessInterface;
-use Civi\Test\HookInterface;
-use Civi\Test\TransactionalInterface;
-
 /**
  * Test contribution DetailExtended class.
  *
@@ -20,7 +16,7 @@ use Civi\Test\TransactionalInterface;
  *
  * @group headless
  */
-class Contact_AddressHistoryTest extends BaseTestClass implements HeadlessInterface, HookInterface, TransactionalInterface {
+class Contact_AddressHistoryTest extends BaseTestClass {
 
   protected $contacts = [];
 
@@ -41,9 +37,8 @@ class Contact_AddressHistoryTest extends BaseTestClass implements HeadlessInterf
   /**
    * Test rows retrieval.
    *
-   * @throws \CRM_Core_Exception
    */
-  public function testGetRows() {
+  public function testGetRows(): void {
     $params = [
       'report_id' => 'contact/addresshistory',
     ];

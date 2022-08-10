@@ -1687,7 +1687,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    * We are overriding the rows as we want the custom data by contribution.
    * here we are getting contribution total amount by year.
    *
-   * @param integer $rowFieldId
+   * @param string $rowFieldId
    * @param string $columnType = month / year
    * @param string $header = `contribution_total_amount_year` / 'contribution_total_amount_year'
    *
@@ -1695,7 +1695,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    *
    * @throws \CiviCRM_API3_Exception
    */
-  public function buildContributionTotalAmountBybreakdown(int $rowFieldId, string $columnType, string $header): ?array {
+  public function buildContributionTotalAmountByBreakdown(string $rowFieldId, string $columnType, string $header): ?array {
     if ($header === 'contribution_total_amount_year' || $header === 'contribution_total_amount_month') {
       $where = '';
       $clause = '';
@@ -6468,15 +6468,15 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
   /**
    * @param $value
    * @param $row
-   * @param $selectedfield
+   * @param string $selectedField
    * @param $criteriaFieldName
    *
    * @return array
    */
-  protected function alterStateProvinceID($value, &$row, $selectedfield, $criteriaFieldName): array {
+  protected function alterStateProvinceID($value, &$row, string $selectedField, $criteriaFieldName): array {
     $url = CRM_Utils_System::url(CRM_Utils_System::currentPath(), "reset=1&force=1&{$criteriaFieldName}_op=in&{$criteriaFieldName}_value=$value", $this->_absoluteUrl);
-    $row[$selectedfield . '_link'] = $url;
-    $row[$selectedfield . '_hover'] = ts("%1 for this state.", [
+    $row[$selectedField . '_link'] = $url;
+    $row[$selectedField . '_hover'] = ts("%1 for this state.", [
       1 => $value,
     ]);
 
@@ -8788,7 +8788,7 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
     // Get the row field data for adding conditions.
     foreach ($rows as $rowsKey => $rowsData) {
       $rowFieldId = $rowsData[$this->getAggregateRowFieldAlias()] ?? '';
-      $rows[$rowsKey] = $this->buildContributionTotalAmountBybreakdown($rowFieldId, $columnType, $this->_params['aggregate_column_headers']);
+      $rows[$rowsKey] = $this->buildContributionTotalAmountByBreakdown($rowFieldId, $columnType, $this->_params['aggregate_column_headers']);
     }
 
     $row = [];
@@ -8832,7 +8832,7 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
     if (isset($this->_params['aggregate_column_headers']) && ($this->_params['aggregate_column_headers'] === 'contribution_total_amount_year' || $this->_params['aggregate_column_headers'] === 'contribution_total_amount_month')) {
       $columnType = explode('_', $this->_params['aggregate_column_headers']);
       $columnType = end($columnType);
-      $result = $this->buildContributionTotalAmountBybreakdown('HEADER', $columnType, $this->_params['aggregate_column_headers']);
+      $result = $this->buildContributionTotalAmountByBreakdown('HEADER', $columnType, $this->_params['aggregate_column_headers']);
 
       $header = array_keys($result);
 

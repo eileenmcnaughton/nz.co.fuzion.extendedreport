@@ -15,8 +15,6 @@ class CRM_Extendedreport_Form_Report_ActivityEditable extends CRM_Extendedreport
    */
   protected $_baseTable = 'civicrm_activity';
 
-  protected $_aclTable = 'target_civicrm_contact';
-
   /**
    * Class constructor.
    *

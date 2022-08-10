@@ -7,8 +7,6 @@ class CRM_Extendedreport_Form_Report_Contribute_ContributionPivot extends CRM_Ex
 
   protected $_baseTable = 'civicrm_contribution';
 
-  protected $skipACL = FALSE;
-
   protected $_customGroupAggregates = TRUE;
 
   protected $_aggregatesIncludeNULL = TRUE;

@@ -5,8 +5,6 @@
  */
 class CRM_Extendedreport_Form_Report_Contact_Basiccontact extends CRM_Extendedreport_Form_Report_ExtendedReport {
 
-  protected $skipACL = FALSE;
-
   protected $_joinFilters = ['address_from_contact' => ['civicrm_address' => 'is_primary = 1 ']];
 
   protected $_customGroupExtends = ['Contact', 'Individual', 'Household', 'Organization'];

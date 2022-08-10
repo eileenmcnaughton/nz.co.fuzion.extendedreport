@@ -211,10 +211,9 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
    * @param string $reportID
    *
    * @dataProvider getAllNonLoggingReports
-   * @throws \CRM_Core_Exception
    */
-  public function testReportsGroupFilter($reportID) {
-    $group = $this->callAPISuccess('Group', 'create', ['title' => uniqid()]);
+  public function testReportsGroupFilter(string $reportID): void {
+    $group = $this->callAPISuccess('Group', 'create', ['title' => 'my group']);
     $params = [
       'report_id' => $reportID,
       'fields' => ['contribution_id' => 1],
@@ -231,9 +230,8 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
    * @param string $reportID
    *
    * @dataProvider getAllNonLoggingReports
-   * @throws \CRM_Core_Exception
    */
-  public function testReportsTagFilter($reportID) {
+  public function testReportsTagFilter(string $reportID): void {
     $tag = $this->callAPISuccess('Tag', 'create', ['name' => uniqid()]);
     $params = [
       'report_id' => $reportID,

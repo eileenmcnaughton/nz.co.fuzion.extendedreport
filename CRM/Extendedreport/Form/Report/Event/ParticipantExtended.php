@@ -9,8 +9,6 @@ class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Exten
 
   protected $_baseTable = 'civicrm_participant';
 
-  protected $skipACL = FALSE;
-
   protected $_groupFilter = TRUE;
 
   protected $_tagFilter = TRUE;

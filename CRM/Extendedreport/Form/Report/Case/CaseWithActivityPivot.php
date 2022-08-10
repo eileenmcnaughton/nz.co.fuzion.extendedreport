@@ -7,8 +7,6 @@ class CRM_Extendedreport_Form_Report_Case_CaseWithActivityPivot extends CRM_Exte
 
   protected $_baseTable = 'civicrm_case';
 
-  protected $skipACL = FALSE;
-
   protected $_customGroupAggregates = TRUE;
 
   protected $_rollup = 'WITH ROLLUP';
