@@ -6468,27 +6468,6 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
   /**
    * @param $value
    * @param $row
-   * @param string $selectedField
-   * @param $criteriaFieldName
-   *
-   * @return array
-   */
-  protected function alterStateProvinceID($value, &$row, string $selectedField, $criteriaFieldName): array {
-    $url = CRM_Utils_System::url(CRM_Utils_System::currentPath(), "reset=1&force=1&{$criteriaFieldName}_op=in&{$criteriaFieldName}_value=$value", $this->_absoluteUrl);
-    $row[$selectedField . '_link'] = $url;
-    $row[$selectedField . '_hover'] = ts("%1 for this state.", [
-      1 => $value,
-    ]);
-
-    $states = CRM_Core_PseudoConstant::stateProvince($value, FALSE);
-    if (!is_array($states)) {
-      return $states;
-    }
-  }
-
-  /**
-   * @param $value
-   * @param $row
    * @param $fieldname
    *
    * @return mixed
