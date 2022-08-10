@@ -5485,6 +5485,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     ";
       return TRUE;
     }
+    return FALSE;
   }
 
   /**
@@ -6349,9 +6350,9 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    * @param $value
    * @param $row
    *
-   * @return array
+   * @return array|string
    */
-  protected function alterContributionStatus($value, &$row): array {
+  protected function alterContributionStatus($value, &$row) {
     return CRM_Contribute_PseudoConstant::contributionStatus($value);
   }
 
@@ -6491,9 +6492,9 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    * @param array $selectedField
    * @param array $criteriaFieldName
    *
-   * @return array
+   * @return string
    */
-  protected function alterCountryID($value, &$row, $selectedField, $criteriaFieldName): array {
+  protected function alterCountryID($value, &$row, $selectedField, $criteriaFieldName): string {
     $url = CRM_Utils_System::url(CRM_Utils_System::currentPath(), "reset=1&force=1&{$criteriaFieldName}_op=in&{$criteriaFieldName}_value={$value}", $this->_absoluteUrl);
     $row[$selectedField . '_link'] = $url;
     $row[$selectedField . '_hover'] = ts("%1 for this country.", [
@@ -6503,6 +6504,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
     if (!is_array($countries)) {
       return $countries;
     }
+    return '';
   }
 
   /**
@@ -6511,7 +6513,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    * @param $selectedfield
    * @param $criteriaFieldName
    *
-   * @return array
+   * @return string
    */
   protected function alterCountyID($value, &$row, $selectedfield, $criteriaFieldName) {
     $url = CRM_Utils_System::url(CRM_Utils_System::currentPath(), "reset=1&force=1&{$criteriaFieldName}_op=in&{$criteriaFieldName}_value={$value}", $this->_absoluteUrl);
@@ -7124,6 +7126,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
         return $clause;
       }
     }
+    return NULL;
   }
 
   /**
@@ -8952,10 +8955,9 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
   }
 
   /**
-   * @return array
    * @throws \CiviCRM_API3_Exception
    */
-  protected function wrangleColumnHeadersForContributionPivotWithReceiveDateAggregate(): array {
+  protected function wrangleColumnHeadersForContributionPivotWithReceiveDateAggregate(): void {
     // Change column header.
     if (isset($this->_params['aggregate_column_headers']) && ($this->_params['aggregate_column_headers'] === 'contribution_total_amount_year' || $this->_params['aggregate_column_headers'] === 'contribution_total_amount_month')) {
       $columnType = explode('_', $this->_params['aggregate_column_headers']);

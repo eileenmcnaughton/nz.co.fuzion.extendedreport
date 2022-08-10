@@ -120,6 +120,7 @@ class CRM_Extendedreport_Form_Report_Pledge_PaidAndCommitted extends CRM_Extende
       $this->_statFields['Balance to Pay'] = "{$tableName}_{$fieldName}";
       return " COALESCE(sum(pledge.amount), 0) - COALESCE(sum({$this->_aliases['civicrm_pledge_payment']}.actual_amount), 0) as civicrm_pledge_balance_amount ";
     }
+    return '';
   }
 
   /**
