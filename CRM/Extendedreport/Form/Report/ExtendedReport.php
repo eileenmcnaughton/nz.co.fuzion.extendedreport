@@ -6467,42 +6467,20 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
 
   /**
    * @param $value
-   * @param $row
    *
    * @return array|string
    */
-  function alterMembershipTypeID($value, &$row) {
+  protected function alterMembershipTypeID($value) {
     return is_string(CRM_Member_PseudoConstant::membershipType($value, FALSE)) ? CRM_Member_PseudoConstant::membershipType($value, FALSE) : '';
   }
 
   /**
    * @param int $value
-   * @param array $row
    *
-   * @return array|string
+   * @return string
    */
-  protected function alterMembershipStatusID($value, &$row) {
+  protected function alterMembershipStatusID($value) {
     return is_string(CRM_Member_PseudoConstant::membershipStatus($value, FALSE)) ? CRM_Member_PseudoConstant::membershipStatus($value, FALSE) : '';
-  }
-
-  /**
-   * @param int $value
-   * @param array $row
-   * @param array $selectedField
-   * @param array $criteriaFieldName
-   *
-   * @return array
-   */
-  protected function alterCountryID($value, &$row, $selectedField, $criteriaFieldName): array {
-    $url = CRM_Utils_System::url(CRM_Utils_System::currentPath(), "reset=1&force=1&{$criteriaFieldName}_op=in&{$criteriaFieldName}_value={$value}", $this->_absoluteUrl);
-    $row[$selectedField . '_link'] = $url;
-    $row[$selectedField . '_hover'] = ts("%1 for this country.", [
-      1 => $value,
-    ]);
-    $countries = CRM_Core_PseudoConstant::country($value, FALSE);
-    if (!is_array($countries)) {
-      return $countries;
-    }
   }
 
   /**
