@@ -2,10 +2,6 @@
 
 require_once __DIR__ . '/BaseTestClass.php';
 
-use Civi\Test\HeadlessInterface;
-use Civi\Test\HookInterface;
-use Civi\Test\TransactionalInterface;
-
 /**
  * Test contribution DetailExtended class.
  *
@@ -20,15 +16,19 @@ use Civi\Test\TransactionalInterface;
  *
  * @group headless
  */
-class ContributionDetailExtendedTest extends BaseTestClass implements HeadlessInterface, HookInterface, TransactionalInterface {
+class ContributionDetailExtendedTest extends BaseTestClass {
 
+  /**
+   * @var array
+   */
   protected $contacts = [];
 
   public function setUp(): void {
     parent::setUp();
     $this->enableAllComponents();
     $contacts = $this->createContacts();
-    $this->contacts[] = reset($contacts)['id'];
+    $contact = reset($contacts);
+    $this->contacts[] = $contact['id'];
   }
 
   /**
@@ -56,9 +56,8 @@ class ContributionDetailExtendedTest extends BaseTestClass implements HeadlessIn
   /**
    * Test Detail Extended report, grouping by contact.
    *
-   * @throws \CRM_Core_Exception
    */
-  public function testDetailExtendedGroupByContact() {
+  protected function testDetailExtendedGroupByContact(): void {
     $this->setupData();
     $params = [
       'report_id' => 'contribution/detailextended',
@@ -82,7 +81,7 @@ class ContributionDetailExtendedTest extends BaseTestClass implements HeadlessIn
    * Set up for test.
    *
    */
-  protected function setupData() {
+  protected function setupData(): void {
     $this->callAPISuccess('Order', 'create', [
       'contact_id' => $this->contacts[0],
       'total_amount' => 5,
@@ -94,10 +93,8 @@ class ContributionDetailExtendedTest extends BaseTestClass implements HeadlessIn
 
   /**
    * Test rows from after the first page are included in the summary.
-   *
-   * @throws \CRM_Core_Exception
    */
-  public function testReportWithMoreThanTwentyFiveContributions() {
+  public function testReportWithMoreThanTwentyFiveContributions(): void {
     $this->createMoreThanTwentyFiveContributions();
     $params = [
       'report_id' => 'contribution/detailextended',
@@ -129,9 +126,8 @@ class ContributionDetailExtendedTest extends BaseTestClass implements HeadlessIn
 
   /**
    * Setup contributions.
-   *
    */
-  public function createMoreThanTwentyFiveContributions() {
+  public function createMoreThanTwentyFiveContributions(): void {
     $amount = 5;
     $contactData = array_merge(
       $this->getContactData('Organization', 10),

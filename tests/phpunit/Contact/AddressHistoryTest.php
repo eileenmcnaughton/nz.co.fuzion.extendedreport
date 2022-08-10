@@ -32,7 +32,6 @@ class Contact_AddressHistoryTest extends BaseTestClass implements HeadlessInterf
   }
 
   /**
-   * @throws \CRM_Core_Exception
    */
   public function tearDown(): void {
     parent::tearDown();

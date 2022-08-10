@@ -2,7 +2,6 @@
 
 namespace Civi\Extendedreport;
 
-use Civi\Api4\Managed;
 use Civi\Test;
 use Civi\Test\Api3TestTrait;
 use Civi\Test\CiviEnvBuilder;
@@ -348,9 +347,6 @@ class BaseTestClass extends TestCase implements HeadlessInterface, HookInterface
    * Get all extended reports reports.
    *
    * @return array
-   *
-   * @noinspection PhpDocMissingThrowsInspection
-   * @noinspection PhpUnhandledExceptionInspection
    */
   public function getAllReports(): array {
     if (!defined('ASSUME_GRANT_INSTALLED') || !ASSUME_GRANT_INSTALLED) {

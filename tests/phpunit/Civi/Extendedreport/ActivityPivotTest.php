@@ -2,9 +2,6 @@
 
 namespace Civi\Extendedreport;
 
-use Civi\Test\HeadlessInterface;
-use Civi\Test\HookInterface;
-use Civi\Test\TransactionalInterface;
 use CRM_Core_PseudoConstant;
 
 /**
@@ -21,13 +18,13 @@ use CRM_Core_PseudoConstant;
  *
  * @group headless
  */
-class ActivityPivotTest extends BaseTestClass implements HeadlessInterface, HookInterface, TransactionalInterface {
+class ActivityPivotTest extends BaseTestClass {
 
   /**
    * Test the future income report with some data.
    *
    */
-  public function testPivotReport() {
+  public function testPivotReport(): void {
     $contact = $this->callAPISuccess('Contact', 'create', ['contact_type' => 'Individual', 'email' => 'demo@example.com']);
     $this->ids['Contact'][] = $contact['id'];
     $this->callAPISuccess('Activity', 'create', ['source_contact_id' => $contact['id'], 'activity_type_id' => 'Meeting', 'status_id' => 'Scheduled']);
@@ -58,7 +55,7 @@ class ActivityPivotTest extends BaseTestClass implements HeadlessInterface, Hook
    *
    * @throws \CRM_Core_Exception
    */
-  public function testCustomDataInPivot() {
+  public function testCustomDataInPivot(): void {
     $ids = $this->createCustomGroupWithField([], 'Activity');
     $this->getRows([
       'report_id' => 'activity/pivot',

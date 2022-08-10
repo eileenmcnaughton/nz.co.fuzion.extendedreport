@@ -2,10 +2,6 @@
 
 require_once __DIR__ . '../../BaseTestClass.php';
 
-use Civi\Test\HeadlessInterface;
-use Civi\Test\HookInterface;
-use Civi\Test\TransactionalInterface;
-
 /**
  * Test contribution DetailExtended class.
  *
@@ -31,7 +27,7 @@ class ContributionContributionsTest extends BaseTestClass {
   public function testGetMetadata(): void {
     $metadata = $this->callAPISuccess('ReportTemplate', 'getmetadata', ['report_id' => 'contribution/contributions'])['values'];
     $this->assertEquals('Contribution ID', $metadata['fields']['contribution_id']['title']);
-    $this->assertTrue(is_array($metadata['fields']['contribution_id']));
+    $this->assertIsArray($metadata['fields']['contribution_id']);
   }
 
   /**
@@ -146,7 +142,6 @@ class ContributionContributionsTest extends BaseTestClass {
   /**
    * Test that between filter is respected.
    *
-   * @throws \CRM_Core_Exception
    */
   public function testGetRowsHavingFilterBetween(): void {
     // Create 2 contacts - one with total of $50 & one with total of $100.
@@ -261,7 +256,6 @@ class ContributionContributionsTest extends BaseTestClass {
    * @param array $ids
    *
    * @return array
-   * @throws \CRM_Core_Exception
    */
   protected function createTwoContactsWithContributions(array $ids = []): array {
     $contribution = [];
