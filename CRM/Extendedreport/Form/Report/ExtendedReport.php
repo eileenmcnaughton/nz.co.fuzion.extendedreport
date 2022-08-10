@@ -488,7 +488,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
 
             // set alias = table-name, unless already set
             $alias = $field['alias'] ?? (
-              isset($this->_columns[$tableName]['alias']) ? $this->_columns[$tableName]['alias'] : $tableName
+                $this->_columns[$tableName]['alias'] ?? $tableName
               );
             $this->_columns[$tableName][$fieldGrp][$fieldName]['alias'] = $alias;
 
@@ -824,11 +824,11 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     if (empty($rowFields)) {
       $this->addRowHeader(FALSE, [], FALSE);
     }
-    foreach ($rowFields as $field => $fieldDetails) {
+    foreach ($rowFields as $fieldDetails) {
       $this->addRowHeader(1, $fieldDetails, $fieldDetails['alias'], $fieldDetails['title']);
     }
 
-    foreach ($columnFields as $field => $fieldDetails) { //only one but we don't know the name
+    foreach ($columnFields as $fieldDetails) { //only one but we don't know the name
       if (array_key_exists($this->_params['aggregate_column_headers'], $this->getMetadataByType('aggregate_columns'))) {
         $spec = $this->getMetadataByType('aggregate_columns')[$this->_params['aggregate_column_headers']];
       }
@@ -876,7 +876,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    *
    * @throws \CRM_Core_Exception
    */
-  protected function addColumnAggregateSelect(string $fieldName, string $dbAlias, $spec): void {
+  protected function addColumnAggregateSelect(string $fieldName, string $dbAlias, array $spec): void {
     if (empty($fieldName)) {
       $this->addAggregateTotal($fieldName);
       return;
@@ -892,12 +892,10 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       'table' => ['alias' => $spec['table_name']],
     ];
 
-    if ($this->getFilterFieldValue($spec)) {
-      // for now we will literally just handle IN
-      if ($filterSpec['field']['op'] === 'in') {
-        $options = array_intersect_key($options, array_flip($filterSpec['field']['value']));
-        $this->_aggregatesIncludeNULL = FALSE;
-      }
+    // for now we will literally just handle IN
+    if ($this->getFilterFieldValue($spec) && $filterSpec['field']['op'] === 'in') {
+      $options = array_intersect_key($options, array_flip($filterSpec['field']['value']));
+      $this->_aggregatesIncludeNULL = FALSE;
     }
 
     foreach ($options as $optionValue => $optionLabel) {
@@ -1029,13 +1027,13 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    * For example the universe might be limited to a group of contacts in the first round
    * in the second round this Where clause is applied
    */
-  function constrainedWhere() {
+  protected function constrainedWhere(): void {
   }
 
   /**
    * @return array
    */
-  function fromClauses(): array {
+  protected function fromClauses(): array {
     return [];
   }
 
@@ -1064,9 +1062,9 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
           $this->_groupBy .= ", " . $section['dbAlias'];
         }
       }
-      if (!empty($this->_statFields) && empty($this->_orderByArray) &&
+      if ($this->_rollup !== FALSE
+        && !empty($this->_statFields) && empty($this->_orderByArray) &&
         (count($this->_groupByArray) <= 1 || !$this->_having)
-        && $this->_rollup !== FALSE
         && !$this->isInProcessOfPreconstraining()
       ) {
         $this->_rollup = " WITH ROLLUP";
@@ -2726,7 +2724,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
             $groupByCriteria = $this->getGroupByCriteria($tableCol, $row);
 
             $url = CRM_Report_Utils_Report::getNextUrl($baseUrl,
-              "reset=1&force=1&{$criteriaQueryParams}&" .
+              "reset=1&force=1&$criteriaQueryParams&" .
               $fieldName . "_op=in&{$fieldName}_value=" . $this->commaSeparateCustomValues($val) . $groupByCriteria,
               $this->_absoluteUrl, $this->linkedReportID
             );
@@ -2751,12 +2749,12 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    *
    * @return string
    */
-  protected function commaSeparateCustomValues($value): string {
+  protected function commaSeparateCustomValues(string $value): string {
     if (empty($value)) {
       return '';
     }
 
-    if (substr($value, 0, 1) == CRM_Core_DAO::VALUE_SEPARATOR) {
+    if (strpos($value, CRM_Core_DAO::VALUE_SEPARATOR) === 0) {
       $value = substr($value, 1);
     }
     if (substr($value, -1, 1) == CRM_Core_DAO::VALUE_SEPARATOR) {

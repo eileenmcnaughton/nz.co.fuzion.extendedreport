@@ -2,10 +2,6 @@
 
 require_once __DIR__ . '../../BaseTestClass.php';
 
-use Civi\Test\HeadlessInterface;
-use Civi\Test\HookInterface;
-use Civi\Test\TransactionalInterface;
-
 /**
  * Test contribution DetailExtended class.
  *
@@ -20,7 +16,7 @@ use Civi\Test\TransactionalInterface;
  *
  * @group headless
  */
-class ContributionOverviewExtendedTest extends BaseTestClass implements HeadlessInterface, HookInterface, TransactionalInterface {
+class ContributionOverviewExtendedTest extends BaseTestClass {
 
   protected $contacts = [];
 
@@ -52,8 +48,6 @@ class ContributionOverviewExtendedTest extends BaseTestClass implements Headless
 
   /**
    * Test the ContributionOverviewExtended report with group by.
-   *
-   * @throws \CRM_Core_Exception
    */
   public function testContributionExtendedReport(): void {
     $this->callAPISuccess('Order', 'create', ['contact_id' => $this->contacts[0], 'total_amount' => 5, 'financial_type_id' => 2, 'contribution_status_id' => 'Pending', 'api.Payment.create' => ['total_amount' => 5]]);
@@ -89,7 +83,7 @@ class ContributionOverviewExtendedTest extends BaseTestClass implements Headless
       'contribution_receive_date_to' => '12/31/2017',
       'contribution_receive_date_to_time' => '',
     ]);
-    $this->assertEquals(1, count($rows));
+    $this->assertCount(1, $rows);
   }
 
 }
