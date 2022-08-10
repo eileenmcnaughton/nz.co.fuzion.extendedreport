@@ -26,8 +26,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
 
   protected $_fieldSpecs = [];
 
-  public $_defaults = [];
-
   protected $contactIDField;
 
   protected $metaData = [];
@@ -87,13 +85,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    * @var string
    */
   protected $temporary = ' TEMPORARY ';
-
-  /**
-   * Flag to indicate if result-set is to be stored in a class variable which could be retrieved using getResultSet() method.
-   *
-   * @var boolean
-   */
-  protected $_storeResultSet = FALSE;
 
   /**
    * When _storeResultSet Flag is set use this var to store result set in form of array
@@ -240,15 +231,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
 
   protected $whereClauses = [];
 
-  protected $_groupByArray = [];
-
-  /**
-   * If we have stat fields that are set we may want to force the group by.
-   *
-   * @var bool
-   */
-  protected $isForceGroupBy = FALSE;
-
   /**
    * Can this report be used on a contact tab.
    *
@@ -355,7 +337,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    *
    * @throws \CiviCRM_API3_Exception
    */
-  public function buildTagFilter() {
+  public function buildTagFilter(): void {
     $entityTable = $this->_columns[$this->_tagFilterTable]['table_name'];
     $contactTags = CRM_Core_BAO_Tag::getTags($entityTable);
     if (!empty($contactTags)) {
@@ -394,7 +376,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    *
    * @throws \CiviCRM_API3_Exception
    */
-  public function buildGroupFilter() {
+  public function buildGroupFilter(): void {
     $this->_columns += $this->buildColumns(
       [
         'gid' => [
@@ -475,7 +457,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
         if (!empty($table[$fieldGrp]) && is_array($table[$fieldGrp])) {
           foreach ($table[$fieldGrp] as $fieldName => $field) {
             // $name is the field name used to reference the BAO/DAO export fields array
-            $name = isset($field['name']) ? $field['name'] : $fieldName;
+            $name = $field['name'] ?? $fieldName;
 
             // Sometimes the field name key in the BAO/DAO export fields array is
             // different from the actual database field name.
