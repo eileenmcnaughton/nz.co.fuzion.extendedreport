@@ -2649,22 +2649,22 @@ LEFT JOIN civicrm_contact {$prop['alias']} ON {$prop['alias']}.id = {$this->_ali
    * @param string $value
    * @param array $row
    * @param string $selectedField
-   * @param string $criteriaFieldName [optional]
+   * @param string $criteriaFieldName
    * @param array $specs
    *
    * @return string
    * @throws \CRM_Core_Exception
+   * @noinspection PhpUnusedParameterInspection
    */
-  protected function alterFromOptions($value, &$row, $selectedField, $criteriaFieldName, $specs): ?string {
+  protected function alterFromOptions(string $value, array $row, string $selectedField, string $criteriaFieldName, array $specs): string {
     if ($specs['data_type'] === 'ContactReference') {
       if (!empty($row[$selectedField])) {
         return CRM_Contact_BAO_Contact::displayName($row[$selectedField]);
       }
-      return NULL;
+      return '';
     }
     $value = trim(($value ?? ''), CRM_Core_DAO::VALUE_SEPARATOR);
-    $options = $this->getCustomFieldOptions($specs);
-    return CRM_Utils_Array::value($value, $options, $value);
+    return $this->getCustomFieldOptions($specs)[$value] ?? $value;
   }
 
   /**
@@ -5469,11 +5469,10 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    * Prefix will be added to both tables as it's assumed you are using it to get address of a secondary contact
    *
    * @param string $prefix prefix to add to table names
-   * @param array $extra extra join parameters
    *
    * @return bool true or false to denote whether extra filters can be appended to join
    */
-  protected function joinAddressFromEvent($prefix = '', $extra = []): bool {
+  protected function joinAddressFromEvent(string $prefix = ''): bool {
 
     if ($this->isTableSelected($prefix . 'civicrm_address')) {
       $this->_from .= "
@@ -5483,6 +5482,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     ";
       return TRUE;
     }
+    return FALSE;
   }
 
   /**
@@ -6856,7 +6856,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    *
    * @return string
    */
-  protected function alterDisplayAddress($value, &$row, $selectedField, $criteriaFieldName) {
+  protected function alterDisplayAddress($value, array $row, $selectedField, string $criteriaFieldName) {
     $address = [];
     $tablePrefix = str_replace('display_address', '', $selectedField);
 
@@ -7061,7 +7061,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    * @return string Relevant where clause.
    * Relevant where clause.
    */
-  protected function generateFilterClause(array $field, string $fieldName, string $prefix = ''): string {
+  protected function generateFilterClause($field, $fieldName, string $prefix = ''): string {
     $type = $field['type'];
     $clause = '';
     if ($type & CRM_Utils_Type::T_DATE) {
@@ -8205,7 +8205,8 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
           'value' => ts("Between %1 and %2", [1 => $from, 2 => $to]),
         ];
       }
-      elseif (in_array($rel = CRM_Utils_Array::value("{$prefix}{$fieldName}_relative", $this->_params),
+
+      if (in_array($rel = CRM_Utils_Array::value("{$prefix}{$fieldName}_relative", $this->_params),
         array_keys($this->getOperationPair(CRM_Report_Form::OP_DATE))
       )) {
         $pair = $this->getOperationPair(CRM_Report_Form::OP_DATE);
