@@ -2646,7 +2646,7 @@ LEFT JOIN civicrm_contact {$prop['alias']} ON {$prop['alias']}.id = {$this->_ali
   /**
    * Use the options for the field to map the display value.
    *
-   * @param string $value
+   * @param string|null $value
    * @param array $row
    * @param string $selectedField
    * @param string $criteriaFieldName
@@ -2656,7 +2656,7 @@ LEFT JOIN civicrm_contact {$prop['alias']} ON {$prop['alias']}.id = {$this->_ali
    * @throws \CRM_Core_Exception
    * @noinspection PhpUnusedParameterInspection
    */
-  protected function alterFromOptions(string $value, array $row, string $selectedField, string $criteriaFieldName, array $specs): string {
+  protected function alterFromOptions(?string $value, array $row, string $selectedField, string $criteriaFieldName, array $specs): string {
     if ($specs['data_type'] === 'ContactReference') {
       if (!empty($row[$selectedField])) {
         return CRM_Contact_BAO_Contact::displayName($row[$selectedField]);
@@ -2664,7 +2664,7 @@ LEFT JOIN civicrm_contact {$prop['alias']} ON {$prop['alias']}.id = {$this->_ali
       return '';
     }
     $value = trim(($value ?? ''), CRM_Core_DAO::VALUE_SEPARATOR);
-    return $this->getCustomFieldOptions($specs)[$value] ?? $value;
+    return (string) ($this->getCustomFieldOptions($specs)[$value] ?? $value);
   }
 
   /**
@@ -2676,7 +2676,7 @@ LEFT JOIN civicrm_contact {$prop['alias']} ON {$prop['alias']}.id = {$this->_ali
    * @throws \CRM_Core_Exception
    * @throws \CiviCRM_API3_Exception
    */
-  function alterCustomDataDisplay(&$rows) {
+  protected function alterCustomDataDisplay(array &$rows): void {
 
     // custom code to alter rows having custom values
     if (empty($this->_customGroupExtends) && empty($this->_customGroupExtended)) {
