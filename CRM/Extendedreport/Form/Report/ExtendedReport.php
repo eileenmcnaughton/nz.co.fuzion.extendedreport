@@ -7063,9 +7063,11 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    * @return string Relevant where clause.
    * Relevant where clause.
    */
-  protected function generateFilterClause($field, $fieldName, $prefix = ''): ?string {
-    if (CRM_Utils_Array::value('type', $field) & CRM_Utils_Type::T_DATE) {
-      if (CRM_Utils_Array::value('operatorType', $field) == CRM_Report_Form::OP_MONTH) {
+  protected function generateFilterClause(array $field, string $fieldName, string $prefix = ''): string {
+    $type = $field['type'];
+    $clause = '';
+    if ($type & CRM_Utils_Type::T_DATE) {
+      if ($field['operatorType'] === CRM_Report_Form::OP_MONTH) {
         $op = CRM_Utils_Array::value("{$prefix}{$fieldName}_op", $this->_params);
         $value = CRM_Utils_Array::value("{$prefix}{$fieldName}_value", $this->_params);
         if (is_array($value) && !empty($value)) {
@@ -7079,29 +7081,26 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
       $to = $this->_params["{$prefix}{$fieldName}_to"] ?? NULL;
       // next line is the changed one
       if (!empty($field['clause'])) {
-        $clause = '';
         eval("\$clause = \"{$field['clause']}\";");
         $clauses[] = $clause;
         if (!empty($clauses)) {
           return implode(' AND ', $clauses);
         }
-        return NULL;
+        return '';
       }
-      $clause = $this->dateClause($field['dbAlias'], $relative, $from, $to, $field['type']);
-      return $clause;
+      return $this->dateClause($field['dbAlias'], $relative, $from, $to, $field['type']);
     }
-    else {
-      $op = CRM_Utils_Array::value("{$prefix}{$fieldName}_op", $this->_params);
-      if ($op) {
-        $clause = $this->whereClause($field,
-          $op,
-          CRM_Utils_Array::value("{$prefix}{$fieldName}_value", $this->_params),
-          CRM_Utils_Array::value("{$prefix}{$fieldName}_min", $this->_params),
-          CRM_Utils_Array::value("{$prefix}{$fieldName}_max", $this->_params)
-        );
-        return $clause;
-      }
+
+    $op = CRM_Utils_Array::value("{$prefix}{$fieldName}_op", $this->_params);
+    if ($op) {
+      return $this->whereClause($field,
+        $op,
+        CRM_Utils_Array::value("{$prefix}{$fieldName}_value", $this->_params),
+        CRM_Utils_Array::value("{$prefix}{$fieldName}_min", $this->_params),
+        CRM_Utils_Array::value("{$prefix}{$fieldName}_max", $this->_params)
+      );
     }
+    return '';
   }
 
   /**
