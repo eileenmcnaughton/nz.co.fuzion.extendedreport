@@ -133,7 +133,7 @@ class CRM_Extendedreport_Form_Report_Contribute_Overview extends CRM_Extendedrep
    *
    * @param string $entity
    */
-  public function from($entity = NULL) {
+  public function from($entity = NULL): void {
 
     $this->_from = "
         FROM civicrm_contact  {$this->_aliases['civicrm_contact']} {$this->_aclFrom}

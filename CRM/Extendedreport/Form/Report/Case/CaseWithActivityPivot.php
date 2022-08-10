@@ -82,8 +82,8 @@ class CRM_Extendedreport_Form_Report_Case_CaseWithActivityPivot extends CRM_Exte
    * We create a temp table of their ids in the first instance
    * and use this as the base
    */
-  function generateTempTable() {
-    $tempTable = 'civicrm_report_temp_activities' . date('d_H_I') . rand(1, 10000);
+  protected function generateTempTable(): void {
+    $tempTable = 'civicrm_report_temp_activities' . date('d_H_I') . random_int(1, 10000);
     $sql = "CREATE {$this->_temporary} TABLE $tempTable
     (`case_id` INT(10) UNSIGNED NULL DEFAULT '0',
     `activity_id` INT(10) UNSIGNED NULL DEFAULT '0',

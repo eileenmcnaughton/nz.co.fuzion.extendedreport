@@ -141,7 +141,7 @@ class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Exten
   /**
    * Overriding for the sake of handling relationship type ID.
    */
-  function postProcess() {
+  public function postProcess(): void {
     $this->beginPostProcess();
     $this->relationType = NULL;
     $originalRelationshipTypes = [];
@@ -187,7 +187,7 @@ class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Exten
   /**
    * Generate report FROM clause.
    */
-  public function from() {
+  public function from(): void {
     parent::from();
     if ($this->isTableSelected('civicrm_contribution')) {
       $this->_from .= "

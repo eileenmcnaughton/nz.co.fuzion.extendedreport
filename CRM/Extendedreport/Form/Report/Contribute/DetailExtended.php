@@ -275,7 +275,7 @@ class CRM_Extendedreport_Form_Report_Contribute_DetailExtended extends CRM_Exten
     parent::alterDisplay($rows);
   }
 
-  function sectionTotals() {
+  public function sectionTotals(): void {
 
     // Reports using order_bys with sections must populate $this->_selectAliases in select() method.
     if (empty($this->_selectAliases)) {

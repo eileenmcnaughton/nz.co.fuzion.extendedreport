@@ -87,7 +87,7 @@ class CRM_Extendedreport_Form_Report_ActivityExtended extends CRM_Extendedreport
    *
    * @todo Should remove all this to parent class
    */
-  public function from() {
+  public function from(): void {
     $this->_from = "
     FROM civicrm_activity {$this->_aliases['civicrm_activity']}";
     $this->joinActivityTargetFromActivity();

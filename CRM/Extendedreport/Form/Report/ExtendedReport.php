@@ -6872,7 +6872,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    *
    * @throws \CRM_Core_Exception
    */
-  protected function addFilterFieldsToReport(array $field, string $fieldName, string $table, $count, $prefix): void {
+  protected function addFilterFieldsToReport(array $field, string $fieldName, string $table, int $count, string $prefix): void {
     $operations = CRM_Utils_Array::value('operations', $field);
     if (empty($operations)) {
       $operations = $this->getOperationPair(
@@ -6917,7 +6917,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
         if (!empty($field['options']) ||
           $fieldName === 'state_province_id' || $fieldName === 'county_id'
         ) {
-          $element = $this->addElement('select', "{$prefix}{$fieldName}_op", ts('Operator:'), $operations);
+          $element = $this->addElement('select', "$prefix{$fieldName}_op", ts('Operator:'), $operations);
           if (count($operations) <= 1) {
             $element->freeze();
           }
@@ -6931,7 +6931,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
             ]);
           }
           else {
-            $this->addElement('select', "{$prefix}{$fieldName}_value", NULL, $field['options'], [
+            $this->addElement('select', "$prefix{$fieldName}_value", NULL, $field['options'], [
               'style' => 'min-width:250px',
               'class' => 'crm-select2 huge',
               'multiple' => TRUE,
@@ -6943,16 +6943,16 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
 
       case CRM_Report_Form::OP_SELECT:
         // assume a select field
-        $this->addElement('select', "{$prefix}{$fieldName}_op", ts('Operator:'), $operations);
+        $this->addElement('select', "$prefix{$fieldName}_op", ts('Operator:'), $operations);
         if (!empty($field['options'])) {
-          $this->addElement('select', "{$prefix}{$fieldName}_value", NULL, $field['options']);
+          $this->addElement('select', "$prefix{$fieldName}_value", NULL, $field['options']);
         }
         break;
 
       case 256:
-        $this->addElement('select', "{$prefix}{$fieldName}_op", ts('Operator:'), $operations);
+        $this->addElement('select', "$prefix{$fieldName}_op", ts('Operator:'), $operations);
         $this->setEntityRefDefaults($field, $table);
-        $this->addEntityRef("{$prefix}{$fieldName}_value", NULL, $field['attributes']);
+        $this->addEntityRef("$prefix{$fieldName}_value", NULL, $field['attributes']);
         break;
 
       case CRM_Report_Form::OP_DATE:
@@ -6966,22 +6966,22 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
         break;
       case self::OP_SINGLEDATE:
         // build single datetime field
-        $this->addElement('select', "{$prefix}{$fieldName}_op", ts('Operator:'), $operations);
-        $this->add('datepicker', "{$prefix}{$fieldName}_value", ts(''), FALSE, FALSE, ['time' => FALSE]);
+        $this->addElement('select', "$prefix{$fieldName}_op", ts('Operator:'), $operations);
+        $this->add('datepicker', "$prefix{$fieldName}_value", ts(''), FALSE, FALSE, ['time' => FALSE]);
         break;
       case CRM_Report_Form::OP_INT:
       case CRM_Report_Form::OP_FLOAT:
         // and a min value input box
-        $this->add('text', "{$prefix}{$fieldName}_min", ts('Min'));
+        $this->add('text', "$prefix{$fieldName}_min", ts('Min'));
         // and a max value input box
-        $this->add('text', "{$prefix}{$fieldName}_max", ts('Max'));
+        $this->add('text', "$prefix{$fieldName}_max", ts('Max'));
       default:
         // default type is string
-        $this->addElement('select', "{$prefix}{$fieldName}_op", ts('Operator:'), $operations,
+        $this->addElement('select', "$prefix{$fieldName}_op", ts('Operator:'), $operations,
           ['onchange' => "return showHideMaxMinVal( '" . $prefix . $fieldName . "', this.value );"]
         );
         // we need text box for value input
-        $this->add('text', "{$prefix}{$fieldName}_value", NULL, ['class' => 'huge']);
+        $this->add('text', "$prefix{$fieldName}_value", NULL, ['class' => 'huge']);
         break;
     }
   }
@@ -7002,17 +7002,17 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
     $clause = '';
     if ($type & CRM_Utils_Type::T_DATE) {
       if ($field['operatorType'] === CRM_Report_Form::OP_MONTH) {
-        $op = CRM_Utils_Array::value("{$prefix}{$fieldName}_op", $this->_params);
-        $value = CRM_Utils_Array::value("{$prefix}{$fieldName}_value", $this->_params);
+        $op = CRM_Utils_Array::value("$prefix{$fieldName}_op", $this->_params);
+        $value = CRM_Utils_Array::value("$prefix{$fieldName}_value", $this->_params);
         if (is_array($value) && !empty($value)) {
           $clause = "(month({$field['dbAlias']}) $op (" . implode(', ', $value) . '))';
         }
         return $clause;
       }
 
-      $relative = $this->_params["{$prefix}{$fieldName}_relative"] ?? NULL;
-      $from = $this->_params["{$prefix}{$fieldName}_from"] ?? NULL;
-      $to = $this->_params["{$prefix}{$fieldName}_to"] ?? NULL;
+      $relative = $this->_params["$prefix{$fieldName}_relative"] ?? NULL;
+      $from = $this->_params["$prefix{$fieldName}_from"] ?? NULL;
+      $to = $this->_params["$prefix{$fieldName}_to"] ?? NULL;
       // next line is the changed one
       if (!empty($field['clause'])) {
         eval("\$clause = \"{$field['clause']}\";");
@@ -7025,13 +7025,13 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
       return $this->dateClause($field['dbAlias'], $relative, $from, $to, $field['type']);
     }
 
-    $op = CRM_Utils_Array::value("{$prefix}{$fieldName}_op", $this->_params);
+    $op = CRM_Utils_Array::value("$prefix{$fieldName}_op", $this->_params);
     if ($op) {
       return $this->whereClause($field,
         $op,
-        CRM_Utils_Array::value("{$prefix}{$fieldName}_value", $this->_params),
-        CRM_Utils_Array::value("{$prefix}{$fieldName}_min", $this->_params),
-        CRM_Utils_Array::value("{$prefix}{$fieldName}_max", $this->_params)
+        CRM_Utils_Array::value("$prefix{$fieldName}_value", $this->_params),
+        CRM_Utils_Array::value("$prefix{$fieldName}_min", $this->_params),
+        CRM_Utils_Array::value("$prefix{$fieldName}_max", $this->_params)
       );
     }
     return '';
@@ -7048,7 +7048,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    * array('custom_2' => array('civicrm_contact');
    * ie fieldname => table alias
    */
-  protected function getAggregateField($type): array {
+  protected function getAggregateField(string $type): array {
     if (empty($this->_params['aggregate_' . $type . '_headers'])) {
       return [];
     }
@@ -7078,9 +7078,9 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    * @return array Selected fields in format
    * Selected fields in format
    * array('custom_2' => array('civicrm_contact');
-   * ie fieldname => table alias
+   * ie field name => table alias
    */
-  protected function getAggregateFieldSpec($type): array {
+  protected function getAggregateFieldSpec(string $type): array {
     if (empty($this->_params['aggregate_' . $type . '_headers'])) {
       return [];
     }
@@ -7186,20 +7186,21 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    *
    * @return string
    */
-  protected function getPivotRowTableAlias() {
+  protected function getPivotRowTableAlias(): string {
     if (!empty($this->_params['aggregate_row_headers'])) {
       $aggregateField = explode(':', $this->_params['aggregate_row_headers']);
       return $aggregateField[0];
     }
+    return '';
   }
 
   /**
    * @param $tableCol
-   * @param $row
+   * @param array $row
    *
    * @return string
    */
-  protected function getGroupByCriteria($tableCol, $row) {
+  protected function getGroupByCriteria($tableCol, array $row): string {
     $otherGroupedFields = array_diff(array_keys($this->_groupByArray), [$tableCol]);
     $groupByCriteria = '';
     foreach ($otherGroupedFields as $field) {
@@ -7213,7 +7214,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
       }
       $presumedName = implode('_', $fieldParts);
       if (isset($this->_columns[$tableName]) && isset($this->_columns[$tableName]['metadata'][$presumedName])) {
-        $value = isset($row["{$field}_raw"]) ? $row["{$field}_raw"] : $row[$field];
+        $value = $row["{$field}_raw"] ?? $row[$field];
         $groupByCriteria .= "&{$presumedName}_op=in&{$presumedName}_value=" . $value;
       }
     }
@@ -7248,7 +7249,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    *
    * @return void
    */
-  private function alterRowForRollup(&$row, $nextRow, &$groupBys, $rowNumber, $statLayers, $groupByLabels, $altered, $fieldsToUnSetForSubtotalLines) {
+  private function alterRowForRollup(&$row, $nextRow, &$groupBys, $rowNumber, $statLayers, $groupByLabels, $altered, $fieldsToUnSetForSubtotalLines): void {
     foreach ($groupBys as $field => $groupBy) {
       if (($rowNumber + 1) < $statLayers) {
         continue;
@@ -7279,7 +7280,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    *
    * @return void
    */
-  protected function updateRollupRow(&$row, $fieldsToUnSetForSubtotalLines) {
+  protected function updateRollupRow(&$row, $fieldsToUnSetForSubtotalLines): void {
     foreach ($fieldsToUnSetForSubtotalLines as $unsetField) {
       $row[$unsetField] = '';
     }
@@ -7301,7 +7302,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    *
    * @return string
    */
-  protected function getStatisticsSelectClause($field, $stat) {
+  protected function getStatisticsSelectClause(array $field, string $stat): string {
     $statOp = $this->getStatOp($stat);
     switch (strtolower($stat)) {
       case 'max':
@@ -7317,6 +7318,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
       case 'avg':
         return "ROUND(AVG({$field['dbAlias']}),2)";
     }
+    return '';
   }
 
   /**
@@ -7326,7 +7328,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    *
    * @return string
    */
-  public function getStatOp($stat) {
+  public function getStatOp($stat): string {
     switch (strtolower($stat)) {
       case 'max':
         return 'MAX';
@@ -7339,6 +7341,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
         return "COUNT";
 
       case 'display':
+      default:
         return '';
     }
   }
@@ -7652,10 +7655,10 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
     foreach ($this->_params as $key => $value) {
       if (strpos($key, 'join_filter') === 0) {
         if (substr($key, -6, 6) === '_value' && ($value !== '' && $value !== NULL && $value !== "NULL" && $value !== [])) {
-          $selectedFilters[] = str_replace('join_filter_', '', substr($key, 0, strlen($key) - 6));
+          $selectedFilters[] = str_replace('join_filter_', '', substr($key, 0, -6));
         }
         if (substr($key, -9, 9) === '_relative' && !empty($value)) {
-          $selectedFilters[] = str_replace('join_filter_', '', substr($key, 0, strlen($key) - 9));
+          $selectedFilters[] = str_replace('join_filter_', '', substr($key, 0, -9));
         }
       }
     }
@@ -7706,15 +7709,15 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    * @param string $prefix
    * @param string $prefixLabel
    */
-  protected function addCustomDataTable($field, $currentTable, $prefix, $prefixLabel): void {
+  protected function addCustomDataTable(array $field, string $currentTable, $prefix, string $prefixLabel): void {
     $tableKey = $prefix . $currentTable;
 
     $fieldName = 'custom_' . ($prefix ? $prefix . '_' : '') . $field['id'];
 
-    $field['is_filters'] = $this->_customGroupFilters ? TRUE : FALSE;
-    $field['is_join_filters'] = $this->_customGroupFilters ? TRUE : FALSE;
-    $field['is_group_bys'] = $this->_customGroupGroupBy ? TRUE : FALSE;
-    $field['is_order_bys'] = $this->_customGroupOrderBy ? TRUE : FALSE;
+    $field['is_filters'] = (bool) $this->_customGroupFilters;
+    $field['is_join_filters'] = (bool) $this->_customGroupFilters;
+    $field['is_group_bys'] = (bool) $this->_customGroupGroupBy;
+    $field['is_order_bys'] = (bool) $this->_customGroupOrderBy;
     $field['is_aggregate_columns'] = ($this->isPivot && !empty($field['options']));
     if ($this->_customGroupFilters) {
       $field = $this->addCustomDataFilters($field, $fieldName);
@@ -7753,7 +7756,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    *
    * @return array
    */
-  protected function addCustomDataFilters($field, $fieldName) {
+  protected function addCustomDataFilters(array $field, string $fieldName): array {
 
     switch ($field['data_type']) {
 
@@ -7793,35 +7796,27 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    *
    * @return int
    */
-  protected function getFieldType($field) {
+  protected function getFieldType(array $field): int {
     switch ($field['data_type']) {
       case 'Date':
         if ($field['time_format']) {
           return CRM_Utils_Type::T_TIMESTAMP;
         }
         return CRM_Utils_Type::T_DATE;
-        break;
 
       case 'Boolean':
         return CRM_Utils_Type::T_BOOLEAN;
-        break;
 
       case 'Int':
         return CRM_Utils_Type::T_INT;
-        break;
 
       case 'Money':
         return CRM_Utils_Type::T_MONEY;
-        break;
 
       case 'Float':
         return CRM_Utils_Type::T_FLOAT;
-        break;
 
       case 'String':
-        return CRM_Utils_Type::T_STRING;
-        break;
-
       case 'StateProvince':
       case 'Country':
       case 'ContactReference':
