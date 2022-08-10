@@ -3094,7 +3094,6 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    *    - group_title
    *
    * @return array
-   * @throws \CiviCRM_API3_Exception
    */
   protected function buildColumns($specs, $tableName, $daoName = NULL, $tableAlias = NULL, $defaults = [], $options = []): array {
 
@@ -5473,7 +5472,6 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    * @return bool true or false to denote whether extra filters can be appended to join
    */
   protected function joinAddressFromEvent(string $prefix = ''): bool {
-
     if ($this->isTableSelected($prefix . 'civicrm_address')) {
       $this->_from .= "
         LEFT JOIN civicrm_loc_block elb ON elb.id = {$this->_aliases[$prefix . 'civicrm_event']}.loc_block_id
@@ -7458,12 +7456,12 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
   }
 
   /**
-   * @param $table
+   * @param array $table
    *
    * @return array
-   * @throws \CiviCRM_API3_Exception
+   * @throws \CRM_Core_Exception
    */
-  protected function getMetadataForFields($table) {
+  protected function getMetadataForFields(array $table): array {
     // higher preference to bao object
     $daoOrBaoName = CRM_Utils_Array::value('bao', $table, CRM_Utils_Array::value('dao', $table));
     if (!$daoOrBaoName) {
@@ -7476,7 +7474,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
     }
 
 
-    if (empty($expFields) && $daoOrBaoName) {
+    if (empty($expFields)) {
       if (method_exists($daoOrBaoName, 'exportableFields')) {
         $expFields = $daoOrBaoName::exportableFields();
       }
@@ -7503,7 +7501,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
       // contribution_campaign_id rather than campaign_id
       // this is not super predictable so we ensure that they are keyed by
       // both possibilities
-      if (!empty($field['name']) && $field['name'] != $fieldName) {
+      if (!empty($field['name']) && $field['name'] !== $fieldName) {
         $expFields[$field['name']] = $expFields[$fieldName];
       }
     }
@@ -7515,7 +7513,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    *
    * Resolve ambiguity with 'dao' option.
    */
-  protected function ensureBaoIsSetIfPossible() {
+  protected function ensureBaoIsSetIfPossible(): void {
     foreach ($this->_columns as $tableName => $table) {
       if (empty($table['bao']) && !empty($table['dao'])) {
         $this->_columns[$tableName]['bao'] = $table['dao'];
@@ -7530,7 +7528,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    * temp table that may not be part of the final where clause or added
    * in other functions
    */
-  public function storeWhereHavingClauseArray() {
+  public function storeWhereHavingClauseArray(): void {
     $filters = $this->getSelectedFilters();
     foreach ($filters as $filterName => $field) {
       if (!empty($field['pseudofield'])) {
@@ -7556,7 +7554,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    * @param array $specs
    * @param string $table
    */
-  protected function addAdditionalRequiredFields($specs, $table) {
+  protected function addAdditionalRequiredFields(array $specs, string $table): void {
     if (empty($specs['requires'])) {
       return;
     }
@@ -7574,7 +7572,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    *
    * @return array
    */
-  protected function getContactFilterFieldOptions() {
+  protected function getContactFilterFieldOptions(): array {
     $fields = $this->getContactFilterFields();
     $options = [];
     foreach ($fields as $fieldName => $spec) {
@@ -7588,7 +7586,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    *
    * @return array
    */
-  protected function getContactFilterFields() {
+  protected function getContactFilterFields(): array {
     $fields = [];
     foreach ($this->getMetadataByType('filters') as $fieldName => $spec) {
       if (!empty($spec['is_contact_filter'])) {
@@ -7601,7 +7599,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
   /**
    * @return array
    */
-  protected function getSelectedFields() {
+  protected function getSelectedFields(): array {
     $fields = $this->getMetadataByType('fields');
     $selectedFields = array_intersect_key($fields, $this->getConfiguredFieldsFlatArray());
     $requiredFields = array_merge($this->getFieldsRequiredToSupportHavingFilters(), $this->getExtraFieldsRequiredForSelectedFields($selectedFields));
@@ -7639,7 +7637,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
   /**
    * @return array
    */
-  protected function getSelectedGroupBys() {
+  protected function getSelectedGroupBys(): array {
     $groupBys = $this->getMetadataByType('group_bys');
     return array_intersect_key($groupBys, CRM_Utils_Array::value('group_bys', $this->_params, []));
   }
@@ -7647,7 +7645,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
   /**
    * @return array
    */
-  protected function getSelectedOrderBys() {
+  protected function getSelectedOrderBys(): array {
     $orderBys = $this->getMetadataByType('order_bys');
     $result = [];
     foreach ($this->_params['order_bys'] as $order_by) {
@@ -7669,14 +7667,14 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    *
    * @return array
    */
-  public function getOrderBysNotInSelectedFields() {
+  public function getOrderBysNotInSelectedFields(): array {
     return array_diff_key($this->getSelectedOrderBys(), $this->getSelectedFields());
   }
 
   /**
    * @return array
    */
-  protected function getSelectedFilters() {
+  protected function getSelectedFilters(): array {
     $selectedFilters = [];
     $filters = $this->getMetadataByType('filters');
     foreach ($this->_params as $key => $value) {
@@ -7710,7 +7708,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    *
    * @return array
    */
-  protected function getSelectedJoinFilters() {
+  protected function getSelectedJoinFilters(): array {
     $selectedFilters = [];
     $filters = $this->getMetadataByType('join_filters');
     foreach ($this->_params as $key => $value) {
@@ -7729,7 +7727,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
   /**
    * @return array
    */
-  protected function getSelectedHavings() {
+  protected function getSelectedHavings(): array {
     $havings = $this->getMetadataByType('having');
     $selectedHavings = [];
     foreach ($havings as $field => $spec) {
@@ -7745,7 +7743,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
   /**
    * @return array
    */
-  protected function getSelectedAggregateColumns() {
+  protected function getSelectedAggregateColumns(): array {
     $metadata = $this->getMetadataByType('aggregate_columns');
     if (empty($this->_params['aggregate_column_headers']) || !isset($metadata[$this->_params['aggregate_column_headers']])) {
       return [];
@@ -7756,7 +7754,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
   /**
    * @return array
    */
-  protected function getSelectedAggregateRows() {
+  protected function getSelectedAggregateRows(): array {
     $metadata = $this->getMetadataByType('metadata');
     if (empty($this->_params['aggregate_row_headers']) || !isset($metadata[$this->_params['aggregate_row_headers']])) {
       return [];
@@ -7770,7 +7768,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    * @param string $prefix
    * @param string $prefixLabel
    */
-  protected function addCustomDataTable($field, $currentTable, $prefix, $prefixLabel) {
+  protected function addCustomDataTable($field, $currentTable, $prefix, $prefixLabel): void {
     $tableKey = $prefix . $currentTable;
 
     $fieldName = 'custom_' . ($prefix ? $prefix . '_' : '') . $field['id'];

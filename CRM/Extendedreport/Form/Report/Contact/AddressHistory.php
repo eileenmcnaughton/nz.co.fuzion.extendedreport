@@ -136,6 +136,7 @@ class CRM_Extendedreport_Form_Report_Contact_AddressHistory extends CRM_Extended
    * @param int $contactID
    *
    * @return array
+   * @throws \CRM_Core_Exception
    */
   protected function getContactsMergedIntoThisOne(int $contactID): array {
     // @todo get api joins working properly.
