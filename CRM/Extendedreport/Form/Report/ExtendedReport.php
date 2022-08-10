@@ -930,10 +930,10 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
 
       // htmlType is set for custom data and tells us the field will be stored using hex(01) separators.
       if (!empty($spec['htmlType']) && ($spec['htmlType'] === 'CheckBox' || strpos($spec['htmlType'], 'Multi') !== FALSE)) {
-        $this->_select .= " , SUM( CASE WHEN {$dbAlias} LIKE '%" . CRM_Core_DAO::VALUE_SEPARATOR . $optionValue . CRM_Core_DAO::VALUE_SEPARATOR . "%' THEN 1 ELSE 0 END ) AS $fieldAlias ";
+        $this->_select .= " , SUM( CASE WHEN $dbAlias LIKE '%" . CRM_Core_DAO::VALUE_SEPARATOR . $optionValue . CRM_Core_DAO::VALUE_SEPARATOR . "%' THEN 1 ELSE 0 END ) AS $fieldAlias ";
       }
       else {
-        $this->_select .= " , SUM( CASE {$dbAlias} WHEN '{$optionValue}' THEN 1 ELSE 0 END ) AS $fieldAlias ";
+        $this->_select .= " , SUM( CASE $dbAlias WHEN '$optionValue' THEN 1 ELSE 0 END ) AS $fieldAlias ";
       }
       $this->_columnHeaders[$fieldAlias] = [
         'title' => $optionLabel,
@@ -947,7 +947,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
         'title' => ts('Unknown'),
         'type' => CRM_Utils_Type::T_INT,
       ];
-      $this->_select .= " , SUM( IF (({$dbAlias} IS NULL OR {$dbAlias} = ''), 1, 0)) AS $fieldAlias ";
+      $this->_select .= " , SUM( IF (($dbAlias IS NULL OR $dbAlias = ''), 1, 0)) AS $fieldAlias ";
       $this->_statFields[] = $fieldAlias;
     }
     if ($this->_aggregatesAddTotal) {
@@ -977,10 +977,11 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    *
    * @return string
    */
-  function getFilterFieldValue(&$spec): string {
+  protected function getFilterFieldValue(array &$spec): string {
     $fieldName = $spec['table_name'] . '_' . $spec['name'];
-    if (isset($this->_params[$fieldName . '_value'])) {
-      $spec['field']['value'] = $this->_params[$fieldName . '_value'];
+    $valueKey = $fieldName . '_value';
+    if (isset($this->_params[$valueKey])) {
+      $spec['field']['value'] = $this->_params[$valueKey];
       $spec['field']['op'] = $this->_params[$fieldName . '_op'];
       return $this->_params[$fieldName . '_value'];
     }
@@ -988,9 +989,9 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   }
 
   /**
-   * @param $fieldName
+   * @param string $fieldName
    */
-  protected function addAggregateTotal($fieldName) {
+  protected function addAggregateTotal(string $fieldName): void {
     $fieldAlias = "{$fieldName}_total";
     $this->_columnHeaders[$fieldAlias] = [
       'title' => ts('Total'),
@@ -1026,7 +1027,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
           $append = $this->$fn('', $extra);
           if ($append && !empty($extra)) {
             foreach ($extra as $table => $field) {
-              $this->_from .= " AND {$this->_aliases[$table]}.{$field} ";
+              $this->_from .= " AND {$this->_aliases[$table]}.$field ";
             }
           }
         }
@@ -1248,7 +1249,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    *
    * This will cause a group by.
    */
-  protected function calculateStatsFields() {
+  protected function calculateStatsFields(): void {
     foreach ($this->_columns as $tableName => $table) {
       if (array_key_exists('metadata', $table)) {
         foreach ($table['metadata'] as $fieldName => $field) {
@@ -1281,7 +1282,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    * (still pondering how to deal with turned totaling on & off appropriately)
    *
    **/
-  protected function unsetBaseTableStatsFieldsWhereNoGroupBy() {
+  protected function unsetBaseTableStatsFieldsWhereNoGroupBy(): void {
     if (empty($this->_groupByArray) && !empty($this->_columns[$this->_baseTable]['fields'])) {
       foreach ($this->_columns[$this->_baseTable]['fields'] as $fieldname => $field) {
         if (isset($field['statistics'])) {
@@ -1298,8 +1299,10 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    * versus after date x. e.g Sybunt, fundraising reports.
    *
    * Handling for join_filters.
+   *
+   * @throws \CRM_Core_Exception
    */
-  public function addFilters() {
+  public function addFilters(): void {
     foreach (['filters', 'join_filters'] as $filterString) {
       $filters = $filterGroups = [];
       $count = 1;
@@ -1344,7 +1347,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    *   - Other Options
    *   - Filters
    */
-  protected function assignTabs() {
+  protected function assignTabs(): void {
     $order = [
       'Aggregate',
       'FieldSelection',
@@ -1422,13 +1425,13 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
           '-' => ' - none - ',
         ] + $options;
       for ($i = 1; $i <= 5; $i++) {
-        $this->addElement('select', "order_bys[{$i}][column]", ts('Order by Column'), $options);
-        $this->addElement('select', "order_bys[{$i}][order]", ts('Order by Order'), [
+        $this->addElement('select', "order_bys[$i][column]", ts('Order by Column'), $options);
+        $this->addElement('select', "order_bys[$i][order]", ts('Order by Order'), [
           'ASC' => 'Ascending',
           'DESC' => 'Descending',
         ]);
-        $this->addElement('checkbox', "order_bys[{$i}][section]", ts('Order by Section'), FALSE, ['id' => "order_by_section_$i"]);
-        $this->addElement('checkbox', "order_bys[{$i}][pageBreak]", ts('Page Break'), FALSE, ['id' => "order_by_pagebreak_$i"]);
+        $this->addElement('checkbox', "order_bys[$i][section]", ts('Order by Section'), FALSE, ['id' => "order_by_section_$i"]);
+        $this->addElement('checkbox', "order_bys[$i][pageBreak]", ts('Page Break'), FALSE, ['id' => "order_by_pagebreak_$i"]);
       }
     }
     $this->assignTabs();
@@ -1490,7 +1493,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       if (isset($field['default'])) {
         if (CRM_Utils_Array::value('type', $field) & CRM_Utils_Type::T_DATE
           // This is the overriden part.
-          && !(CRM_Utils_Array::value('operatorType', $field) == self::OP_SINGLEDATE)
+          && !(CRM_Utils_Array::value('operatorType', $field) === self::OP_SINGLEDATE)
         ) {
           if (is_array($field['default'])) {
             $this->_defaults["{$fieldName}_from"] = CRM_Utils_Array::value('from', $field['default']);
@@ -1625,7 +1628,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    */
   protected function _getOptions(string $entity, $field, $action = 'get'): array {
     static $allOptions = [];
-    $key = "{$entity}_{$field}";
+    $key = "{$entity}_$field";
     if (isset($allOptions[$key])) {
       return $allOptions[$key];
     }
@@ -1926,7 +1929,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    * @throws \CiviCRM_API3_Exception
    * @throws \CRM_Core_Exception
    */
-  function buildQuery($applyLimit = TRUE): string {
+  public function buildQuery($applyLimit = TRUE): string {
     if (empty($this->_params)) {
       $this->_params = $this->controller->exportValues($this->_name);
     }
@@ -1965,7 +1968,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       $this->limit();
     }
 
-    $sql = "{$this->_select} {$this->_from} {$this->_where} {$this->_groupBy} {$this->_having} {$this->_orderBy} ";
+    $sql = "$this->_select $this->_from $this->_where $this->_groupBy $this->_having $this->_orderBy ";
     if (!$this->_rollup) {
       $sql .= $this->_limit;
     }
@@ -1984,9 +1987,9 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    * We create a temp table of their ids in the first instance
    * and use this as the base
    */
-  function generateTempTable() {
+  protected function generateTempTable(): void {
     $tempTable = 'civicrm_report_temp_' . $this->_baseTable . date('d_H_I') . rand(1, 10000);
-    $sql = "CREATE {$this->_temporary} TABLE $tempTable
+    $sql = "CREATE $this->_temporary TABLE $tempTable
       (`id` INT(10) UNSIGNED NULL DEFAULT '0',
         INDEX `id` (`id`)
       )
@@ -1994,7 +1997,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       ENGINE=HEAP;";
     CRM_Core_DAO::executeQuery($sql);
     $sql = "INSERT INTO $tempTable
-      {$this->_select} {$this->_from} {$this->_where} {$this->_limit} ";
+      $this->_select $this->_from $this->_where $this->_limit ";
     CRM_Core_DAO::executeQuery($sql);
     $this->_aliases[$tempTable] = $this->_aliases[$this->_baseTable];
     $this->_baseTable = $tempTable;
@@ -2006,14 +2009,15 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    *
    * @return string
    */
-  function getTemplateFileName(): string {
+  public function getTemplateFileName(): string {
     $defaultTpl = parent::getTemplateFileName();
 
-    if (in_array($this->_outputMode, ['print', 'pdf'])) {
-      if ($this->_params['templates']) {
+    if (in_array($this->_outputMode, [
+        'print',
+        'pdf'
+      ]) && $this->_params['templates']) {
         $defaultTpl = 'CRM/Extendedreport/Form/Report/CustomTemplates/' . $this->_params['templates'] . '.tpl';
       }
-    }
 
     if (!CRM_Utils_File::isIncludable('templates/' . $defaultTpl)) {
       $defaultTpl = 'CRM/Report/Form.tpl';
@@ -2029,7 +2033,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    *
    * @throws \CiviCRM_API3_Exception
    */
-  function addCustomDataToColumns($addFields = TRUE, $permCustomGroupIds = []) {
+  function addCustomDataToColumns($addFields = TRUE, $permCustomGroupIds = []): void {
     if (empty($this->_customGroupExtends)) {
       return;
     }
@@ -2045,7 +2049,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   /**
    * Add group by options to the report.
    */
-  public function addGroupBys() {
+  public function addGroupBys(): void {
     $options = $freqElements = [];
 
     foreach ($this->getMetadataByType('group_bys') as $fieldName => $field) {
@@ -2081,6 +2085,8 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
 
   /**
    * Add tab for selecting template.
+   *
+   * @throws \CRM_Core_Exception
    */
   protected function addTemplateSelector(): void {
     if (!empty($this->_templates)) {
@@ -2141,7 +2147,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       if (stripos($this->_from, $this->_aliases[$tableKey]) === FALSE) {
         // Protect against conflict with selectableCustomFrom.
         $this->_from .= "
-{$customJoin} {$prop['table_name']} {$this->_aliases[$tableKey]} ON {$this->_aliases[$tableKey]}.entity_id = {$baseJoin}";
+$customJoin {$prop['table_name']} {$this->_aliases[$tableKey]} ON {$this->_aliases[$tableKey]}.entity_id = $baseJoin";
       }
       if (CRM_Utils_Array::value('data_type', $prop) === 'ContactReference'
         // Checking prop['statistics'] is a bit of a hack - we want to exclude aggregate fields
@@ -2197,15 +2203,15 @@ LEFT JOIN civicrm_contact {$prop['alias']} ON {$prop['alias']}.id = {$this->_ali
    */
   public function selectClause(&$tableName, $tableKey, &$fieldName, &$field) {
     if ($fieldName === 'phone_phone') {
-      $alias = "{$tableName}_{$fieldName}";
-      $this->_columnHeaders["{$tableName}_{$fieldName}"]['type'] = CRM_Utils_Array::value('type', $field);
-      $this->_columnHeaders["{$tableName}_{$fieldName}"]['dbAlias'] = CRM_Utils_Array::value('dbAlias', $field);
+      $alias = "{$tableName}_$fieldName";
+      $this->_columnHeaders["{$tableName}_$fieldName"]['type'] = CRM_Utils_Array::value('type', $field);
+      $this->_columnHeaders["{$tableName}_$fieldName"]['dbAlias'] = CRM_Utils_Array::value('dbAlias', $field);
       return " GROUP_CONCAT(CONCAT({$field['dbAlias']},':', {$this->_aliases[$tableName]}.location_type_id, ':', {$this->_aliases[$tableName]}.phone_type_id) ) as $alias";
     }
     if (!empty($field['pseudofield'])) {
-      $alias = "{$tableName}_{$fieldName}";
-      $this->_columnHeaders["{$tableName}_{$fieldName}"]['type'] = CRM_Utils_Array::value('type', $field);
-      $this->_columnHeaders["{$tableName}_{$fieldName}"]['dbAlias'] = CRM_Utils_Array::value('dbAlias', $field);
+      $alias = "{$tableName}_$fieldName";
+      $this->_columnHeaders["{$tableName}_$fieldName"]['type'] = CRM_Utils_Array::value('type', $field);
+      $this->_columnHeaders["{$tableName}_$fieldName"]['dbAlias'] = CRM_Utils_Array::value('dbAlias', $field);
       return ' 1 as  ' . $alias;
     }
     return FALSE;
@@ -2221,7 +2227,7 @@ LEFT JOIN civicrm_contact {$prop['alias']} ON {$prop['alias']}.id = {$this->_ali
    * @return array
    * @throws \Exception
    */
-  protected function extractCustomFields(&$customFields, $context = 'select'): array {
+  protected function extractCustomFields(array $customFields, string $context = 'select'): array {
     $myColumns = [];
     $metadata = $this->getMetadataByType('metadata');
     $selectedFields = array_intersect_key($metadata, $customFields);
@@ -2232,7 +2238,7 @@ LEFT JOIN civicrm_contact {$prop['alias']} ON {$prop['alias']}.id = {$this->_ali
       $tableAlias = $tableName;
       // these should be in separate functions
       if ($context === 'select' && (!$this->_preConstrain || $this->_preConstrained)) {
-        $this->_select .= ", {$tableAlias}.{$metadata[$fieldName]['name']} as $fieldAlias ";
+        $this->_select .= ", $tableAlias.{$metadata[$fieldName]['name']} as $fieldAlias ";
       }
       if ($context === 'row_header') {
         $this->addRowHeader($tableAlias, $selectedField, $fieldAlias);
@@ -2256,7 +2262,7 @@ LEFT JOIN civicrm_contact {$prop['alias']} ON {$prop['alias']}.id = {$this->_ali
    * @param string $fieldName
    * @param string $label
    */
-  protected function addNullToFilterOptions($table, $fieldName, $label = '--does not exist--') {
+  protected function addNullToFilterOptions(string $table, string $fieldName, string $label = '--does not exist--'): void {
     $this->_columns[$table]['filters'][$fieldName]['options'] = ['' => $label] + $this->_columns[$table]['filters'][$fieldName]['options'];
   }
 
@@ -2269,7 +2275,7 @@ LEFT JOIN civicrm_contact {$prop['alias']} ON {$prop['alias']}.id = {$this->_ali
    * @param string $fieldAlias
    * @param string $title
    */
-  private function addRowHeader($tableAlias, $selectedField, $fieldAlias, $title = '') {
+  private function addRowHeader(string $tableAlias, array $selectedField, string $fieldAlias, string $title = ''): void {
     if (empty($tableAlias)) {
       $this->_select = 'SELECT 1 '; // add a fake value just to save lots of code to calculate whether a comma is required later
       $this->_rollup = NULL;
@@ -2298,13 +2304,11 @@ LEFT JOIN civicrm_contact {$prop['alias']} ON {$prop['alias']}.id = {$this->_ali
     }
     parent::alterDisplay($rows);
 
-    if (isset($this->_params['delete_null'])) {
-      if ($this->_params['delete_null'] == '1') {
-        foreach ($this->rollupRow as $rowName => $rowValue) {
-          if ($rowValue != '' && is_numeric($rowValue)) {
-            if ($rowValue == 0) {
-              unset ($this->_columnHeaders[$rowName]);
-            }
+    if (isset($this->_params['delete_null']) && $this->_params['delete_null'] == '1') {
+      foreach ($this->rollupRow as $rowName => $rowValue) {
+        if ($rowValue != '' && is_numeric($rowValue)) {
+          if ($rowValue == 0) {
+            unset ($this->_columnHeaders[$rowName]);
           }
         }
       }
@@ -4460,7 +4464,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    * @return array
    * @throws \CiviCRM_API3_Exception
    */
-  protected function getEmailColumns($options = []): array {
+  protected function getEmailColumns(array $options = []): array {
     $defaultOptions = [
       'prefix' => '',
       'prefix_label' => '',
@@ -4509,7 +4513,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    * @return array
    * @throws \CiviCRM_API3_Exception
    */
-  protected function getWebsiteColumns($options = []): array {
+  protected function getWebsiteColumns(array $options = []): array {
     $defaultOptions = [
       'prefix' => '',
       'prefix_label' => '',
@@ -4681,6 +4685,9 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     return $this->buildColumns($specs, 'civicrm_relationship', 'CRM_Contact_BAO_Relationship', NULL, $defaults);
   }
 
+  /**
+   * @throws \CRM_Core_Exception
+   */
   protected function getRelationshipTypeColumns($options = []): array {
     $defaultOptions = [
       'prefix' => '',
@@ -4752,7 +4759,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
   /**
    * Add tab to report allowing a relationship to be chosen for extension.
    */
-  protected function addJoinFiltersTab() {
+  protected function addJoinFiltersTab(): void {
     $this->tabs['Relationships'] = [
       'title' => ts('Join Filters'),
       'tpl' => 'Relationships',
@@ -4767,7 +4774,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    *
    * @throws \CiviCRM_API3_Exception
    */
-  public function filterStat(&$statistics) {
+  public function filterStat(&$statistics): void {
     foreach ($this->getSelectedFilters() as $fieldName => $field) {
       $statistics['filters'][] = $this->getQillForField($field, $fieldName);
     }
@@ -5066,7 +5073,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    * @return array
    * @throws \CiviCRM_API3_Exception
    */
-  protected function getTagColumns($options = []): array {
+  protected function getTagColumns(array $options = []): array {
     $defaultOptions = [
       'prefix' => '',
       'prefix_label' => '',
@@ -5364,13 +5371,13 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
   /**
    * Define join from Activity to Activity Target
    */
-  protected function joinActivityTargetFromActivity() {
+  protected function joinActivityTargetFromActivity(): void {
     $activityContacts = CRM_Core_OptionGroup::values('activity_contacts', FALSE, FALSE, FALSE, NULL, 'name');
     $targetID = CRM_Utils_Array::key('Activity Targets', $activityContacts);
     $this->_from .= "
       LEFT JOIN civicrm_activity_contact civicrm_activity_target
         ON {$this->_aliases['civicrm_activity']}.id = civicrm_activity_target.activity_id
-        AND civicrm_activity_target.record_type_id = {$targetID}
+        AND civicrm_activity_target.record_type_id = $targetID
       LEFT JOIN civicrm_contact {$this->_aliases['target_civicrm_contact']}
         ON civicrm_activity_target.contact_id = {$this->_aliases['target_civicrm_contact']}.id
         AND {$this->_aliases['target_civicrm_contact']}.is_deleted = 0
@@ -5380,13 +5387,13 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
   /**
    * Define join from Activity to Activity Assignee
    */
-  protected function joinActivityAssigneeFromActivity() {
+  protected function joinActivityAssigneeFromActivity(): void {
     $activityContacts = CRM_Core_OptionGroup::values('activity_contacts', FALSE, FALSE, FALSE, NULL, 'name');
     $assigneeID = CRM_Utils_Array::key('Activity Assignees', $activityContacts);
     $this->_from .= "
       LEFT JOIN civicrm_activity_contact civicrm_activity_assignment
         ON {$this->_aliases['civicrm_activity']}.id = civicrm_activity_assignment.activity_id
-        AND civicrm_activity_assignment.record_type_id = {$assigneeID}
+        AND civicrm_activity_assignment.record_type_id = $assigneeID
       LEFT JOIN civicrm_contact {$this->_aliases['assignee_civicrm_contact']}
         ON civicrm_activity_assignment.contact_id = {$this->_aliases['assignee_civicrm_contact']}.id
      ";
@@ -5395,13 +5402,13 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
   /**
    * Define join from Activity to Activity Source.
    */
-  protected function joinActivitySourceFromActivity() {
+  protected function joinActivitySourceFromActivity(): void {
     $activityContacts = CRM_Core_OptionGroup::values('activity_contacts', FALSE, FALSE, FALSE, NULL, 'name');
     $sourceID = CRM_Utils_Array::key('Activity Source', $activityContacts);
     $this->_from .= "
       LEFT JOIN civicrm_activity_contact civicrm_activity_source
       ON {$this->_aliases['civicrm_activity']}.id = civicrm_activity_source.activity_id
-      AND civicrm_activity_source.record_type_id = {$sourceID}
+      AND civicrm_activity_source.record_type_id = $sourceID
       LEFT JOIN civicrm_contact {$this->_aliases['civicrm_contact']}
       ON civicrm_activity_source.contact_id = {$this->_aliases['civicrm_contact']}.id
       ";
@@ -5460,7 +5467,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    *
    * @return bool true or false to denote whether extra filters can be appended to join
    */
-  protected function joinAddressFromContribution($prefix = 'billingaddress', $extra = []): bool {
+  protected function joinAddressFromContribution(string $prefix = 'billingaddress', $extra = []): bool {
     $this->_from .= " LEFT JOIN civicrm_address billingaddress
     ON billingaddress.id = {$this->_aliases[$prefix . 'civicrm_contribution']}.address_id
     AND billingaddress.is_billing = 1
@@ -5493,7 +5500,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    * @param string $prefix
    * @param array $extra
    */
-  protected function joinEmailFromContact($prefix = '', $extra = []) {
+  protected function joinEmailFromContact($prefix = '', $extra = []): void {
     if ($this->isTableSelected($prefix . 'civicrm_email')) {
       $this->_from .= " LEFT JOIN civicrm_email {$this->_aliases[$prefix . 'civicrm_email']}
      ON {$this->_aliases[$prefix . 'civicrm_email']}.contact_id = {$this->_aliases[$prefix . 'civicrm_contact']}.id
@@ -5648,7 +5655,7 @@ ON {$this->_aliases['civicrm_line_item']}.price_field_id = {$this->_aliases['civ
   /**
    * Define join from line item table to participant table.
    */
-  protected function joinParticipantFromLineItem() {
+  protected function joinParticipantFromLineItem(): void {
     $this->_from .= " LEFT JOIN civicrm_participant {$this->_aliases['civicrm_participant']}
 ON ( {$this->_aliases['civicrm_line_item']}.entity_id = {$this->_aliases['civicrm_participant']}.id
 AND {$this->_aliases['civicrm_line_item']}.entity_table = 'civicrm_participant')
@@ -5658,7 +5665,7 @@ AND {$this->_aliases['civicrm_line_item']}.entity_table = 'civicrm_participant')
   /**
    * Define join from pledge payment table to pledge table..
    */
-  protected function joinPledgeFromPledgePayment() {
+  protected function joinPledgeFromPledgePayment(): void {
     $this->_from .= "
      LEFT JOIN civicrm_pledge {$this->_aliases['civicrm_pledge']}
      ON {$this->_aliases['civicrm_pledge_payment']}.pledge_id = {$this->_aliases['civicrm_pledge']}.id";
@@ -5667,7 +5674,7 @@ AND {$this->_aliases['civicrm_line_item']}.entity_table = 'civicrm_participant')
   /**
    * Define join from pledge table to pledge payment table.
    */
-  protected function joinPledgePaymentFromPledge() {
+  protected function joinPledgePaymentFromPledge(): void {
     $until = CRM_Utils_Array::value('effective_date_value', $this->_params);
     $pledgePaymentStatuses = civicrm_api3('PledgePayment', 'getoptions', ['field' => 'status_id']);
     $toPayIDs = [
@@ -5705,7 +5712,7 @@ AND {$this->_aliases['civicrm_line_item']}.entity_table = 'civicrm_participant')
   /**
    * Join the pledge to the next payment due.
    */
-  protected function joinNextPaymentFromPledge() {
+  protected function joinNextPaymentFromPledge(): void {
     CRM_Core_DAO::executeQuery('DROP TEMPORARY TABLE IF EXISTS next_pledge_payment');
     if (!$this->isTableSelected('next_civicrm_pledge_payment')) {
       $this->_from .= "";
@@ -5746,7 +5753,7 @@ AND {$this->_aliases['civicrm_line_item']}.entity_table = 'civicrm_participant')
    *
    * The parameters for this come from the relationship tab.
    */
-  protected function joinRelatedContactFromParticipant() {
+  protected function joinRelatedContactFromParticipant(): void {
     if (!empty($this->joinClauses)
       || $this->isTableSelected($this->_aliases['related_civicrm_contact'])
       || $this->isTableSelected($this->_aliases['related_civicrm_phone'])
@@ -5774,7 +5781,7 @@ AND {$this->_aliases['civicrm_line_item']}.entity_table = 'civicrm_participant')
   /**
    * Define join from relationship table to relationship type table.
    */
-  protected function joinRelationshipTypeFromRelationship() {
+  protected function joinRelationshipTypeFromRelationship(): void {
     $this->_from .= "
       INNER JOIN civicrm_relationship_type {$this->_aliases['civicrm_relationship_type']}
       ON ( {$this->_aliases['civicrm_relationship']}.relationship_type_id  =
@@ -5785,7 +5792,7 @@ AND {$this->_aliases['civicrm_line_item']}.entity_table = 'civicrm_participant')
   /**
    * Define join from line item table to Membership table.
    */
-  protected function joinMembershipFromLineItem() {
+  protected function joinMembershipFromLineItem(): void {
     $this->_from .= "
       LEFT JOIN civicrm_membership {$this->_aliases['civicrm_membership']}
       ON {$this->_aliases['civicrm_line_item']}.entity_id = {$this->_aliases['civicrm_membership']}.id
@@ -5796,7 +5803,7 @@ AND {$this->_aliases['civicrm_line_item']}.entity_table = 'civicrm_participant')
   /**
    * Define join from Contact to Contribution table
    */
-  function joinContributionFromContact() {
+  protected function joinContributionFromContact(): void {
     if (empty($this->_aliases['civicrm_contact'])) {
       $this->_aliases['civicrm_contact'] = 'civireport_contact';
     }
@@ -5883,7 +5890,7 @@ ON {$this->_aliases['civicrm_membership']}.membership_type_id = {$this->_aliases
   /**
    *
    */
-  function joinMembershipStatusFromMembership() {
+  protected function joinMembershipStatusFromMembership(): void {
     $this->_from .= "
     LEFT JOIN civicrm_membership_status {$this->_aliases['civicrm_membership_status']}
     ON {$this->_aliases['civicrm_membership']}.status_id = {$this->_aliases['civicrm_membership_status']}.id
@@ -5893,7 +5900,7 @@ ON {$this->_aliases['civicrm_membership']}.membership_type_id = {$this->_aliases
   /**
    * Join contribution table from line item.
    */
-  protected function joinContributionFromLineItem() {
+  protected function joinContributionFromLineItem(): void {
     $this->_from .= "
       LEFT JOIN civicrm_contribution as {$this->_aliases['civicrm_contribution']}
       ON {$this->_aliases['civicrm_line_item']}.contribution_id = {$this->_aliases['civicrm_contribution']}.id
@@ -5903,15 +5910,14 @@ ON {$this->_aliases['civicrm_membership']}.membership_type_id = {$this->_aliases
   /**
    * Join line item table from contribution.
    */
-  protected function joinLineItemFromContribution() {
+  protected function joinLineItemFromContribution(): void {
     $this->_from .= "
       LEFT JOIN civicrm_line_item as {$this->_aliases['civicrm_line_item']}
       ON {$this->_aliases['civicrm_line_item']}.contribution_id = {$this->_aliases['civicrm_contribution']}.id
     ";
   }
 
-
-  protected function joinLineItemFromFinancialTrxn() {
+  protected function joinLineItemFromFinancialTrxn(): void {
     $this->_from .= "
     LEFT JOIN civicrm_entity_financial_trxn {$this->_aliases['civicrm_entity_financial_trxn']}_item
       ON ({$this->_aliases['civicrm_financial_trxn']}.id = {$this->_aliases['civicrm_entity_financial_trxn']}_item.financial_trxn_id
@@ -6117,14 +6123,14 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    * @param string $prefix
    * @param array $extra
    */
-  public function joinContributionSummaryTableFromContact(string $prefix, $extra): void {
+  public function joinContributionSummaryTableFromContact(string $prefix, array $extra): void {
     $criteria = " is_test = 0 ";
     if (!empty($extra['criteria'])) {
       $criteria .= " AND " . implode(' AND ', $extra['criteria']);
     }
     $tempTable = $this->createTemporaryTable('contribution_summary',
       "`contact_id` INT(10) UNSIGNED NOT NULL COMMENT 'Foreign key to civicrm_contact.id .',
-      `contributionsummary{$prefix}` longtext NULL DEFAULT NULL COLLATE 'utf8_unicode_ci',
+      `contributionsummary$prefix` longtext NULL DEFAULT NULL COLLATE 'utf8_unicode_ci',
       INDEX `contact_id` (`contact_id`)
       )", TRUE
     );
@@ -6139,7 +6145,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
         '</td><td>', financial_type_name,
         '</td><td>',total_amount, '</td>')
         ORDER BY receive_date DESC SEPARATOR  '<tr></tr>' )
-      ,'</tr></table>') as contributions{$prefix}
+      ,'</tr></table>') as contributions$prefix
       FROM (SELECT contact_id, receive_date, total_amount, name as financial_type_name
         FROM civicrm_contribution {$this->_aliases['civicrm_contribution']}
         LEFT JOIN civicrm_financial_type financial_type
@@ -6168,7 +6174,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    */
   protected function joinActivityFromCase(): void {
     $this->_from .= "
-      LEFT JOIN {$this->_caseActivityTable} cca ON cca.case_id = {$this->_aliases['civicrm_case']}.id
+      LEFT JOIN $this->_caseActivityTable cca ON cca.case_id = {$this->_aliases['civicrm_case']}.id
       LEFT JOIN civicrm_activity {$this->_aliases['civicrm_activity']} ON {$this->_aliases['civicrm_activity']}.id = cca.activity_id";
   }
 
@@ -6207,7 +6213,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
           continue;
         }
         $criterionValue = is_array($this->_params[$name]) ? implode(',', $this->_params[$name]) : $this->_params[$name];
-        $queryURL .= "&{$name}=" . $criterionValue . "&{$op}=" . $this->_params[$op];
+        $queryURL .= "&$name=" . $criterionValue . "&$op=" . $this->_params[$op];
       }
     }
     return $queryURL;
@@ -6254,7 +6260,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
     }
 
     //nodeName == "INPUT" && this.type=="checkbox"
-    return "<div data-id='{$entityID}' data-entity='{$entity}' class='crm-entity'>" .
+    return "<div data-id='$entityID' data-entity='$entity' class='crm-entity'>" .
       "<span class='crm-editable crmf-{$fullSpec['field_name']} $class' data-action='create' $extra>" . $value . "</span></div>";
   }
 
@@ -6269,7 +6275,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
       return '';
     }
     $contactID = $row['civicrm_contact_id'];
-    return "<div id=contact-{$contactID} class='crm-entity'><span class='crm-editable crmf-nick_name crm-editable-enabled' data-action='create'>" . $value . "</span></div>";
+    return "<div id=contact-$contactID class='crm-entity'><span class='crm-editable crmf-nick_name crm-editable-enabled' data-action='create'>" . $value . "</span></div>";
   }
 
 
@@ -6292,8 +6298,8 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
       $criteriaFieldName = $specs['fieldName'];
       $criteriaQueryParams = CRM_Report_Utils_Report::getPreviewCriteriaQueryParams($this->_defaults, $this->_params);
       $url = CRM_Report_Utils_Report::getNextUrl(key($this->_drilldownReport),
-        "reset=1&force=1&{$criteriaQueryParams}&" .
-        "{$criteriaFieldName}_op=in&{$criteriaFieldName}_value={$value}",
+        "reset=1&force=1&$criteriaQueryParams&" .
+        "{$criteriaFieldName}_op=in&{$criteriaFieldName}_value=$value",
         $this->_absoluteUrl, $this->_id, $this->_drilldownReport
       );
       $row[$selectedField . '_link'] = $url;
