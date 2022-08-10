@@ -1805,6 +1805,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       }
       return $result;
     }
+    return NULL;
   }
 
   /**
@@ -1891,22 +1892,20 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       $this->_params = [];
     }
     foreach ($this->_params as $key => $param) {
-      if (substr($key, 0, 7) === 'custom_') {
+      if (strpos($key, 'custom_') === 0) {
         $splitField = explode('_', $key);
         $field = ($splitField[0] . '_' . $splitField[1]);
-        foreach ($this->_columns as $table => $spec) {
-          if (!empty($spec['filters'])
-            && is_array($spec['filters'])
-            && array_key_exists($field, $spec['filters'])
-            && !empty($field)
-            && (isset($this->_params[$field . '_value'])
-              && $this->_params[$field . '_value'] != NULL
-              || !empty($this->_params[$field . '_relative'])
-            ) ||
-            CRM_Utils_Array::value($field . '_op', $this->_params) === 'nll'
+        $operatorIsNull = ($this->_params[$field . '_op'] ?? '') === 'nll';
+        $filters = $spec['filters'] ?? [];
+        $criteriaValue = $this->_params[$field . '_value'] ?? NULL;
+        foreach ($this->_columns as $spec) {
+          if (array_key_exists($field, $filters)
+            && ($criteriaValue !== NULL
+              || !empty($this->_params[$field . '_relative']) ||
+            $operatorIsNull)
           ) {
             $fieldName = $this->mapFieldExtends($field, $spec);
-            if (!in_array($fieldName, $this->_custom_fields_filters)) {
+            if (!in_array($fieldName, $this->_custom_fields_filters, TRUE)) {
               $this->_custom_fields_filters[] = $this->mapFieldExtends($field, $spec);
             }
           }
