@@ -1901,7 +1901,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    * $this->_custom_fields_selected
    * $this->_custom_fields_filters
    */
-  protected function storeParametersOnForm() {
+  protected function storeParametersOnForm(): void {
     foreach (array_keys($this->_columns) as $tableName) {
       foreach (['filters', 'fields'] as $fieldSet) {
         if (!isset($this->_columns[$tableName][$fieldSet])) {
@@ -1931,7 +1931,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     foreach ($this->_params as $key => $param) {
       if (substr($key, 0, 7) === 'custom_') {
         $splitField = explode('_', $key);
-        $field = $splitField[0] . '_' . $splitField[1];
+        $field = ($splitField[0] . '_' . $splitField[1]);
         foreach ($this->_columns as $table => $spec) {
           if (!empty($spec['filters'])
             && is_array($spec['filters'])
@@ -2195,14 +2195,12 @@ LEFT JOIN civicrm_contact {$prop['alias']} ON {$prop['alias']}.id = {$this->_ali
   /**
    * Map extends = 'Entity' to a connection to the relevant table
    *
-   * @param array $field
+   * @param string $field
    * @param array $spec
    *
    * @return string
-   * @return string
-   * @internal param $field
    */
-  private function mapFieldExtends($field, $spec): string {
+  private function mapFieldExtends(string $field, array $spec): string {
     $extendable = [
       'Activity' => 'civicrm_activity',
       'Relationship' => 'civicrm_relationship',
@@ -6419,8 +6417,8 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    *   Name of primary participant.
    * @throws \CRM_Core_Exception
    */
-  function alterRegisteredName($value, &$row, $selectedField) {
-    if (empty($value)) {
+  protected function alterRegisteredName($value, &$row, string $selectedField): string {
+    if (!$value) {
       return '';
     }
 
