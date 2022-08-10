@@ -6466,34 +6466,6 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
   }
 
   /**
-   * @param $value
-   * @param $row
-   * @param $fieldname
-   *
-   * @return mixed
-   */
-  protected function alterContactID($value, &$row, $fieldname) {
-    $nameField = substr($fieldname, 0, -2) . 'name';
-    static $first = TRUE;
-    static $viewContactList = FALSE;
-    if ($first) {
-      $viewContactList = CRM_Core_Permission::check('access CiviCRM');
-      $first = FALSE;
-    }
-
-    if (!$viewContactList) {
-      return $value;
-    }
-    if (array_key_exists($nameField, $row)) {
-      $row[$nameField . '_link'] = CRM_Utils_System::url("civicrm/contact/view", 'reset=1&cid=' . $value, $this->_absoluteUrl);
-    }
-    else {
-      $row[$fieldname . '_link'] = CRM_Utils_System::url("civicrm/contact/view", 'reset=1&cid=' . $value, $this->_absoluteUrl);
-    }
-    return $value;
-  }
-
-  /**
    * Alter Employer ID value for display.
    *
    * @param int|null $value
