@@ -2142,7 +2142,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    *
    * @param array $field
    */
-  function getCustomFieldDetails(&$field) {
+  protected function getCustomFieldDetails(array &$field): array {
     $types = [
       'Date' => CRM_Utils_Type::T_DATE,
       'Boolean' => CRM_Utils_Type::T_INT,
@@ -2167,7 +2167,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    *
    * Overridden to support custom data for multiple entities of the same type.
    */
-  public function extendedCustomDataFrom() {
+  public function extendedCustomDataFrom(): void {
     foreach ($this->getMetadataByType('metadata') as $prop) {
       $table = $prop['table_name'];
       if (empty($prop['extends']) || !$this->isTableSelected($prop['prefix'] . $table)) {
@@ -2234,7 +2234,7 @@ LEFT JOIN civicrm_contact {$prop['alias']} ON {$prop['alias']}.id = {$this->_ali
    *
    * @return bool|string
    */
-  function selectClause(&$tableName, $tableKey, &$fieldName, &$field) {
+  public function selectClause(&$tableName, $tableKey, &$fieldName, &$field) {
     if ($fieldName === 'phone_phone') {
       $alias = "{$tableName}_{$fieldName}";
       $this->_columnHeaders["{$tableName}_{$fieldName}"]['type'] = CRM_Utils_Array::value('type', $field);
@@ -2702,7 +2702,7 @@ LEFT JOIN civicrm_contact {$prop['alias']} ON {$prop['alias']}.id = {$this->_ali
       }
     }
     if (!empty($this->_params['custom_fields']) && is_array($this->_params['custom_fields'])) {
-      foreach ($this->_params['custom_fields'] as $fieldAlias => $value) {
+      foreach ($this->_params['custom_fields'] as $value) {
         $fieldName = explode(':', $value);
         $fieldId = CRM_Core_BAO_CustomField::getKeyID($fieldName[1]);
         if ($fieldId) {
@@ -3048,7 +3048,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
                'join_filters',
              ] as $metadataType) {
       if (!$options[$metadataType]) {
-        foreach ($columns as $tables => &$table) {
+        foreach ($columns as &$table) {
           if (isset($table[$metadataType])) {
             $table[$metadataType] = [];
           }
@@ -5553,7 +5553,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     }
   }
 
-  protected function joinCampaignFromPledge($prefix = '', $extra = []) {
+  protected function joinCampaignFromPledge($prefix = ''): void {
     $this->_from .= " LEFT JOIN civicrm_campaign {$this->_aliases[$prefix . 'civicrm_campaign']}
      ON {$this->_aliases[$prefix . 'civicrm_campaign']}.id = {$this->_aliases[$prefix . 'civicrm_pledge']}.campaign_id
     ";
@@ -6475,7 +6475,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    *
    * @return string
    */
-  protected function alterMembershipStatusID($value) {
+  protected function alterMembershipStatusID($value): string {
     return is_string(CRM_Member_PseudoConstant::membershipStatus($value, FALSE)) ? CRM_Member_PseudoConstant::membershipStatus($value, FALSE) : '';
   }
 
@@ -6540,7 +6540,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    *
    * @return mixed
    */
-  function alterGenderID($value, &$row, $selectedfield, $criteriaFieldName) {
+  protected function alterGenderID($value, &$row, $selectedfield, $criteriaFieldName) {
     $values = CRM_Contact_BAO_Contact::buildOptions('gender_id');
     return CRM_Utils_Array::value($value, $values);
   }
@@ -6573,7 +6573,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    *
    * @return mixed
    */
-  function alterContactID($value, &$row, $fieldname) {
+  protected function alterContactID($value, &$row, $fieldname) {
     $nameField = substr($fieldname, 0, -2) . 'name';
     static $first = TRUE;
     static $viewContactList = FALSE;
@@ -6627,7 +6627,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    *
    * @return array|string|void
    */
-  function alterParticipantStatus($value) {
+  protected function alterParticipantStatus($value) {
     if (empty($value)) {
       return;
     }
@@ -6656,7 +6656,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    *
    * @return string
    */
-  function alterPaymentType($value) {
+  protected function alterPaymentType($value) {
     $paymentInstruments = CRM_Contribute_PseudoConstant::paymentInstrument();
     return CRM_Utils_Array::value($value, $paymentInstruments);
   }
@@ -6666,7 +6666,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    *
    * @return string
    */
-  function alterPaymentProcessor($value) {
+  protected function alterPaymentProcessor($value) {
     $paymentProcessors = CRM_Contribute_PseudoConstant::paymentProcessor(TRUE);
     return CRM_Utils_Array::value($value, $paymentProcessors);
   }
@@ -6712,8 +6712,8 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    *
    * @return mixed
    */
-  function alterActivityType($value) {
-    $activityTypes = $activityType = CRM_Core_PseudoConstant::activityType(TRUE, TRUE, FALSE, 'label', TRUE);
+  protected function alterActivityType($value) {
+    $activityTypes = CRM_Core_PseudoConstant::activityType(TRUE, TRUE, FALSE, 'label', TRUE);
     return CRM_Utils_Array::value($value, $activityTypes);
   }
 
@@ -6722,7 +6722,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    *
    * @return mixed
    */
-  function alterBatchStatus($value) {
+  protected function alterBatchStatus($value) {
     if (!$value) {
       return ts("N/A");
     }
@@ -6735,7 +6735,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    *
    * @return mixed
    */
-  function alterBoolean($value) {
+  protected function alterBoolean($value) {
     $options = [0 => ts('No'), 1 => ts('Yes')];
     if (isset($options[$value])) {
       return $options[$value];
@@ -7943,7 +7943,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
         unset($extendsEntities[$extendsEntity]);
       }
     }
-    foreach ($this->_columns as $table => $spec) {
+    foreach ($this->_columns as $spec) {
       $entityName = (isset($spec['bao']) ? CRM_Core_DAO_AllCoreTables::getBriefName(str_replace('BAO', 'DAO', $spec['bao'])) : '');
       if ($entityName && in_array($entityName, $extendsEntities)) {
         $extendsMap[$entityName][$spec['prefix']] = $spec['prefix_label'];
@@ -7964,7 +7964,6 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
   ORDER BY cg.weight, cf.weight";
     $customDAO = CRM_Core_DAO::executeQuery($sql);
 
-    $curTable = NULL;
     $fields = [];
     while ($customDAO->fetch()) {
       $entityName = $customDAO->extends;
@@ -8335,7 +8334,7 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
     $metadata = $this->getMetadataByType('order_bys');
     $count = 1;
     if (!empty($extendedOrderBys)) {
-      foreach ($extendedOrderBys as $index => $extendedOrderBy) {
+      foreach ($extendedOrderBys as $extendedOrderBy) {
         $extendedOrderBy['column'] = $extendedOrderBy['name'] = CRM_Utils_Array::value('name', $extendedOrderBy, CRM_Utils_Array::value('column', $extendedOrderBy));
         $extendedOrderBy['title'] = CRM_Utils_Array::value('title', $extendedOrderBy, $metadata[$extendedOrderBy['name']]['title']);
         $orderBys[$count] = [
@@ -8574,7 +8573,7 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
   protected function getFieldsRequiredToSupportHavingFilters(): array {
     $filters = $this->getSelectedFilters();
     $fieldsRequireToSupportAggregateFilters = [];
-    foreach ($filters as $index => $filter) {
+    foreach ($filters as $filter) {
       if (!empty($filter['is_aggregate_field_for'])) {
         $fieldsRequireToSupportAggregateFilters[$filter['is_aggregate_field_for']] = $this->getMetadataByType('fields')[$filter['is_aggregate_field_for']];
       }

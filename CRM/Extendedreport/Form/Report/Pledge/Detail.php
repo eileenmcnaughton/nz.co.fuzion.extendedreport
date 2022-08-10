@@ -23,7 +23,7 @@ class CRM_Extendedreport_Form_Report_Pledge_Detail extends CRM_Extendedreport_Fo
    *
    * @throws \CiviCRM_API3_Exception
    */
-  function __construct() {
+  public function __construct() {
     $this->_columns = $this->getColumns('Contact', [
           'fields' => TRUE,
           'order_by' => TRUE,
@@ -82,7 +82,7 @@ class CRM_Extendedreport_Form_Report_Pledge_Detail extends CRM_Extendedreport_Fo
   /**
    *  From function.
    */
-  public function from() {
+  public function from(): void {
     $this->_from = "
             FROM civicrm_pledge {$this->_aliases['civicrm_pledge']}";
     $this->joinPledgePaymentFromPledge();
@@ -92,7 +92,7 @@ class CRM_Extendedreport_Form_Report_Pledge_Detail extends CRM_Extendedreport_Fo
                  LEFT JOIN civicrm_contact {$this->_aliases['civicrm_contact']}
                       ON ({$this->_aliases['civicrm_contact']}.id =
                           {$this->_aliases['civicrm_pledge']}.contact_id )
-                 {$this->_aclFrom} ";
+                 $this->_aclFrom ";
 
     $this->joinEmailFromContact();
   }
@@ -107,7 +107,7 @@ class CRM_Extendedreport_Form_Report_Pledge_Detail extends CRM_Extendedreport_Fo
    *
    * @return string
    */
-  function selectClause(&$tableName, $tableKey, &$fieldName, &$field) {
+  public function selectClause(&$tableName, $tableKey, &$fieldName, &$field): string {
     if ($fieldName === 'balance_amount') {
       $alias = $this->selectStatSum($tableName, $fieldName, $field);
       return " SUM(COALESCE(IF((pledge.status_id =3), {$this->_aliases['civicrm_pledge_payment']}.actual_amount, pledge.amount), 0))

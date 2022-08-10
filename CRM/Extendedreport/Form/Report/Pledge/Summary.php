@@ -81,7 +81,7 @@ class CRM_Extendedreport_Form_Report_Pledge_Summary extends CRM_Extendedreport_F
    *
    * @return string
    */
-  function selectClause(&$tableName, $tableKey, &$fieldName, &$field) {
+  public function selectClause(&$tableName, $tableKey, &$fieldName, &$field) {
     if ($fieldName == 'balance_amount') {
       $alias = $this->selectStatSum($tableName, $fieldName, $field);
       return " SUM(COALESCE(IF((pledge.status_id =3), {$this->_aliases['civicrm_pledge_payment']}.actual_amount, pledge.amount), 0))
