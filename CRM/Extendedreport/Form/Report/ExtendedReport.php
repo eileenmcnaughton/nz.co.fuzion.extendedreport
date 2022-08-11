@@ -7776,7 +7776,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
     }
     foreach ($this->_columns as $spec) {
       $entityName = (isset($spec['bao']) ? CRM_Core_DAO_AllCoreTables::getBriefName(str_replace('BAO', 'DAO', $spec['bao'])) : '');
-      if ($entityName && in_array($entityName, $extendsEntities, TRUE)) {
+      if ($entityName && !empty($extendsEntities[$entityName])) {
         $extendsMap[$entityName][$spec['prefix']] = $spec['prefix_label'];
       }
     }
