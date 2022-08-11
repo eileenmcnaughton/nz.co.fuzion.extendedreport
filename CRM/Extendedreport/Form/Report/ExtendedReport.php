@@ -3092,12 +3092,13 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
             $fieldAlias = 'join__' . $fieldAlias;
           }
           $columns[$tableName][$type][$fieldAlias] = $spec;
-          if (isset($defaults[$type . '_defaults']) && isset($defaults[$type . '_defaults'][$spec['name']])) {
+          $defaultKey = $type . '_defaults';
+          if (isset($defaults[$defaultKey][$spec['name']])) {
             if ($type === 'filters' || $type === 'join_filters') {
-              $columns[$tableName]['metadata'][$fieldAlias]['default'] = $defaults[$type . '_defaults'][$spec['name']];
+              $columns[$tableName]['metadata'][$fieldAlias]['default'] = $defaults[$defaultKey][$spec['name']];
             }
             elseif ($type === 'group_bys') {
-              $columns[$tableName]['metadata'][$fieldAlias]['is_group_bys_default'] = $defaults[$type . '_defaults'][$spec['name']];
+              $columns[$tableName]['metadata'][$fieldAlias]['is_group_bys_default'] = $defaults[$defaultKey][$spec['name']];
             }
           }
         }
