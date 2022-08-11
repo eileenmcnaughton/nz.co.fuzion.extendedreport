@@ -289,13 +289,14 @@ class CRM_Extendedreport_Form_Report_Contribute_BookkeepingExtended extends CRM_
                 END) as amount
 ";
 
-    $sql = $select . " " . $this->_from . " " . $this->_where . " GROUP BY " . $this->_aliases['civicrm_contribution'] . ".currency
+    $sql = "{$select} {$this->_from} {$this->_where}
+            GROUP BY {$this->_aliases['civicrm_contribution']}.currency
 ";
 
     $dao = CRM_Core_DAO::executeQuery($sql);
     while ($dao->fetch()) {
-      $amount[] = CRM_Utils_Money::format($dao->amount, $dao->currency);
-      $avg[] = CRM_Utils_Money::format(round(($dao->amount /
+      $amount[] = Civi::format()->money($dao->amount, $dao->currency);
+      $avg[] = Civi::format()->money(round(($dao->amount /
         $dao->count), 2), $dao->currency);
     }
     if (empty($amount)) {
