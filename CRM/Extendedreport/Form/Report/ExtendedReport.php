@@ -6404,22 +6404,22 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
   }
 
   /**
-   * @param $value
-   * @param $row
-   * @param $selectedfield
-   * @param $criteriaFieldName
+   * @param int|float $value
+   * @param array $row
+   * @param string $selectedField
    *
-   * @return array
+   * @return int|float
    */
-  function alterCumulative($value, &$row, $selectedfield, $criteriaFieldName) {
-    if (!isset(Civi::$statics[__CLASS__]) || !isset(Civi::$statics[__CLASS__][$selectedfield . 'cumulative'])) {
-      Civi::$statics[__CLASS__][$selectedfield . 'cumulative'] = 0;
+  protected function alterCumulative($value, array &$row, string $selectedField) {
+    $cacheKey = $selectedField . 'cumulative';
+    if (!isset(Civi::$statics[__CLASS__][$cacheKey])) {
+      Civi::$statics[__CLASS__][$selectedField . 'cumulative'] = 0;
     }
 
     if (empty($row['is_rollup'])) {
-      Civi::$statics[__CLASS__][$selectedfield . 'cumulative'] = Civi::$statics[__CLASS__][$selectedfield . 'cumulative'] + $value;
+      Civi::$statics[__CLASS__][$cacheKey] += $value;
     }
-    $row[str_replace('_sum', '_cumulative', $selectedfield)] = Civi::$statics[__CLASS__][$selectedfield . 'cumulative'];
+    $row[str_replace('_sum', '_cumulative', $selectedField)] = Civi::$statics[__CLASS__][$cacheKey];
     return $value;
   }
 
