@@ -320,8 +320,6 @@ class CRM_Extendedreport_Form_Report_Contribute_BookkeepingExtended extends CRM_
    * @throws \CRM_Core_Exception
    */
   public function alterDisplay(&$rows): void {
-    $contributionTypes = CRM_Contribute_PseudoConstant::financialType();
-    $contributionStatus = CRM_Contribute_PseudoConstant::contributionStatus();
     foreach ($rows as $rowNum => $row) {
       // convert display name to links
       if (array_key_exists('civicrm_contact_sort_name', $row) &&
@@ -338,12 +336,12 @@ class CRM_Extendedreport_Form_Report_Contribute_BookkeepingExtended extends CRM_
 
       // handle contribution status id
       if ($value = CRM_Utils_Array::value('civicrm_contribution_contribution_status_id', $row)) {
-        $rows[$rowNum]['civicrm_contribution_contribution_status_id'] = $contributionStatus[$value];
+        $rows[$rowNum]['civicrm_contribution_contribution_status_id'] = CRM_Core_PseudoConstant::getLabel('CRM_Contribute_BAO_Contribution', 'contribution_status_id', $value);
       }
 
       // handle financial type id
       if ($value = CRM_Utils_Array::value('civicrm_line_item_financial_type_id', $row)) {
-        $rows[$rowNum]['civicrm_line_item_financial_type_id'] = $contributionTypes[$value];
+        $rows[$rowNum]['civicrm_line_item_financial_type_id'] = CRM_Core_PseudoConstant::getLabel('CRM_Contribute_BAO_Contribution', 'financial_type_id', $value);
       }
       if (CRM_Utils_Array::value('civicrm_entity_financial_trxn_amount', $row)) {
         $rows[$rowNum]['civicrm_entity_financial_trxn_amount'] = CRM_Utils_Money::format($rows[$rowNum]['civicrm_entity_financial_trxn_amount'], $rows[$rowNum]['civicrm_financial_trxn_financial_trxn_currency']);
