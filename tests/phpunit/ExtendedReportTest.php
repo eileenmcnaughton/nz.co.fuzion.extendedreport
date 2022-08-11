@@ -1,6 +1,5 @@
 <?php
 
-use Civi\Test\HeadlessInterface;
 use Civi\Core\HookInterface;
 use Civi\Extendedreport\BaseTestClass;
 
@@ -238,9 +237,8 @@ class ExtendedReportTest extends BaseTestClass implements HookInterface {
   /**
    * Test the group filter ... filters.
    *
-   * @throws \CRM_Core_Exception
    */
-  public function testReportsGroupFilterWorks() {
+  public function testReportsGroupFilterWorks(): void {
     $group = $this->callAPISuccess('Group', 'create', ['title' => 'bob']);
     $badBob = $this->callAPISuccess('Contact', 'create', ['first_name' => 'bob', 'last_name' => 'bob', 'contact_type' => 'Individual']);
     $goodBob = $this->callAPISuccess('Contact', 'create', ['first_name' => 'bob', 'last_name' => 'bob', 'contact_type' => 'Individual']);
@@ -256,7 +254,7 @@ class ExtendedReportTest extends BaseTestClass implements HookInterface {
       'gid_value' => [$group['id']],
     ];
     $rows = $this->getRows($params);
-    $this->assertEquals(1, count($rows));
+    $this->assertCount(1, $rows);
 
     $this->callAPISuccess('Contribution', 'get', ['api.Contribution.delete' => 1]);
     $this->callAPISuccess('Contact', 'get', ['id' => ['IN' => [$goodBob['id'], $badBob['id']], 'api.Contact.delete' => 1]]);
@@ -266,9 +264,8 @@ class ExtendedReportTest extends BaseTestClass implements HookInterface {
   /**
    * Test the tag filter filters by tag
    *
-   * @throws \CRM_Core_Exception
    */
-  public function testReportsTagFilterWorks() {
+  public function testReportsTagFilterWorks(): void {
     $tag = $this->callAPISuccess('Tag', 'create', ['name' => 'bob']);
     $badBob = $this->callAPISuccess('Contact', 'create', ['first_name' => 'bob', 'last_name' => 'bob', 'contact_type' => 'Individual']);
     $goodBob = $this->callAPISuccess('Contact', 'create', ['first_name' => 'bob', 'last_name' => 'bob', 'contact_type' => 'Individual']);
@@ -282,7 +279,7 @@ class ExtendedReportTest extends BaseTestClass implements HookInterface {
       'tagid_value' => [$tag['id']],
     ];
     $rows = $this->getRows($params);
-    $this->assertEquals(1, count($rows));
+    $this->assertCount(1, $rows);
 
     $this->callAPISuccess('Tag', 'delete', ['id' => $tag['id']]);
     $this->callAPISuccess('Contribution', 'get', ['api.Contribution.delete' => 1]);
@@ -293,9 +290,8 @@ class ExtendedReportTest extends BaseTestClass implements HookInterface {
   /**
    * Test the future income report with some data.
    *
-   * @throws \CRM_Core_Exception
    */
-  public function testPledgeIncomeReport() {
+  public function testPledgeIncomeReport(): void {
     $this->setUpPledgeData();
     $params = [
       'report_id' => 'pledge/income',
@@ -303,7 +299,7 @@ class ExtendedReportTest extends BaseTestClass implements HookInterface {
     ];
     $rows = $this->getRows($params);
     // 12 exist, 10 are unpaid.
-    $this->assertEquals(10, count($rows));
+    $this->assertCount(10, $rows);
     $this->assertEquals(date('Y-m-d', strtotime('2 years ago')), date('Y-m-d', strtotime($rows[0]['civicrm_pledge_payment_pledge_payment_scheduled_date'])));
     $this->assertEquals(14285.74, $rows[0]['civicrm_pledge_payment_pledge_payment_scheduled_amount_sum']);
     $this->assertEquals(14285.74, $rows[0]['civicrm_pledge_payment_pledge_payment_scheduled_amount_cumulative']);
@@ -314,16 +310,15 @@ class ExtendedReportTest extends BaseTestClass implements HookInterface {
   /**
    * Test the future income report with some data.
    *
-   * @throws \CRM_Core_Exception
    */
-  public function testPledgeIncomeReportGroupByContact() {
+  public function testPledgeIncomeReportGroupByContact(): void {
     $this->setUpPledgeData();
     $params = [
       'report_id' => 'pledge/income',
       'group_bys' => ['civicrm_contact_contact_id' => '1'],
     ];
     $rows = $this->getRows($params);
-    $this->assertEquals(3, count($rows));
+    $this->assertCount(3, $rows);
     $this->assertEquals(20000, $rows[0]['civicrm_pledge_payment_pledge_payment_scheduled_amount_sum']);
     $this->assertEquals(20000, $rows[0]['civicrm_pledge_payment_pledge_payment_scheduled_amount_cumulative']);
     $this->assertEquals(80000, $rows[1]['civicrm_pledge_payment_pledge_payment_scheduled_amount_sum']);
@@ -335,9 +330,8 @@ class ExtendedReportTest extends BaseTestClass implements HookInterface {
   /**
    * Test the future income report with some data.
    *
-   * @throws \CRM_Core_Exception
    */
-  public function testPledgeIncomeReportGroupByMonth() {
+  public function testPledgeIncomeReportGroupByMonth(): void {
     $this->setUpPledgeData();
     $params = [
       'report_id' => 'pledge/income',
