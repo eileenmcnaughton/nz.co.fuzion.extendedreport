@@ -2271,10 +2271,8 @@ LEFT JOIN civicrm_contact {$prop['alias']} ON {$prop['alias']}.id = {$this->_ali
 
     if (isset($this->_params['delete_null']) && $this->_params['delete_null'] == '1') {
       foreach ($this->rollupRow as $rowName => $rowValue) {
-        if ($rowValue != '' && is_numeric($rowValue)) {
-          if ($rowValue == 0) {
-            unset ($this->_columnHeaders[$rowName]);
-          }
+        if ($rowValue != '' && is_numeric($rowValue) && $rowValue == 0) {
+          unset ($this->_columnHeaders[$rowName]);
         }
       }
     }
@@ -2683,7 +2681,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     foreach ($rows as $rowNum => $row) {
       foreach ($row as $tableCol => $val) {
         $customField = NULL;
-        $columnMatchedKeys = array_filter($columnKeys, function($key) use ($tableCol) {
+        $columnMatchedKeys = array_filter($columnKeys, static function($key) use ($tableCol) {
           return strpos($tableCol, $key . '_') !== FALSE;
         });
         $columnMatchedKey = array_pop($columnMatchedKeys);
@@ -2760,10 +2758,10 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    *
    * @return float|string
    */
-  function formatCustomValues($value, $customField, $fieldValueMap, array $row = []) {
+  protected function formatCustomValues($value, $customField, $fieldValueMap, array $row = []) {
     // @todo this might hopefully be already done by metadata - for booleans it is.
     if (!empty($this->_customGroupExtends) && count($this->_customGroupExtends) === 1) {
-      //lets only extend apply editability where only one entity extended
+      //lets only extend apply edit-ability where only one entity extended
       // we can easily extend to contact combos
       [$entity] = $this->_customGroupExtends;
       $entity_table = $this->_aliases[strtolower('civicrm_' . $entity)];
@@ -3153,7 +3151,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'is_order_bys' => TRUE,
         'is_group_bys' => TRUE,
         'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-        'options' => CRM_Contribute_PseudoConstant::financialType(),
+        'options' => CRM_Contribute_BAO_Contribution::buildOptions('financial_type_id', 'get'),
       ],
       'id' => [
         'title' => ts('Individual Line Item'),
@@ -3589,7 +3587,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'default' => TRUE,
         'alter_display' => 'alterPaymentType',
         'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-        'options' => CRM_Contribute_PseudoConstant::paymentInstrument(),
+        'options' => CRM_Contribute_BAO_Contribution::buildOptions('payment_instrument_id', 'get'),
         'type' => CRM_Utils_Type::T_INT,
         'is_fields' => TRUE,
         'is_filters' => TRUE,
@@ -3653,7 +3651,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'type' => CRM_Utils_Type::T_BOOLEAN,
       ],
     ];
-    return $this->buildColumns($specs, 'civicrm_financial_type', 'CRM_Financial_DAO_FinancialType', NULL);
+    return $this->buildColumns($specs, 'civicrm_financial_type', 'CRM_Financial_DAO_FinancialType');
   }
 
   /**
@@ -3752,19 +3750,19 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'title' => ts('Payment Link'),
         'name' => 'id',
         'alter_display' => 'alterPledgePaymentLink',
-        // Otherwise it will be supressed. We retrieve & alter.
+        // Otherwise it will be suppressed. We retrieve & alter.
         'is_fields' => TRUE,
       ],
     ];
   }
 
   /**
-   * @param $options
+   * @param array $options
    *
    * @return array
    * @throws \CiviCRM_API3_Exception
    */
-  function getMembershipTypeColumns($options): array {
+  protected function getMembershipTypeColumns(array $options): array {
     $spec = [
       'membership_type_id' => [
         'name' => 'id',
@@ -3785,7 +3783,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    *
    * @return array
    */
-  function getEventFilterOptions(): array {
+  protected function getEventFilterOptions(): array {
     $events = [];
     $query = "
       select id, start_date, title from civicrm_event
@@ -3915,7 +3913,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    *
    * @throws \CiviCRM_API3_Exception
    */
-  protected function getEventSummaryColumns($options = []): array {
+  protected function getEventSummaryColumns(array $options = []): array {
     $defaultOptions = [
       'prefix' => '',
       'prefix_label' => '',
@@ -4050,7 +4048,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'type' => CRM_Utils_Type::T_INT,
         'alter_display' => 'alterFinancialType',
         'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-        'options' => CRM_Contribute_PseudoConstant::financialType(),
+        'options' => CRM_Contribute_BAO_Contribution::buildOptions('financial_type_id', 'get'),
         'is_fields' => TRUE,
         'is_filters' => TRUE,
         'is_order_bys' => TRUE,
@@ -4061,7 +4059,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'type' => CRM_Utils_Type::T_INT,
         'alter_display' => 'alterPaymentType',
         'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-        'options' => CRM_Contribute_PseudoConstant::paymentInstrument(),
+        'options' => CRM_Contribute_BAO_Contribution::buildOptions('payment_instrument_id', 'get'),
         'is_fields' => TRUE,
         'is_filters' => TRUE,
         'is_order_bys' => TRUE,
@@ -4194,7 +4192,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    * @return array
    * @throws \CiviCRM_API3_Exception
    */
-  function getContributionSummaryColumns($options = []): array {
+  protected function getContributionSummaryColumns($options = []): array {
     $defaultOptions = [
       'prefix' => '',
       'prefix_label' => '',
@@ -4347,7 +4345,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'is_order_bys' => TRUE,
         'is_group_bys' => TRUE,
         'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-        'options' => CRM_Contribute_PseudoConstant::financialType(),
+        'options' => CRM_Contribute_BAO_Contribution::buildOptions('financial_type_id', 'get'),
       ],
       'frequency_unit' => [
         'title' => ts('Frequency Unit'),
@@ -4753,7 +4751,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    * @throws \CRM_Core_Exception
    * @throws \CiviCRM_API3_Exception
    */
-  function getAddressColumns($options = []): array {
+  protected function getAddressColumns($options = []): array {
     $defaultOptions = [
       'prefix' => '',
       'prefix_label' => '',
@@ -4996,13 +4994,10 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
 
   /**
    * @param $value
-   * @param $row
-   *
-   * @param $selectedField
    *
    * @return string
    */
-  function alterBillingName($value, &$row, $selectedField): string {
+  protected function alterBillingName($value): string {
     if (empty($value)) {
       return '';
     }
@@ -5409,11 +5404,10 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    * Prefix will be added to both tables as it's assumed you are using it to get address of a secondary contact
    *
    * @param string $prefix prefix to add to table names
-   * @param array $extra extra join parameters
    *
    * @return bool true or false to denote whether extra filters can be appended to join
    */
-  protected function joinAddressFromContribution(string $prefix = 'billingaddress', $extra = []): bool {
+  protected function joinAddressFromContribution(string $prefix = 'billingaddress'): bool {
     $this->_from .= " LEFT JOIN civicrm_address billingaddress
     ON billingaddress.id = {$this->_aliases[$prefix . 'civicrm_contribution']}.address_id
     AND billingaddress.is_billing = 1
@@ -5497,9 +5491,8 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    * Add join from contact table to primary phone.
    *
    * @param string $prefix
-   * @param array $extra [optional]
    */
-  protected function joinPrimaryPhoneFromContact(string $prefix = '', array $extra = []): void {
+  protected function joinPrimaryPhoneFromContact(string $prefix = ''): void {
     if ($this->isTableSelected($prefix . 'civicrm_phone')) {
       $this->_from .= " LEFT JOIN civicrm_phone {$this->_aliases[$prefix . 'civicrm_phone']}
       ON {$this->_aliases[$prefix . 'civicrm_phone']}.contact_id = {$this->_aliases[$prefix . 'civicrm_contact']}.id
@@ -5543,6 +5536,8 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    * some options to filter this join. We'll do a full temp table for now
    * We create 3 temp tables because we can't join twice onto a temp table (for inserting)
    * & it's hard to see how to otherwise avoid nasty joins or unions
+   *
+   *  @noinspection PhpUnhandledExceptionInspection
    */
   protected function joinLatestActivityFromContact(): void {
     if (!$this->isTableSelected('civicrm_activity')) {
@@ -5551,7 +5546,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     static $tmpTableName = NULL;
     if (empty($tmpTableName)) {
 
-      $tmpTableName = 'civicrm_report_temp_lastestActivity' . date('his') . random_int(1, 1000);
+      $tmpTableName = 'civicrm_report_temp_latest_activity' . date('his') . random_int(1, 1000);
       $sql = "CREATE $this->_temporary TABLE $tmpTableName
    (
     `contact_id` INT(10) NOT NULL,
@@ -6281,7 +6276,9 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    * @param $selectedField
    * @param $criteriaFieldName
    * @param $spec
+   *
    * @return string
+   * @noinspection PhpUnusedParameterInspection
    */
   protected function alterByOptions($value, $row, $selectedField, $criteriaFieldName, $spec): string {
     return CRM_Core_PseudoConstant::getLabel($spec['bao'], $spec['name'], $value) ?? '';
@@ -6492,7 +6489,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    * @return string
    */
   protected function alterPaymentType(?int $value): string {
-    $paymentInstruments = CRM_Contribute_PseudoConstant::paymentInstrument();
+    $paymentInstruments = CRM_Contribute_BAO_Contribution::buildOptions('payment_instrument_id', 'get');
     return (string) ($paymentInstruments[$value] ?? '');
   }
 
@@ -6516,7 +6513,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    *
    * @return string
    */
-  protected function alterPledgePaymentLink(?int $value, &$row, $selectedField): string {
+  protected function alterPledgePaymentLink(?int $value, array &$row, string $selectedField): string {
     if ($this->_groupByArray !== ['civicrm_pledge_payment_id' => 'pledge_payment.id']
       && $this->_groupByArray !== ['civicrm_pledge_payment_id' => 'civicrm_pledge_payment.id']
     ) {
@@ -6526,16 +6523,11 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
     if (empty($value)) {
       return $value;
     }
-    if (isset($row['civicrm_pledge_pledge_contact_id'])) {
-      $contactID = $row['civicrm_pledge_pledge_contact_id'];
-    }
-    else {
-      $contactID = CRM_Core_DAO::singleValueQuery(
+    $contactID = $row['civicrm_pledge_pledge_contact_id'] ?? CRM_Core_DAO::singleValueQuery(
         "SELECT contact_id FROM civicrm_pledge_payment pp
          LEFT JOIN civicrm_pledge p ON pp.pledge_id = p.id
          WHERE pp.id = " . $value
       );
-    }
     $row[$selectedField . '_link'] = CRM_Utils_System::url('civicrm/contact/view/contribution', 'reset=1&action=add&cid=' . $contactID . '&context=pledge&ppid=' . $value);
     $row[$selectedField . '_hover'] = ts('Record a payment received for this pledged payment');
     $row[$selectedField . '_class'] = "action-item crm-hover-button crm-popup";
@@ -6581,14 +6573,14 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
   /**
    * Return "Yes" if a contribution_recur_id exists, "No" otherwise.
    *
-   * @param int $value
+   * @param int|null $value
    *
    * @param $row
    * @param $selectedField
    *
    * @return string
    */
-  protected function alterRecurringContributionId($value, &$row, $selectedField): string {
+  protected function alterRecurringContributionId(?int $value, $row, $selectedField): string {
     $recurringIdField = str_replace('_exists', '', $selectedField);
     return $row[$recurringIdField] ? ts('Yes') : ts('No');
   }
@@ -7456,7 +7448,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
 
       // The field is being selected for select & order by. Reconcile any fallbacks.
       // Perhaps later we should find a way to support them not being the same but for now....
-      if (isset($orderBys[$fieldName]) && isset($selectedFields[$fieldName]) && CRM_Utils_Array::value('field_on_null', $orderBys[$fieldName], [])
+      if (isset($orderBys[$fieldName], $selectedFields[$fieldName]) && CRM_Utils_Array::value('field_on_null', $orderBys[$fieldName], [])
         !== CRM_Utils_Array::value('field_on_null', $selectedFields[$fieldName], [])) {
         CRM_Core_Session::setStatus(E::ts('Selected field fallback altered to match order by fallback. Currently different configurations are not supported if both are selected'));
         $selectedFields[$fieldName]['field_on_null'] = CRM_Utils_Array::value('field_on_null', $orderBys[$fieldName], []);
@@ -7726,7 +7718,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    *
    * @throws \CiviCRM_API3_Exception
    */
-  protected function addCustomDataForEntities($extends): void {
+  protected function addCustomDataForEntities(array $extends): void {
     $fields = $this->getCustomDataDAOs($extends);
     foreach ($fields as $field) {
       $prefixLabel = trim(CRM_Utils_Array::value('prefix_label', $field));

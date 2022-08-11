@@ -607,6 +607,7 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
    * @param array $options
    *
    * @return array
+   * @throws \CRM_Core_Exception
    */
   protected function getContributionRecurColumns(array $options = []): array {
     $spec = [

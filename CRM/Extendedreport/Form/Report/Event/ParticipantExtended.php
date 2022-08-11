@@ -217,9 +217,9 @@ class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Exten
     $entryFound = FALSE;
     $eventType = CRM_Core_OptionGroup::values('event_type');
 
-    $financialTypes = CRM_Contribute_PseudoConstant::financialType();
+    $financialTypes = CRM_Contribute_BAO_Contribution::buildOptions('financial_type_id', 'get');
     $contributionStatus = CRM_Contribute_PseudoConstant::contributionStatus();
-    $paymentInstruments = CRM_Contribute_PseudoConstant::paymentInstrument();
+    $paymentInstruments = CRM_Contribute_BAO_Contribution::buildOptions('payment_instrument_id', 'get');
     $honorTypes = CRM_Core_OptionGroup::values('honor_type', FALSE, FALSE, FALSE, NULL, 'label');
     $genders = CRM_Core_PseudoConstant::get('CRM_Contact_DAO_Contact', 'gender_id', ['localize' => TRUE]);
 
