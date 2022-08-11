@@ -21,7 +21,7 @@ class BookkeepingExtendedTest extends BaseTestClass {
   protected $contacts = [];
 
   /**
-   * @throws \CRM_Core_Exception
+   *
    */
   public function setUp(): void {
     parent::setUp();
@@ -32,8 +32,6 @@ class BookkeepingExtendedTest extends BaseTestClass {
 
   /**
    * Test the bookkeeping report with some data.
-   *
-   * @throws \CRM_Core_Exception
    */
   public function testBookkeepingReport(): void {
     $this->callAPISuccess('Order', 'create', [

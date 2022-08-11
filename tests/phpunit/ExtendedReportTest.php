@@ -224,7 +224,7 @@ class ExtendedReportTest extends BaseTestClass implements HookInterface {
    * @dataProvider getAllNonLoggingReports
    */
   public function testReportsTagFilter(string $reportID): void {
-    $tag = $this->callAPISuccess('Tag', 'create', ['name' => uniqid()]);
+    $tag = $this->callAPISuccess('Tag', 'create', ['name' => 'my tag']);
     $params = [
       'report_id' => $reportID,
       'fields' => ['contribution_id' => 1],
