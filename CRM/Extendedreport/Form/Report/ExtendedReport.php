@@ -6439,13 +6439,12 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
   }
 
   /**
-   * @param int $value
+   * @param int|null $value
    *
-   * @return mixed
+   * @return string
    */
-  protected function alterGenderID(int $value) {
-    $values = CRM_Contact_BAO_Contact::buildOptions('gender_id');
-    return CRM_Utils_Array::value($value, $values);
+  protected function alterGenderID(?int $value): string {
+    return CRM_Contact_BAO_Contact::buildOptions('gender_id')[$value] ?? '';
   }
 
   /**
