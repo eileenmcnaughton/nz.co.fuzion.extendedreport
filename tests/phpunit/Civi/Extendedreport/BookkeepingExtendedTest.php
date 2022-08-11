@@ -62,6 +62,8 @@ class BookkeepingExtendedTest extends BaseTestClass {
     $rows = $this->getRows($params);
     $this->assertEquals(date('Y-m-d'), date('Y-m-d', strtotime($rows[0]['civicrm_contribution_contribution_receive_date'])));
     $this->assertEquals('USD', $rows[0]['civicrm_financial_trxn_financial_trxn_currency']);
+    // If this line fails data cleanup is a likely culprit - this should be the only contribution in the database
+    // We might be better to ditch the TransactionalInterface as it has long been fraught.
     $this->assertEquals('5.00', $rows[0]['civicrm_entity_financial_trxn_entity_financial_trxn_amount_sum']);
   }
 
