@@ -1,6 +1,6 @@
 <?php
 
-require_once __DIR__ . '/BaseTestClass.php';
+use Civi\Extendedreport\BaseTestClass;
 
 /**
  * Test contribution DetailExtended class.
@@ -34,9 +34,8 @@ class ContributionDetailExtendedTest extends BaseTestClass {
   /**
    * Test the ContributionDetailExtended report with order by.
    *
-   * @throws \CRM_Core_Exception
    */
-  public function testContributionExtendedReport() {
+  public function testContributionExtendedReport(): void {
     $this->setupData();
     $params = [
       'report_id' => 'contribution/detailextended',
@@ -57,7 +56,7 @@ class ContributionDetailExtendedTest extends BaseTestClass {
    * Test Detail Extended report, grouping by contact.
    *
    */
-  protected function testDetailExtendedGroupByContact(): void {
+  public function testDetailExtendedGroupByContact(): void {
     $this->setupData();
     $params = [
       'report_id' => 'contribution/detailextended',
@@ -143,7 +142,7 @@ class ContributionDetailExtendedTest extends BaseTestClass {
         'receive_date' => '2018-12-09',
       ]);
       $this->contacts[] = $contact;
-      $amount = $amount + 5;
+      $amount += 5;
       $this->callAPISuccess('Contribution', 'create', [
         'contact_id' => $contact['id'],
         'total_amount' => $amount,

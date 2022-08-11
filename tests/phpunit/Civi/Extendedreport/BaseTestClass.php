@@ -381,7 +381,6 @@ class BaseTestClass extends TestCase implements HeadlessInterface, HookInterface
    * @param string $type
    *
    * @return array
-   *
    */
   protected function createContacts(int $quantity = 1, string $type = 'Individual'): array {
     $data = $this->getContactData($type, $quantity);
