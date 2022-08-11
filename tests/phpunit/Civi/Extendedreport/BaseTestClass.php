@@ -52,6 +52,9 @@ class BaseTestClass extends TestCase implements HeadlessInterface, HookInterface
   public function setUpHeadless(): CiviEnvBuilder {
     // Civi\Test has many helpers, like install(), uninstall(), sql(), and sqlFile().
     // See: https://github.com/civicrm/org.civicrm.testapalooza/blob/master/civi-test.md
+    // For some reason the group doesn't get rolled back - but if you try to delete it
+    // then that WILL get rolled back - just make it go away.
+    CRM_Core_DAO::executeQuery('DELETE FROM civicrm_group');
     return Test::headless()
       ->install('org.civicrm.search_kit')
       ->install(['org.civicrm.afform', 'civigrant'])

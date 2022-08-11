@@ -1,9 +1,8 @@
 <?php
 
-require_once __DIR__ . '/BaseTestClass.php';
-
 use Civi\Test\HeadlessInterface;
-use Civi\Test\HookInterface;
+use Civi\Core\HookInterface;
+use Civi\Extendedreport\BaseTestClass;
 
 /**
  * FIXME - Add test description.
@@ -19,7 +18,7 @@ use Civi\Test\HookInterface;
  *
  * @group headless
  */
-class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, HookInterface {
+class ExtendedReportTest extends BaseTestClass implements HookInterface {
 
   public function setUp(): void {
     parent::setUp();
@@ -28,7 +27,6 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
 
   public function tearDown(): void {
     CRM_Core_DAO::executeQuery('DELETE FROM civicrm_pledge');
-    CRM_Core_DAO::executeQuery('DELETE FROM civicrm_group');
     parent::tearDown();
     CRM_Core_DAO::reenableFullGroupByMode();
   }
@@ -64,10 +62,8 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
    * @dataProvider getAllNonLoggingReports
    *
    * @param string $reportID
-   *
-   * @throws \CRM_Core_Exception
    */
-  public function testReportsRunAllFields($reportID) {
+  public function testReportsRunAllFields(string $reportID): void {
     $metadata = $this->callAPISuccess('ReportTemplate', 'getmetadata', ['report_id' => $reportID])['values'];
     $params = [
       'report_id' => $reportID,
@@ -84,10 +80,8 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
    * @dataProvider getDataForExtendedFields
    *
    * @param array $group_bys
-   *
-   * @throws \CRM_Core_Exception
    */
-  public function testExtendedFields($group_bys = []): void {
+  public function testExtendedFields(array $group_bys = []): void {
     $contact = $this->callAPISuccess('Contact', 'create', ['contact_type' => 'Individual', 'first_name' => 'first', 'last_name' => 'last']);
     $this->ids['Contact'][] = $contact['id'];
     $this->callAPISuccess('Contribution', 'create', ['financial_type_id' => 'Donation', 'total_amount' => 10, 'contact_id' => $contact['id']]);
@@ -124,7 +118,7 @@ class ExtendedReportTest extends BaseTestClass implements HeadlessInterface, Hoo
    *
    * @return array
    */
-  public function getDataForExtendedFields() {
+  public function getDataForExtendedFields(): array {
     return [
       [[]],
       [['civicrm_contact_contact_id' => '1']],
