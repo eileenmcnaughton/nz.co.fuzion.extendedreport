@@ -1942,16 +1942,18 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
 
   /**
    * Generate a temp table to reflect the pre-constrained report group
-   * This could be a group of contacts on whom we are going to do a series of contribution
-   * comparisons.
+   * This could be a group of contacts on whom we are going to do a series of
+   * contribution comparisons.
    *
    * We apply where criteria from the form to generate this
    *
    * We create a temp table of their ids in the first instance
    * and use this as the base
+   *
+   * @noinspection PhpUnhandledExceptionInspection
    */
   protected function generateTempTable(): void {
-    $tempTable = 'civicrm_report_temp_' . $this->_baseTable . date('d_H_I') . rand(1, 10000);
+    $tempTable = 'civicrm_report_temp_' . $this->_baseTable . date('d_H_I') . random_int(1, 10000);
     $sql = "CREATE $this->_temporary TABLE $tempTable
       (`id` INT(10) UNSIGNED NULL DEFAULT '0',
         INDEX `id` (`id`)
@@ -2698,12 +2700,10 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
           else {
             $rows[$rowNum][$tableCol] = CRM_Core_BAO_CustomField::displayValue($val, $customField);
           }
-          if (!empty($this->_drilldownReport)) {
-            foreach ($this->_drilldownReport as $baseUrl => $label) {
-              // Only one - that was a crap way of grabbing it. Too late to think of
-              // an elegant one.
-            }
 
+          if (!empty($this->_drilldownReport)) {
+            $baseUrl = array_key_first($this->_drilldownReport);
+            $label = $this->_drilldownReport[$baseUrl];
             $fieldName = 'custom_' . $customField['id'];
             $criteriaQueryParams = CRM_Report_Utils_Report::getPreviewCriteriaQueryParams($this->_defaults, $this->_params);
             $groupByCriteria = $this->getGroupByCriteria($tableCol, $row);
@@ -2742,7 +2742,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     if (strpos($value, CRM_Core_DAO::VALUE_SEPARATOR) === 0) {
       $value = substr($value, 1);
     }
-    if (substr($value, -1, 1) == CRM_Core_DAO::VALUE_SEPARATOR) {
+    if ($value[strlen($value) - 1] === CRM_Core_DAO::VALUE_SEPARATOR) {
       $value = substr($value, 0, -1);
     }
     return implode(',', explode(CRM_Core_DAO::VALUE_SEPARATOR, $value));
