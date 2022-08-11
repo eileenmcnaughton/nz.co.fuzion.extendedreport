@@ -6269,10 +6269,10 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    *
    * @param $value
    *
-   * @return array
+   * @return string
    */
-  protected function alterContributionStatus($value): array {
-    return CRM_Contribute_PseudoConstant::contributionStatus($value);
+  protected function alterContributionStatus($value): string {
+    return (string) CRM_Core_PseudoConstant::getLabel('CRM_Contribute_BAO_Contribution', 'contribution_status_id', $value);
   }
 
   /**
@@ -6437,20 +6437,20 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    *
    * @param int|null $value
    * @param array $row
-   * @param string $fieldname
+   * @param string $fieldName
    *
    * @return string|null
    * @throws \API_Exception
    */
-  public function alterEmployerID($value, &$row, $fieldname): ?string {
+  public function alterEmployerID(?int $value, array &$row, string $fieldName): ?string {
     if ($value) {
       try {
-        $row[$fieldname] = Contact::get()
+        $row[$fieldName] = Contact::get()
           ->addWhere('id', '=', $value)
           ->addSelect('display_name')->execute()->first()['display_name'];
-        $row[$fieldname . '_link'] = CRM_Utils_System::url('civicrm/contact/view', 'reset=1&cid=' . $value, $this->_absoluteUrl);
-        $row[$fieldname . '_hover'] = E::ts('View Contact Summary for Employer.');
-        return $row[$fieldname];
+        $row[$fieldName . '_link'] = CRM_Utils_System::url('civicrm/contact/view', 'reset=1&cid=' . $value, $this->_absoluteUrl);
+        $row[$fieldName . '_hover'] = E::ts('View Contact Summary for Employer.');
+        return $row[$fieldName];
       }
       catch (UnauthorizedException $e ) {
         // Let's just not show anything if they have no permission to view the employer.
@@ -6500,11 +6500,11 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
   }
 
   /**
-   * @param int $value
+   * @param int|null $value
    *
    * @return string
    */
-  protected function alterPaymentProcessor($value): string {
+  protected function alterPaymentProcessor(?int $value): string {
     $paymentProcessors = CRM_Contribute_PseudoConstant::paymentProcessor(TRUE);
     return CRM_Utils_Array::value($value, $paymentProcessors);
   }
@@ -6512,14 +6512,14 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
   /**
    * Convert the pledge payment id to a link if grouped by only pledge payment id.
    *
-   * @param id $value
+   * @param int|null $value
    *
-   * @param $row
-   * @param $selectedField
+   * @param array $row
+   * @param string $selectedField
    *
    * @return string
    */
-  protected function alterPledgePaymentLink($value, &$row, $selectedField) {
+  protected function alterPledgePaymentLink(?int $value, &$row, $selectedField): string {
     if ($this->_groupByArray !== ['civicrm_pledge_payment_id' => 'pledge_payment.id']
       && $this->_groupByArray !== ['civicrm_pledge_payment_id' => 'civicrm_pledge_payment.id']
     ) {
