@@ -8,9 +8,12 @@ use Civi\Test\CiviEnvBuilder;
 use Civi\Test\HeadlessInterface;
 use Civi\Test\HookInterface;
 use Civi\Test\TransactionalInterface;
+use CiviCRM_API3_Exception;
+use CRM_Core_BAO_CustomField;
 use CRM_Core_DAO;
 use CRM_Core_PseudoConstant;
 use PHPUnit\Framework\TestCase;
+use function civicrm_api3;
 
 /**
  * FIXME - Add test description.
@@ -41,6 +44,11 @@ class BaseTestClass extends TestCase implements HeadlessInterface, HookInterface
   protected $customGroupID;
 
   protected $ids = [];
+
+  /**
+   * @var mixed
+   */
+  private $customGroup;
 
   /**
    * Set up for headless tests.
@@ -74,10 +82,10 @@ class BaseTestClass extends TestCase implements HeadlessInterface, HookInterface
             $this->cleanUpContact($entityID);
           }
           else {
-            \civicrm_api3($entity, 'delete', ['id' => $entityID]);
+            civicrm_api3($entity, 'delete', ['id' => $entityID]);
           }
         }
-        catch (\CiviCRM_API3_Exception $e) {
+        catch (CiviCRM_API3_Exception $e) {
           // No harm done - it was a best effort cleanup
         }
       }
@@ -90,7 +98,7 @@ class BaseTestClass extends TestCase implements HeadlessInterface, HookInterface
    * @param int $contactId
    *
    */
-  public function cleanUpContact(int $contactId) {
+  public function cleanUpContact(int $contactId): void {
     $contributions = $this->callAPISuccess('Contribution', 'get', [
       'contact_id' => $contactId,
     ])['values'];
@@ -123,8 +131,7 @@ class BaseTestClass extends TestCase implements HeadlessInterface, HookInterface
     $rows = $this->callAPISuccess('ReportTemplate', 'getrows', $params);
     $this->sql = $rows['metadata']['sql'];
     $this->labels = $rows['metadata']['labels'] ?? [];
-    $rows = $rows['values'];
-    return $rows;
+    return $rows['values'];
   }
 
   /**
@@ -241,7 +248,7 @@ class BaseTestClass extends TestCase implements HeadlessInterface, HookInterface
 
     $result = $this->callAPISuccess('custom_field', 'create', $params);
     // these 2 functions are called with force to flush static caches
-    \CRM_Core_BAO_CustomField::getTableColumnGroup($result['id'], 1);
+    CRM_Core_BAO_CustomField::getTableColumnGroup($result['id'], 1);
     \CRM_Core_Component::getEnabledComponents(1);
     return $result;
   }

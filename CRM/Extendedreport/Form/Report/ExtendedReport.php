@@ -1000,10 +1000,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
         }
         else {
           $fn = $availableClauses[$fromClause]['callback'];
-          $extra = [];
-          if (isset($this->_joinFilters[$fromClause])) {
-            $extra = $this->_joinFilters[$fromClause];
-          }
+          $extra = $this->_joinFilters[$fromClause] ?? [];
           $append = $this->$fn('', $extra);
           if ($append && !empty($extra)) {
             foreach ($extra as $table => $field) {
@@ -1342,7 +1339,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       $tableName = $field['table_key'];
       $colGroups[$tableName]['use_accordian_for_field_selection'] = TRUE;
       $colGroups[$tableName]['fields'][$fieldName] = CRM_Utils_Array::value('title', $field);
-      $colGroups[$tableName]['group_title'] = $groupTitle = $field['group_title'];
+      $colGroups[$tableName]['group_title'] = $field['group_title'];
       $options[$fieldName] = CRM_Utils_Array::value('title', $field);
 
     }
@@ -3397,7 +3394,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       'membership_type_id' => [
         'title' => 'Membership Type',
         'alter_display' => 'alterMembershipTypeID',
-        'options' => $this->_getOptions('membership', 'membership_type_id', $action = 'get'),
+        'options' => $this->_getOptions('membership', 'membership_type_id'),
         'is_fields' => TRUE,
         'is_filters' => TRUE,
         'is_group_bys' => TRUE,
@@ -3409,7 +3406,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'name' => 'status_id',
         'title' => 'Membership Status',
         'alter_display' => 'alterMembershipStatusID',
-        'options' => $this->_getOptions('membership', 'status_id', $action = 'get'),
+        'options' => $this->_getOptions('membership', 'status_id', 'get'),
         'is_fields' => TRUE,
         'is_filters' => TRUE,
         'is_group_bys' => TRUE,
@@ -3474,7 +3471,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
           'membership_type_id' => [
             'title' => ts($options['prefix_label'] . 'Membership Type'),
             'alter_display' => 'alterMembershipTypeID',
-            'options' => $this->_getOptions('membership', 'membership_type_id', $action = 'get'),
+            'options' => $this->_getOptions('membership', 'membership_type_id'),
             'is_fields' => TRUE,
             'is_filters' => TRUE,
             'is_group_bys' => TRUE,
@@ -5429,11 +5426,10 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    * Add join from address table to contact.
    *
    * @param string $prefix prefix to add to table names
-   * @param array $extra [optional] extra join parameters
    *
    * @return bool true or false to denote whether extra filters can be appended to join
    */
-  protected function joinContactFromAddress($prefix = '', $extra = []): bool {
+  protected function joinContactFromAddress(string $prefix = ''): bool {
 
     $this->_from .= " LEFT JOIN civicrm_contact {$this->_aliases[$prefix . 'civicrm_contact']}
     ON {$this->_aliases[$prefix . 'civicrm_address']}.contact_id = {$this->_aliases[$prefix . 'civicrm_contact']}.id

@@ -19,7 +19,7 @@ use Civi\Extendedreport\BaseTestClass;
 class ContributionDetailExtendedTest extends BaseTestClass {
 
   /**
-   * @var array
+   * @var array Contacts used in the class.
    */
   protected $contacts = [];
 
@@ -28,7 +28,7 @@ class ContributionDetailExtendedTest extends BaseTestClass {
     $this->enableAllComponents();
     $contacts = $this->createContacts();
     $contact = reset($contacts);
-    $this->contacts[] = $contact['id'];
+    $this->contacts = [$contact['id']];
   }
 
   /**
