@@ -6169,7 +6169,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
   }
 
   /**
-   * @param string $value
+   * @param string|null $value
    * @param array $row
    * @param string $selectedField
    * @param string $criteriaFieldName
@@ -6179,7 +6179,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    *
    * @noinspection PhpUnusedParameterInspection
    */
-  protected function alterCrmEditable($value,  array $row, string $selectedField, string $criteriaFieldName, array $fullSpec): string {
+  protected function alterCrmEditable(?string $value,  array $row, string $selectedField, string $criteriaFieldName, array $fullSpec): string {
     $specs = $fullSpec['crm_editable'];
     $id_field = $specs['id_table'] . '_' . $specs['id_field'];
     if (empty($row[$id_field])) {
@@ -6191,7 +6191,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
         $id_field = $specs['id_table'] . '_' . $specs['entity'] . '_' . $specs['entity'] . '_' . $specs['id_field'];
         if (empty($row[$id_field])) {
           // If the relevant id has not been set on the report the field cannot be editable.
-          return $value;
+          return (string) $value;
         }
       }
     }
@@ -6421,21 +6421,6 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
     }
     $row[str_replace('_sum', '_cumulative', $selectedfield)] = Civi::$statics[__CLASS__][$selectedfield . 'cumulative'];
     return $value;
-  }
-
-  /**
-   * @param int $value
-   * @param array $row
-   * @param array $selectedfield
-   * @param string $criteriaFieldName
-   *
-   * @return string
-   *
-   * @throws \CiviCRM_API3_Exception
-   */
-  public function alterLocationTypeID($value, &$row, $selectedfield, $criteriaFieldName): string {
-    $values = $this->getLocationTypeOptions();
-    return CRM_Utils_Array::value($value, $values);
   }
 
   /**
