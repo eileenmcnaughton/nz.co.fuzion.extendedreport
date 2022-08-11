@@ -6283,8 +6283,8 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    * @param $spec
    * @return string
    */
-  protected function alterByOptions($value, &$row, $selectedField, $criteriaFieldName, $spec): string {
-    return CRM_Core_PseudoConstant::getLabel($spec['bao'], $spec['name'], $value);
+  protected function alterByOptions($value, $row, $selectedField, $criteriaFieldName, $spec): string {
+    return CRM_Core_PseudoConstant::getLabel($spec['bao'], $spec['name'], $value) ?? '';
   }
 
   /**
