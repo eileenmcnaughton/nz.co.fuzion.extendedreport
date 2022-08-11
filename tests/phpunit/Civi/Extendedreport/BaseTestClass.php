@@ -48,7 +48,7 @@ class BaseTestClass extends TestCase implements HeadlessInterface, HookInterface
   /**
    * @var mixed
    */
-  private $customGroup;
+  protected $customGroup;
 
   /**
    * Set up for headless tests.

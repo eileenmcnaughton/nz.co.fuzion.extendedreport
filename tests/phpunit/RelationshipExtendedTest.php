@@ -1,10 +1,6 @@
 <?php
 
-require_once __DIR__ . '/BaseTestClass.php';
-
-use Civi\Test\HeadlessInterface;
-use Civi\Test\HookInterface;
-use Civi\Test\TransactionalInterface;
+use Civi\Extendedreport\BaseTestClass;
 
 /**
  * Test contribution DetailExtended class.
@@ -20,7 +16,7 @@ use Civi\Test\TransactionalInterface;
  *
  * @group headless
  */
-class RelationshipExtendedTest extends BaseTestClass implements HeadlessInterface, HookInterface {
+class RelationshipExtendedTest extends BaseTestClass {
 
   protected $contacts = [];
 
@@ -56,7 +52,6 @@ class RelationshipExtendedTest extends BaseTestClass implements HeadlessInterfac
   }
 
   /**
-   * @throws \CRM_Core_Exception
    */
   public function tearDown(): void {
     parent::tearDown();
@@ -71,10 +66,8 @@ class RelationshipExtendedTest extends BaseTestClass implements HeadlessInterfac
 
   /**
    * Test the report with group filter.
-   *
-   * @throws \CRM_Core_Exception
    */
-  public function testReport() {
+  public function testReport(): void {
     $customFieldPrefix = 'custom_contact_a__' . $this->customFieldID;
     $params = [
       'report_id' => 'relationshipextended',
@@ -91,10 +84,8 @@ class RelationshipExtendedTest extends BaseTestClass implements HeadlessInterfac
 
   /**
    * Test the report with group filter.
-   *
-   * @throws \CRM_Core_Exception
    */
-  public function testReportWithGroupFilter() {
+  public function testReportWithGroupFilter(): void {
     $params = [
       'report_id' => 'relationshipextended',
       'fields' => [
