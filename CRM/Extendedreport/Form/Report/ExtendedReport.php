@@ -6405,22 +6405,6 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
 
   /**
    * @param $value
-   * @param array $row
-   * @param $selectedfield
-   * @param $criteriaFieldName
-   *
-   * @return string
-   */
-  protected function alterCountyID($value, array &$row, $selectedfield, $criteriaFieldName): string {
-    $url = CRM_Utils_System::url(CRM_Utils_System::currentPath(), "reset=1&force=1&{$criteriaFieldName}_op=in&{$criteriaFieldName}_value=$value", $this->_absoluteUrl);
-    $row[$selectedfield . '_link'] = $url;
-    $row[$selectedfield . '_hover'] = ts('%1 for this county.', [1 => $value]);
-    $counties = CRM_Core_PseudoConstant::county($value);
-    return is_array($counties) ? '' : (string) $counties;
-  }
-
-  /**
-   * @param $value
    * @param $row
    * @param $selectedfield
    * @param $criteriaFieldName
