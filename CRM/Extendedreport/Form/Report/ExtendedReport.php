@@ -6490,11 +6490,11 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
   }
 
   /**
-   * @param int $value
+   * @param int|null $value
    *
    * @return string
    */
-  protected function alterPaymentType(int $value): string {
+  protected function alterPaymentType(?int $value): string {
     $paymentInstruments = CRM_Contribute_PseudoConstant::paymentInstrument();
     return (string) ($paymentInstruments[$value] ?? '');
   }

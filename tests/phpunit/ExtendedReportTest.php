@@ -147,10 +147,8 @@ class ExtendedReportTest extends BaseTestClass implements HookInterface {
    * @dataProvider getFieldsForExtendedOrderBys
    *
    * @param array $fields
-   *
-   * @throws \CRM_Core_Exception
    */
-  public function testExtendedOrderBys($fields) {
+  public function testExtendedOrderBys(array $fields): void {
     $this->ids['Contact'][0] = $this->callAPISuccess('Contact', 'create', ['contact_type' => 'Individual', 'first_name' => 'b', 'last_name' => 'a'])['id'];
     $this->ids['Contact'][1] = $this->callAPISuccess('Contact', 'create', ['contact_type' => 'Individual', 'first_name' => 'a', 'last_name' => 'b'])['id'];
     $this->ids['Contact'][2] = $this->callAPISuccess('Contact', 'create', ['contact_type' => 'Individual', 'first_name' => 'r', 'nick_name' => 'a', 'last_name' => 'c'])['id'];
