@@ -2271,7 +2271,7 @@ LEFT JOIN civicrm_contact {$prop['alias']} ON {$prop['alias']}.id = {$this->_ali
 
     if (isset($this->_params['delete_null']) && $this->_params['delete_null'] == '1') {
       foreach ($this->rollupRow as $rowName => $rowValue) {
-        if ($rowValue != '' && is_numeric($rowValue) && $rowValue == 0) {
+        if ($rowValue !== '' && is_numeric($rowValue) && $rowValue == 0) {
           unset ($this->_columnHeaders[$rowName]);
         }
       }
@@ -2331,7 +2331,7 @@ LEFT JOIN civicrm_contact {$prop['alias']} ON {$prop['alias']}.id = {$this->_ali
       // Add any alters that can be intuited from the field specs.
       // So far only boolean but a lot more could be.
       if (empty($alterSpecs[$fieldAlias])
-        && $specs['type'] == CRM_Utils_Type::T_BOOLEAN
+        && $specs['type'] === CRM_Utils_Type::T_BOOLEAN
         // Do not handle custom fields in alter functions
         // as they are otherwise handled.
         && empty($specs['extends'])) {
@@ -2488,7 +2488,7 @@ LEFT JOIN civicrm_contact {$prop['alias']} ON {$prop['alias']}.id = {$this->_ali
         }
       }
       foreach ($totalsArray as $fieldKey => $value) {
-        foreach ($value as $statKey => $spec) {
+        foreach ($value as $spec) {
           $totals[$fieldKey][] = $spec['title'] . ' : ' . $spec['value'];
         }
         $totals[$fieldKey] = implode(' , ', $totals[$fieldKey]);
@@ -2552,7 +2552,7 @@ LEFT JOIN civicrm_contact {$prop['alias']} ON {$prop['alias']}.id = {$this->_ali
     $statLayers = count($this->_groupByArray);
 
     //I don't know that this precaution is required?          $this->fixSubTotalDisplay($rows[$rowNum], $this->_statFields);
-    if (count($this->_statFields) == 0) {
+    if (count($this->_statFields) === 0) {
       return;
     }
 
@@ -2608,7 +2608,7 @@ LEFT JOIN civicrm_contact {$prop['alias']} ON {$prop['alias']}.id = {$this->_ali
       return;
     }
     $extends = $this->_customGroupExtends;
-    foreach ($this->_customGroupExtended as $table => $spec) {
+    foreach ($this->_customGroupExtended as $spec) {
       $extends = array_merge($extends, $spec['extends']);
     }
 
@@ -7559,8 +7559,9 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
     $havings = $this->getMetadataByType('having');
     $selectedHavings = [];
     foreach ($havings as $field => $spec) {
-      if (isset($this->_params[$field . '_value']) && (
-          $this->_params[$field . '_value'] === 0 || !empty($this->_params[$field . '_value'])
+      $fieldValue = $field . '_value';
+      if (isset($this->_params[$fieldValue]) && (
+          $this->_params[$fieldValue] === 0 || !empty($this->_params[$fieldValue])
         )) {
         $selectedHavings[$field] = $spec;
       }
