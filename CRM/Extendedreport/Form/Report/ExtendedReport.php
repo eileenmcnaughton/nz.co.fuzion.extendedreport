@@ -365,9 +365,9 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   /**
    * Get the report ID if determined.
    *
-   * @return int
+   * @return int|null
    */
-  public function getInstanceID(): int {
+  public function getInstanceID(): ?int {
     return $this->_id;
   }
 
