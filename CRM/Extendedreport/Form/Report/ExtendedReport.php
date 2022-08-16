@@ -2728,11 +2728,11 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
   /**
    * Reformat custom value, removing first & last separator and using commas for the rest.
    *
-   * @param string $value
+   * @param ?string $value
    *
    * @return string
    */
-  protected function commaSeparateCustomValues(string $value): string {
+  protected function commaSeparateCustomValues(?string $value): string {
     if (empty($value)) {
       return '';
     }
