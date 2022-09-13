@@ -27,7 +27,7 @@ class CRM_Extendedreport_Form_Report_Case_CasePivot extends CRM_Extendedreport_F
 
   protected $_noFields = TRUE;
 
-  protected $_customGroupExtends = ['Case'];
+  protected $_customGroupExtends = ['Case', 'Contact'];
 
   /**
    * Class constructor.
