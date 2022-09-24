@@ -24,7 +24,7 @@ class CRM_Extendedreport_ExtensionUtil {
    *   Translated text.
    * @see ts
    */
-  public static function ts($text, $params = []) {
+  public static function ts($text, $params = []): string {
     if (!array_key_exists('domain', $params)) {
       $params['domain'] = [self::LONG_NAME, NULL];
     }
@@ -41,7 +41,7 @@ class CRM_Extendedreport_ExtensionUtil {
    *   Ex: 'http://example.org/sites/default/ext/org.example.foo'.
    *   Ex: 'http://example.org/sites/default/ext/org.example.foo/css/foo.css'.
    */
-  public static function url($file = NULL) {
+  public static function url($file = NULL): string {
     if ($file === NULL) {
       return rtrim(CRM_Core_Resources::singleton()->getUrl(self::LONG_NAME), '/');
     }
@@ -79,14 +79,6 @@ class CRM_Extendedreport_ExtensionUtil {
 
 use CRM_Extendedreport_ExtensionUtil as E;
 
-function _extendedreport_civix_mixin_polyfill() {
-  if (!class_exists('CRM_Extension_MixInfo')) {
-    $polyfill = __DIR__ . '/mixin/polyfill.php';
-    (require $polyfill)(E::LONG_NAME, E::SHORT_NAME, E::path());
-  }
-}
-
-
 /**
  * (Delegated) Implements hook_civicrm_config().
  *
@@ -113,8 +105,6 @@ function _extendedreport_civix_civicrm_config(&$config = NULL) {
 
   $include_path = $extRoot . PATH_SEPARATOR . get_include_path();
   set_include_path($include_path);
-
-  _extendedreport_civix_mixin_polyfill();
 }
 
 /**
@@ -127,7 +117,6 @@ function _extendedreport_civix_civicrm_install() {
   if ($upgrader = _extendedreport_civix_upgrader()) {
     $upgrader->onInstall();
   }
-  _extendedreport_civix_mixin_polyfill();
 }
 
 /**
@@ -168,14 +157,13 @@ function _extendedreport_civix_civicrm_enable() {
       $upgrader->onEnable();
     }
   }
-  _extendedreport_civix_mixin_polyfill();
 }
 
 /**
  * (Delegated) Implements hook_civicrm_disable().
  *
  * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_disable
- * @return void
+ * @return mixed
  */
 function _extendedreport_civix_civicrm_disable() {
   _extendedreport_civix_civicrm_config();
@@ -190,7 +178,7 @@ function _extendedreport_civix_civicrm_disable() {
  * (Delegated) Implements hook_civicrm_upgrade().
  *
  * @param $op string, the type of operation being performed; 'check' or 'enqueue'
- * @param \CRM_Queue_Queue|null $queue CRM_Queue_Queue, (for 'enqueue') the modifiable list of pending up upgrade tasks
+ * @param $queue CRM_Queue_Queue, (for 'enqueue') the modifiable list of pending up upgrade tasks
  *
  * @return mixed
  *   based on op. for 'check', returns array(boolean) (TRUE if upgrades are pending)
