@@ -1,0 +1,12 @@
+{
+  "name": "civicrm/extendedreport",
+  "type": "civicrm-ext",
+  "description": "Extended reports create other report options such as crosstab urls, multiple contact custom fields, price set reports",
+  "license": "AGPL",
+  "authors": [
+    {
+      "name": "Eileen McNaughton",
+      "email": "eileen@fuzion.co.nz"
+    }
+  ]
+}
