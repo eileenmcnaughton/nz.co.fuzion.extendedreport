@@ -339,6 +339,9 @@ class CRM_Extendedreport_Form_Report_Contribute_BookkeepingExtended extends CRM_
       if ($value = CRM_Utils_Array::value('civicrm_contribution_contribution_status_id', $row)) {
         $rows[$rowNum]['civicrm_contribution_contribution_status_id'] = CRM_Core_PseudoConstant::getLabel('CRM_Contribute_BAO_Contribution', 'contribution_status_id', $value);
       }
+      if ($value = CRM_Utils_Array::value('civicrm_financial_trxn_financial_trxn_financial_trxn_status_id', $row)) {
+        $rows[$rowNum]['civicrm_financial_trxn_financial_trxn_financial_trxn_status_id'] = CRM_Core_PseudoConstant::getLabel('CRM_Contribute_BAO_Contribution', 'contribution_status_id', $value);
+      }
 
       // handle financial type id
       if ($value = CRM_Utils_Array::value('civicrm_line_item_financial_type_id', $row)) {
@@ -376,4 +379,3 @@ class CRM_Extendedreport_Form_Report_Contribute_BookkeepingExtended extends CRM_
   }
 
 }
-
