@@ -38,7 +38,7 @@ class CRM_Extendedreport_Form_Report_Contribute_Overview extends CRM_Extendedrep
     'pieChart' => 'Pie Chart',
   ];
 
-  protected $_customGroupExtends = ['Contribution'];
+  protected $_customGroupExtends = ['Contribution', 'Contact', 'Individual', 'Household', 'Organization'];
 
   protected $_customGroupGroupBy = TRUE;
 
