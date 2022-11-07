@@ -3986,7 +3986,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    */
   protected function getCampaignColumns(): array {
 
-    if (!CRM_Campaign_BAO_Campaign::isCampaignEnable()) {
+    if (!CRM_Campaign_BAO_Campaign::isComponentEnabled()) {
       return ['civicrm_campaign' => ['fields' => [], 'metadata' => []]];
     }
     $specs = [
@@ -6635,7 +6635,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
       $html .= "<tr><td>" . $locationTypes[$keys[1]] . $phoneTypeString . " : " . $keys[0] . "</td></tr>";
     }
 
-    if (in_array($this->_outputMode, ['print'])) {
+    if ($this->_outputMode === 'print') {
       return implode('<br>', $return);
     }
 
