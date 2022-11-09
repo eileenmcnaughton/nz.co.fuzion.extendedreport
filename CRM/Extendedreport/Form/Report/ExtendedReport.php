@@ -2706,6 +2706,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
             $criteriaQueryParams = CRM_Report_Utils_Report::getPreviewCriteriaQueryParams($this->_defaults, $this->_params);
             $groupByCriteria = $this->getGroupByCriteria($tableCol, $row);
 
+            $val = ($val == NULL) ? '' : $val;
             $url = CRM_Report_Utils_Report::getNextUrl($baseUrl,
               "reset=1&force=1&$criteriaQueryParams&" .
               $fieldName . "_op=in&{$fieldName}_value=" . $this->commaSeparateCustomValues($val) . $groupByCriteria,
