@@ -6501,7 +6501,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    */
   protected function alterPaymentProcessor(?int $value): string {
     $paymentProcessors = CRM_Contribute_PseudoConstant::paymentProcessor(TRUE);
-    return CRM_Utils_Array::value($value, $paymentProcessors);
+    return CRM_Utils_Array::value($value, $paymentProcessors) ?? '';
   }
 
   /**
