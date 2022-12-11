@@ -6322,6 +6322,21 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    *   Event label.
    */
   protected function alterEventType($value): string {
+    // Check if $value is comma separated.
+    $separator = ',';
+    if (strpos($value, $separator) !== FALSE) {
+      // If yes, convert to array.
+      $valueArr = explode($separator, $value);
+      // Iterate through the array.
+      foreach ($valueArr as $value) {
+        // Look up the event type for each $value.
+        $eventTypeArr[] = CRM_Event_PseudoConstant::eventType($value);
+        // Then set the $value to a comma-space separated string of event types.
+        $value = implode(', ', $eventTypeArr);
+      }
+      return $value;
+    }
+    // If not comma separated, just look up single event type.    
     return $value ? CRM_Event_PseudoConstant::eventType($value) : '';
   }
 
