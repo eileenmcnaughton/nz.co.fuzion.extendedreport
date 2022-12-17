@@ -138,7 +138,7 @@ function _extendedreport_civix_civicrm_postInstall() {
  *
  * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_uninstall
  */
-function _extendedreport_civix_civicrm_uninstall() {
+function _extendedreport_civix_civicrm_uninstall(): void {
   _extendedreport_civix_civicrm_config();
   if ($upgrader = _extendedreport_civix_upgrader()) {
     $upgrader->onUninstall();
@@ -150,7 +150,7 @@ function _extendedreport_civix_civicrm_uninstall() {
  *
  * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_enable
  */
-function _extendedreport_civix_civicrm_enable() {
+function _extendedreport_civix_civicrm_enable(): void {
   _extendedreport_civix_civicrm_config();
   if ($upgrader = _extendedreport_civix_upgrader()) {
     if (is_callable([$upgrader, 'onEnable'])) {
@@ -165,7 +165,7 @@ function _extendedreport_civix_civicrm_enable() {
  * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_disable
  * @return mixed
  */
-function _extendedreport_civix_civicrm_disable() {
+function _extendedreport_civix_civicrm_disable(): void {
   _extendedreport_civix_civicrm_config();
   if ($upgrader = _extendedreport_civix_upgrader()) {
     if (is_callable([$upgrader, 'onDisable'])) {
