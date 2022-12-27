@@ -2589,7 +2589,20 @@ LEFT JOIN civicrm_contact {$prop['alias']} ON {$prop['alias']}.id = {$this->_ali
       return '';
     }
     $value = trim(($value ?? ''), CRM_Core_DAO::VALUE_SEPARATOR);
-    return (string) ($this->getCustomFieldOptions($specs)[$value] ?? $value);
+    // Convert $value, which is a string, to an array, passing in the VALUE_SEPARATOR.
+    $valueArr = explode(CRM_Core_DAO::VALUE_SEPARATOR, $value);
+    $options = $this->getCustomFieldOptions($specs);
+    $optionsArr = [];
+    // Loop through the array and check if $value is a key in $options.
+    foreach ($valueArr as $value) {
+      if (array_key_exists($value, $options)) {
+        // If it is, append the value of the option with a key of $value to an array.
+        $optionsArr[] = $options[$value];
+      }
+    }
+    // Convert the array of options into a comma separated string.
+    $value = implode(', ', $optionsArr);
+    return $value;
   }
 
   /**
