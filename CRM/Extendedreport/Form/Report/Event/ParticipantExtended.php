@@ -28,6 +28,8 @@ class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Exten
 
   /**
    * Class constructor.
+   *
+   * @throws \CRM_Core_Exception
    */
   public function __construct() {
     $this->_autoIncludeIndexedFieldsAsOrderBys = 1;
@@ -138,10 +140,11 @@ class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Exten
 
   /**
    * Overriding for the sake of handling relationship type ID.
+   *
+   * @throws \CRM_Core_Exception
    */
   public function postProcess(): void {
     $this->beginPostProcess();
-    $this->relationType = NULL;
     $originalRelationshipTypes = [];
 
     $relationships = [];
@@ -149,8 +152,7 @@ class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Exten
       $originalRelationshipTypes = $this->_params['relationship_relationship_type_id_value'];
       foreach ($this->_params['relationship_relationship_type_id_value'] as $relString) {
         $relType = explode('_', $relString);
-        $this->relationType[] = $relType[1] . '_' . $relType[2];
-        $relationships[] = intval($relType[0]);
+        $relationships[] = (int) $relType[0];
       }
     }
     $this->_params['relationship_relationship_type_id_value'] = $relationships;

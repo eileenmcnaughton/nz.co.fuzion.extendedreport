@@ -31,6 +31,11 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   protected $metaData = [];
 
   /**
+   * @var array
+   */
+  protected $activeCampaigns = [];
+
+  /**
    * All available filter fields with metadata.
    *
    * @var array
@@ -6349,7 +6354,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
       }
       return $value;
     }
-    // If not comma separated, just look up single event type.    
+    // If not comma separated, just look up single event type.
     return $value ? CRM_Event_PseudoConstant::eventType($value) : '';
   }
 

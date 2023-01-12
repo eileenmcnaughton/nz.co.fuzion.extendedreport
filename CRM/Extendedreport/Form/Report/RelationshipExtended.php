@@ -13,6 +13,8 @@ class CRM_Extendedreport_Form_Report_RelationshipExtended extends CRM_Extendedre
 
   public $_tagFilterTable = 'contact_a_civicrm_contact';
 
+  private $relationType;
+
   /**
    * Class constructor.
    *
@@ -168,10 +170,11 @@ class CRM_Extendedreport_Form_Report_RelationshipExtended extends CRM_Extendedre
 
     $isStatusFilter = FALSE;
     $relStatus = NULL;
-    if (CRM_Utils_Array::value('is_active_value', $this->_params) == '1') {
+    $isActive = $this->_params['is_active_value'] ?? NULL;
+    if ($isActive) {
       $relStatus = 'Is equal to Active';
     }
-    elseif (CRM_Utils_Array::value('is_active_value', $this->_params) == '0') {
+    elseif ($isActive !== NULL) {
       $relStatus = 'Is equal to Inactive';
     }
     if (CRM_Utils_Array::value('filters', $statistics)) {
@@ -240,8 +243,8 @@ class CRM_Extendedreport_Form_Report_RelationshipExtended extends CRM_Extendedre
 
       if (array_key_exists('civicrm_case_status_id', $row)) {
         if ($value = $row['civicrm_case_status_id']) {
-          $this->case_statuses = CRM_Case_PseudoConstant::caseStatus();
-          $rows[$rowNum]['civicrm_case_status_id'] = $this->case_statuses[$value];
+          $caseStatuses = CRM_Case_PseudoConstant::caseStatus();
+          $rows[$rowNum]['civicrm_case_status_id'] = $caseStatuses[$value];
           $entryFound = TRUE;
         }
       }
