@@ -6314,10 +6314,10 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
   /**
    * @param $value
    *
-   * @return array|null
+   * @return string
    */
-  protected function alterContributionPage($value): ?array {
-    return CRM_Contribute_PseudoConstant::contributionPage($value);
+  protected function alterContributionPage($value): string {
+    return $value === NULL ? '' : (CRM_Contribute_PseudoConstant::contributionPage($value) ?? '');
   }
 
   /**
