@@ -1275,7 +1275,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       $filters = $filterGroups = [];
       $count = 1;
       foreach ($this->getMetadataByType($filterString) as $fieldName => $field) {
-        $table = $field['table_key'];
+        $table = $field['table_key'] ?? '';
         $groupingKey = $field['group_title'] ?? '';
         if ($filterString === 'filters') {
           $filterGroups[$groupingKey]['group_title'] = $field['group_title'] ?? '';
