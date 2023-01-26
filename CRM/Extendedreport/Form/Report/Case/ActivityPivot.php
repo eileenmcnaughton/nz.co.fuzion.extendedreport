@@ -7,19 +7,11 @@ class CRM_Extendedreport_Form_Report_Case_ActivityPivot extends CRM_Extendedrepo
 
   protected $_baseTable = 'civicrm_activity';
 
-  protected $skipACL = FALSE;
-
   protected $_customGroupAggregates = TRUE;
-
-  protected $_aggregatesIncludeNULL = TRUE;
-
-  protected $_aggregatesAddTotal = TRUE;
 
   protected $_rollup = 'WITH ROLLUP';
 
   protected $_aggregatesAddPercentage = TRUE;
-
-  public $_drilldownReport = [];
 
   protected $_potentialCriteria = [];
 
@@ -29,6 +21,8 @@ class CRM_Extendedreport_Form_Report_Case_ActivityPivot extends CRM_Extendedrepo
 
   /**
    * Class constructor.
+   *
+   * @throws \CiviCRM_API3_Exception
    */
   public function __construct() {
     $this->_customGroupExtended['civicrm_case'] = [
@@ -63,7 +57,7 @@ class CRM_Extendedreport_Form_Report_Case_ActivityPivot extends CRM_Extendedrepo
   /**
    * @return array
    */
-  function fromClauses() {
+  public function fromClauses(): array {
     return [
       'case_from_activity',
       'contact_from_case',

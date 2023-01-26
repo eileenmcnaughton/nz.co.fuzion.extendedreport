@@ -6,9 +6,6 @@
 class CRM_Extendedreport_Form_Report_Pledge_Income extends CRM_Extendedreport_Form_Report_ExtendedReport {
 
   protected $_baseTable = 'civicrm_pledge_payment';
-
-  protected $skipACL = FALSE;
-
   protected $_customGroupGroupBy = TRUE;
 
   protected $_customGroupExtends = [
@@ -23,6 +20,8 @@ class CRM_Extendedreport_Form_Report_Pledge_Income extends CRM_Extendedreport_Fo
 
   /**
    * Class constructor.
+   *
+   * @throws \CRM_Core_Exception
    */
   public function __construct() {
     $paymentStatuses = array_flip(CRM_Pledge_BAO_PledgePayment::buildOptions('status_id'));
@@ -56,7 +55,7 @@ class CRM_Extendedreport_Form_Report_Pledge_Income extends CRM_Extendedreport_Fo
    *
    * @return array
    */
-  public function fromClauses() {
+  public function fromClauses(): array {
     return [
       'pledge_from_pledge_payment',
       'next_payment_from_pledge',
@@ -73,11 +72,14 @@ class CRM_Extendedreport_Form_Report_Pledge_Income extends CRM_Extendedreport_Fo
    * @param array $field
    *
    * @return string
+   * @throws \CRM_Core_Exception
    */
-  function selectClause(&$tableName, $tableKey, &$fieldName, &$field) {
-    if ($fieldName == 'pledge_payment_scheduled_amount') {
+  public function selectClause(&$tableName, $tableKey, &$fieldName, &$field): string {
+    if ($fieldName === 'pledge_payment_scheduled_amount') {
       $pledgePaymentStatuses = civicrm_api3('PledgePayment', 'getoptions', ['field' => 'status_id']);
-      $toPayIDs = [array_search('Pending', $pledgePaymentStatuses['values']), array_search('Overdue', $pledgePaymentStatuses['values'])];
+      $toPayIDs = [array_search('Pending', $pledgePaymentStatuses['values'], TRUE),
+        array_search('Overdue', $pledgePaymentStatuses['values'], TRUE)
+      ];
       $alias = $this->selectStatSum($tableName, $fieldName, $field);
       return " SUM(COALESCE(IF(pledge_payment.status_id IN (" . implode(',', $toPayIDs) . "), {$this->_aliases['civicrm_pledge_payment']}.scheduled_amount, 0))) as $alias ";
     }
@@ -86,10 +88,8 @@ class CRM_Extendedreport_Form_Report_Pledge_Income extends CRM_Extendedreport_Fo
 
   /**
    * Modify column headers.
-   *
-   * T
    */
-  public function modifyColumnHeaders() {
+  public function modifyColumnHeaders(): void {
     $columnsToRemove = [];
     $isGroupByScheduledDate = FALSE;
     if ($this->isSelfGrouped()) {
@@ -97,7 +97,7 @@ class CRM_Extendedreport_Form_Report_Pledge_Income extends CRM_Extendedreport_Fo
     }
     else {
       foreach ($this->_groupByArray as $groupByString) {
-        if (stristr($groupByString, 'scheduled_date')) {
+        if (stripos($groupByString, 'scheduled_date') !== FALSE) {
           $isGroupByScheduledDate = TRUE;
           $columnsToRemove[] = 'next_civicrm_pledge_payment_next_civicrm_pledge_payment_next_scheduled_date';
         }

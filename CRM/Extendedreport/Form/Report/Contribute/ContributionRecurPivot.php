@@ -7,17 +7,9 @@ class CRM_Extendedreport_Form_Report_Contribute_ContributionRecurPivot extends C
 
   protected $_baseTable = 'civicrm_contribution_recur';
 
-  protected $skipACL = FALSE;
-
   protected $_customGroupAggregates = TRUE;
 
-  protected $_aggregatesIncludeNULL = TRUE;
-
-  protected $_aggregatesAddTotal = TRUE;
-
   protected $_rollup = 'WITH ROLLUP';
-
-  public $_drilldownReport = [];
 
   protected $isPivot = TRUE;
 
@@ -49,7 +41,7 @@ class CRM_Extendedreport_Form_Report_Contribute_ContributionRecurPivot extends C
    *
    * @return array
    */
-  public function fromClauses() {
+  public function fromClauses(): array {
     return [
       'contact_from_contribution_recur',
       'address_from_contact',

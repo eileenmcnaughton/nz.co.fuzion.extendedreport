@@ -118,7 +118,7 @@ class CRM_Extendedreport_Form_Report_Contribute_DetailExtended extends CRM_Exten
     parent::__construct();
   }
 
-  function from() {
+  public function from(): void {
     $this->setFromBase('civicrm_contact');
     $this->_from .= "
               INNER JOIN civicrm_contribution {$this->_aliases['civicrm_contribution']}
@@ -185,7 +185,7 @@ class CRM_Extendedreport_Form_Report_Contribute_DetailExtended extends CRM_Exten
     return $statistics;
   }
 
-  function alterDisplay(&$rows) {
+  public function alterDisplay(&$rows): void {
     $entryFound = FALSE;
     $display_flag = $prev_cid = $cid = 0;
     $contributionPages = CRM_Contribute_PseudoConstant::contributionPage();
@@ -275,7 +275,7 @@ class CRM_Extendedreport_Form_Report_Contribute_DetailExtended extends CRM_Exten
     parent::alterDisplay($rows);
   }
 
-  function sectionTotals() {
+  public function sectionTotals(): void {
 
     // Reports using order_bys with sections must populate $this->_selectAliases in select() method.
     if (empty($this->_selectAliases)) {

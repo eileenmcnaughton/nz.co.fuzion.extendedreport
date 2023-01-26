@@ -1,10 +1,6 @@
 <?php
 
-require_once __DIR__ . '/BaseTestClass.php';
-
-use Civi\Test\HeadlessInterface;
-use Civi\Test\HookInterface;
-use Civi\Test\TransactionalInterface;
+namespace Civi\Extendedreport;
 
 /**
  * FIXME - Add test description.
@@ -20,28 +16,26 @@ use Civi\Test\TransactionalInterface;
  *
  * @group headless
  */
-class ActivityExtendedTest extends BaseTestClass implements HeadlessInterface, HookInterface, TransactionalInterface {
+class ActivityExtendedTest extends BaseTestClass {
 
   /**
    * Test the future income report with some data.
    *
-   * @throws \CRM_Core_Exception
    */
-  public function testReportDateSql() {
+  public function testReportDateSql(): void {
     $params = [
       'report_id' => 'activityextended',
       'activity_activity_date_time_relative' => 'previous.month',
     ];
     $this->getRows($params);
-    $this->assertContains('235959', $this->sql[0]);
+    $this->assertStringContainsString('235959', $this->sql[0]);
   }
 
   /**
    * Test filtering on cid.
    *
-   * @throws \CRM_Core_Exception
    */
-  public function testCidFilter() {
+  public function testCidFilter(): void {
     $params = [
       'report_id' => 'activityextended',
       'fields' =>

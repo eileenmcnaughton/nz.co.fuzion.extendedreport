@@ -8,10 +8,6 @@
  */
 class CRM_Extendedreport_Form_Report_Contact_Extendedcontact extends CRM_Extendedreport_Form_Report_ExtendedReport {
 
-  protected $_baseTable = 'civicrm_contact';
-
-  protected $skipACL = TRUE;
-
   protected $_customGroupAggregates = TRUE;
 
   protected $isPivot = TRUE;

@@ -1,10 +1,6 @@
 <?php
 
-require_once __DIR__ . '/BaseTestClass.php';
-
-use Civi\Test\HeadlessInterface;
-use Civi\Test\HookInterface;
-use Civi\Test\TransactionalInterface;
+namespace Civi\Extendedreport;
 
 /**
  * FIXME - Add test description.
@@ -20,26 +16,14 @@ use Civi\Test\TransactionalInterface;
  *
  * @group headless
  */
-class BookkeepingExtendedTest extends BaseTestClass implements HeadlessInterface, HookInterface, TransactionalInterface {
+class BookkeepingExtendedTest extends BaseTestClass {
 
   protected $contacts = [];
 
   /**
-   * @return \Civi\Test\CiviEnvBuilder
-   * @throws \CRM_Extension_Exception_ParseException
+   *
    */
-  public function setUpHeadless() {
-    // Civi\Test has many helpers, like install(), uninstall(), sql(), and sqlFile().
-    // See: https://github.com/civicrm/org.civicrm.testapalooza/blob/master/civi-test.md
-    return \Civi\Test::headless()
-      ->installMe(__DIR__)
-      ->apply();
-  }
-
-  /**
-   * @throws \CRM_Core_Exception
-   */
-  public function setUp() {
+  public function setUp(): void {
     parent::setUp();
     $this->enableAllComponents();
     $contact = $this->callAPISuccess('Contact', 'create', ['first_name' => 'Wonder', 'last_name' => 'Woman', 'contact_type' => 'Individual']);
@@ -48,11 +32,9 @@ class BookkeepingExtendedTest extends BaseTestClass implements HeadlessInterface
 
   /**
    * Test the bookkeeping report with some data.
-   *
-   * @throws \CRM_Core_Exception
    */
-  public function testBookkeepingReport() {
-    $contribution = $this->callAPISuccess('Order', 'create', [
+  public function testBookkeepingReport(): void {
+    $this->callAPISuccess('Order', 'create', [
       'contact_id' => $this->ids['Contact'][0],
       'total_amount' => 5,
       'financial_type_id' => 2,
@@ -80,6 +62,8 @@ class BookkeepingExtendedTest extends BaseTestClass implements HeadlessInterface
     $rows = $this->getRows($params);
     $this->assertEquals(date('Y-m-d'), date('Y-m-d', strtotime($rows[0]['civicrm_contribution_contribution_receive_date'])));
     $this->assertEquals('USD', $rows[0]['civicrm_financial_trxn_financial_trxn_currency']);
+    // If this line fails data cleanup is a likely culprit - this should be the only contribution in the database
+    // We might be better to ditch the TransactionalInterface as it has long been fraught.
     $this->assertEquals('5.00', $rows[0]['civicrm_entity_financial_trxn_entity_financial_trxn_amount_sum']);
   }
 

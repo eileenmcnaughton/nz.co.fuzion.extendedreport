@@ -2,10 +2,6 @@
 
 require_once __DIR__ . '../../BaseTestClass.php';
 
-use Civi\Test\HeadlessInterface;
-use Civi\Test\HookInterface;
-use Civi\Test\TransactionalInterface;
-
 /**
  * Test contribution DetailExtended class.
  *
@@ -20,19 +16,11 @@ use Civi\Test\TransactionalInterface;
  *
  * @group headless
  */
-class Contact_AddressHistoryTest extends BaseTestClass implements HeadlessInterface, HookInterface, TransactionalInterface {
+class Contact_AddressHistoryTest extends BaseTestClass {
 
   protected $contacts = [];
 
-  public function setUpHeadless() {
-    // Civi\Test has many helpers, like install(), uninstall(), sql(), and sqlFile().
-    // See: https://github.com/civicrm/org.civicrm.testapalooza/blob/master/civi-test.md
-    return \Civi\Test::headless()
-      ->installMe(__DIR__)
-      ->apply();
-  }
-
-  public function setUp() {
+  public function setUp():void {
     parent::setUp();
     $contact = $this->callAPISuccess('Contact', 'create', ['first_name' => 'Wonder', 'last_name' => 'Woman', 'contact_type' => 'Individual']);
     $this->contacts[] = $contact['id'];
@@ -40,9 +28,8 @@ class Contact_AddressHistoryTest extends BaseTestClass implements HeadlessInterf
   }
 
   /**
-   * @throws \CRM_Core_Exception
    */
-  public function tearDown() {
+  public function tearDown(): void {
     parent::tearDown();
     Civi::settings()->set('logging', FALSE);
   }
@@ -50,9 +37,8 @@ class Contact_AddressHistoryTest extends BaseTestClass implements HeadlessInterf
   /**
    * Test rows retrieval.
    *
-   * @throws \CRM_Core_Exception
    */
-  public function testGetRows() {
+  public function testGetRows(): void {
     $params = [
       'report_id' => 'contact/addresshistory',
     ];

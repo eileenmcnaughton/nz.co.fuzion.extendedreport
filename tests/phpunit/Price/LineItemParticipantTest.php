@@ -24,22 +24,14 @@ class LineItemParticipantTest extends BaseTestClass implements HeadlessInterface
 
   protected $contacts = [];
 
-  public function setUpHeadless() {
-    // Civi\Test has many helpers, like install(), uninstall(), sql(), and sqlFile().
-    // See: https://github.com/civicrm/org.civicrm.testapalooza/blob/master/civi-test.md
-    return \Civi\Test::headless()
-      ->installMe(__DIR__)
-      ->apply();
-  }
-
-  public function setUp() {
+  public function setUp(): void {
     parent::setUp();
     $components = [];
-    $dao = new CRM_Core_DAO_Component();
+    $dao = new \CRM_Core_DAO_Component();
     while ($dao->fetch()) {
       $components[$dao->id] = $dao->name;
     }
-    civicrm_api3('Setting', 'create', ['enable_components' => $components]);
+    \civicrm_api3('Setting', 'create', ['enable_components' => $components]);
     $contact = $this->callAPISuccess('Contact', 'create', ['first_name' => 'Wonder', 'last_name' => 'Woman', 'contact_type' => 'Individual']);
     $this->contacts[] = $contact['id'];
   }
@@ -51,6 +43,8 @@ class LineItemParticipantTest extends BaseTestClass implements HeadlessInterface
    *
    * @param array $params
    *   Parameters to pass to the report
+   *
+   * @throws \CRM_Core_Exception
    */
   public function testReport($params) {
     // Just checking no error at the moment.
@@ -60,7 +54,7 @@ class LineItemParticipantTest extends BaseTestClass implements HeadlessInterface
   /**
    * Get datasets for testing the report
    */
-  public function getReportParameters() {
+  public function getReportParameters(): array {
     return [
       'basic' => [
         [

@@ -24,18 +24,10 @@ class Contact_BasicContactTest extends BaseTestClass implements HeadlessInterfac
 
   protected $contacts = [];
 
-  public function setUpHeadless() {
-    // Civi\Test has many helpers, like install(), uninstall(), sql(), and sqlFile().
-    // See: https://github.com/civicrm/org.civicrm.testapalooza/blob/master/civi-test.md
-    return \Civi\Test::headless()
-      ->installMe(__DIR__)
-      ->apply();
-  }
-
   /**
    * @throws \CRM_Core_Exception
    */
-  public function setUp() {
+  public function setUp(): void {
     parent::setUp();
     $this->createCustomGroupWithField(['CustomField' => ['html_type' => 'CheckBox', 'option_values' => ['two' => 'A couple', 'three' => 'A few', 'four' => 'Too Many']]]);
     $contact = $this->callAPISuccess('Contact', 'create', ['organization_name' => 'Amazons', 'last_name' => 'Woman', 'contact_type' => 'Organization', 'custom_' . $this->customFieldID => 'three']);
@@ -55,7 +47,7 @@ class Contact_BasicContactTest extends BaseTestClass implements HeadlessInterfac
   /**
    * @throws \CRM_Core_Exception
    */
-  public function tearDown() {
+  public function tearDown(): void {
     parent::tearDown();
     $fields = $this->callAPISuccess('CustomField', 'get', ['custom_group_id' => $this->customGroupID])['values'];
     foreach ($fields as $field) {
@@ -75,7 +67,7 @@ class Contact_BasicContactTest extends BaseTestClass implements HeadlessInterfac
    *
    * @throws \CRM_Core_Exception
    */
-  public function testCustomFieldFilter() {
+  public function testCustomFieldFilter(): void {
     $customField = $this->customFieldCreate(['html_type' => 'Autocomplete-Select', 'data_type' => 'ContactReference', 'default_value' => '', 'custom_group_id' => $this->customGroupID]);
     $this->callAPISuccess('Contact', 'create', ['custom_' . $customField['id'] => $this->contacts[0], 'id' => $this->contacts['1']]);
     $params = [

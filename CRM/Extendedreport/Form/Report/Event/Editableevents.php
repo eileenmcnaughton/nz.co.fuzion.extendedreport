@@ -7,8 +7,6 @@ class CRM_Extendedreport_Form_Report_Event_Editableevents extends CRM_Extendedre
 
   protected $_baseTable = 'civicrm_event';
 
-  protected $skipACL = TRUE;
-
   protected $_customGroupExtends = ['Event'];
 
   protected $_customGroupGroupBy = TRUE;

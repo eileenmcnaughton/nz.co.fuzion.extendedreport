@@ -18,16 +18,15 @@ use CRM_Extendedreport_ExtensionUtil as E;
  */
 trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
 
-  /*
- * Function to get Activity Columns
- * @param array $options column options
- */
   /**
-   * @param array $options
+   * Function to get Activity Columns
+   *
+   * @param array $options column options
    *
    * @return array
+   * @throws \CRM_Core_Exception
    */
-  function getActivityColumns($options = []) {
+  public function getActivityColumns(array $options = []): array {
     $defaultOptions = [
       'prefix' => '',
       'prefix_label' => '',
@@ -89,7 +88,6 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
         'default' => TRUE,
         'name' => 'activity_date_time',
         'operatorType' => CRM_Report_Form::OP_DATE,
-        'type' => CRM_Utils_Type::T_DATE,
         'is_fields' => TRUE,
         'is_filters' => TRUE,
         'is_order_bys' => TRUE,
@@ -204,13 +202,14 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
   /**
    * Get columns for Case.
    *
-   * @param $options
+   * @param array $options
    *
    * @return array
+   *
+   * @throws \CiviCRM_API3_Exception
    */
-  function getCaseColumns($options) {
-    $config = CRM_Core_Config::singleton();
-    if (!in_array('CiviCase', $config->enableComponents)) {
+  public function getCaseColumns(array $options): array {
+    if (!in_array('CiviCase', CRM_Core_Config::singleton()->enableComponents, TRUE)) {
       return ['civicrm_case' => ['fields' => [], 'metadata' => []]];
     }
 
@@ -281,11 +280,14 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
   }
 
   /**
+   * Get columns for the contact table.
+   *
    * @param array $options
    *
    * @return array
+   * @throws \CRM_Core_Exception
    */
-  function getContactColumns($options = []) {
+  protected function getContactColumns($options = []): array {
     $defaultOptions = [
       'prefix' => '',
       'prefix_label' => '',
@@ -303,10 +305,6 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
     ];
 
     $options = array_merge($defaultOptions, $options);
-    $orgOnly = FALSE;
-    if (CRM_Utils_Array::value('contact_type', $options) == 'Organization') {
-      $orgOnly = TRUE;
-    }
     $tableAlias = $options['prefix'] . 'civicrm_contact';
 
     $spec = [
@@ -329,7 +327,7 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
         'is_contact_filter' => TRUE,
       ],
       $options['prefix'] . 'is_deleted' => [
-        'title' => $options['prefix_label'] . ts('Is deleted'),
+        'title' => $options['prefix_label'] . E::ts('Is deleted'),
         'name' => 'is_deleted',
         'operatorType' => CRM_Report_Form::OP_MULTISELECT,
         'options' => CRM_Contact_BAO_Contact::buildOptions('is_deleted'),
@@ -339,13 +337,13 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
       ],
       $options['prefix'] . 'external_identifier' => [
         'name' => 'external_identifier',
-        'title' => E::ts($options['prefix_label'] . 'External ID'),
+        'title' => $options['prefix_label'] . E::ts('External ID'),
         'type' => CRM_Utils_Type::T_INT,
         'is_fields' => TRUE,
       ],
       $options['prefix'] . 'sort_name' => [
         'name' => 'sort_name',
-        'title' => E::ts($options['prefix_label'] . 'Contact Name (in sort format)'),
+        'title' => $options['prefix_label'] . E::ts('Contact Name (in sort format)'),
         'is_fields' => TRUE,
         'is_filters' => TRUE,
         'is_order_bys' => TRUE,
@@ -374,7 +372,34 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
         'operatorType' => CRM_Report_Form::OP_STRING,
         'is_fields' => TRUE,
         'is_filters' => TRUE,
+        'is_order_bys' => TRUE,
         'is_group_bys' => TRUE,
+      ],
+      $options['prefix'] . 'external_identifier' => [
+        'title' => $options['prefix_label'] . ts('Contact identifier from external system'),
+        'name' => 'external_identifier',
+        'is_fields' => TRUE,
+        'is_filters' => FALSE,
+        'is_group_bys' => FALSE,
+        'is_order_bys' => TRUE,
+      ],
+      $options['prefix'] . 'preferred_language' => [
+        'title' => $options['prefix_label'] . ts('Preferred Language'),
+        'name' => 'preferred_language',
+        'alter_display' => 'alterPseudoConstant',
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+        'is_group_bys' => TRUE,
+        'is_order_bys' => TRUE,
+      ],
+      $options['prefix'] . 'preferred_communication_method' => [
+        'title' => $options['prefix_label'] . ts('Preferred Communication Method'),
+        'alter_display' => 'alterPseudoConstant',
+        'name' => 'preferred_communication_method',
+        'is_fields' => TRUE,
+        'is_filters' => FALSE,
+        'is_group_bys' => FALSE,
+        'is_order_bys' => FALSE,
       ],
       $options['prefix'] . 'email_greeting_display' => [
         'name' => 'email_greeting_display',
@@ -398,36 +423,75 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
         'is_order_bys' => TRUE,
       ],
     ];
+    foreach (['do_not_email', 'do_not_phone', 'do_not_mail', 'do_not_sms', 'is_opt_out'] as $field) {
+      $spec[$options['prefix'] . $field] = [
+        'name' => $field,
+        'type' => CRM_Utils_Type::T_BOOLEAN,
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+        'is_group_bys' => FALSE,
+        'options' =>  [
+          '' => ts('Any'),
+          '0' => ts('No'),
+          '1' => ts('Yes'),
+        ],
+      ];
+    }
     $individualFields = [
       $options['prefix'] . 'first_name' => [
         'name' => 'first_name',
-        'title' => E::ts($options['prefix_label'] . 'First Name'),
+        'title' => $options['prefix_label'] . E::ts('First Name'),
         'is_fields' => TRUE,
         'is_filters' => TRUE,
         'is_order_bys' => TRUE,
       ],
       $options['prefix'] . 'middle_name' => [
         'name' => 'middle_name',
-        'title' => E::ts($options['prefix_label'] . 'Middle Name'),
+        'title' => $options['prefix_label'] . E::ts('Middle Name'),
         'is_fields' => TRUE,
       ],
       $options['prefix'] . 'last_name' => [
         'name' => 'last_name',
-        'title' => E::ts($options['prefix_label'] . 'Last Name'),
+        'title' => $options['prefix_label'] . E::ts('Last Name'),
         'is_fields' => TRUE,
         'is_filters' => TRUE,
         'is_order_bys' => TRUE,
       ],
       $options['prefix'] . 'nick_name' => [
         'name' => 'nick_name',
-        'title' => E::ts($options['prefix_label'] . 'Nick Name'),
+        'title' => $options['prefix_label'] . E::ts('Nick Name'),
         'is_fields' => TRUE,
         'is_filters' => TRUE,
         'is_order_bys' => TRUE,
       ],
+      $options['prefix'] . 'formal_title' => [
+        'name' => 'formal_title',
+        'title' => $options['prefix_label'] . E::ts( 'Formal Title'),
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+        'is_order_bys' => TRUE,
+      ],
+      $options['prefix'] . 'prefix_id' => [
+        'name' => 'prefix_id',
+        'title' => $options['prefix_label'] . E::ts('Prefix'),
+        'options' => CRM_Contact_BAO_Contact::buildOptions('prefix_id'),
+        'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+        'alter_display' => 'alterPseudoConstant',
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+      ],
+      $options['prefix'] . 'suffix_id' => [
+        'name' => 'suffix_id',
+        'title' => $options['prefix_label'] . E::ts('Suffix'),
+        'options' => CRM_Contact_BAO_Contact::buildOptions('suffix_id'),
+        'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+        'alter_display' => 'alterPseudoConstant',
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+      ],
       $options['prefix'] . 'gender_id' => [
         'name' => 'gender_id',
-        'title' => E::ts($options['prefix_label'] . 'Gender'),
+        'title' => $options['prefix_label'] . E::ts('Gender'),
         'options' => CRM_Contact_BAO_Contact::buildOptions('gender_id'),
         'operatorType' => CRM_Report_Form::OP_MULTISELECT,
         'alter_display' => 'alterGenderID',
@@ -435,26 +499,56 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
         'is_filters' => TRUE,
       ],
       'birth_date' => [
-        'title' => E::ts($options['prefix_label'] . 'Birth Date'),
+        'title' => $options['prefix_label'] . E::ts('Birth Date'),
+        'operatorType' => CRM_Report_Form::OP_DATE,
+        'type' => CRM_Utils_Type::T_DATE,
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+      ],
+      'deceased_date' => [
+        'title' => $options['prefix_label'] . E::ts('Deceased Date'),
         'operatorType' => CRM_Report_Form::OP_DATE,
         'type' => CRM_Utils_Type::T_DATE,
         'is_fields' => TRUE,
         'is_filters' => TRUE,
       ],
       'age' => [
-        'title' => E::ts($options['prefix_label'] . 'Age'),
+        'title' => $options['prefix_label'] . E::ts('Age'),
         'dbAlias' => 'TIMESTAMPDIFF(YEAR, ' . $tableAlias . '.birth_date, CURDATE())',
         'type' => CRM_Utils_Type::T_INT,
         'is_fields' => TRUE,
       ],
-      'job_title' => [
+      $options['prefix'] . 'is_deceased' => [
+        'title' => $options['prefix_label'] . E::ts('Is deceased'),
+        'name' => 'is_deceased',
+        'type' => CRM_Utils_Type::T_BOOLEAN,
+        'is_fields' => TRUE,
+        'is_filters' => TRUE,
+        'is_group_bys' => FALSE,
+        'options' =>  [
+          '' => ts('Any'),
+          '0' => ts('No'),
+          '1' => ts('Yes'),
+        ],
+      ],
+      $options['prefix'] . 'job_title' => [
+        'name' => 'job_title',
         'title' => E::ts($options['prefix_label'] . 'Job Title'),
         'type' => CRM_Utils_Type::T_STRING,
         'is_fields' => TRUE,
         'is_filters' => TRUE,
       ],
+      $options['prefix'] . 'employer_id' => [
+        'title' => $options['prefix_label'] . ts('Current Employer'),
+        'type' => CRM_Utils_Type::T_INT,
+        'name' => 'employer_id',
+        'alter_display' => 'alterEmployerID',
+        'is_fields' => TRUE,
+        'is_filters' => FALSE,
+        'is_group_bys' => TRUE,
+      ],
     ];
-    if (!$orgOnly) {
+    if ($options['contact_type'] !== 'Organization') {
       $spec = array_merge($spec, $individualFields);
     }
 
@@ -477,8 +571,9 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
    * @param array $options column options
    *
    * @return array
+   * @throws \CiviCRM_API3_Exception
    */
-  function getLatestActivityColumns($options) {
+  function getLatestActivityColumns(array $options) {
     $defaultOptions = [
       'prefix' => '',
       'prefix_label' => '',
@@ -512,8 +607,9 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
    * @param array $options
    *
    * @return array
+   * @throws \CRM_Core_Exception
    */
-  function getContributionRecurColumns($options = []) {
+  protected function getContributionRecurColumns(array $options = []): array {
     $spec = [
       'id' => [
         'is_fields' => TRUE,
@@ -673,7 +769,7 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
    *
    * @return array
    */
-  function getContributionSoftColumns($options = []) {
+  protected function getContributionSoftColumns(array $options = []): array {
     $spec = [
       'id' => [
         'is_fields' => FALSE,
@@ -726,18 +822,8 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
    *
    * @return array
    */
-  protected function getGrantColumns($options = []) {
-    $defaultOptions = [
-      'prefix' => '',
-      'prefix_label' => '',
-      'group_by' => FALSE,
-      'order_by' => TRUE,
-      'filters' => TRUE,
-      'fields_defaults' => [],
-      'filters_defaults' => [],
-      'group_bys_defaults' => [],
-      'order_by_defaults' => ['sort_name ASC'],
-    ];
+  protected function getGrantColumns(array $options = []): array {
+    $defaultOptions = $this->getDefaultOptions();
 
     $options = array_merge($defaultOptions, $options);
     $defaults = $this->getDefaultsFromOptions($options);
@@ -819,6 +905,89 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
       ],
     ];
     return $this->buildColumns($specs, 'civicrm_grant', 'CRM_Grant_BAO_Grant', 'grants', $defaults);
+  }
+
+  /**
+   * Function to get Product columns.
+   *
+   * @param array $options column options
+   *
+   * @return array
+   */
+  protected function getProductColumns(array $options = []): array {
+    $defaultOptions = $this->getDefaultOptions();
+
+    $options = array_merge($defaultOptions, $options);
+    $defaults = $this->getDefaultsFromOptions($options);
+    $specs = [
+      'name' => [
+        'is_fields' => 1,
+        'is_filters' => 1,
+        'is_group_bys' => 1,
+        'is_order_bys' => 1,
+      ],
+      'description' => [
+        'is_fields' => 1,
+        'is_filters' => 1,
+        'is_group_bys' => 1,
+        'is_order_bys' => 1,
+      ],
+      'sku' => [
+        'is_fields' => 1,
+        'is_filters' => 1,
+        'is_group_bys' => 1,
+        'is_order_bys' => 1,
+      ],
+    ];
+    return $this->buildColumns($specs, 'civicrm_product', 'CRM_Contribute_DAO_Product', 'product', $defaults);
+  }
+
+  /**
+   * Function to get Product Contribution columns.
+   *
+   * @param array $options column options
+   *
+   * @return array
+   */
+  protected function getContributionProductColumns(array $options = []): array {
+    $defaultOptions = $this->getDefaultOptions();
+
+    $options = array_merge($defaultOptions, $options);
+    $defaults = $this->getDefaultsFromOptions($options);
+    $specs = [
+      'product_option' => [
+        'is_fields' => 1,
+        'is_filters' => 1,
+        'is_group_bys' => 1,
+        'is_order_bys' => 1,
+      ],
+      'fulfilled_date' => [
+        'is_fields' => 1,
+        'is_filters' => 1,
+        'is_group_bys' => 1,
+        'is_order_bys' => 1,
+      ],
+    ];
+    return $this->buildColumns($specs, 'civicrm_contribution_product', 'CRM_Contribute_DAO_ContributionProduct', 'contribution_product', $defaults);
+  }
+
+  /**
+   * Get generic default options.
+   *
+   * @return array
+   */
+  protected function getDefaultOptions(): array {
+    return [
+      'prefix' => '',
+      'prefix_label' => '',
+      'group_by' => FALSE,
+      'order_by' => TRUE,
+      'filters' => TRUE,
+      'fields_defaults' => [],
+      'filters_defaults' => [],
+      'group_bys_defaults' => [],
+      'order_by_defaults' => ['sort_name ASC'],
+    ];
   }
 
 }

@@ -7,21 +7,11 @@ class CRM_Extendedreport_Form_Report_Case_CaseWithActivityPivot extends CRM_Exte
 
   protected $_baseTable = 'civicrm_case';
 
-  protected $skipACL = FALSE;
-
   protected $_customGroupAggregates = TRUE;
-
-  protected $_aggregatesIncludeNULL = TRUE;
-
-  protected $_aggregatesAddTotal = TRUE;
 
   protected $_rollup = 'WITH ROLLUP';
 
-  protected $_temporary = ' TEMPORARY ';
-
   protected $_aggregatesAddPercentage = TRUE;
-
-  public $_drilldownReport = [];
 
   protected $isPivot = TRUE;
 
@@ -33,22 +23,14 @@ class CRM_Extendedreport_Form_Report_Case_CaseWithActivityPivot extends CRM_Exte
    * PreConstrain means the query gets run twice - the first time for generating temp tables
    * which go in the from the second time around
    *
-   * @var unknown
+   * @var bool
    */
   protected $_preConstrain = TRUE;
-
-  /**
-   * Name of table that links activities to cases. The 'real' table is replaced with the name of a filtered
-   * temp table during processing
-   *
-   * @var unknown
-   */
-  protected $_caseActivityTable = 'civicrm_case_activity';
-
   protected $_potentialCriteria = [];
 
   /**
    *
+   * @throws \CRM_Core_Exception
    */
   public function __construct() {
     $this->_columns = $this->getColumns('Case', [
@@ -74,17 +56,19 @@ class CRM_Extendedreport_Form_Report_Case_CaseWithActivityPivot extends CRM_Exte
 
   /**
    * Generate a temp table to reflect the pre-constrained report group
-   * This could be a group of contacts on whom we are going to do a series of contribution
-   * comparisons.
+   * This could be a group of contacts on whom we are going to do a series of
+   * contribution comparisons.
    *
    * We apply where criteria from the form to generate this
    *
    * We create a temp table of their ids in the first instance
    * and use this as the base
+   *
+   * @throws \Exception
    */
-  function generateTempTable() {
-    $tempTable = 'civicrm_report_temp_activities' . date('d_H_I') . rand(1, 10000);
-    $sql = "CREATE {$this->_temporary} TABLE $tempTable
+  protected function generateTempTable(): void {
+    $tempTable = 'civicrm_report_temp_activities' . date('d_H_I') . random_int(1, 10000);
+    $sql = "CREATE $this->_temporary TABLE $tempTable
     (`case_id` INT(10) UNSIGNED NULL DEFAULT '0',
     `activity_id` INT(10) UNSIGNED NULL DEFAULT '0',
     INDEX `case_id` (`case_id`),
@@ -100,7 +84,7 @@ class CRM_Extendedreport_Form_Report_Case_CaseWithActivityPivot extends CRM_Exte
       LEFT JOIN
         (SELECT
           {$this->_aliases['civicrm_case']}.id as case_id, activity_id
-          {$this->_from} {$this->_where}
+          $this->_from $this->_where
         ) as case_activities ON case_activities.case_id = ccase.id";
     CRM_Core_DAO::executeQuery($sql);
     $this->_caseActivityTable = $tempTable;
@@ -109,7 +93,7 @@ class CRM_Extendedreport_Form_Report_Case_CaseWithActivityPivot extends CRM_Exte
   /**
    * @return array
    */
-  function fromClauses() {
+  protected function fromClauses(): array {
     return [
       'contact_from_case',
       'activity_from_case',
@@ -121,10 +105,10 @@ class CRM_Extendedreport_Form_Report_Case_CaseWithActivityPivot extends CRM_Exte
    * 'pre-constrained' report temp tables are created. Here we only keep the clauses relating to
    * civicrm_case
    */
-  function constrainedWhere() {
+  protected function constrainedWhere(): void {
     $this->_where = " WHERE 1";
     foreach ($this->whereClauses as $table => $clauses) {
-      if (substr($table, 0, 12) == 'civicrm_case') {
+      if (strpos($table, 'civicrm_case') === 0) {
         foreach ($clauses as $clause) {
           if (!empty($clause)) {
             $this->_where .= " AND " . $clause;

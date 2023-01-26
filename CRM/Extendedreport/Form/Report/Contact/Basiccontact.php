@@ -5,10 +5,6 @@
  */
 class CRM_Extendedreport_Form_Report_Contact_Basiccontact extends CRM_Extendedreport_Form_Report_ExtendedReport {
 
-  protected $_baseTable = 'civicrm_contact';
-
-  protected $skipACL = FALSE;
-
   protected $_joinFilters = ['address_from_contact' => ['civicrm_address' => 'is_primary = 1 ']];
 
   protected $_customGroupExtends = ['Contact', 'Individual', 'Household', 'Organization'];
@@ -53,7 +49,7 @@ class CRM_Extendedreport_Form_Report_Contact_Basiccontact extends CRM_Extendedre
   /**
    * @return array
    */
-  function fromClauses() {
+  public function fromClauses(): array {
     return [
       'address_from_contact',
       'email_from_contact',
@@ -63,7 +59,7 @@ class CRM_Extendedreport_Form_Report_Contact_Basiccontact extends CRM_Extendedre
     ];
   }
 
-  function groupBy() {
+  public function groupBy(): void {
     $this->_groupBy = "GROUP BY {$this->_aliases['civicrm_contact']}.id";
   }
 }

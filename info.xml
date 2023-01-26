@@ -5,7 +5,8 @@
   <description>Extended reports</description>
   <license>AGPL</license>
   <urls>
-    <url desc="Main Extension Page">http://civicrm.org</url>
+    <url desc="Main Extension Page">https://github.com/eileenmcnaughton/nz.co.fuzion.extendedreport</url>
+    <url desc="Documentation">https://github.com/eileenmcnaughton/nz.co.fuzion.extendedreport</url>
     <url desc="Support">http://chat.civicrm.org</url>
     <url desc="Licensing">http://civicrm.org/licensing</url>
   </urls>
@@ -13,19 +14,25 @@
     <author>Eileen McNaughton</author>
     <email>eileen@fuzion.co.nz</email>
   </maintainer>
-  <releaseDate>2020-08-03</releaseDate>
-  <version>5.6</version>
+  <releaseDate>2023-01-12</releaseDate>
+  <version>5.19</version>
   <develStage>stable</develStage>
   <compatibility>
-    <ver>5.28</ver>
+    <ver>5.55</ver>
   </compatibility>
   <comments>Extended reports create other report options such as crosstab urls, multiple contact custom fields, price
     set reports
   </comments>
   <civix>
     <namespace>CRM/Extendedreport</namespace>
+    <format>22.12.1</format>
   </civix>
   <classloader>
-    <psr4 prefix="Civi\" path="Civi" />
+    <psr4 prefix="Civi\" path="Civi"/>
+    <psr0 prefix="CRM_" path="."/>
   </classloader>
+  <mixins>
+    <mixin>ang-php@1.0.0</mixin>
+    <mixin>mgd-php@1.0.0</mixin>
+  </mixins>
 </extension>

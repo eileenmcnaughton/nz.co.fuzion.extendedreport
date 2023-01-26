@@ -13,6 +13,8 @@ class CRM_Extendedreport_Form_Report_RelationshipExtended extends CRM_Extendedre
 
   public $_tagFilterTable = 'contact_a_civicrm_contact';
 
+  private $relationType;
+
   /**
    * Class constructor.
    *
@@ -76,7 +78,7 @@ class CRM_Extendedreport_Form_Report_RelationshipExtended extends CRM_Extendedre
      *
      * @return string
      */
-    public function whereTagClause($field, $value, $op) {
+    public function whereTagClause($field, $value, $op): string {
       // not using left join in query because if any contact
       // belongs to more than one tag, results duplicate
       // entries.
@@ -92,7 +94,7 @@ class CRM_Extendedreport_Form_Report_RelationshipExtended extends CRM_Extendedre
                             WHERE entity_table = 'civicrm_contact' AND {$clause} ) ";
   }
 
-  function from() {
+  public function from(): void {
     $this->setFromBase('civicrm_contact', 'id', $this->_aliases['contact_a_civicrm_contact']);
     $this->_from .= "
       INNER JOIN civicrm_relationship {$this->_aliases['civicrm_relationship']}
@@ -103,6 +105,7 @@ class CRM_Extendedreport_Form_Report_RelationshipExtended extends CRM_Extendedre
           INNER JOIN civicrm_contact {$this->_aliases['contact_b_civicrm_contact']}
           ON ( {$this->_aliases['civicrm_relationship']}.contact_id_b =
           {$this->_aliases['contact_b_civicrm_contact']}.id )
+          && ({$this->_aliases['contact_b_civicrm_contact']}.is_deleted = 0)
 
           {$this->_aclFrom}
           LEFT JOIN civicrm_relationship rc ON ({$this->_aliases['contact_b_civicrm_contact']}.id = rc.contact_id_a AND rc.relationship_type_id = 15)
@@ -160,17 +163,18 @@ class CRM_Extendedreport_Form_Report_RelationshipExtended extends CRM_Extendedre
   /**
    * @param $rows
    *
-   * @return mixed
+   * @return array
    */
-  public function statistics(&$rows) {
+  public function statistics(&$rows): array {
     $statistics = parent::statistics($rows);
 
     $isStatusFilter = FALSE;
     $relStatus = NULL;
-    if (CRM_Utils_Array::value('is_active_value', $this->_params) == '1') {
+    $isActive = $this->_params['is_active_value'] ?? NULL;
+    if ($isActive) {
       $relStatus = 'Is equal to Active';
     }
-    elseif (CRM_Utils_Array::value('is_active_value', $this->_params) == '0') {
+    elseif ($isActive !== NULL) {
       $relStatus = 'Is equal to Inactive';
     }
     if (CRM_Utils_Array::value('filters', $statistics)) {
@@ -202,13 +206,13 @@ class CRM_Extendedreport_Form_Report_RelationshipExtended extends CRM_Extendedre
    * @throws \CRM_Core_Exception
    * @throws \CiviCRM_API3_Exception
    */
-  public function postProcess() {
+  public function postProcess(): void {
     $this->beginPostProcess();
     $this->relationType = NULL;
     $originalRelationshipTypes = [];
 
     $relationships = [];
-    if ((array) $this->_params['relationship_relationship_type_id_value'] ?? FALSE) {
+    if (empty($this->_params['relationship_relationship_type_id_value'])) {
       $originalRelationshipTypes = $this->_params['relationship_relationship_type_id_value'];
       foreach ($this->_params['relationship_relationship_type_id_value'] as $relString) {
         $relType = explode('_', $relString);
@@ -230,7 +234,7 @@ class CRM_Extendedreport_Form_Report_RelationshipExtended extends CRM_Extendedre
   /**
    * @param $rows
    */
-  public function alterDisplay(&$rows) {
+  public function alterDisplay(&$rows): void {
     parent::alterDisplay($rows);
     // custom code to alter rows
     $entryFound = TRUE;
@@ -239,8 +243,8 @@ class CRM_Extendedreport_Form_Report_RelationshipExtended extends CRM_Extendedre
 
       if (array_key_exists('civicrm_case_status_id', $row)) {
         if ($value = $row['civicrm_case_status_id']) {
-          $this->case_statuses = CRM_Case_PseudoConstant::caseStatus();
-          $rows[$rowNum]['civicrm_case_status_id'] = $this->case_statuses[$value];
+          $caseStatuses = CRM_Case_PseudoConstant::caseStatus();
+          $rows[$rowNum]['civicrm_case_status_id'] = $caseStatuses[$value];
           $entryFound = TRUE;
         }
       }

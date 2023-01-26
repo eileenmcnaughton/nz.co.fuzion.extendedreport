@@ -7,13 +7,7 @@ class CRM_Extendedreport_Form_Report_Event_EventPivot extends CRM_Extendedreport
 
   protected $_baseTable = 'civicrm_participant';
 
-  protected $skipACL = TRUE;
-
   protected $_customGroupAggregates = TRUE;
-
-  protected $_aggregatesIncludeNULL = TRUE;
-
-  protected $_aggregatesAddTotal = TRUE;
 
   protected $isPivot = TRUE;
 
@@ -34,6 +28,8 @@ class CRM_Extendedreport_Form_Report_Event_EventPivot extends CRM_Extendedreport
 
   /**
    * Class constructor.
+   *
+   * @throws \CRM_Core_Exception
    */
   public function __construct() {
     $this->_customGroupExtended['civicrm_event'] = [
@@ -66,7 +62,7 @@ class CRM_Extendedreport_Form_Report_Event_EventPivot extends CRM_Extendedreport
    *
    * @return array
    */
-  public function fromClauses() {
+  public function fromClauses(): array {
     return [
       'event_from_participant',
       'contact_from_participant',

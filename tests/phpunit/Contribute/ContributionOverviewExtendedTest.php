@@ -2,10 +2,6 @@
 
 require_once __DIR__ . '../../BaseTestClass.php';
 
-use Civi\Test\HeadlessInterface;
-use Civi\Test\HookInterface;
-use Civi\Test\TransactionalInterface;
-
 /**
  * Test contribution DetailExtended class.
  *
@@ -20,37 +16,29 @@ use Civi\Test\TransactionalInterface;
  *
  * @group headless
  */
-class ContributionOverviewExtendedTest extends BaseTestClass implements HeadlessInterface, HookInterface, TransactionalInterface {
+class ContributionOverviewExtendedTest extends BaseTestClass {
 
   protected $contacts = [];
 
-  public function setUpHeadless() {
-    // Civi\Test has many helpers, like install(), uninstall(), sql(), and sqlFile().
-    // See: https://github.com/civicrm/org.civicrm.testapalooza/blob/master/civi-test.md
-    return \Civi\Test::headless()
-      ->installMe(__DIR__)
-      ->apply();
-  }
-
-  public function setUp() {
+  public function setUp(): void {
     parent::setUp();
     $this->enableAllComponents();
     $contact = $this->callAPISuccess('Contact', 'create', ['first_name' => 'Wonder', 'last_name' => 'Woman', 'contact_type' => 'Individual']);
     $this->contacts[] = $contact['id'];
 
-    $contribution = $this->callAPISuccess('Contribution', 'create', [
+    $this->callAPISuccess('Contribution', 'create', [
       'contact_id' => $contact['id'],
       'receive_date' => '2017-08-09',
       'total_amount' => 5,
       'financial_type_id' => 'Donation',
     ]);
-    $contribution = $this->callAPISuccess('Contribution', 'create', [
+    $this->callAPISuccess('Contribution', 'create', [
       'contact_id' => $contact['id'],
       'receive_date' => '1 month ago',
       'total_amount' => 500,
       'financial_type_id' => 'Donation',
     ]);
-    $contribution = $this->callAPISuccess('Contribution', 'create', [
+    $this->callAPISuccess('Contribution', 'create', [
       'contact_id' => $contact['id'],
       'receive_date' => '1 month ago',
       'total_amount' => 10,
@@ -58,16 +46,10 @@ class ContributionOverviewExtendedTest extends BaseTestClass implements Headless
     ]);
   }
 
-  public function tearDown() {
-    parent::tearDown();
-  }
-
   /**
    * Test the ContributionOverviewExtended report with group by.
-   *
-   * @throws \CRM_Core_Exception
    */
-  public function testContributionExtendedReport() {
+  public function testContributionExtendedReport(): void {
     $this->callAPISuccess('Order', 'create', ['contact_id' => $this->contacts[0], 'total_amount' => 5, 'financial_type_id' => 2, 'contribution_status_id' => 'Pending', 'api.Payment.create' => ['total_amount' => 5]]);
     $params = [
       'report_id' => 'contribution/overview',
@@ -91,7 +73,7 @@ class ContributionOverviewExtendedTest extends BaseTestClass implements Headless
   /**
    * Test the ContributionOverviewExtended report with to filter.
    */
-  public function testContributionExtendedReportFilterReceiveDate() {
+  public function testContributionExtendedReportFilterReceiveDate(): void {
     $rows = $this->getRows([
       'report_id' => 'contribution/overview',
       'fields' => ['civicrm_contact_display_name' => '1'],
@@ -101,7 +83,7 @@ class ContributionOverviewExtendedTest extends BaseTestClass implements Headless
       'contribution_receive_date_to' => '12/31/2017',
       'contribution_receive_date_to_time' => '',
     ]);
-    $this->assertEquals(1, count($rows));
+    $this->assertCount(1, $rows);
   }
 
 }

@@ -123,8 +123,10 @@ class CRM_Extendedreport_Form_Report_Campaign_CampaignProgressReport extends CRM
 
   /**
    * Add from clause
+   *
+   * @throws \CRM_Core_Exception
    */
-  public function from() {
+  public function from(): void {
     $this->_from = "
       FROM civicrm_campaign {$this->_aliases['civicrm_campaign']}";
 
@@ -134,7 +136,7 @@ class CRM_Extendedreport_Form_Report_Campaign_CampaignProgressReport extends CRM
     $this->_from .= "
       LEFT JOIN civicrm_contact {$this->_aliases['civicrm_contact']}
       ON ({$this->_aliases['civicrm_contact']}.id = progress.contact_id )
-      {$this->_aclFrom}
+      $this->_aclFrom
     ";
   }
 
@@ -143,7 +145,7 @@ class CRM_Extendedreport_Form_Report_Campaign_CampaignProgressReport extends CRM
    *
    * @throws \CRM_Core_Exception
    */
-  protected function joinProgressTable() {
+  protected function joinProgressTable(): void {
     $until = CRM_Utils_Array::value('effective_date_value', $this->_params);
     $untilClause = '';
     if ($until) {
@@ -205,9 +207,9 @@ LEFT JOIN
    *
    * @return string
    */
-  function selectClause(&$tableName, $tableKey, &$fieldName, &$field) {
+  public function selectClause(&$tableName, $tableKey, &$fieldName, &$field): string {
     if ($fieldName === 'progress_still_to_raise') {
-      $alias = "{$tableName}_{$fieldName}";
+      $alias = "{$tableName}_$fieldName";
       $this->_columnHeaders[$alias]['title'] = CRM_Utils_Array::value('title', $field);
       $this->_columnHeaders[$alias]['type'] = CRM_Utils_Array::value('type', $field);
       $this->_columnHeaders[$alias]['dbAlias'] = CRM_Utils_Array::value('dbAlias', $field);
@@ -220,7 +222,7 @@ LEFT JOIN
   /**
    * Block parent re-ordering of headers.
    */
-  public function reOrderColumnHeaders() {
+  public function reOrderColumnHeaders(): void {
 
   }
 
@@ -231,16 +233,14 @@ LEFT JOIN
    *
    * @return string
    */
-  public function alterIsPledge($value) {
+  public function alterIsPledge(bool $value): string {
     return str_replace([0, 1], [ts('Payment without pledge'), ts('Pledge')], $value);
   }
 
   /**
    * @param array $rows
-   *
-   * @throws \CRM_Core_Exception
    */
-  public function alterDisplay(&$rows) {
+  public function alterDisplay(&$rows): void {
     parent::alterDisplay($rows);
     $this->unsetUnreliableColumnsIfNotCampaignGrouped();
     if (isset($this->_columnHeaders['progress_progress_still_to_raise'])) {
@@ -249,24 +249,29 @@ LEFT JOIN
       $this->_columnHeaders['progress_progress_still_to_raise'] = $move;
     }
 
-    $runningTotalGoal = $runningTotalLeft = 0;
-    $grandTotalGoal = $grandTotalLeft = 0;
+    $runningTotalGoal = $runningTotalLeft = $runningTotalReceived = 0;
+    $grandTotalGoal = $grandTotalLeft = $grandTotalReceived = 0;
     foreach ($rows as $index => $row) {
       if (isset($row['civicrm_campaign_campaign_goal_revenue']) && is_numeric($row['civicrm_campaign_campaign_goal_revenue'])) {
         $runningTotalGoal += $row['civicrm_campaign_campaign_goal_revenue'];
         if (isset($row['progress_progress_still_to_raise']) && is_numeric($row['progress_progress_still_to_raise'])) {
           $runningTotalLeft += $row['progress_progress_still_to_raise'];
         }
+        if (isset($row['progress_progress_paid_amount_sum']) && is_numeric($row['progress_progress_paid_amount_sum'])) {
+          $runningTotalReceived += $row['progress_progress_paid_amount_sum'];
+        }
       }
       else {
         $rows[$index]['civicrm_campaign_campaign_goal_revenue'] = $runningTotalGoal;
         $rows[$index]['progress_progress_still_to_raise'] = $runningTotalLeft;
+        $rows[$index]['progress_progress_paid_amount_sum'] = $runningTotalReceived;
         $grandTotalLeft += $runningTotalLeft;
         $grandTotalGoal += $runningTotalGoal;
+        $grandTotalReceived += $runningTotalReceived;
         $runningTotalGoal = $runningTotalLeft = 0;
         foreach ($rows[$index] as $field => $value) {
           if (is_numeric($value)) {
-            $rows[$index][$field] = '<span class="report-label">' . str_replace('$', '', CRM_Utils_Money::format($value)) . '</span>';
+            $rows[$index][$field] = $value;
           }
         }
       }
@@ -274,21 +279,18 @@ LEFT JOIN
     }
     $grandTotalLeft += $runningTotalLeft;
     $grandTotalGoal += $runningTotalGoal;
+    $grandTotalReceived += $runningTotalReceived;
     $this->rollupRow['civicrm_campaign_campaign_goal_revenue'] = $grandTotalGoal;
     $this->rollupRow['progress_progress_still_to_raise'] = $grandTotalLeft;
+    $this->rollupRow['progress_progress_paid_amount_sum'] = $grandTotalReceived;
     $this->assign('grandStat', $this->rollupRow);
   }
 
   /**
    * Do we have a group by array that does not include campaign/
    */
-  protected function groupByCampaignTypeNotCampaign() {
-    if (!empty($this->_groupByArray)) {
-      if (!in_array('campaign.id', $this->_groupByArray, TRUE)) {
-        return TRUE;
-      }
-    }
-    return FALSE;
+  protected function groupByCampaignTypeNotCampaign(): bool {
+    return !empty($this->_groupByArray) && !in_array('campaign.id', $this->_groupByArray, TRUE);
   }
 
   /**
@@ -300,8 +302,8 @@ LEFT JOIN
    *
    * @return array
    */
-  function getOperationPair($type = "string", $fieldName = NULL) {
-    if ($type == self::OP_SINGLEDATE) {
+  public function getOperationPair($type = "string", $fieldName = NULL): array {
+    if ($type === (string) self::OP_SINGLEDATE) {
       return [
         'to' => ts('Until Date'),
       ];
@@ -309,7 +311,7 @@ LEFT JOIN
     return parent::getOperationPair($type, $fieldName);
   }
 
-  protected function unsetUnreliableColumnsIfNotCampaignGrouped() {
+  protected function unsetUnreliableColumnsIfNotCampaignGrouped(): void {
     if ($this->groupByCampaignTypeNotCampaign()) {
       if (isset($this->_columnHeaders['progress_still_to_raise'])) {
         unset($this->_columnHeaders['progress_still_to_raise']);

@@ -9,19 +9,11 @@ class CRM_Extendedreport_Form_Report_ActivityPivot extends CRM_Extendedreport_Fo
 
   protected $_customGroupExtends = ['Activity'];
 
-  protected $skipACL = FALSE;
-
   protected $isPivot = TRUE;
 
   protected $_customGroupAggregates = TRUE;
 
-  protected $_aggregatesIncludeNULL = TRUE;
-
-  protected $_aggregatesAddTotal = TRUE;
-
   protected $_rollup = 'WITH ROLLUP';
-
-  public $_drilldownReport = [];
 
   protected $_potentialCriteria = [];
 
@@ -42,17 +34,8 @@ class CRM_Extendedreport_Form_Report_ActivityPivot extends CRM_Extendedreport_Fo
     $this->_columns = $this->getColumns('Activity', [
         'fields' => FALSE,
       ]
-    )//   + $this->getColumns('Contact', array())
-    ;
+    );
     parent::__construct();
   }
 
-  /**
-   * Get from join clauses.
-   *
-   * @return array
-   */
-  public function fromClauses() {
-    return [];
-  }
 }

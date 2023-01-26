@@ -10,6 +10,8 @@ class CRM_Extendedreport_Form_Report_Price_Contributionbased extends CRM_Extende
 
   /**
    * Class constructor.
+   *
+   * @throws \CRM_Core_Exception
    */
   public function __construct() {
     $this->_columns
@@ -26,7 +28,7 @@ class CRM_Extendedreport_Form_Report_Price_Contributionbased extends CRM_Extende
   /**
    * @return array
    */
-  function fromClauses() {
+  public function fromClauses(): array {
     return [
       'lineItem_from_contribution',
       'batch_from_contribution',

@@ -1,10 +1,8 @@
 <?php
 
-require_once __DIR__ . '/BaseTestClass.php';
+namespace Civi\Extendedreport;
 
-use Civi\Test\HeadlessInterface;
-use Civi\Test\HookInterface;
-use Civi\Test\TransactionalInterface;
+use CRM_Core_PseudoConstant;
 
 /**
  * FIXME - Add test description.
@@ -20,14 +18,13 @@ use Civi\Test\TransactionalInterface;
  *
  * @group headless
  */
-class ActivityPivotTest extends BaseTestClass implements HeadlessInterface, HookInterface, TransactionalInterface {
+class ActivityPivotTest extends BaseTestClass {
 
   /**
    * Test the future income report with some data.
    *
-   * @throws \CRM_Core_Exception
    */
-  public function testPivotReport() {
+  public function testPivotReport(): void {
     $contact = $this->callAPISuccess('Contact', 'create', ['contact_type' => 'Individual', 'email' => 'demo@example.com']);
     $this->ids['Contact'][] = $contact['id'];
     $this->callAPISuccess('Activity', 'create', ['source_contact_id' => $contact['id'], 'activity_type_id' => 'Meeting', 'status_id' => 'Scheduled']);
@@ -42,7 +39,7 @@ class ActivityPivotTest extends BaseTestClass implements HeadlessInterface, Hook
     $completedStatusID = CRM_Core_PseudoConstant::getKey('CRM_Activity_BAO_Activity', 'status_id', 'Completed');
     $scheduledStatusID = CRM_Core_PseudoConstant::getKey('CRM_Activity_BAO_Activity', 'status_id', 'Scheduled');
     $rows = $this->getRows($params);
-    $this->assertContains('SUM( CASE', $this->sql[0]);
+    $this->assertStringContainsString('SUM( CASE', $this->sql[0]);
     $this->assertEquals('Meeting', $rows[0]['civicrm_activity_activity_activity_type_id']);
     $this->assertEquals(2, $rows[0]['status_id_total']);
     $this->assertEquals(1, $rows[0]['status_id_' . $completedStatusID]);
@@ -58,7 +55,7 @@ class ActivityPivotTest extends BaseTestClass implements HeadlessInterface, Hook
    *
    * @throws \CRM_Core_Exception
    */
-  public function testCustomDataInPivot() {
+  public function testCustomDataInPivot(): void {
     $ids = $this->createCustomGroupWithField([], 'Activity');
     $this->getRows([
       'report_id' => 'activity/pivot',
