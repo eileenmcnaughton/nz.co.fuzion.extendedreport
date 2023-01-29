@@ -821,6 +821,7 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
    * @param array $options column options
    *
    * @return array
+   * @throws \CRM_Core_Exception
    */
   protected function getGrantColumns(array $options = []): array {
     $defaultOptions = $this->getDefaultOptions();
