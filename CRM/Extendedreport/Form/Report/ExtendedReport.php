@@ -7939,8 +7939,8 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
     if (($spec['data_type'] ?? '') === 'Boolean') {
       $options = [
         'values' => [
-          0 => ['label' => 'No', 'value' => 0],
-          1 => ['label' => 'Yes', 'value' => 1],
+          0 => ['label' => E::ts('No'), 'value' => 0],
+          1 => ['label' => E::ts('Yes'), 'value' => 1],
         ],
       ];
     }
