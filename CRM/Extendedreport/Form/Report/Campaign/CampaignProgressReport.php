@@ -8,8 +8,6 @@
 
 class CRM_Extendedreport_Form_Report_Campaign_CampaignProgressReport extends CRM_Extendedreport_Form_Report_ExtendedReport {
 
-  protected $_totalPaid = FALSE;
-
   protected $_customGroupExtends = ['Campaign'];
 
   protected $_baseTable = 'civicrm_campaign';

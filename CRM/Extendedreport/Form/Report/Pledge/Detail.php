@@ -10,8 +10,6 @@ use CRM_Extendedreport_ExtensionUtil as E;
 
 class CRM_Extendedreport_Form_Report_Pledge_Detail extends CRM_Extendedreport_Form_Report_ExtendedReport {
 
-  protected $_totalPaid = FALSE;
-
   protected $_customGroupExtends = ['Pledge'];
 
   protected $_customGroupGroupBy = TRUE;

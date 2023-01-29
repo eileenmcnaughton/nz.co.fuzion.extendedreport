@@ -8,13 +8,7 @@
 
 class CRM_Extendedreport_Form_Report_Pledge_PaidAndCommitted extends CRM_Extendedreport_Form_Report_ExtendedReport {
 
-  protected $_summary;
-
-  protected $_totalPaid = FALSE;
-
-  protected $_customGroupExtends = [
-    'Pledge',
-  ];
+  protected $_customGroupExtends = ['Pledge'];
 
   public $_drilldownReport = ['pledge/detail' => 'Pledge Details'];
 

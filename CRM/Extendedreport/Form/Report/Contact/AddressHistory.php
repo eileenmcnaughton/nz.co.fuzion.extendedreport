@@ -125,8 +125,7 @@ class CRM_Extendedreport_Form_Report_Contact_AddressHistory extends CRM_Extended
     if ($field['name'] === 'contact_id' && $value) {
       $this->contactID = (int) $value;
       $mergedContactIDs = $this->getContactsMergedIntoThisOne($this->contactID);
-      $clause = parent::whereClause($field, 'in', array_merge([$this->contactID], $mergedContactIDs), $min, $max);
-      return $clause;
+      return parent::whereClause($field, 'in', array_merge([$this->contactID], $mergedContactIDs), $min, $max);
     }
     return '';
   }

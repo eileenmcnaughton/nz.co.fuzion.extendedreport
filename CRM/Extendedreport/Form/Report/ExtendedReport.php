@@ -2606,8 +2606,7 @@ LEFT JOIN civicrm_contact {$prop['alias']} ON {$prop['alias']}.id = {$this->_ali
       }
     }
     // Convert the array of options into a comma separated string.
-    $value = implode(', ', $optionsArr);
-    return $value;
+    return implode(', ', $optionsArr);
   }
 
   /**
