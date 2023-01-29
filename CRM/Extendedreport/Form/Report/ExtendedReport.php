@@ -3895,11 +3895,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'is_filters' => TRUE,
         'type' => CRM_Utils_Type::T_BOOLEAN,
         'operatorType' => CRM_Report_Form::OP_SELECT,
-        'options' => [
-          '' => ts('- select -'),
-          1 => ts('Yes'),
-          0 => ts('No'),
-        ],
+        'options' => $this->getBooleanOptions(),
         'crm_editable' => [
           'id_table' => 'civicrm_event',
           'id_field' => 'id',
@@ -4462,6 +4458,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'is_group_bys' => TRUE,
         'is_order_bys' => TRUE,
         'type' => CRM_Utils_Type::T_BOOLEAN,
+        'options' => $this->getBooleanOptions(),
         'operatorType' => CRM_Report_Form::OP_SELECT,
       ],
     ];
@@ -6597,7 +6594,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    * @return mixed
    */
   protected function alterBoolean($value) {
-    $options = [0 => ts('No'), 1 => ts('Yes')];
+    $options = $this->getBooleanOptions();
     if (isset($options[$value])) {
       return $options[$value];
     }
@@ -8815,6 +8812,17 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
 
       $this->_columnHeaders = $amountYearLabel;
     }
+  }
+
+  /**
+   * @return array
+   */
+  protected function getBooleanOptions(): array {
+    return [
+      '' => E::ts('- select -'),
+      1 => E::ts('Yes'),
+      0 => E::ts('No'),
+    ];
   }
 
 }
