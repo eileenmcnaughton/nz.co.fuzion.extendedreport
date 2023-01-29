@@ -14,8 +14,8 @@
     <author>Eileen McNaughton</author>
     <email>eileen@fuzion.co.nz</email>
   </maintainer>
-  <releaseDate>2023-01-12</releaseDate>
-  <version>5.19</version>
+  <releaseDate>2023-01-29</releaseDate>
+  <version>5.20</version>
   <develStage>stable</develStage>
   <compatibility>
     <ver>5.55</ver>
