@@ -41,6 +41,9 @@ function extendedreport_version_at_least($version) {
 }
 
 function extendedreport_civicrm_tabset($tabsetName, &$tabs, $context) {
+  if (!isset($context['contact_id'])) {
+    return;
+  }
   $reports = civicrm_api3('ReportInstance', 'get', ['form_values' => ['LIKE' => '%contact_dashboard_tab";s:1:"1";%']]);
 
   foreach ($reports['values'] as $report) {
