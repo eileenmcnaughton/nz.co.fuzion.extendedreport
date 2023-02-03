@@ -2358,6 +2358,10 @@ LEFT JOIN civicrm_contact {$prop['alias']} ON {$prop['alias']}.id = {$this->_ali
     foreach ($rows as $index => &$row) {
       foreach ($row as $selectedField => $value) {
         if (array_key_exists($selectedField, $alterFunctions)) {
+          // some alter functions will not accept a blank string as value argument
+          if (is_string($value) && empty($value)) {
+            unset($value);
+          }
           $rows[$index][$selectedField] = $this->{$alterFunctions[$selectedField]}($value, $row, $selectedField, $alterMap[$selectedField], $alterSpecs[$selectedField]);
         }
       }
