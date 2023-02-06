@@ -23,6 +23,5 @@ if (CRM_Core_Component::isEnabled('CiviCampaign')) {
     ],
   ];
 }
-else {
-  return [];
-}
+
+return [];

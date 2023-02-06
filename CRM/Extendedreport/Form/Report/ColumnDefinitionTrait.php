@@ -101,7 +101,7 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
         'is_filters' => TRUE,
         'is_order_bys' => TRUE,
         'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-        'options' => CRM_Core_PseudoConstant::activityStatus(),
+        'options' => $this->_getOptions('activity', 'activity_status_id'),
         'crm_editable' => [
           'id_table' => 'civicrm_activity',
           'id_field' => 'id',
@@ -573,7 +573,7 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
    * @return array
    * @throws \CiviCRM_API3_Exception
    */
-  function getLatestActivityColumns(array $options) {
+  protected function getLatestActivityColumns(array $options): array {
     $defaultOptions = [
       'prefix' => '',
       'prefix_label' => '',
@@ -615,7 +615,7 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
         'is_fields' => TRUE,
         'is_filters' => TRUE,
         'type' => CRM_Utils_Type::T_INT,
-        'statistics' => ['count' => E::ts('Numer of recurring profiles')],
+        'statistics' => ['count' => E::ts('Number of recurring profiles')],
         'is_order_bys' => TRUE,
       ],
       'payment_processor_id' => [
@@ -768,6 +768,7 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
    * @param array $options
    *
    * @return array
+   * @throws \CRM_Core_Exception
    */
   protected function getContributionSoftColumns(array $options = []): array {
     $spec = [
@@ -914,6 +915,7 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
    * @param array $options column options
    *
    * @return array
+   * @throws \CRM_Core_Exception
    */
   protected function getProductColumns(array $options = []): array {
     $defaultOptions = $this->getDefaultOptions();
@@ -949,6 +951,7 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
    * @param array $options column options
    *
    * @return array
+   * @throws \CRM_Core_Exception
    */
   protected function getContributionProductColumns(array $options = []): array {
     $defaultOptions = $this->getDefaultOptions();

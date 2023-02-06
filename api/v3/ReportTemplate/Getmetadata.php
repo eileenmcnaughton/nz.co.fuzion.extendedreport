@@ -9,7 +9,7 @@
  * @return void
  * @see http://wiki.civicrm.org/confluence/display/CRMDOC/API+Architecture+Standards
  */
-function _civicrm_api3_report_template_getmetadata_spec(&$spec) {
+function _civicrm_api3_report_template_getmetadata_spec(array &$spec): void {
 
 }
 
