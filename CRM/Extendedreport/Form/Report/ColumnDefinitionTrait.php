@@ -768,6 +768,7 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
    * @param array $options
    *
    * @return array
+   * @throws \CRM_Core_Exception
    */
   protected function getContributionSoftColumns(array $options = []): array {
     $spec = [
@@ -914,6 +915,7 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
    * @param array $options column options
    *
    * @return array
+   * @throws \CRM_Core_Exception
    */
   protected function getProductColumns(array $options = []): array {
     $defaultOptions = $this->getDefaultOptions();
@@ -949,6 +951,7 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
    * @param array $options column options
    *
    * @return array
+   * @throws \CRM_Core_Exception
    */
   protected function getContributionProductColumns(array $options = []): array {
     $defaultOptions = $this->getDefaultOptions();
