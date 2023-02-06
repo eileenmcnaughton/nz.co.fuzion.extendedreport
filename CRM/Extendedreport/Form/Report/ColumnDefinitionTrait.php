@@ -573,7 +573,7 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
    * @return array
    * @throws \CiviCRM_API3_Exception
    */
-  function getLatestActivityColumns(array $options) {
+  protected function getLatestActivityColumns(array $options): array {
     $defaultOptions = [
       'prefix' => '',
       'prefix_label' => '',
