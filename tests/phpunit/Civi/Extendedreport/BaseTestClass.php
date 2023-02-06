@@ -366,16 +366,20 @@ class BaseTestClass extends TestCase implements HeadlessInterface, HookInterface
     $mgdFiles = \CRM_Utils_File::findFiles(\CRM_Extendedreport_ExtensionUtil::path(), '*.mgd.php');
     sort($mgdFiles);
     foreach ($mgdFiles as $file) {
-      $es = include $file;
-      foreach ($es as $e) {
-        if (empty($e['module'])) {
-          $e['module'] = 'nz.co.fuzion.extendedreport';
+      $managedReports = include $file;
+      foreach ($managedReports as $managedReport) {
+        if (empty($managedReport['module'])) {
+          $managedReport['module'] = 'nz.co.fuzion.extendedreport';
         }
         if (empty($e['params']['version'])) {
-          $e['params']['version'] = '3';
+          $managedReport['params']['version'] = '3';
+        }
+        if (empty($managedReport['params']['report_url'])) {
+          $managedReport['params']['report_url'] = $managedReport['params']['values']['value'];
         }
       }
-      $reports[] = $e;
+      $managedReport['report_url'] = $managedReport['params']['report_url'];
+      $reports[] = $managedReport;
     }
     return $reports;
   }
