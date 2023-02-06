@@ -4,7 +4,7 @@
 // database as appropriate.
 // @see https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_managed/
 return [
-  0 => [
+  [
     'name' => 'Extended Report - Relationships',
     'entity' => 'ReportTemplate',
     'params' => [
