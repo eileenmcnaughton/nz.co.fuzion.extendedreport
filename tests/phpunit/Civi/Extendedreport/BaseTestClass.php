@@ -14,6 +14,7 @@ use CRM_Core_DAO;
 use CRM_Core_PseudoConstant;
 use PHPUnit\Framework\TestCase;
 use function civicrm_api3;
+use Civi\Api4\Managed;
 
 /**
  * FIXME - Add test description.
@@ -332,13 +333,14 @@ class BaseTestClass extends TestCase implements HeadlessInterface, HookInterface
    * Enable all components.
    *
    */
-  protected function enableAllComponents() {
+  protected function enableAllComponents(): void {
     $components = [];
     $dao = CRM_Core_DAO::executeQuery('SELECT id, name FROM civicrm_component');
     while ($dao->fetch()) {
       $components[$dao->id] = $dao->name;
     }
     $this->callAPISuccess('Setting', 'create', ['enable_components' => $components]);
+    Managed::reconcile(FALSE)->setModules(['nz.co.fuzion.extendedreport'])->execute();
   }
 
   /**
