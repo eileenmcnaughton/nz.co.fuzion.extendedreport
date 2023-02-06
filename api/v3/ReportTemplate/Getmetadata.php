@@ -19,16 +19,17 @@ function _civicrm_api3_report_template_getmetadata_spec(&$spec) {
  * @param array $params
  *
  * @return array API result descriptor
- * @throws API_Exception
+ * @throws \CRM_Core_Exception
+ *
  * @see civicrm_api3_create_error
  * @see civicrm_api3_create_success
  */
-function civicrm_api3_report_template_getmetadata($params) {
+function civicrm_api3_report_template_getmetadata(array $params): array {
   if (empty($params['report_id'])) {
-    $params['report_id'] = civicrm_api3('report_instance', 'getvalue', ['id' => $params['instance_id'], 'return' => 'report_id']);
+    $params['report_id'] = civicrm_api3('ReportInstance', 'getvalue', ['id' => $params['instance_id'], 'return' => 'report_id']);
   }
 
-  $class = (string) civicrm_api3('option_value', 'getvalue', [
+  $class = (string) civicrm_api3('OptionValue', 'getvalue', [
       'option_group_name' => 'report_template',
       'return' => 'name',
       'value' => $params['report_id'],
