@@ -615,7 +615,7 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
         'is_fields' => TRUE,
         'is_filters' => TRUE,
         'type' => CRM_Utils_Type::T_INT,
-        'statistics' => ['count' => E::ts('Numer of recurring profiles')],
+        'statistics' => ['count' => E::ts('Number of recurring profiles')],
         'is_order_bys' => TRUE,
       ],
       'payment_processor_id' => [
