@@ -101,7 +101,7 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
         'is_filters' => TRUE,
         'is_order_bys' => TRUE,
         'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-        'options' => CRM_Core_PseudoConstant::activityStatus(),
+        'options' => $this->_getOptions('activity', 'activity_status_id'),
         'crm_editable' => [
           'id_table' => 'civicrm_activity',
           'id_field' => 'id',
