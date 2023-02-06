@@ -6,14 +6,18 @@
 return [
   [
     'name' => 'Extended Report - Relationships',
-    'entity' => 'ReportTemplate',
+    'entity' => 'OptionValue',
     'params' => [
-      'version' => 3,
-      'label' => 'Extended Report - Relationships',
-      'description' => 'Extended Report - Relationships, includes data from both sides of the relationship',
-      'class_name' => 'CRM_Extendedreport_Form_Report_RelationshipExtended',
-      'report_url' => 'relationshipextended',
-      'component' => '',
+      'version' => 4,
+      'values' => [
+        'label' => 'Extended Report - Relationships',
+        'option_group_id:name' => 'report_template',
+        'description' => 'Extended Report - Relationships, includes data from both sides of the relationship',
+        'name' => 'CRM_Extendedreport_Form_Report_RelationshipExtended',
+        'value' => 'relationshipextended',
+        'component' => '',
+      ],
     ],
+    'match' => ['name'],
   ],
 ];
