@@ -2,6 +2,7 @@
 
 require_once __DIR__ . '/../BaseTestClass.php';
 
+use Civi\Api4\Managed;
 use Civi\Test\HeadlessInterface;
 use Civi\Test\HookInterface;
 use Civi\Test\TransactionalInterface;
@@ -27,6 +28,7 @@ class CampaignProgressReportTest extends BaseTestClass implements HeadlessInterf
   public function setUp(): void {
     parent::setUp();
     $this->enableAllComponents();
+    Managed::reconcile(FALSE)->setModules(['nz.co.fuzion.extendedreport'])->execute();
     $contact = $this->callAPISuccess('Contact', 'create', ['first_name' => 'Wonder', 'last_name' => 'Woman', 'contact_type' => 'Individual']);
     $this->contacts[] = $contact['id'];
   }
