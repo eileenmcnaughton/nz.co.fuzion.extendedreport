@@ -3388,6 +3388,16 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'is_filters' => TRUE,
         'is_order_bys' => TRUE,
       ],
+      'is_test' => [
+        'is_fields' => FALSE,
+        'is_filters' => TRUE,
+        'is_order_bys' => FALSE,
+        'title' => 'Is a test registration?',
+        'operatorType' => CRM_Report_Form::OP_SELECT,
+        'options' => ['' => '--select--'] + CRM_Event_BAO_Participant::buildOptions('is_test'),
+        'default' => 0,
+        'type' => CRM_Utils_Type::T_STRING,
+      ],
     ];
 
     return $this->buildColumns($specs, 'civicrm_participant', 'CRM_Event_BAO_Participant');
