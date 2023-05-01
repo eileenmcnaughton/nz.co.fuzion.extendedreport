@@ -2386,35 +2386,7 @@ LEFT JOIN civicrm_contact {$prop['alias']} ON {$prop['alias']}.id = {$this->_ali
       // format result set.
       $pager = FALSE;
     }
-    // set pager based on if any limit was applied in the query.
-    if ($pager) {
-      $this->setPager();
-    }
-
-    // unset columns not to be displayed.
-    foreach ($this->_columnHeaders as $key => $value) {
-      if (!empty($value['no_display'])) {
-        unset($this->_columnHeaders[$key]);
-      }
-    }
-
-    // unset columns not to be displayed.
-    if (!empty($rows)) {
-      foreach ($this->_noDisplay as $noDisplayField) {
-        unset($this->_columnHeaders[$noDisplayField]);
-      }
-    }
-
-    // build array of section totals
-    $this->sectionTotals();
-
-    // process grand-total row
-    $this->grandTotal($rows);
-
-    // use this method for formatting rows for display purpose.
-    $this->alterDisplay($rows);
-    CRM_Utils_Hook::alterReportVar('rows', $rows, $this);
-
+    parent::formatDisplay($rows, $pager);
     // use this method for formatting custom rows for display purpose.
     $this->alterCustomDataDisplay($rows);
   }
@@ -6540,14 +6512,15 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
   /**
    * Convert the pledge payment id to a link if grouped by only pledge payment id.
    *
-   * @param int|null $value
+   * @param int|null|string $value
    *
    * @param array $row
    * @param string $selectedField
    *
    * @return string
+   * @noinspection PhpUnused
    */
-  protected function alterPledgePaymentLink(?int $value, array &$row, string $selectedField): string {
+  protected function alterPledgePaymentLink($value, array &$row, string $selectedField): string {
     if ($this->_groupByArray !== ['civicrm_pledge_payment_id' => 'pledge_payment.id']
       && $this->_groupByArray !== ['civicrm_pledge_payment_id' => 'civicrm_pledge_payment.id']
     ) {
