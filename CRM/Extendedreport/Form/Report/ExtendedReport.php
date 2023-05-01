@@ -2318,6 +2318,7 @@ LEFT JOIN civicrm_contact {$prop['alias']} ON {$prop['alias']}.id = {$this->_ali
       if (!empty($this->_groupByArray) && isset($specs['statistics']['cumulative']) && in_array($fieldAlias . '_sum', $selectedFields, TRUE)) {
         $this->_columnHeaders[$fieldAlias . '_cumulative']['title'] = $specs['statistics']['cumulative'];
         $this->_columnHeaders[$fieldAlias . '_cumulative']['type'] = $specs['type'];
+        $this->_columnHeaders[$fieldAlias . '_cumulative']['colspan'] = $specs['colspan'] ?? FALSE;
         $alterFunctions[$fieldAlias . '_sum'] = 'alterCumulative';
         $alterMap[$fieldAlias . '_sum'] = $fieldAlias;
         $alterSpecs[$fieldAlias . '_sum'] = $specs['name'];
@@ -6527,13 +6528,13 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
       CRM_Core_Session::setStatus(ts('Pledge payment link not added'), ts('The pledge payment link cannot be added if the grouping options on the report make it ambiguous'));
       return '';
     }
-    if (empty($value)) {
+    if (empty($value) || !is_numeric($value)) {
       return $value;
     }
     $contactID = $row['civicrm_pledge_pledge_contact_id'] ?? CRM_Core_DAO::singleValueQuery(
-        "SELECT contact_id FROM civicrm_pledge_payment pp
+        'SELECT contact_id FROM civicrm_pledge_payment pp
          LEFT JOIN civicrm_pledge p ON pp.pledge_id = p.id
-         WHERE pp.id = " . $value
+         WHERE pp.id = ' . $value
       );
     $row[$selectedField . '_link'] = CRM_Utils_System::url('civicrm/contact/view/contribution', 'reset=1&action=add&cid=' . $contactID . '&context=pledge&ppid=' . $value);
     $row[$selectedField . '_hover'] = ts('Record a payment received for this pledged payment');
