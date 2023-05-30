@@ -2,10 +2,6 @@
 
 require_once __DIR__ . '../../BaseTestClass.php';
 
-use Civi\Test\HeadlessInterface;
-use Civi\Test\HookInterface;
-use Civi\Test\TransactionalInterface;
-
 /**
  * Test contribution DetailExtended class.
  *
@@ -20,12 +16,12 @@ use Civi\Test\TransactionalInterface;
  *
  * @group headless
  */
-class DetailExtendedTest extends BaseTestClass implements HeadlessInterface, HookInterface, TransactionalInterface {
+class DetailExtendedTest extends BaseTestClass {
 
   /**
    * Test joining in the batch table.
    */
-  public function testBatchJoin() {
+  public function testBatchJoin(): void {
     $batchID = $this->callAPISuccess('Batch', 'create', ['title' => 'batch', 'status_id' => 'Open'])['id'];
     $this->ids['contact'][] = $this->callAPISuccess('Contact', 'create', ['contact_type' => 'Individual', 'email' => 'e@example.com'])['id'];
     $this->callAPISuccess('Contribution', 'create', [
