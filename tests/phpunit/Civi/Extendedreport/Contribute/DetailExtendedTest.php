@@ -1,6 +1,9 @@
 <?php
 
-require_once __DIR__ . '../../BaseTestClass.php';
+
+namespace Civi\Extendedreport\Contribute;
+
+use Civi\Extendedreport\BaseTestClass;
 
 /**
  * Test contribution DetailExtended class.

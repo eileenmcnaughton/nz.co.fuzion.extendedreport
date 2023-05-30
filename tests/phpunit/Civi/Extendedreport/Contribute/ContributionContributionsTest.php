@@ -1,6 +1,8 @@
 <?php
 
-require_once __DIR__ . '../../BaseTestClass.php';
+namespace Civi\Extendedreport\Contribute;
+
+use Civi\Extendedreport\BaseTestClass;
 
 /**
  * Test contribution DetailExtended class.
@@ -203,8 +205,6 @@ class ContributionContributionsTest extends BaseTestClass {
 
   /**
    * Test that is doesn't matter if the having filter is selected.
-   *
-   * @throws \CRM_Core_Exception
    */
   public function testGetRowsWithNotes(): void {
     $ids = $this->createTwoContactsWithContributions();
