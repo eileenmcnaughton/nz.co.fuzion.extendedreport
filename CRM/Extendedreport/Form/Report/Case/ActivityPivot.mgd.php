@@ -6,14 +6,18 @@
 return [
   0 => [
     'name' => 'Extended Report - Activity Pivot Chart (CiviCase)',
-    'entity' => 'ReportTemplate',
+    'entity' => 'OptionValue',
     'params' => [
-      'version' => 3,
-      'label' => 'Extended Report - Activity Pivot Chart (CiviCase)',
-      'description' => 'Extended Report - Activity Pivot Chart',
-      'class_name' => 'CRM_Extendedreport_Form_Report_Case_ActivityPivot',
-      'report_url' => 'case/activity/pivot',
-      'component' => 'CiviCase',
+      'version' => 4,
+      'values' => [
+        'label' => 'Extended Report - Activity Pivot Chart (CiviCase)',
+        'option_group_id:name' => 'report_template',
+        'description' => 'Extended Report - Activity Pivot Chart',
+        'name' => 'CRM_Extendedreport_Form_Report_Case_ActivityPivot',
+        'value' => 'case/activity/pivot',
+        'component' => 'CiviCase',
+      ],
     ],
+    'match' => ['name', 'option_group_id'],
   ],
 ];
