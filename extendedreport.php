@@ -121,12 +121,3 @@ function extendedreport_civicrm_contactSummaryBlocks(&$blocks) {
   }
 
 }
-
-/**
- * Implements hook_civicrm_entityTypes().
- *
- * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_entityTypes
- */
-function extendedreport_civicrm_entityTypes(&$entityTypes) {
-  _extendedreport_civix_civicrm_entityTypes($entityTypes);
-}
