@@ -6,14 +6,18 @@
 return [
   0 => [
     'name' => 'Extended Report - Activity Pivot Chart',
-    'entity' => 'ReportTemplate',
+    'entity' => 'OptionValue',
+    'match' => ['name', 'option_group_id'],
     'params' => [
-      'version' => 3,
-      'label' => 'Extended Report - Activity Pivot Chart',
-      'description' => 'Extended Report - Activity Pivot Chart',
-      'class_name' => 'CRM_Extendedreport_Form_Report_ActivityPivot',
-      'report_url' => 'activity/pivot',
-      'component' => '',
+      'version' => 4,
+      'values' => [
+        'label' => 'Extended Report - Activity Pivot Chart',
+        'option_group_id:name' => 'report_template',
+        'description' => 'Extended Report - Activity Pivot Chart',
+        'name' => 'CRM_Extendedreport_Form_Report_ActivityPivot',
+        'value' => 'activity/pivot',
+        'component' => '',
+      ],
     ],
   ],
 ];

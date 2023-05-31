@@ -6,14 +6,18 @@
 return [
   0 => [
     'name' => 'Extended Report - Editable Activities',
-    'entity' => 'ReportTemplate',
+    'entity' => 'OptionValue',
+    'match' => ['name', 'option_group_id'],
     'params' => [
-      'version' => 3,
-      'label' => 'Extended Report - Editable Activities',
-      'description' => 'Extended Report - editable Activity Report',
-      'class_name' => 'CRM_Extendedreport_Form_Report_ActivityEditable',
-      'report_url' => 'activityeditable',
-      'component' => '',
+      'version' => 4,
+      'values' => [
+        'label' => 'Extended Report - Editable Activities',
+        'option_group_id:name' => 'report_template',
+        'description' => 'Extended Report - editable Activity Report',
+        'name' => 'CRM_Extendedreport_Form_Report_ActivityEditable',
+        'value' => 'activityeditable',
+        'component' => '',
+      ],
     ],
   ],
 ];

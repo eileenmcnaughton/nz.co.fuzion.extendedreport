@@ -6,14 +6,18 @@
 return [
   0 => [
     'name' => 'Extended Report - Activities',
-    'entity' => 'ReportTemplate',
+    'entity' => 'OptionValue',
+    'match' => ['name', 'option_group_id'],
     'params' => [
-      'version' => 3,
-      'label' => 'Extended Report - Activities',
-      'description' => 'Extended Report - Activities, includes multi-contact custom fields',
-      'class_name' => 'CRM_Extendedreport_Form_Report_ActivityExtended',
-      'report_url' => 'activityextended',
-      'component' => '',
+      'version' => 4,
+      'values' => [
+        'label' => 'Extended Report - Activities',
+        'option_group_id:name' => 'report_template',
+        'description' => 'Extended Report - Activities, includes multi-contact custom fields',
+        'name' => 'CRM_Extendedreport_Form_Report_ActivityExtended',
+        'value' => 'activityextended',
+        'component' => '',
+      ],
     ],
   ],
 ];
