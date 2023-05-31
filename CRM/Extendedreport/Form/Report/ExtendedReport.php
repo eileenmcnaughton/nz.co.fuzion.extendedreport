@@ -6429,21 +6429,28 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
   /**
    * Alter Employer ID value for display.
    *
-   * @param int|null $value
+   * @param int|string|null $value
    * @param array $row
    * @param string $fieldName
    *
    * @return string|null
    * @throws \API_Exception
    */
-  public function alterEmployerID(?int $value, array &$row, string $fieldName): ?string {
+  public function alterEmployerID($value, array &$row, string $fieldName): ?string {
     if ($value) {
+      $values = explode(',', $value);
       try {
-        $row[$fieldName] = Contact::get()
-          ->addWhere('id', '=', $value)
-          ->addSelect('display_name')->execute()->first()['display_name'];
-        $row[$fieldName . '_link'] = CRM_Utils_System::url('civicrm/contact/view', 'reset=1&cid=' . $value, $this->_absoluteUrl);
+        $displayNames = [];
+        foreach ($values as $id) {
+          $displayNames[] = Contact::get()
+            ->addWhere('id', '=', $id)
+            ->addSelect('display_name')->execute()->first()['display_name'];
+        }
+        $row[$fieldName] = implode(', ', $displayNames);
+        // Ho hum - only link to the first one.
+        $row[$fieldName . '_link'] = CRM_Utils_System::url('civicrm/contact/view', 'reset=1&cid=' . $values[0], $this->_absoluteUrl);
         $row[$fieldName . '_hover'] = E::ts('View Contact Summary for Employer.');
+
         return $row[$fieldName];
       }
       catch (UnauthorizedException $e ) {

@@ -99,6 +99,7 @@ class ExtendedReportTest extends BaseTestClass implements HookInterface {
       ],
       'fields' => ['civicrm_contact_first_name' => 1, 'civicrm_contact_middle_name' => 1, 'class' => ''],
       'group_bys' => $group_bys,
+      'class' => '',
     ]);
     $this->assertEquals(['civicrm_contact_civicrm_contact_middle_name', 'civicrm_contact_civicrm_contact_last_name'], array_keys($rows[0]));
     $this->assertEquals('special name(First name)', $this->labels['civicrm_contact_civicrm_contact_middle_name']);
