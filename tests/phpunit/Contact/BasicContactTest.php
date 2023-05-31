@@ -89,6 +89,7 @@ class Contact_BasicContactTest extends BaseTestClass implements HeadlessInterfac
           'civicrm_contact_civicrm_contact_contact_id' => $this->contacts[1],
           'contact_custom_' . $customField['id'] . '_civireport' => 'Amazons',
           'civicrm_contact_civicrm_contact_contact_id_link' => '/index.php?q=civicrm/contact/view&amp;reset=1&amp;cid=' . $this->contacts[1],
+          'class' => NULL,
         ],
     ], $rows);
     $params['custom_' . $customField['id'] . '_value'] = 'Wonder';

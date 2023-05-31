@@ -6208,7 +6208,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
   /**
    * Retrieve text for contribution type from pseudoconstant.
    *
-   * @param int $value
+   * @param int|string|null $value Note a string would indicate a group by.
    * @param array $row
    *
    * @param string $selectedField
