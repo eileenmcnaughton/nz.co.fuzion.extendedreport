@@ -32,6 +32,8 @@ class ExtendedReportTest extends BaseTestClass implements HookInterface {
 
   /**
    * Example: Test that a version is returned.
+   *
+   * @throws \Civi\Core\Exception\DBQueryException
    */
   public function testReportsRun(): void {
     foreach ($this->getAllReports() as $report) {
@@ -95,7 +97,7 @@ class ExtendedReportTest extends BaseTestClass implements HookInterface {
           'name' => 'civicrm_contact_last_name',
         ],
       ],
-      'fields' => ['civicrm_contact_first_name' => 1, 'civicrm_contact_middle_name' => 1],
+      'fields' => ['civicrm_contact_first_name' => 1, 'civicrm_contact_middle_name' => 1, 'class' => ''],
       'group_bys' => $group_bys,
     ]);
     $this->assertEquals(['civicrm_contact_civicrm_contact_middle_name', 'civicrm_contact_civicrm_contact_last_name'], array_keys($rows[0]));
