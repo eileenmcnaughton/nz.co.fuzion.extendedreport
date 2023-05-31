@@ -24,6 +24,9 @@ class ExtendedReportTest extends BaseTestClass implements HookInterface {
     $this->enableAllComponents();
   }
 
+  /**
+   * @throws \Civi\Core\Exception\DBQueryException
+   */
   public function tearDown(): void {
     CRM_Core_DAO::executeQuery('DELETE FROM civicrm_pledge');
     parent::tearDown();
@@ -101,7 +104,7 @@ class ExtendedReportTest extends BaseTestClass implements HookInterface {
       'group_bys' => $group_bys,
       'class' => '',
     ]);
-    $this->assertEquals(['civicrm_contact_civicrm_contact_middle_name', 'civicrm_contact_civicrm_contact_last_name'], array_keys($rows[0]));
+    $this->assertEquals(['civicrm_contact_civicrm_contact_middle_name', 'civicrm_contact_civicrm_contact_last_name', 'class'], array_keys($rows[0]));
     $this->assertEquals('special name(First name)', $this->labels['civicrm_contact_civicrm_contact_middle_name']);
     $this->assertEquals('boring name', $this->labels['civicrm_contact_civicrm_contact_last_name']);
     $this->assertEquals('first', $rows[0]['civicrm_contact_civicrm_contact_middle_name']);
