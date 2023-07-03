@@ -962,7 +962,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    *
    * @return string|array
    */
-  protected function getFilterFieldValue(array &$spec): string|array {
+  protected function getFilterFieldValue(array &$spec) {
     $fieldName = $spec['table_name'] . '_' . $spec['name'];
     $valueKey = $fieldName . '_value';
     if (isset($this->_params[$valueKey])) {
