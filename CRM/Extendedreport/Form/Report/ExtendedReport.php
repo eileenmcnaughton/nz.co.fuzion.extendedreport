@@ -892,14 +892,9 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       $options['values'] = array_intersect_key($options, array_flip($this->_params[$fieldName . '_value']));
     }
 
-    $filterSpec = [
-      'field' => ['name' => $fieldName],
-      'table' => ['alias' => $spec['table_name']],
-    ];
-
     // for now we will literally just handle IN
-    if ($this->getFilterFieldValue($spec) && $filterSpec['field']['op'] === 'in') {
-      $options = array_intersect_key($options, array_flip($filterSpec['field']['value']));
+    if ($this->getFilterFieldValue($spec) && $spec['field']['op'] === 'in') {
+      $options = array_intersect_key($options, array_flip($spec['field']['value']));
       $this->_aggregatesIncludeNULL = FALSE;
     }
 
