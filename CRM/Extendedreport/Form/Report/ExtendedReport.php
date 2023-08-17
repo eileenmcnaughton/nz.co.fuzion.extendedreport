@@ -2267,7 +2267,6 @@ LEFT JOIN civicrm_contact {$prop['alias']} ON {$prop['alias']}.id = {$this->_ali
     if (!empty($this->_defaults['report_id']) && $this->_defaults['report_id'] === reset($this->_drilldownReport)) {
       $this->linkedReportID = $this->_id;
     }
-    parent::alterDisplay($rows);
 
     if (isset($this->_params['delete_null']) && $this->_params['delete_null'] == '1') {
       foreach ($this->rollupRow as $rowName => $rowValue) {
@@ -2305,11 +2304,6 @@ LEFT JOIN civicrm_contact {$prop['alias']} ON {$prop['alias']}.id = {$this->_ali
     $fieldData = $this->getMetadataByAlias('metadata');
     $chosen = array_intersect_key($fieldData, $firstRow);
     foreach ($fieldData as $fieldAlias => $specs) {
-      if (isset($chosen[$fieldAlias]) && array_key_exists('alter_display', $specs)) {
-        $alterFunctions[$fieldAlias] = $specs['alter_display'];
-        $alterMap[$fieldAlias] = $fieldAlias;
-        $alterSpecs[$fieldAlias] = $specs;
-      }
       if (!empty($this->_groupByArray) && isset($specs['statistics']['cumulative']) && in_array($fieldAlias . '_sum', $selectedFields, TRUE)) {
         $this->_columnHeaders[$fieldAlias . '_cumulative']['title'] = $specs['statistics']['cumulative'];
         $this->_columnHeaders[$fieldAlias . '_cumulative']['type'] = $specs['type'];
@@ -2329,29 +2323,22 @@ LEFT JOIN civicrm_contact {$prop['alias']} ON {$prop['alias']}.id = {$this->_ali
           $alterSpecs[$fieldAlias]['field_name'] = $specs['name'];
         }
       }
-      // Add any alters that can be intuited from the field specs.
-      // So far only boolean but a lot more could be.
-      if (empty($alterSpecs[$fieldAlias])
-        && $specs['type'] === CRM_Utils_Type::T_BOOLEAN
-        // Do not handle custom fields in alter functions
-        // as they are otherwise handled.
-        && empty($specs['extends'])) {
-        $alterFunctions[$fieldAlias] = 'alterBoolean';
-        $alterMap[$fieldAlias] = $fieldAlias;
-        $alterSpecs[$fieldAlias] = NULL;
+    }
+    if (!empty($alterFunctions)) {
+      foreach ($rows as $index => &$row) {
+        foreach ($row as $selectedField => $value) {
+          if (array_key_exists($selectedField, $alterFunctions) && $value !== '') {
+            $rows[$index][$selectedField] = $this->{$alterFunctions[$selectedField]}($value, $row, $selectedField, $alterMap[$selectedField], $alterSpecs[$selectedField]);
+          }
+        }
       }
     }
 
+    parent::alterDisplay($rows);
     if ($this->_rollup) {
       //we want to be able to unset rows so here
       $this->alterRollupRows($rows);
     }
-
-    if (empty($alterFunctions)) {
-      // - no manipulation to be done
-      return;
-    }
-
   }
 
   /**

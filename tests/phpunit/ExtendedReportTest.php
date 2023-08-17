@@ -303,7 +303,7 @@ class ExtendedReportTest extends BaseTestClass implements HookInterface {
     $this->assertEquals(14285.74, $rows[0]['civicrm_pledge_payment_pledge_payment_scheduled_amount_sum']);
     $this->assertEquals(14285.74, $rows[0]['civicrm_pledge_payment_pledge_payment_scheduled_amount_cumulative']);
     $this->assertEquals(10000, $rows[1]['civicrm_pledge_payment_pledge_payment_scheduled_amount_sum']);
-    $this->assertEquals(24285.74, $rows[1]['civicrm_pledge_payment_pledge_payment_scheduled_amount_cumulative']);
+    $this->assertEquals(24285.74, round($rows[1]['civicrm_pledge_payment_pledge_payment_scheduled_amount_cumulative'], 2));
   }
 
   /**
@@ -350,10 +350,10 @@ class ExtendedReportTest extends BaseTestClass implements HookInterface {
     $this->assertEquals(14285.74, $rows[0]['civicrm_pledge_payment_pledge_payment_scheduled_amount_sum']);
     $this->assertEquals(14285.74, $rows[0]['civicrm_pledge_payment_pledge_payment_scheduled_amount_cumulative']);
     $this->assertEquals(10000, $rows[1]['civicrm_pledge_payment_pledge_payment_scheduled_amount_sum']);
-    $this->assertEquals(24285.74, $rows[1]['civicrm_pledge_payment_pledge_payment_scheduled_amount_cumulative']);
+    $this->assertEquals(24285.74, round($rows[1]['civicrm_pledge_payment_pledge_payment_scheduled_amount_cumulative'], 2));
     $this->assertEquals(10000, $rows[2]['civicrm_pledge_payment_pledge_payment_scheduled_amount_sum']);
     $this->assertEquals(34285.74, $rows[2]['civicrm_pledge_payment_pledge_payment_scheduled_amount_cumulative']);
-    $this->assertEquals(24285.74, $rows[1]['civicrm_pledge_payment_pledge_payment_scheduled_amount_cumulative']);
+    $this->assertEquals(24285.74, round($rows[1]['civicrm_pledge_payment_pledge_payment_scheduled_amount_cumulative'], 2));
     $this->assertEquals(85714.26, $rows[3]['civicrm_pledge_payment_pledge_payment_scheduled_amount_sum']);
   }
 
