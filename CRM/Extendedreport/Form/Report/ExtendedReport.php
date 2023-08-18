@@ -6203,7 +6203,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
   protected function alterFinancialType($value, array &$row, string $selectedField, string $criteriaFieldName, ?array $specs): string {
     if ($this->_drilldownReport) {
       // Issue #308 - drilldown report URLs should use original field name, not alias.
-      $criteriaFieldName = $specs['fieldName'];
+      $criteriaFieldName = $specs['fieldName'] ?? $selectedField;
       $criteriaQueryParams = CRM_Report_Utils_Report::getPreviewCriteriaQueryParams($this->_defaults, $this->_params);
       $url = CRM_Report_Utils_Report::getNextUrl(key($this->_drilldownReport),
         "reset=1&force=1&$criteriaQueryParams&" .
