@@ -7,9 +7,9 @@ return [
   [
     'name' => 'Extended Report - Relationships',
     'entity' => 'OptionValue',
-    'match' => ['name', 'option_group_id'],
     'params' => [
       'version' => 4,
+      'match' => ['name', 'option_group_id'],
       'values' => [
         'label' => 'Extended Report - Relationships',
         'option_group_id:name' => 'report_template',

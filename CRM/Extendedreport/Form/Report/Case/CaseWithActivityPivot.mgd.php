@@ -7,8 +7,8 @@ return [
   0 => [
     'name' => 'Extended Report - Activity Pivot Chart (CiviCase) (starting from Case)',
     'entity' => 'OptionValue',
-    'match' => ['name', 'option_group_id'],
     'params' => [
+      'match' => ['name', 'option_group_id'],
       'version' => 4,
       'values' => [
         'option_group_id:name' => 'report_template',

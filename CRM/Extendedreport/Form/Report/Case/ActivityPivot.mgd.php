@@ -8,6 +8,7 @@ return [
     'name' => 'Extended Report - Activity Pivot Chart (CiviCase)',
     'entity' => 'OptionValue',
     'params' => [
+      'match' => ['name', 'option_group_id'],
       'version' => 4,
       'values' => [
         'label' => 'Extended Report - Activity Pivot Chart (CiviCase)',
@@ -18,6 +19,5 @@ return [
         'component' => 'CiviCase',
       ],
     ],
-    'match' => ['name', 'option_group_id'],
   ],
 ];
