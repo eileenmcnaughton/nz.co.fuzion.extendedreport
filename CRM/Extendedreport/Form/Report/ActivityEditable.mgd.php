@@ -7,9 +7,9 @@ return [
   0 => [
     'name' => 'Extended Report - Editable Activities',
     'entity' => 'OptionValue',
-    'match' => ['name', 'option_group_id'],
     'params' => [
       'version' => 4,
+      'match' => ['name', 'option_group_id'],
       'values' => [
         'label' => 'Extended Report - Editable Activities',
         'option_group_id:name' => 'report_template',

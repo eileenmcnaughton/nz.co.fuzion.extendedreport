@@ -22,6 +22,7 @@ return [
     'entity' => 'OptionValue',
     'params' => [
       'version' => 4,
+      'match' => ['name'],
       'values' => [
         'label' => 'Extended Report - Grant Detail',
         'description' => 'Extended Report - Grant Detail',
@@ -30,7 +31,6 @@ return [
         'option_group_id:name' => 'report_template',
         'component' => '',
       ],
-      'match' => ['name'],
     ],
   ],
 ];
