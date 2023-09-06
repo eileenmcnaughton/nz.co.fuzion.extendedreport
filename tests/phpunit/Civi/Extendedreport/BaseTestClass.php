@@ -67,8 +67,7 @@ class BaseTestClass extends TestCase implements HeadlessInterface, HookInterface
     CRM_Core_DAO::executeQuery('DELETE FROM civicrm_contribution');
     CRM_Core_DAO::executeQuery('DELETE FROM civicrm_note');
     return Test::headless()
-      ->install('org.civicrm.search_kit')
-      ->install(['org.civicrm.afform', 'civigrant'])
+      ->install(['org.civicrm.afform', 'civigrant', 'civi_pledge'])
       ->installMe(__DIR__)
       ->apply();
   }
