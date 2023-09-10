@@ -76,6 +76,7 @@ class BaseTestClass extends TestCase implements HeadlessInterface, HookInterface
    *
    */
   public function tearDown(): void {
+    \Civi::settings()->set('logging', FALSE);
     foreach ($this->ids as $entity => $entityIDs) {
       foreach ($entityIDs as $entityID) {
         try {
