@@ -7,8 +7,6 @@ use Civi\Test\Api3TestTrait;
 use Civi\Test\CiviEnvBuilder;
 use Civi\Test\HeadlessInterface;
 use Civi\Test\HookInterface;
-use Civi\Test\TransactionalInterface;
-use CiviCRM_API3_Exception;
 use CRM_Core_BAO_CustomField;
 use CRM_Core_DAO;
 use CRM_Core_PseudoConstant;
@@ -30,7 +28,7 @@ use Civi\Api4\Managed;
  *
  * @group headless
  */
-class BaseTestClass extends TestCase implements HeadlessInterface, HookInterface, TransactionalInterface {
+class BaseTestClass extends TestCase implements HeadlessInterface, HookInterface {
 
   use Api3TestTrait;
 
@@ -57,6 +55,7 @@ class BaseTestClass extends TestCase implements HeadlessInterface, HookInterface
    * @return \Civi\Test\CiviEnvBuilder
    *
    * @throws \CRM_Extension_Exception_ParseException
+   * @throws \Civi\Core\Exception\DBQueryException
    */
   public function setUpHeadless(): CiviEnvBuilder {
     // Civi\Test has many helpers, like install(), uninstall(), sql(), and sqlFile().
@@ -67,8 +66,7 @@ class BaseTestClass extends TestCase implements HeadlessInterface, HookInterface
     CRM_Core_DAO::executeQuery('DELETE FROM civicrm_contribution');
     CRM_Core_DAO::executeQuery('DELETE FROM civicrm_note');
     return Test::headless()
-      ->install('org.civicrm.search_kit')
-      ->install(['org.civicrm.afform', 'civigrant'])
+      ->install(['org.civicrm.afform', 'civigrant', 'civi_pledge'])
       ->installMe(__DIR__)
       ->apply();
   }
@@ -88,7 +86,7 @@ class BaseTestClass extends TestCase implements HeadlessInterface, HookInterface
             civicrm_api3($entity, 'delete', ['id' => $entityID]);
           }
         }
-        catch (CiviCRM_API3_Exception $e) {
+        catch (\CRM_Core_Exception $e) {
           // No harm done - it was a best effort cleanup
         }
       }
@@ -148,48 +146,51 @@ class BaseTestClass extends TestCase implements HeadlessInterface, HookInterface
    *
    * @return array
    *   ids of created objects
-   *
-   * @throws \CRM_Core_Exception
    */
   protected function createCustomGroupWithField(array $inputParams = [], string $entity = 'Contact'): array {
-    $params = ['title' => $entity];
-    $params['extends'] = $entity;
-    CRM_Core_PseudoConstant::flush();
+    try {
+      $params = ['title' => $entity];
+      $params['extends'] = $entity;
+      CRM_Core_PseudoConstant::flush();
 
-    $groups = $this->callAPISuccess('CustomGroup', 'get', ['name' => $entity]);
-    // cleanup first to save misery.
-    $customGroupParams = empty($groups['count']) ? ['custom_group_id' => ['IS NULL' => 1]] : ['custom_group_id' => ['IN' => array_keys($groups['values'])]];
-    $fields = $this->callAPISuccess('CustomField', 'get', $customGroupParams, print_r($groups, 1));
-    foreach ($fields['values'] as $field) {
-      // delete from the table as it may be an orphan & if not the group drop will sort out.
-      CRM_Core_DAO::executeQuery('DELETE FROM civicrm_custom_field WHERE id = ' . (int) $field['id']);
-    }
-
-    foreach ($groups['values'] as $group) {
-      if (CRM_Core_DAO::singleValueQuery("SHOW TABLES LIKE '" . $group['table_name'] . "'")) {
-        $this->callAPISuccess('CustomGroup', 'delete', ['id' => $group['id']]);
-      }
-      else {
-        CRM_Core_DAO::executeQuery('DELETE FROM civicrm_custom_group WHERE id = ' . $group['id']);
+      $groups = $this->callAPISuccess('CustomGroup', 'get', ['name' => $entity]);
+      // cleanup first to save misery.
+      $customGroupParams = empty($groups['count']) ? ['custom_group_id' => ['IS NULL' => 1]] : ['custom_group_id' => ['IN' => array_keys($groups['values'])]];
+      $fields = $this->callAPISuccess('CustomField', 'get', $customGroupParams, print_r($groups, 1));
+      foreach ($fields['values'] as $field) {
+        // delete from the table as it may be an orphan & if not the group drop will sort out.
+        CRM_Core_DAO::executeQuery('DELETE FROM civicrm_custom_field WHERE id = ' . (int) $field['id']);
       }
 
-    }
-    CRM_Core_DAO::executeQuery('DELETE FROM civicrm_cache');
-    CRM_Core_PseudoConstant::flush();
+      foreach ($groups['values'] as $group) {
+        if (CRM_Core_DAO::singleValueQuery("SHOW TABLES LIKE '" . $group['table_name'] . "'")) {
+          $this->callAPISuccess('CustomGroup', 'delete', ['id' => $group['id']]);
+        }
+        else {
+          CRM_Core_DAO::executeQuery('DELETE FROM civicrm_custom_group WHERE id = ' . $group['id']);
+        }
 
-    $customGroup = $this->CustomGroupCreate($params);
-    $customFieldParams = [
-      'custom_group_id' => $customGroup['id'],
-      'label' => $entity,
-    ];
-    if (!empty($inputParams['CustomField'])) {
-      $customFieldParams = array_merge($customFieldParams, $inputParams['CustomField']);
+      }
+      CRM_Core_DAO::executeQuery('DELETE FROM civicrm_cache');
+      CRM_Core_PseudoConstant::flush();
+
+      $customGroup = $this->CustomGroupCreate($params);
+      $customFieldParams = [
+        'custom_group_id' => $customGroup['id'],
+        'label' => $entity,
+      ];
+      if (!empty($inputParams['CustomField'])) {
+        $customFieldParams = array_merge($customFieldParams, $inputParams['CustomField']);
+      }
+      $customField = $this->customFieldCreate($customFieldParams);
+      $this->customGroupID = $customGroup['id'];
+      $this->customGroup = $customGroup['values'][$customGroup['id']];
+      $this->customFieldID = $customField['id'];
+      CRM_Core_PseudoConstant::flush();
     }
-    $customField = $this->customFieldCreate($customFieldParams);
-    $this->customGroupID = $customGroup['id'];
-    $this->customGroup = $customGroup['values'][$customGroup['id']];
-    $this->customFieldID = $customField['id'];
-    CRM_Core_PseudoConstant::flush();
+    catch (\CRM_Core_Exception $e) {
+      $this->fail($e->getMessage());
+    }
 
     return [
       'custom_group_id' => $customGroup['id'],
