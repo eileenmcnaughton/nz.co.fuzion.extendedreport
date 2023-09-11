@@ -1,6 +1,6 @@
 <?php
 
-use Civi\Extendedreport\BaseTestClass;
+namespace Civi\Extendedreport;
 
 /**
  * Test contribution DetailExtended class.

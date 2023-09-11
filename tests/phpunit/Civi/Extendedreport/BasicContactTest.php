@@ -40,7 +40,6 @@ class BasicContactTest extends BaseTestClass {
   }
 
   /**
-   * @throws \CRM_Core_Exception
    */
   public function tearDown(): void {
     $fields = $this->callAPISuccess('CustomField', 'get', ['custom_group_id' => $this->customGroupID])['values'];

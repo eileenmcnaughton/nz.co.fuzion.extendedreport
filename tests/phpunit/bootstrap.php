@@ -1,12 +1,14 @@
 <?php
 
+use Composer\Autoload\ClassLoader;
+
 ini_set('memory_limit', '2G');
 
 // phpcs:disable
 eval(cv('php:boot --level=classloader', 'phpcode'));
 // phpcs:enable
 // Allow autoloading of PHPUnit helper classes in this extension.
-$loader = new \Composer\Autoload\ClassLoader();
+$loader = new ClassLoader();
 $loader->add('CRM_', __DIR__);
 $loader->add('Civi\\', __DIR__);
 $loader->add('api_', __DIR__);

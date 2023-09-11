@@ -194,15 +194,15 @@ class BaseTestClass extends TestCase implements HeadlessInterface, HookInterface
       $this->customGroup = $customGroup['values'][$customGroup['id']];
       $this->customFieldID = $customField['id'];
       CRM_Core_PseudoConstant::flush();
+      return [
+        'custom_group_id' => $customGroup['id'],
+        'custom_field_id' => $customField['id'],
+      ];
     }
     catch (\CRM_Core_Exception $e) {
       $this->fail($e->getMessage());
     }
-
-    return [
-      'custom_group_id' => $customGroup['id'],
-      'custom_field_id' => $customField['id'],
-    ];
+    return [];
   }
 
   /**
