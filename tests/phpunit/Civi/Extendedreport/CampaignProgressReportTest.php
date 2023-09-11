@@ -1,10 +1,6 @@
 <?php
 
-require_once __DIR__ . '/../BaseTestClass.php';
-
-use Civi\Test\HeadlessInterface;
-use Civi\Test\HookInterface;
-use Civi\Test\TransactionalInterface;
+namespace Civi\Extendedreport;
 
 /**
  * Test contribution DetailExtended class.
@@ -20,7 +16,7 @@ use Civi\Test\TransactionalInterface;
  *
  * @group headless
  */
-class CampaignProgressReportTest extends BaseTestClass implements HeadlessInterface, HookInterface, TransactionalInterface {
+class CampaignProgressReportTest {
 
   protected $contacts = [];
 
