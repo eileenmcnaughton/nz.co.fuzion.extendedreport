@@ -1,7 +1,6 @@
 <?php
 
-require_once __DIR__ . '../../BaseTestClass.php';
-
+namespace Civi\Extendedreport;
 use Civi\Test\HeadlessInterface;
 use Civi\Test\HookInterface;
 use Civi\Test\TransactionalInterface;
@@ -20,12 +19,11 @@ use Civi\Test\TransactionalInterface;
  *
  * @group headless
  */
-class Contact_BasicContactTest extends BaseTestClass implements HeadlessInterface, HookInterface, TransactionalInterface {
+class BasicContactTest extends BaseTestClass {
 
   protected $contacts = [];
 
   /**
-   * @throws \CRM_Core_Exception
    */
   public function setUp(): void {
     parent::setUp();
@@ -48,18 +46,13 @@ class Contact_BasicContactTest extends BaseTestClass implements HeadlessInterfac
    * @throws \CRM_Core_Exception
    */
   public function tearDown(): void {
-    parent::tearDown();
     $fields = $this->callAPISuccess('CustomField', 'get', ['custom_group_id' => $this->customGroupID])['values'];
     foreach ($fields as $field) {
       $this->callAPISuccess('CustomField', 'delete', ['id' => $field['id']]);
     }
 
     $this->callAPISuccess('CustomGroup', 'delete', ['id' => $this->customGroupID]);
-    foreach ($this->contacts as $contact) {
-      $this->callAPISuccess('Contact', 'delete', ['id' => $contact]);
-    }
-    CRM_Core_DAO::executeQuery('DELETE FROM civicrm_cache');
-    CRM_Core_PseudoConstant::flush();
+    parent::tearDown();
   }
 
   /**
