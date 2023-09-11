@@ -273,6 +273,7 @@ class BaseTestClass extends TestCase implements HeadlessInterface, HookInterface
    * @return array
    */
   public function getContactData(string $contactType, int $quantity): array {
+    $contacts = [];
     switch ($contactType) {
       case 'Individual':
         $contacts = $this->getIndividuals();
@@ -373,7 +374,7 @@ class BaseTestClass extends TestCase implements HeadlessInterface, HookInterface
   public function getAllReports(): array {
     $this->boot();
     $reports = [];
-    $mgdFiles = \CRM_Utils_File::findFiles(\CRM_Extendedreport_ExtensionUtil::path(), '*.mgd.php');
+    $mgdFiles = \CRM_Utils_File::findFiles(\CRM_Core_Resources::singleton()->getPath('nz.co.fuzion.extendedreport'), '*.mgd.php');
     sort($mgdFiles);
     foreach ($mgdFiles as $file) {
       $managedReports = include $file;
@@ -387,9 +388,9 @@ class BaseTestClass extends TestCase implements HeadlessInterface, HookInterface
         if (empty($managedReport['params']['report_url'])) {
           $managedReport['params']['report_url'] = $managedReport['params']['values']['value'];
         }
+        $managedReport['report_url'] = $managedReport['params']['report_url'];
+        $reports[] = $managedReport;
       }
-      $managedReport['report_url'] = $managedReport['params']['report_url'];
-      $reports[] = $managedReport;
     }
     return $reports;
   }
