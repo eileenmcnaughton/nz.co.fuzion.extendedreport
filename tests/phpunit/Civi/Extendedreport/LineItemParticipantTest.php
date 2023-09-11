@@ -1,10 +1,6 @@
 <?php
 
-require_once __DIR__ . '/../BaseTestClass.php';
-
-use Civi\Test\HeadlessInterface;
-use Civi\Test\HookInterface;
-use Civi\Test\TransactionalInterface;
+namespace Civi\Extendedreport;
 
 /**
  * Test contribution DetailExtended class.
@@ -20,18 +16,13 @@ use Civi\Test\TransactionalInterface;
  *
  * @group headless
  */
-class LineItemParticipantTest extends BaseTestClass implements HeadlessInterface, HookInterface, TransactionalInterface {
+class LineItemParticipantTest extends BaseTestClass {
 
   protected $contacts = [];
 
   public function setUp(): void {
     parent::setUp();
-    $components = [];
-    $dao = new \CRM_Core_DAO_Component();
-    while ($dao->fetch()) {
-      $components[$dao->id] = $dao->name;
-    }
-    \civicrm_api3('Setting', 'create', ['enable_components' => $components]);
+    $this->enableAllComponents();
     $contact = $this->callAPISuccess('Contact', 'create', ['first_name' => 'Wonder', 'last_name' => 'Woman', 'contact_type' => 'Individual']);
     $this->contacts[] = $contact['id'];
   }

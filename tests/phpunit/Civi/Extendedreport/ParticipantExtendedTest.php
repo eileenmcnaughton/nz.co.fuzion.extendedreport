@@ -1,6 +1,6 @@
 <?php
 
-require_once __DIR__ . '../../BaseTestClass.php';
+namespace Civi\Extendedreport;
 
 /**
  * FIXME - Add test description.
@@ -16,12 +16,10 @@ require_once __DIR__ . '../../BaseTestClass.php';
  *
  * @group headless
  */
-class Event_ParticipantExtendedTest extends BaseTestClass {
+class ParticipantExtendedTest extends BaseTestClass {
 
   /**
    * Test the future income report with some data.
-   *
-   * @throws \CRM_Core_Exception
    */
   public function testReportDateSql(): void {
     $params = [
@@ -86,8 +84,6 @@ class Event_ParticipantExtendedTest extends BaseTestClass {
 
   /**
    * Test custom data on main entity.
-   *
-   * @throws \CRM_Core_Exception
    */
   public function testCustomData(): void {
     $ids = $this->createCustomGroupWithField([]);

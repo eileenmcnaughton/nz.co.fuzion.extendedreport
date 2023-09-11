@@ -191,8 +191,6 @@ class ContributionContributionsTest extends BaseTestClass {
 
   /**
    * Test that is doesn't matter if the having filter is selected.
-   *
-   * @throws \CRM_Core_Exception
    */
   public function testGetRowsFilterCustomData(): void {
     $this->enableAllComponents();

@@ -1,6 +1,7 @@
 <?php
 
-require_once __DIR__ . '/../../../BaseTestClass.php';
+namespace Civi\Extendedreport;
+
 
 /**
  * ReportTemplate.Getmetadata API Test Case
@@ -8,23 +9,7 @@ require_once __DIR__ . '/../../../BaseTestClass.php';
  *
  * @group headless
  */
-class api_v3_ReportTemplate_GetmetadataTest extends BaseTestClass {
-
-  /**
-   * The setup() method is executed before the test is executed (optional).
-   *
-   * @throws \CRM_Core_Exception
-   */
-  public function setUp(): void {
-    parent::setUp();
-    if (\Civi::settings()->get('logging')) {
-      // Hack alert - there is a bug whereby the table is deleted but the row isn't after ActivityExtendedTest.
-      // So far I've failed to solve this properly - probably transaction rollback in some way.
-      CRM_Core_DAO::executeQuery("DELETE FROM civicrm_custom_group WHERE name = 'Contact'");
-      \Civi::settings()->set('logging', FALSE);
-    }
-    $this->enableAllComponents();
-  }
+class GetmetadataTest extends BaseTestClass {
 
   /**
    * Simple example test case.
@@ -83,12 +68,12 @@ class api_v3_ReportTemplate_GetmetadataTest extends BaseTestClass {
     }
     $this->assertNotEmpty($result['order_bys']['custom_' . $ids['custom_field_id']]);
     $this->assertNotTrue(empty($result['group_bys']['custom_' . $ids['custom_field_id']]));
-    $this->assertEquals(CRM_Report_Form::OP_INT, $filters['custom_' . $ids['custom_field_id']]['operatorType']);
-    $this->assertEquals(CRM_Report_Form::OP_DATE, $filters['custom_' . $dateField['id']]['operatorType']);
-    $this->assertEquals(CRM_Report_Form::OP_MULTISELECT, $filters['custom_' . $selectField['id']]['operatorType']);
-    $this->assertEquals(CRM_Report_Form::OP_MULTISELECT_SEPARATOR, $filters['custom_' . $multiSelectField['id']]['operatorType']);
+    $this->assertEquals(\CRM_Report_Form::OP_INT, $filters['custom_' . $ids['custom_field_id']]['operatorType']);
+    $this->assertEquals(\CRM_Report_Form::OP_DATE, $filters['custom_' . $dateField['id']]['operatorType']);
+    $this->assertEquals(\CRM_Report_Form::OP_MULTISELECT, $filters['custom_' . $selectField['id']]['operatorType']);
+    $this->assertEquals(\CRM_Report_Form::OP_MULTISELECT_SEPARATOR, $filters['custom_' . $multiSelectField['id']]['operatorType']);
     $this->assertEquals('Pledge', $filters['custom_' . $multiSelectField['id']]['table_label']);
-    $this->assertEquals(CRM_Report_Form::OP_SELECT, $filters['custom_' . $booleanField['id']]['operatorType']);
+    $this->assertEquals(\CRM_Report_Form::OP_SELECT, $filters['custom_' . $booleanField['id']]['operatorType']);
 
     foreach ([$dateField['id'], $ids['custom_field_id'], $selectField['id'], $multiSelectField['id'], $booleanField['id']] as $id) {
       $this->callAPISuccess('CustomField', 'delete', ['id' => $id]);
