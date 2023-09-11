@@ -1,6 +1,6 @@
 <?php
 
-use Civi\Extendedreport\BaseTestClass;
+namespace Civi\Extendedreport;
 
 /**
  * Test contribution DetailExtended class.
@@ -25,12 +25,7 @@ class RelationshipExtendedTest extends BaseTestClass {
    */
   public function setUp(): void {
     parent::setUp();
-    $components = [];
-    $dao = new CRM_Core_DAO_Component();
-    while ($dao->fetch()) {
-      $components[$dao->id] = $dao->name;
-    }
-    $this->callAPISuccess('Setting', 'create', ['enable_components' => $components]);
+    $this->enableAllComponents();
     $this->createCustomGroupWithField();
 
     $contact = $this->callAPISuccess('Contact', 'create', [
@@ -49,19 +44,6 @@ class RelationshipExtendedTest extends BaseTestClass {
     ]);
     $this->contacts[] = $contact['id'];
 
-  }
-
-  /**
-   */
-  public function tearDown(): void {
-    parent::tearDown();
-    $this->callAPISuccess('CustomField', 'delete', ['id' => $this->customFieldID]);
-    $this->callAPISuccess('CustomGroup', 'delete', ['id' => $this->customGroupID]);
-    foreach ($this->contacts as $contact) {
-      $this->callAPISuccess('Contact', 'delete', ['id' => $contact]);
-    }
-    CRM_Core_DAO::executeQuery('DELETE FROM civicrm_cache');
-    CRM_Core_PseudoConstant::flush();
   }
 
   /**
