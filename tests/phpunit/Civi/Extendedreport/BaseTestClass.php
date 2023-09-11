@@ -2,6 +2,8 @@
 
 namespace Civi\Extendedreport;
 
+use Civi\Api4\Activity;
+use Civi\Api4\ActivityContact;
 use Civi\Api4\CustomField;
 use Civi\Api4\CustomGroup;
 use Civi\Test;
@@ -105,11 +107,15 @@ class BaseTestClass extends TestCase implements HeadlessInterface, HookInterface
    *
    * @param int $contactId
    *
+   * @noinspection PhpUnhandledExceptionInspection
+   * @noinspection PhpDocMissingThrowsInspection
    */
   public function cleanUpContact(int $contactId): void {
     $contributions = $this->callAPISuccess('Contribution', 'get', [
       'contact_id' => $contactId,
     ])['values'];
+    $activities = (array) ActivityContact::get(FALSE)->addWhere('contact_id', '=', $contactId)->execute()->indexBy('activity_id');
+    Activity::delete(FALSE)->addWhere('id', 'IN', array_keys($activities))->execute();
     foreach ($contributions as $id => $details) {
       $this->callAPISuccess('Contribution', 'delete', [
         'id' => $id,
