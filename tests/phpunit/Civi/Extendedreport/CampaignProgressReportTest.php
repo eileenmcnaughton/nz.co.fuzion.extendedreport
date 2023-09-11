@@ -16,7 +16,7 @@ namespace Civi\Extendedreport;
  *
  * @group headless
  */
-class CampaignProgressReportTest {
+class CampaignProgressReportTest extends BaseTestClass {
 
   protected $contacts = [];
 
