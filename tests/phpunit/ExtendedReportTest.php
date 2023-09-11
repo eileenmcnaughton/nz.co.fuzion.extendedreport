@@ -28,6 +28,7 @@ class ExtendedReportTest extends BaseTestClass implements HookInterface {
    * @throws \Civi\Core\Exception\DBQueryException
    */
   public function tearDown(): void {
+    \Civi::settings()->set('logging', FALSE);
     CRM_Core_DAO::executeQuery('DELETE FROM civicrm_pledge');
     parent::tearDown();
     CRM_Core_DAO::reenableFullGroupByMode();
