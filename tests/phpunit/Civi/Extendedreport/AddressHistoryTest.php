@@ -1,6 +1,6 @@
 <?php
 
-require_once __DIR__ . '../../BaseTestClass.php';
+namespace Civi\Extendedreport;
 
 /**
  * Test contribution DetailExtended class.
@@ -16,7 +16,7 @@ require_once __DIR__ . '../../BaseTestClass.php';
  *
  * @group headless
  */
-class Contact_AddressHistoryTest extends BaseTestClass {
+class AddressHistoryTest extends BaseTestClass {
 
   protected $contacts = [];
 
@@ -24,14 +24,7 @@ class Contact_AddressHistoryTest extends BaseTestClass {
     parent::setUp();
     $contact = $this->callAPISuccess('Contact', 'create', ['first_name' => 'Wonder', 'last_name' => 'Woman', 'contact_type' => 'Individual']);
     $this->contacts[] = $contact['id'];
-    Civi::settings()->set('logging', TRUE);
-  }
-
-  /**
-   */
-  public function tearDown(): void {
-    parent::tearDown();
-    Civi::settings()->set('logging', FALSE);
+    \Civi::settings()->set('logging', TRUE);
   }
 
   /**

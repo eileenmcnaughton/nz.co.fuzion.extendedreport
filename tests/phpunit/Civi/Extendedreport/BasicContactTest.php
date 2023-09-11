@@ -1,9 +1,6 @@
 <?php
 
 namespace Civi\Extendedreport;
-use Civi\Test\HeadlessInterface;
-use Civi\Test\HookInterface;
-use Civi\Test\TransactionalInterface;
 
 /**
  * Test contribution DetailExtended class.
