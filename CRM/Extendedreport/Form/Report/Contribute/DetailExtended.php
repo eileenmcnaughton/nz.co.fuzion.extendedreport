@@ -191,7 +191,7 @@ class CRM_Extendedreport_Form_Report_Contribute_DetailExtended extends CRM_Exten
     $contributionPages = CRM_Contribute_PseudoConstant::contributionPage();
 
     foreach ($rows as $rowNum => $row) {
-      if (!empty($this->_noRepeats) && $this->_outputMode != 'csv') {
+      if (!empty($this->_noRepeats) && $this->_outputMode !== 'csv') {
         // don't repeat contact details if its same as the previous row
         if (array_key_exists('civicrm_contact_id', $row)) {
           if ($cid = $row['civicrm_contact_id']) {
