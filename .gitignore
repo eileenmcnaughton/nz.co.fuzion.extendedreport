@@ -3,3 +3,4 @@
 .buildpath
 .idea
 .phpunit.result.cache
+*.bak
