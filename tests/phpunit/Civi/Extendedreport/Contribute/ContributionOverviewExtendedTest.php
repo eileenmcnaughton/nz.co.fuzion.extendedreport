@@ -26,7 +26,7 @@ class ContributionOverviewExtendedTest extends BaseTestClass {
     parent::setUp();
     $this->enableAllComponents();
     $contact = $this->callAPISuccess('Contact', 'create', ['first_name' => 'Wonder', 'last_name' => 'Woman', 'contact_type' => 'Individual']);
-    $this->contacts[] = $contact['id'];
+    $this->ids['Contact'][] = $contact['id'];
 
     $this->callAPISuccess('Contribution', 'create', [
       'contact_id' => $contact['id'],
@@ -52,7 +52,7 @@ class ContributionOverviewExtendedTest extends BaseTestClass {
    * Test the ContributionOverviewExtended report with group by.
    */
   public function testContributionExtendedReport(): void {
-    $this->callAPISuccess('Order', 'create', ['contact_id' => $this->contacts[0], 'total_amount' => 5, 'financial_type_id' => 2, 'contribution_status_id' => 'Pending', 'api.Payment.create' => ['total_amount' => 5]]);
+    $this->callAPISuccess('Order', 'create', ['contact_id' => $this->ids['Contact'][0], 'total_amount' => 5, 'financial_type_id' => 2, 'contribution_status_id' => 'Pending', 'api.Payment.create' => ['total_amount' => 5]]);
     $params = [
       'report_id' => 'contribution/overview',
       'fields' => [

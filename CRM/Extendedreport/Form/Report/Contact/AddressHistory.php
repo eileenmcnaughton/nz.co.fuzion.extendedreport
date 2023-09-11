@@ -120,6 +120,7 @@ class CRM_Extendedreport_Form_Report_Contact_AddressHistory extends CRM_Extended
    * @param float $max
    *
    * @return null|string
+   * @throws \CRM_Core_Exception
    */
   public function whereClause(&$field, $op, $value, $min, $max): ?string {
     if ($field['name'] === 'contact_id' && $value) {
