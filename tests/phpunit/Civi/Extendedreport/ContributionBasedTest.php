@@ -1,10 +1,6 @@
 <?php
 
-require_once __DIR__ . '/../BaseTestClass.php';
-
-use Civi\Test\HeadlessInterface;
-use Civi\Test\HookInterface;
-use Civi\Test\TransactionalInterface;
+namespace Civi\Extendedreport;
 
 /**
  * Test contribution DetailExtended class.
@@ -20,7 +16,7 @@ use Civi\Test\TransactionalInterface;
  *
  * @group headless
  */
-class ContributionBasedTest extends BaseTestClass implements HeadlessInterface, HookInterface, TransactionalInterface {
+class ContributionBasedTest extends BaseTestClass {
 
   protected $contacts = [];
 
@@ -38,10 +34,8 @@ class ContributionBasedTest extends BaseTestClass implements HeadlessInterface, 
    *
    * @param array $params
    *   Parameters to pass to the report
-   *
-   * @throws \CRM_Core_Exception
    */
-  public function testReport(array $params) {
+  public function testReport(array $params): void {
     $this->callAPISuccess('Order', 'create', [
       'contact_id' => $this->contacts[0],
       'total_amount' => 5,
@@ -56,7 +50,7 @@ class ContributionBasedTest extends BaseTestClass implements HeadlessInterface, 
   /**
    * Get datasets for testing the report
    */
-  public function getReportParameters() {
+  public function getReportParameters(): array {
     return [
       'basic' => [
         [
