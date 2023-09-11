@@ -2,6 +2,8 @@
 
 namespace Civi\Extendedreport;
 
+use Civi\Api4\CustomField;
+use Civi\Api4\CustomGroup;
 use Civi\Test;
 use Civi\Test\Api3TestTrait;
 use Civi\Test\CiviEnvBuilder;
@@ -76,6 +78,10 @@ class BaseTestClass extends TestCase implements HeadlessInterface, HookInterface
    *
    */
   public function tearDown(): void {
+    CRM_Core_DAO::executeQuery('DELETE FROM civicrm_pledge');
+    CRM_Core_DAO::executeQuery('DELETE FROM civicrm_group');
+    CustomField::delete()->addWhere('id', '>', 0)->execute();
+    CustomGroup::delete()->addWhere('id', '>', 0)->execute();
     \Civi::settings()->set('logging', FALSE);
     foreach ($this->ids as $entity => $entityIDs) {
       foreach ($entityIDs as $entityID) {

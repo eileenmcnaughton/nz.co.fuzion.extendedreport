@@ -1,7 +1,6 @@
 <?php
 
-use Civi\Core\HookInterface;
-use Civi\Extendedreport\BaseTestClass;
+namespace Civi\Extendedreport;
 
 /**
  * FIXME - Add test description.
@@ -17,7 +16,7 @@ use Civi\Extendedreport\BaseTestClass;
  *
  * @group headless
  */
-class ExtendedReportTest extends BaseTestClass implements HookInterface {
+class ExtendedReportTest extends BaseTestClass {
 
   public function setUp(): void {
     parent::setUp();
@@ -28,10 +27,9 @@ class ExtendedReportTest extends BaseTestClass implements HookInterface {
    * @throws \Civi\Core\Exception\DBQueryException
    */
   public function tearDown(): void {
-    \Civi::settings()->set('logging', FALSE);
-    CRM_Core_DAO::executeQuery('DELETE FROM civicrm_pledge');
+    \CRM_Core_DAO::executeQuery('DELETE FROM civicrm_pledge');
     parent::tearDown();
-    CRM_Core_DAO::reenableFullGroupByMode();
+    \CRM_Core_DAO::reenableFullGroupByMode();
   }
 
   /**
@@ -44,7 +42,7 @@ class ExtendedReportTest extends BaseTestClass implements HookInterface {
       if (!empty($report['is_require_logging'])) {
         // Hack alert - there is a bug whereby the table is deleted but the row isn't after ActivityExtendedTest.
         // So far I've failed to solve this properly - probably transaction rollback in some way.
-        CRM_Core_DAO::executeQuery("DELETE FROM civicrm_custom_group WHERE name = 'Contact'");
+        \CRM_Core_DAO::executeQuery("DELETE FROM civicrm_custom_group WHERE name = 'Contact'");
         $this->callAPISuccess('Setting', 'create', ['logging' => TRUE]);
       }
       $this->callAPISuccess('ReportTemplate', 'getrows', [

@@ -1,11 +1,6 @@
 <?php
 
-require_once __DIR__ . '/../BaseTestClass.php';
-
-use Civi\Test\HeadlessInterface;
-use Civi\Test\HookInterface;
-use Civi\Test\TransactionalInterface;
-
+namespace Civi\Extendedreport;
 /**
  * FIXME - Add test description.
  *
@@ -20,23 +15,12 @@ use Civi\Test\TransactionalInterface;
  *
  * @group headless
  */
-class Pledge_DetailTest extends BaseTestClass implements HeadlessInterface, HookInterface {
-
-  /**
-   * @throws \CRM_Core_Exception
-   */
-  public function tearDown(): void {
-    CRM_Core_DAO::executeQuery('DELETE FROM civicrm_pledge');
-    CRM_Core_DAO::executeQuery('DELETE FROM civicrm_group');
-    parent::tearDown();
-  }
+class DetailTest extends BaseTestClass {
 
   /**
    * Test the future income report with some data.
-   *
-   * @throws \CRM_Core_Exception
    */
-  public function testPledgeDetailReport() {
+  public function testPledgeDetailReport(): void {
     $this->setUpPledgeData();
     $params = [
       'report_id' => 'pledge/details',
@@ -50,7 +34,7 @@ class Pledge_DetailTest extends BaseTestClass implements HeadlessInterface, Hook
       'effective_date_value' => date('Y-m-d', strtotime('3 weeks ago')),
     ];
     $rows = $this->getRows($params);
-    $this->assertEquals(3, count($rows));
+    $this->assertCount(3, $rows);
     $this->assertEquals(20000, $rows[0]['civicrm_pledge_payment_balance_amount_sum']);
   }
 
