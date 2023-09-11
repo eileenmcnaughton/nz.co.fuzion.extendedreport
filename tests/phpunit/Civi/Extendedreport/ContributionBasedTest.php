@@ -1,6 +1,6 @@
 <?php
 
-require_once __DIR__ . '../../BaseTestClass.php';
+namespace Civi\Extendedreport;
 
 /**
  * Test contribution DetailExtended class.
@@ -16,43 +16,51 @@ require_once __DIR__ . '../../BaseTestClass.php';
  *
  * @group headless
  */
-class Contact_AddressHistoryTest extends BaseTestClass {
+class ContributionBasedTest extends BaseTestClass {
 
   protected $contacts = [];
 
   public function setUp():void {
     parent::setUp();
+    $this->enableAllComponents();
     $contact = $this->callAPISuccess('Contact', 'create', ['first_name' => 'Wonder', 'last_name' => 'Woman', 'contact_type' => 'Individual']);
     $this->contacts[] = $contact['id'];
-    Civi::settings()->set('logging', TRUE);
   }
 
   /**
-   */
-  public function tearDown(): void {
-    parent::tearDown();
-    Civi::settings()->set('logging', FALSE);
-  }
-
-  /**
-   * Test rows retrieval.
+   * Test the report runs.
    *
+   * @dataProvider getReportParameters
+   *
+   * @param array $params
+   *   Parameters to pass to the report
    */
-  public function testGetRows(): void {
-    $params = [
-      'report_id' => 'contact/addresshistory',
-    ];
-    $rows = $this->getRows($params);
-    $this->assertEquals('15 Main St<br />
-Collinsville, Connecticut 6022<br />
-United States<br />', trim($rows[0]['log_civicrm_address_address_display_address']));
-    $this->assertEquals([
-      'log_civicrm_address_address_display_address' => 'Display Address',
-      'log_civicrm_address_log_date' => 'Change Date',
-      'log_civicrm_address_log_conn_id' => 'Connection',
-      'log_civicrm_address_log_user_id' => 'Changed By',
-      'log_civicrm_address_log_action' => 'Change action',
-    ], $this->labels);
+  public function testReport(array $params): void {
+    $this->callAPISuccess('Order', 'create', [
+      'contact_id' => $this->contacts[0],
+      'total_amount' => 5,
+      'financial_type_id' => 2,
+      'contribution_status_id' => 'Pending',
+      'api.Payment.create' => ['total_amount' => 5],
+    ]);
+    // Just checking no error at the moment.
+    $this->getRows($params);
   }
 
+  /**
+   * Get datasets for testing the report
+   */
+  public function getReportParameters(): array {
+    return [
+      'basic' => [
+        [
+          'report_id' => 'price/contributionbased',
+          'fields' => [
+            'campaign_id' => '1',
+            'total_amount' => '1',
+          ],
+        ],
+      ],
+    ];
+  }
 }

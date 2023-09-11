@@ -1,10 +1,6 @@
 <?php
 
-require_once __DIR__ . '../../BaseTestClass.php';
-
-use Civi\Test\HeadlessInterface;
-use Civi\Test\HookInterface;
-use Civi\Test\TransactionalInterface;
+namespace Civi\Extendedreport;
 
 /**
  * Test contribution DetailExtended class.
@@ -20,7 +16,7 @@ use Civi\Test\TransactionalInterface;
  *
  * @group headless
  */
-class Contact_ExtendedContactTest extends BaseTestClass implements HeadlessInterface, HookInterface, TransactionalInterface {
+class ExtendedContactTest extends BaseTestClass {
 
   protected $contacts = [];
 
@@ -44,24 +40,17 @@ class Contact_ExtendedContactTest extends BaseTestClass implements HeadlessInter
 
   /**
    * Clean up after test.
-   *
-   * @throws \CRM_Core_Exception
    */
   public function tearDown(): void {
-    parent::tearDown();
     $this->callAPISuccess('CustomField', 'delete', ['id' => $this->customFieldID]);
     $this->callAPISuccess('CustomGroup', 'delete', ['id' => $this->customGroupID]);
-    foreach ($this->contacts as $contact) {
-      $this->callAPISuccess('Contact', 'delete', ['id' => $contact, 'skip_undelete' => TRUE]);
-    }
-    CRM_Core_DAO::executeQuery('DELETE FROM civicrm_cache');
-    CRM_Core_PseudoConstant::flush();
+    parent::tearDown();
   }
 
   /**
    * Test rows retrieval.
    */
-  public function testGetRows() {
+  public function testGetRows(): void {
     $params = [
       'report_id' => 'contact/contactextended',
       'aggregate_column_headers' => 'civicrm_contact_gender_id',

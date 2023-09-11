@@ -1,10 +1,6 @@
 <?php
 
-require_once __DIR__ . '/../BaseTestClass.php';
-
-use Civi\Test\HeadlessInterface;
-use Civi\Test\HookInterface;
-use Civi\Test\TransactionalInterface;
+namespace Civi\Extendedreport;
 
 /**
  * Test contribution DetailExtended class.
@@ -20,11 +16,11 @@ use Civi\Test\TransactionalInterface;
  *
  * @group headless
  */
-class ContributionBasedTest extends BaseTestClass implements HeadlessInterface, HookInterface, TransactionalInterface {
+class CampaignProgressReportTest extends BaseTestClass {
 
   protected $contacts = [];
 
-  public function setUp():void {
+  public function setUp(): void {
     parent::setUp();
     $this->enableAllComponents();
     $contact = $this->callAPISuccess('Contact', 'create', ['first_name' => 'Wonder', 'last_name' => 'Woman', 'contact_type' => 'Individual']);
@@ -32,7 +28,7 @@ class ContributionBasedTest extends BaseTestClass implements HeadlessInterface, 
   }
 
   /**
-   * Test the report runs.
+   * Test the Progress report.
    *
    * @dataProvider getReportParameters
    *
@@ -41,14 +37,8 @@ class ContributionBasedTest extends BaseTestClass implements HeadlessInterface, 
    *
    * @throws \CRM_Core_Exception
    */
-  public function testReport(array $params) {
-    $this->callAPISuccess('Order', 'create', [
-      'contact_id' => $this->contacts[0],
-      'total_amount' => 5,
-      'financial_type_id' => 2,
-      'contribution_status_id' => 'Pending',
-      'api.Payment.create' => ['total_amount' => 5],
-    ]);
+  public function testProgressReport(array $params): void {
+    $this->callAPISuccess('Order', 'create', ['contact_id' => $this->contacts[0], 'total_amount' => 5, 'financial_type_id' => 2, 'contribution_status_id' => 'Pending', 'api.Payment.create' => ['total_amount' => 5]]);
     // Just checking no error at the moment.
     $this->getRows($params);
   }
@@ -56,17 +46,34 @@ class ContributionBasedTest extends BaseTestClass implements HeadlessInterface, 
   /**
    * Get datasets for testing the report
    */
-  public function getReportParameters() {
+  public function getReportParameters(): array {
     return [
       'basic' => [
         [
-          'report_id' => 'price/contributionbased',
+          'report_id' => 'campaign/progress',
           'fields' => [
             'campaign_id' => '1',
             'total_amount' => '1',
+            'paid_amount' => '1',
+            'balance_amount' => '1',
+          ],
+        ],
+      ],
+      'group_by_variant' => [
+        [
+          'report_id' => 'campaign/progress',
+          'fields' => [
+            'campaign_id' => '1',
+            'total_amount' => '1',
+            'paid_amount' => '1',
+            'balance_amount' => '1',
+          ],
+          'group_bys' => [
+            'campaign_id' => '1',
           ],
         ],
       ],
     ];
   }
+
 }
