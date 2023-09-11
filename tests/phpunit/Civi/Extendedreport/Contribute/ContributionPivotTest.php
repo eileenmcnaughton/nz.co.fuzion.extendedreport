@@ -31,14 +31,14 @@ class ContributionPivotTest extends BaseTestClass {
    * @param $overrides
    */
   public function testGetRows($overrides): void {
-    $contactID = $this->callAPISuccess('Contact', 'create', [
+    $this->ids['Contact'][0] = $this->callAPISuccess('Contact', 'create', [
       'contact_type' => 'Individual',
       'first_name' => 'Charlie',
       'last_name' => 'Chaplin',
     ])['id'];
     foreach ([2, 3, 4] as $year) {
       $this->callAPISuccess('Contribution', 'create', [
-        'contact_id' => $contactID,
+        'contact_id' => $this->ids['Contact'][0],
         'financial_type_id' => 'Donation',
         'receive_date' => (2000 + $year) . '09-09',
         'payment_instrument_id' => 'Cash',
