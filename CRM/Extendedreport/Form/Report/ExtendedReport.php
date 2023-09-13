@@ -2363,8 +2363,6 @@ LEFT JOIN civicrm_contact {$prop['alias']} ON {$prop['alias']}.id = {$this->_ali
       $pager = FALSE;
     }
     parent::formatDisplay($rows, $pager);
-    // use this method for formatting custom rows for display purpose.
-    $this->alterCustomDataDisplay($rows);
   }
 
   /**
