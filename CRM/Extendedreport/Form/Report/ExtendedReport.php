@@ -2653,7 +2653,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
             $rows[$rowNum][$tableCol] = $val;
           }
           else {
-            $rows[$rowNum][$tableCol] = CRM_Core_BAO_CustomField::displayValue($val, $customField);
+            $rows[$rowNum][$tableCol] = CRM_Core_BAO_CustomField::displayValue($val, $customField['id']);
           }
 
           if (!empty($this->_drilldownReport)) {
