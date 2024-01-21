@@ -4044,7 +4044,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'title' => ts('Campaign'),
         'type' => CRM_Utils_Type::T_INT,
         'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-        'options' => CRM_Campaign_BAO_Campaign::getCampaigns(),
+        'options' => CRM_Campaign_BAO_Campaign::getCampaigns(NULL, NULL, TRUE, FALSE),
         'is_fields' => TRUE,
         'is_filters' => TRUE,
         'is_order_bys' => TRUE,
