@@ -4144,6 +4144,12 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         'name' => 'contact_id',
         'is_filters' => TRUE,
       ],
+      'invoice_number' => (\Civi::settings()->get('invoicing') ? [
+        'title' => ts('Invoice Number'),
+        'name' => 'invoice_number',
+        'is_filters' => TRUE,
+        'is_fields' => TRUE,
+      ] : []),
     ];
     return $this->buildColumns($specs, 'civicrm_contribution', 'CRM_Contribute_BAO_Contribution', NULL, $this->getDefaultsFromOptions($options), $options);
   }
