@@ -24,8 +24,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
 
   protected $_rollup = '';
 
-  protected $_fieldSpecs = [];
-
   protected $contactIDField;
 
   protected $metaData = [];
@@ -72,8 +70,6 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    * @var bool
    */
   protected $joinFiltersTab = FALSE;
-
-  protected $_customFields = [];
 
   /**
    * Array of tables with their statuses - relevant for things like Batch which might be absent from a DB.
@@ -2869,6 +2865,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    * @param string $tableName Name of table
    *
    * @return bool
+   * @throws \Civi\Core\Exception\DBQueryException
    */
   protected function tableExists(string $tableName): bool {
     $sql = "SHOW TABLES LIKE '$tableName'";
@@ -3750,6 +3747,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    * - taken from core event class.
    *
    * @return array
+   * @throws \Civi\Core\Exception\DBQueryException
    */
   protected function getEventFilterOptions(): array {
     $events = [];
@@ -3990,7 +3988,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
    *
    * This is called by getColumns.
    *
-   * @param array
+   * @param array $options
    *
    * @return array
    *
@@ -7292,7 +7290,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
       return [];
     }
 
-    $entity = CRM_Core_DAO_AllCoreTables::getBriefName(str_replace('BAO', 'DAO', $daoOrBaoName));
+    $entity = CRM_Core_DAO_AllCoreTables::getEntityNameForClass(str_replace('BAO', 'DAO', $daoOrBaoName));
     if ($entity) {
       $expFields = civicrm_api3($entity, 'getfields', [])['values'];
     }
@@ -7759,7 +7757,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
       }
     }
     foreach ($this->_columns as $spec) {
-      $entityName = (isset($spec['bao']) ? CRM_Core_DAO_AllCoreTables::getBriefName(str_replace('BAO', 'DAO', $spec['bao'])) : '');
+      $entityName = (isset($spec['bao']) ? CRM_Core_DAO_AllCoreTables::getEntityNameForClass(str_replace('BAO', 'DAO', $spec['bao'])) : '');
       if ($entityName && !empty($extendsEntities[$entityName])) {
         $extendsMap[$entityName][$spec['prefix']] = $spec['prefix_label'];
       }

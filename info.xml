@@ -14,11 +14,11 @@
     <author>Eileen McNaughton</author>
     <email>eileen@fuzion.co.nz</email>
   </maintainer>
-  <releaseDate>2024-02-10</releaseDate>
-  <version>6.0.0</version>
+  <releaseDate>2024-05-09</releaseDate>
+  <version>6.0.1</version>
   <develStage>stable</develStage>
   <compatibility>
-    <ver>5.69</ver>
+    <ver>5.72</ver>
   </compatibility>
   <comments>Extended reports create other report options such as crosstab urls, multiple contact custom fields, price
     set reports
