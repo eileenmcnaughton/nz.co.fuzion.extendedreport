@@ -14,8 +14,8 @@
     <author>Eileen McNaughton</author>
     <email>eileen@fuzion.co.nz</email>
   </maintainer>
-  <releaseDate>2024-05-09</releaseDate>
-  <version>6.0.1</version>
+  <releaseDate>2024-05-10</releaseDate>
+  <version>6.0.2</version>
   <develStage>stable</develStage>
   <compatibility>
     <ver>5.72</ver>
