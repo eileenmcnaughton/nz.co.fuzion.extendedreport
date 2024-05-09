@@ -7835,7 +7835,7 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
       $this->_columns[$tableKey]['prefix'] = $prefix;
       $this->_columns[$tableKey]['table_name'] = $currentTable;
       $this->_columns[$tableKey]['alias'] = $prefix . $currentTable;
-      $this->_columns[$tableKey]['extends_table'] = $prefix . CRM_Core_DAO_AllCoreTables::getTableForClass(CRM_Core_DAO_AllCoreTables::getFullName($entity));
+      $this->_columns[$tableKey]['extends_table'] = $prefix . CRM_Core_DAO_AllCoreTables::getTableForClass(CRM_Core_DAO_AllCoreTables::getDAONameForEntity($entity));
     }
   }
 
