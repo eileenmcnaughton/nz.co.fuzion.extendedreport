@@ -829,7 +829,8 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       $this->addRowHeader(1, $fieldDetails, $fieldDetails['alias'], $fieldDetails['title']);
     }
 
-    foreach ($columnFields as $fieldDetails) { //only one but we don't know the name
+    foreach ($columnFields as $fieldDetails) {
+      //only one but we don't know the name
       if (array_key_exists($this->_params['aggregate_column_headers'], $this->getMetadataByType('aggregate_columns'))) {
         $spec = $this->getMetadataByType('aggregate_columns')[$this->_params['aggregate_column_headers']];
       }
@@ -1169,15 +1170,15 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
         if (!empty($fieldData['frequency']) && !empty($this->_params['group_bys_freq'])) {
           $groupByFrequency = CRM_Utils_Array::value($fieldName, $this->_params['group_bys_freq']);
           switch ($groupByFrequency) {
-            case 'FISCALYEAR' :
+            case 'FISCALYEAR':
               $this->_groupByArray[$groupByKey . '_start'] = $this->fiscalYearOffset($fieldData['dbAlias']);
               break;
 
-            case 'YEAR' :
+            case 'YEAR':
               $this->_groupByArray[$groupByKey . '_start'] = " $groupByFrequency({$fieldData['dbAlias']})";
               break;
 
-            default :
+            default:
               $this->_groupByArray[$groupByKey . '_start'] =
                 "EXTRACT(YEAR_$groupByFrequency FROM {$fieldData['dbAlias']})";
               break;
@@ -1334,9 +1335,9 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     foreach ($this->getMetadataByType('fields') as $fieldName => $field) {
       $tableName = $field['table_key'];
       $colGroups[$tableName]['use_accordian_for_field_selection'] = TRUE;
-      $colGroups[$tableName]['fields'][$fieldName] = CRM_Utils_Array::value('title', $field);
+      $colGroups[$tableName]['fields'][$fieldName] = $field['title'] ?? '';
       $colGroups[$tableName]['group_title'] = $field['group_title'];
-      $options[$fieldName] = CRM_Utils_Array::value('title', $field);
+      $options[$fieldName] = $field['title'] ?? '';
 
     }
 
@@ -2238,7 +2239,8 @@ LEFT JOIN civicrm_contact {$prop['alias']} ON {$prop['alias']}.id = {$this->_ali
    */
   private function addRowHeader(string $tableAlias, array $selectedField, string $fieldAlias, string $title = ''): void {
     if (empty($tableAlias)) {
-      $this->_select = 'SELECT 1 '; // add a fake value just to save lots of code to calculate whether a comma is required later
+      $this->_select = 'SELECT 1 ';
+      // add a fake value just to save lots of code to calculate whether a comma is required later
       $this->_rollup = NULL;
       $this->_noGroupBY = TRUE;
       return;
@@ -2248,13 +2250,12 @@ LEFT JOIN civicrm_contact {$prop['alias']} ON {$prop['alias']}.id = {$this->_ali
       $this->_groupByArray[] = $fieldAlias;
     }
     $this->_groupBy = "GROUP BY $fieldAlias " . $this->_rollup;
-    $this->_columnHeaders[$fieldAlias] = ['title' => $title,];
+    $this->_columnHeaders[$fieldAlias] = ['title' => $title];
     $key = array_search($fieldAlias, $this->_noDisplay);
     if (is_int($key)) {
       unset($this->_noDisplay[$key]);
     }
   }
-
 
   /**
    * @param $rows
@@ -2904,11 +2905,11 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
     $columns = $this->$fn($options);
 
     foreach ([
-               'filters',
-               'group_by',
-               'order_by',
-               'join_filters',
-             ] as $metadataType) {
+     'filters',
+     'group_by',
+     'order_by',
+     'join_filters',
+   ] as $metadataType) {
       if (!$options[$metadataType]) {
         foreach ($columns as &$table) {
           if (isset($table[$metadataType])) {
@@ -6188,7 +6189,6 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
     return "<div id=contact-$contactID class='crm-entity'><span class='crm-editable crmf-nick_name crm-editable-enabled' data-action='create'>" . $value . "</span></div>";
   }
 
-
   /**
    * Retrieve text for contribution type from pseudoconstant.
    *
@@ -6280,9 +6280,6 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
     return (string) $values[$value];
   }
 
-  /*
-* Retrieve text for payment instrument from pseudoconstant
-*/
   /**
    * @param int|null $value
    *
