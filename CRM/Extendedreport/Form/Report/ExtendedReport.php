@@ -218,7 +218,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    *
    * @var string
    */
-  protected $_caseActivityTable = 'civicrm_case_activity';
+  protected string $_caseActivityTable = 'civicrm_case_activity';
 
   protected $financialTypePseudoConstant = 'financialType';
 
@@ -248,7 +248,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    *
    * @var array
    */
-  protected $customDataDAOs = [];
+  protected array $customDataDAOs = [];
 
   /**
    * Has the report been optimised for group filtering.
