@@ -1977,7 +1977,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     if (in_array($this->_outputMode, [
         'print',
         'pdf'
-      ]) && $this->_params['templates']) {
+      ]) && array_key_exists('templates', $this->_params) && $this->_params['templates']) {
         $defaultTpl = 'CRM/Extendedreport/Form/Report/CustomTemplates/' . $this->_params['templates'] . '.tpl';
       }
 
@@ -4696,6 +4696,10 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
       $join = $this->getQillForField($field, $fieldName, 'join_filter_');
       $join['title'] = E::ts('%1 only included based on filter ', [$field['entity']]) . $join['title'];
       $statistics['filters'][] = $join;
+    }
+    // Prevents an e-notice in Statistics.tpl
+    if (!isset($statistics['filters'])) {
+      $statistics['filters'] = [];
     }
   }
 
