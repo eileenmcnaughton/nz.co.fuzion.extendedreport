@@ -6480,9 +6480,18 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    *
    * @return string
    */
-  protected function alterPaymentType(?int $value): string {
+  protected function alterPaymentType(?string $value): string {
     $paymentInstruments = CRM_Contribute_BAO_Contribution::buildOptions('payment_instrument_id', 'get');
-    return (string) ($paymentInstruments[$value] ?? '');
+    $values = explode(',', $value);
+    $labels = [];
+    foreach ($values as $value) {
+      $label = $paymentInstruments[$value] ?? '';
+      if ($label) {
+        $labels[] = $label;
+      }
+    }
+        
+    return (string) implode(',', $labels);
   }
 
   /**
