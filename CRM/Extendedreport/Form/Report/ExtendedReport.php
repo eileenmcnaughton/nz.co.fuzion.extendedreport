@@ -5730,11 +5730,13 @@ AND {$this->_aliases['civicrm_line_item']}.entity_table = 'civicrm_participant')
    * Define join from Participant to Contribution table
    */
   protected function joinContributionFromParticipant(): void {
-    $this->_from .= " LEFT JOIN civicrm_participant_payment pp
+    if ($this->isTableSelected('civicrm_contribution')) {   
+      $this->_from .= " LEFT JOIN civicrm_participant_payment pp
 ON {$this->_aliases['civicrm_participant']}.id = pp.participant_id
 LEFT JOIN civicrm_contribution {$this->_aliases['civicrm_contribution']}
 ON pp.contribution_id = {$this->_aliases['civicrm_contribution']}.id
 ";
+    }  
   }
 
   /**
