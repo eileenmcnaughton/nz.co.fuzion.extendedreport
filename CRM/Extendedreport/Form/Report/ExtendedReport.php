@@ -2491,9 +2491,11 @@ LEFT JOIN civicrm_contact {$prop['alias']} ON {$prop['alias']}.id = {$this->_ali
     $altered = [];
     $fieldsToUnSetForSubtotalLines = [];
     //on this first round we'll get a list of keys that are not groupbys or stats
-    foreach (array_keys($firstRow) as $rowField) {
-      if (!array_key_exists($rowField, $groupBys) && substr($rowField, -4) !== '_sum' && !substr($rowField, -7) !== '_count') {
-        $fieldsToUnSetForSubtotalLines[] = $rowField;
+    if (!$this->isPivot) {
+      foreach (array_keys($firstRow) as $rowField) {
+        if (!array_key_exists($rowField, $groupBys) && substr($rowField, -4) !== '_sum' && !substr($rowField, -7) !== '_count') {
+          $fieldsToUnSetForSubtotalLines[] = $rowField;
+        }
       }
     }
 
@@ -5730,13 +5732,13 @@ AND {$this->_aliases['civicrm_line_item']}.entity_table = 'civicrm_participant')
    * Define join from Participant to Contribution table
    */
   protected function joinContributionFromParticipant(): void {
-    if ($this->isTableSelected('civicrm_contribution')) {   
+    if ($this->isTableSelected('civicrm_contribution')) {
       $this->_from .= " LEFT JOIN civicrm_participant_payment pp
 ON {$this->_aliases['civicrm_participant']}.id = pp.participant_id
 LEFT JOIN civicrm_contribution {$this->_aliases['civicrm_contribution']}
 ON pp.contribution_id = {$this->_aliases['civicrm_contribution']}.id
 ";
-    }  
+    }
   }
 
   /**
@@ -6492,7 +6494,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
         $labels[] = $label;
       }
     }
-        
+
     return (string) implode(',', $labels);
   }
 
