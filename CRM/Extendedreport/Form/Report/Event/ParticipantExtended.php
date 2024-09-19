@@ -211,7 +211,7 @@ class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Exten
    *
    * @param array $rows
    *
-   * @throws \CiviCRM_API3_Exception
+   * @throws \CRM_Core_Exception
    */
   public function alterDisplay(&$rows): void {
     // custom code to alter rows

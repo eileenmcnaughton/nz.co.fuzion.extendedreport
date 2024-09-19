@@ -12,7 +12,7 @@ class CRM_Extendedreport_Form_Report_Contact_Basiccontact extends CRM_Extendedre
   /**
    * Class constructor.
    *
-   * @throws \CiviCRM_API3_Exception
+   * @throws \CRM_Core_Exception
    */
   public function __construct() {
     $this->_templates = [

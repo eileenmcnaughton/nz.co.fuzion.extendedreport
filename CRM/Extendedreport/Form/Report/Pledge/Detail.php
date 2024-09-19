@@ -19,7 +19,7 @@ class CRM_Extendedreport_Form_Report_Pledge_Detail extends CRM_Extendedreport_Fo
   /**
    * CRM_Extendedreport_Form_Report_Pledge_Detail constructor.
    *
-   * @throws \CiviCRM_API3_Exception
+   * @throws \CRM_Core_Exception
    */
   public function __construct() {
     $this->_columns = $this->getColumns('Contact', [

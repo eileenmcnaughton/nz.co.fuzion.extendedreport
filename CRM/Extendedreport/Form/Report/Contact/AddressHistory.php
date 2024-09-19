@@ -33,7 +33,7 @@ class CRM_Extendedreport_Form_Report_Contact_AddressHistory extends CRM_Extended
   /**
    * CRM_Extendedreport_Form_Report_Contact_AddressHistory constructor.
    *
-   * @throws \CiviCRM_API3_Exception
+   * @throws \CRM_Core_Exception
    */
   public function __construct() {
     $addressColumns = $this->getColumns('Address', [

@@ -206,7 +206,7 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
    *
    * @return array
    *
-   * @throws \CiviCRM_API3_Exception
+   * @throws \CRM_Core_Exception
    */
   public function getCaseColumns(array $options): array {
     if (!in_array('CiviCase', CRM_Core_Config::singleton()->enableComponents, TRUE)) {
@@ -571,7 +571,7 @@ trait CRM_Extendedreport_Form_Report_ColumnDefinitionTrait {
    * @param array $options column options
    *
    * @return array
-   * @throws \CiviCRM_API3_Exception
+   * @throws \CRM_Core_Exception
    */
   protected function getLatestActivityColumns(array $options): array {
     $defaultOptions = [

@@ -18,7 +18,7 @@ class CRM_Extendedreport_Form_Report_RelationshipExtended extends CRM_Extendedre
   /**
    * Class constructor.
    *
-   * @throws \CiviCRM_API3_Exception
+   * @throws \CRM_Core_Exception
    */
   public function __construct() {
     $this->_tagFilter = TRUE;
@@ -204,7 +204,6 @@ class CRM_Extendedreport_Form_Report_RelationshipExtended extends CRM_Extendedre
 
   /**
    * @throws \CRM_Core_Exception
-   * @throws \CiviCRM_API3_Exception
    */
   public function postProcess(): void {
     $this->beginPostProcess();

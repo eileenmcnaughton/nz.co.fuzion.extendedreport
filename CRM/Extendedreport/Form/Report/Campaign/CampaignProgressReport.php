@@ -17,7 +17,7 @@ class CRM_Extendedreport_Form_Report_Campaign_CampaignProgressReport extends CRM
   /**
    * Class constructor.
    *
-   * @throws \CiviCRM_API3_Exception
+   * @throws \CRM_Core_Exception
    */
   public function __construct() {
     $progressSpec = [

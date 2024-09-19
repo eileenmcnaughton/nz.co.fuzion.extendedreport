@@ -22,7 +22,7 @@ function _civicrm_api3_report_template_getinstance_spec(&$spec) {
  *
  * @return array API result descriptor
  *
- * @throws API_Exception
+ * @throws \CRM_Core_Exception
  */
 function civicrm_api3_report_template_getinstance($params) {
   $result = civicrm_api3('ReportInstance', 'get', $params);

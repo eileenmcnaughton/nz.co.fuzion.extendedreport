@@ -20,7 +20,7 @@ class CRM_Extendedreport_Form_Report_ActivityExtended extends CRM_Extendedreport
   /**
    * Class constructor.
    *
-   * @throws \CiviCRM_API3_Exception
+   * @throws \CRM_Core_Exception
    */
   public function __construct() {
     $this->_columns = $this->getColumns(

@@ -18,7 +18,7 @@ class CRM_Extendedreport_Form_Report_ActivityEditable extends CRM_Extendedreport
   /**
    * Class constructor.
    *
-   * @throws \CiviCRM_API3_Exception
+   * @throws \CRM_Core_Exception
    */
   public function __construct() {
     $this->_columns = $this->getColumns('Activity', ['fields_defaults' => ['activity_type_id', 'details', 'subject']])

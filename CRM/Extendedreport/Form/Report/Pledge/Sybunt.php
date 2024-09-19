@@ -204,7 +204,6 @@ class CRM_Extendedreport_Form_Report_Pledge_Sybunt extends CRM_Extendedreport_Fo
   }
 
   /**
-   * @throws \CiviCRM_API3_Exception
    * @throws \CRM_Core_Exception
    */
   public function postProcess(): void {

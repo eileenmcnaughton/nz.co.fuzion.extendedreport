@@ -42,7 +42,7 @@ class CRM_Extendedreport_Form_Report_Contribute_BookkeepingExtended extends CRM_
   /**
    * Class constructor.
    *
-   * @throws \CiviCRM_API3_Exception
+   * @throws \CRM_Core_Exception
    */
   public function __construct() {
     $this->_columns = $this->getColumns('Contact')

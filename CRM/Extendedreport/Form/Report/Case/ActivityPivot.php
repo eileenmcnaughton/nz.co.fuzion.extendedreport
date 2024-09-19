@@ -22,7 +22,7 @@ class CRM_Extendedreport_Form_Report_Case_ActivityPivot extends CRM_Extendedrepo
   /**
    * Class constructor.
    *
-   * @throws \CiviCRM_API3_Exception
+   * @throws \CRM_Core_Exception
    */
   public function __construct() {
     $this->_customGroupExtended['civicrm_case'] = [
