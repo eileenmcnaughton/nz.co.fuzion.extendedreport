@@ -6514,13 +6514,23 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
   }
 
   /**
-   * @param int|null $value
+   * @param int|null|string $value
+   *
+   * value can be a string in cases of aggregation!
    *
    * @return string
    */
-  protected function alterPaymentType(?int $value): string {
+  protected function alterPaymentType($value): string {
     $paymentInstruments = CRM_Contribute_BAO_Contribution::buildOptions('payment_instrument_id', 'get');
-    return (string) ($paymentInstruments[$value] ?? '');
+    $values = is_string($value) ? explode(',', $value) : [$value];
+    $return = [];
+    foreach($values as $value) {
+      $value = (int) (is_string($value) ? trim($value) : $value);
+      if (!empty($paymentInstruments[$value])) {
+        $return[] = (string) $paymentInstruments[$value];
+      }
+    }
+    return implode(', ', $return);
   }
 
   /**
