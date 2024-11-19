@@ -18,7 +18,10 @@ class CRM_Extendedreport_Page_Inline_ExtendedReportlets {
   public static function getReportsToDisplay() {
     $reportlets = Civi::cache()->get(__CLASS__ . 'contact_summary_reportlets');
     if ($reportlets === NULL) {
-      $reportlets = civicrm_api3('ReportInstance', 'get', ['form_values' => ['LIKE' => '%contact_reportlet";s:1:"1";%']])['values'];
+      $reportlets = civicrm_api3('ReportInstance', 'get', [
+        'form_values' => ['LIKE' => '%contact_reportlet";s:1:"1";%'],
+        'options' => ['limit' => 0],
+      ])['values'];
       Civi::cache()->set(__CLASS__ . 'contact_summary_reportlets', $reportlets);
     }
     return $reportlets;
