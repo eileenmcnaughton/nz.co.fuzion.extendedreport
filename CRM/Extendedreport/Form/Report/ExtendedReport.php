@@ -6403,12 +6403,22 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
   }
 
   /**
-   * @param int|null $value
+   * @param string|null $value
    *
    * @return string
    */
-  protected function alterGenderID(?int $value): string {
-    return CRM_Contact_BAO_Contact::buildOptions('gender_id')[$value] ?? '';
+  protected function alterGenderID(?string $value): string {
+    $genders = CRM_Contact_BAO_Contact::buildOptions('gender_id');
+
+    if (CRM_Utils_Type::validate($value, 'CommaSeparatedIntegers', FALSE)) {
+      $value = explode(',', $value);
+    }
+
+    foreach ((array) $value as $key => $genderID) {
+      $value[$key] = $genders[trim($genderID)] ?? '';
+    }
+
+    return implode(', ', $value);
   }
 
   /**
