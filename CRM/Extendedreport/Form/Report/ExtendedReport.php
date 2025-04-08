@@ -2648,6 +2648,9 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
           if ($customField['data_type'] === 'Money') {
             $rows[$rowNum][$tableCol] = $val;
           }
+          else if ($customField['data_type'] === 'Boolean') {
+            $rows[$rowNum][$tableCol] = $val;
+          }
           else {
             $rows[$rowNum][$tableCol] = CRM_Core_BAO_CustomField::displayValue($val, $customField['id']);
           }
