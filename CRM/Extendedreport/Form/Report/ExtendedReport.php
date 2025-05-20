@@ -725,7 +725,10 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       }
       else {
         $this->_selectAliases[$alias] = $alias;
-        $this->_columnHeaders[$field['alias']]['type'] = CRM_Utils_Array::value('type', $field);
+        if (isset($this->_columnHeaders[$field['alias']])) {
+          // is this actually changing the type at all?
+          $this->_columnHeaders[$field['alias']]['type'] = $field['type'] ?? NULL;
+        }
         $select[$fieldName] = $this->getBasicFieldSelectClause($field, $alias) . " as $alias ";
       }
     }
