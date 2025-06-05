@@ -6725,7 +6725,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
         }
       }
     }
-    $addressOutput = CRM_Utils_Address::format($address, $format);
+    $addressOutput = CRM_Utils_Address::format($address);
     if ($this->_outputMode !== 'csv') {
       return nl2br($addressOutput);
     }
