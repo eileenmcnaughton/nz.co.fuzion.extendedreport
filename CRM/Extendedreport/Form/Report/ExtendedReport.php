@@ -729,6 +729,9 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
           // is this actually changing the type at all?
           $this->_columnHeaders[$field['alias']]['type'] = $field['type'] ?? NULL;
         }
+        else {
+          $this->_columnHeaders[$field['alias']] = ['type' => $field['type'] ?? NULL];
+        }
         $select[$fieldName] = $this->getBasicFieldSelectClause($field, $alias) . " as $alias ";
       }
     }
