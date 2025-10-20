@@ -18,7 +18,4 @@ return [
     [
       0 => 'ang/extendedreport',
     ],
-  'settings' =>
-    [
-    ],
 ];
