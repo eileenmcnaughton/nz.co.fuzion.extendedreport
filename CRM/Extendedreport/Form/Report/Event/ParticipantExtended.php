@@ -314,9 +314,9 @@ class CRM_Extendedreport_Form_Report_Event_ParticipantExtended extends CRM_Exten
       }
 
       // Convert display name to link
-      if (($displayName = CRM_Utils_Array::value('civicrm_contact_sort_name', $row)) &&
-        ($cid = CRM_Utils_Array::value('civicrm_contact_id', $row)) &&
-        ($id = CRM_Utils_Array::value('civicrm_participant_participant_record', $row))
+      if (($displayName = $row['civicrm_contact_sort_name'] ?? NULL) &&
+        ($cid = $row['civicrm_contact_id'] ?? NULL) &&
+        ($id = $row['civicrm_participant_participant_record'] ?? NULL)
       ) {
         $viewUrl = CRM_Utils_System::url("civicrm/contact/view/participant",
           "reset=1&id=$id&cid=$cid&action=view&context=participant"

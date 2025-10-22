@@ -168,8 +168,8 @@ class CRM_Extendedreport_Form_Report_Contribute_Overview extends CRM_Extendedrep
   public function statistics(&$rows): array {
     $statistics = parent::statistics($rows);
 
-    $softCredit = CRM_Utils_Array::value('soft_amount', $this->_params['fields']);
-    $onlySoftCredit = $softCredit && !CRM_Utils_Array::value('total_amount', $this->_params['fields']);
+    $softCredit = $this->_params['fields']['soft_amount'] ?? NULL;
+    $onlySoftCredit = $softCredit && empty($this->_params['fields']['total_amount']);
     $group = "\nGROUP BY {$this->_aliases['civicrm_contribution']}.currency";
 
     $this->from('contribution');
@@ -402,7 +402,7 @@ ROUND(AVG({$this->_aliases['civicrm_contribution_soft']}.amount), 2) as civicrm_
       // make count columns point to detail report
       if (!empty($this->_params['group_bys']['receive_date']) &&
         !empty($row['civicrm_contribution_receive_date_start']) &&
-        CRM_Utils_Array::value('civicrm_contribution_receive_date_start', $row) &&
+        !empty($row['civicrm_contribution_receive_date_start']) &&
         !empty($row['civicrm_contribution_receive_date_subtotal'])
       ) {
 
@@ -474,7 +474,7 @@ ROUND(AVG({$this->_aliases['civicrm_contribution_soft']}.amount), 2) as civicrm_
       }
 
       // convert contribution status id to status name
-      if ($value = CRM_Utils_Array::value('civicrm_contribution_contribution_status_id', $row)) {
+      if ($value = $row['civicrm_contribution_contribution_status_id'] ?? NULL) {
         $rows[$rowNum]['civicrm_contribution_contribution_status_id'] = $contributionStatus[$value];
         $entryFound = TRUE;
       }
