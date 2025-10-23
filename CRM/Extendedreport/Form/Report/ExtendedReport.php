@@ -754,7 +754,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
             !empty($this->_params['group_bys'][$fieldName]) &&
             !empty($this->_params['group_bys_freq'])
           ) {
-            switch (CRM_Utils_Array::value($fieldName, $this->_params['group_bys_freq'])) {
+            switch (($this->_params['group_bys_freq'][$fieldName] ?? NULL)) {
               case 'YEARWEEK':
                 $select[] = "DATE_SUB({$field['dbAlias']}, INTERVAL WEEKDAY({$field['dbAlias']}) DAY) AS {$tableName}_{$fieldName}_start";
                 $select[] = "YEARWEEK({$field['dbAlias']}) AS {$tableName}_{$fieldName}_subtotal";
@@ -891,7 +891,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     }
     $options = $this->getCustomFieldOptions($spec);
 
-    if (!empty($this->_params[$fieldName . '_value']) && CRM_Utils_Array::value($fieldName . '_op', $this->_params) === 'in') {
+    if (!empty($this->_params[$fieldName . '_value']) && ($this->_params[$fieldName . '_op'] ?? NULL) === 'in') {
       $options['values'] = array_intersect_key($options, array_flip($this->_params[$fieldName . '_value']));
     }
 
@@ -1092,7 +1092,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       foreach ($selectedOrderBys as $selectedOrderBy) {
         $fieldAlias = $selectedOrderBy['alias'];
         // Record any section headers for assignment to the template
-        if (CRM_Utils_Array::value('section', $selectedOrderBy)) {
+        if (!empty($selectedOrderBy['section'])) {
           $this->_sections[$selectedOrderBy['alias']] = $selectedOrderBy;
         }
         if ($isGroupBy && !empty($selectedOrderBy['statistics']) && !empty($selectedOrderBy['statistics']['sum'])) {
@@ -1148,10 +1148,10 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    *   The table spec with the metadata key added.
    */
   public function setMetadataForTable(string $tableName): array {
-    if (CRM_Utils_Array::value('fields', $this->_columns[$tableName])) {
+    if (!empty($this->_columns[$tableName]['fields'])) {
       $this->_columns[$tableName]['metadata'] = $this->_columns[$tableName]['fields'];
     }
-    elseif (CRM_Utils_Array::value('filters', $this->_columns[$tableName])) {
+    elseif (!empty($this->_columns[$tableName]['filters'])) {
       $this->_columns[$tableName]['metadata'] = $this->_columns[$tableName]['filters'];
     }
     else {
@@ -1167,14 +1167,14 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
    */
   public function storeGroupByArray(): void {
 
-    if (CRM_Utils_Array::value('group_bys', $this->_params) &&
+    if (!empty($this->_params['group_bys']) &&
       is_array($this->_params['group_bys']) &&
       !empty($this->_params['group_bys'])
     ) {
       foreach ($this->getSelectedGroupBys() as $fieldName => $fieldData) {
         $groupByKey = $fieldData['alias'];
         if (!empty($fieldData['frequency']) && !empty($this->_params['group_bys_freq'])) {
-          $groupByFrequency = CRM_Utils_Array::value($fieldName, $this->_params['group_bys_freq']);
+          $groupByFrequency = $this->_params['group_bys_freq'][$fieldName] ?? NULL;
           switch ($groupByFrequency) {
             case 'FISCALYEAR':
               $this->_groupByArray[$groupByKey . '_start'] = $this->fiscalYearOffset($fieldData['dbAlias']);
@@ -1457,13 +1457,13 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
 
     foreach ($this->getMetadataByType('filters') as $fieldName => $field) {
       if (isset($field['default'])) {
-        if (CRM_Utils_Array::value('type', $field) & CRM_Utils_Type::T_DATE
+        if (($field['type'] ?? NULL) & CRM_Utils_Type::T_DATE
           // This is the overriden part.
-          && !(CRM_Utils_Array::value('operatorType', $field) === self::OP_SINGLEDATE)
+          && !(($field['operatorType'] ?? NULL) === self::OP_SINGLEDATE)
         ) {
           if (is_array($field['default'])) {
-            $this->_defaults["{$fieldName}_from"] = CRM_Utils_Array::value('from', $field['default']);
-            $this->_defaults["{$fieldName}_to"] = CRM_Utils_Array::value('to', $field['default']);
+            $this->_defaults["{$fieldName}_from"] = $field['default']['from'] ?? NULL;
+            $this->_defaults["{$fieldName}_to"] = $field['default']['to'] ?? NULL;
             $this->_defaults["{$fieldName}_relative"] = 0;
           }
           else {
@@ -1476,23 +1476,23 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
       }
       //assign default value as "in" for multiselect
       //operator, To freeze the select element
-      if (CRM_Utils_Array::value('operatorType', $field) ==
+      if (($field['operatorType'] ?? NULL) ==
         CRM_Report_Form::OP_MULTISELECT
       ) {
         $this->_defaults["{$fieldName}_op"] = 'in';
       }
-      if (CRM_Utils_Array::value('operatorType', $field) ==
+      if (($field['operatorType'] ?? NULL) ==
         // This is the OP_ENTITY_REF value. The constant is not registered in 4.4.
         256
       ) {
         $this->_defaults["{$fieldName}_op"] = 'in';
       }
-      elseif (CRM_Utils_Array::value('operatorType', $field) ==
+      elseif (($field['operatorType'] ?? NULL) ==
         CRM_Report_Form::OP_MULTISELECT_SEPARATOR
       ) {
         $this->_defaults["{$fieldName}_op"] = 'mhas';
       }
-      elseif ($op = CRM_Utils_Array::value('default_op', $field)) {
+      elseif ($op = $field['default_op'] ?? NULL) {
         $this->_defaults["{$fieldName}_op"] = $op;
       }
     }
@@ -1500,7 +1500,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     $this->_defaults['order_bys'] = [];
     foreach ($this->getMetadataByType('filters') as $fieldName => $field) {
       if (!empty($field['default']) || !empty($field['default_order']) ||
-        CRM_Utils_Array::value('default_is_section', $field) ||
+        !empty($field['default_is_section']) ||
         !empty($field['default_weight'])
       ) {
         $order_by = [
@@ -1797,7 +1797,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
   protected function selectStatSum(string $tableName, string $fieldName, array $field): string {
     $alias = "{$tableName}_{$fieldName}_sum";
     $this->addFieldToColumnHeaders($field, $alias);
-    $this->_columnHeaders[$alias]['type'] = CRM_Utils_Array::value('type', $field);
+    $this->_columnHeaders[$alias]['type'] = $field['type'] ?? NULL;
     $this->_statFields[CRM_Utils_Array::value('title', $field)] = $alias;
     $this->_selectAliases[$alias] = $alias;
     return $alias;
@@ -1926,7 +1926,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
     $this->orderBy();
     $this->groupBy();
 
-    if ($applyLimit && !CRM_Utils_Array::value('charts', $this->_params)) {
+    if ($applyLimit && empty($this->_params['charts'])) {
       if (!empty($this->_params['number_of_rows_to_render'])) {
         $this->_dashBoardRowCount = $this->_params['number_of_rows_to_render'];
       }
@@ -2110,13 +2110,13 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
 
       $baseJoin = $this->_customGroupExtendsJoin[$prop['extends']] ??  "{$this->_aliases[$prop['extends_table']]}.id";
       $customJoin = is_array($this->_customGroupJoin) ? $this->_customGroupJoin[$table] : $this->_customGroupJoin;
-      $tableKey = CRM_Utils_Array::value('prefix', $prop) . $prop['table_name'];
+      $tableKey = ($prop['prefix'] ?? '') . $prop['table_name'];
       if (stripos($this->_from, $this->_aliases[$tableKey]) === FALSE) {
         // Protect against conflict with selectableCustomFrom.
         $this->_from .= "
 $customJoin {$prop['table_name']} {$this->_aliases[$tableKey]} ON {$this->_aliases[$tableKey]}.entity_id = $baseJoin";
       }
-      if (CRM_Utils_Array::value('data_type', $prop) === 'ContactReference'
+      if (($prop['data_type'] ?? NULL) === 'ContactReference'
         // Checking prop['statistics'] is a bit of a hack - we want to exclude aggregate fields
         // we don't join twice.
         && empty($prop['statistics'])) {
@@ -2171,14 +2171,14 @@ LEFT JOIN civicrm_contact {$prop['alias']} ON {$prop['alias']}.id = {$this->_ali
   public function selectClause(&$tableName, $tableKey, &$fieldName, &$field) {
     if ($fieldName === 'phone_phone') {
       $alias = "{$tableName}_$fieldName";
-      $this->_columnHeaders["{$tableName}_$fieldName"]['type'] = CRM_Utils_Array::value('type', $field);
-      $this->_columnHeaders["{$tableName}_$fieldName"]['dbAlias'] = CRM_Utils_Array::value('dbAlias', $field);
+      $this->_columnHeaders["{$tableName}_$fieldName"]['type'] = $field['type'] ?? NULL;
+      $this->_columnHeaders["{$tableName}_$fieldName"]['dbAlias'] = $field['dbAlias'] ?? NULL;
       return " GROUP_CONCAT(CONCAT({$field['dbAlias']},':', {$this->_aliases[$tableName]}.location_type_id, ':', {$this->_aliases[$tableName]}.phone_type_id) ) as $alias";
     }
     if (!empty($field['pseudofield'])) {
       $alias = "{$tableName}_$fieldName";
-      $this->_columnHeaders["{$tableName}_$fieldName"]['type'] = CRM_Utils_Array::value('type', $field);
-      $this->_columnHeaders["{$tableName}_$fieldName"]['dbAlias'] = CRM_Utils_Array::value('dbAlias', $field);
+      $this->_columnHeaders["{$tableName}_$fieldName"]['type'] = $field['type'] ?? NULL;
+      $this->_columnHeaders["{$tableName}_$fieldName"]['dbAlias'] = $field['dbAlias'] ?? NULL;
       return ' 1 as  ' . $alias;
     }
     return FALSE;
@@ -2511,7 +2511,7 @@ LEFT JOIN civicrm_contact {$prop['alias']} ON {$prop['alias']}.id = {$this->_ali
     }
 
     foreach (array_keys($rows) as $rowNumber) {
-      $nextRow = CRM_Utils_Array::value($rowNumber + 1, $rows);
+      $nextRow = $rows[$rowNumber + 1] ?? NULL;
       if ($nextRow === NULL && empty($this->rollupRow)) {
         $this->updateRollupRow($rows[$rowNumber], $fieldsToUnSetForSubtotalLines);
       }
@@ -2782,7 +2782,7 @@ WHERE cg.extends IN ('" . implode("','", $extends) . "') AND
         ])
         ) {
           if ($htmlType === 'Select' || $htmlType === 'Radio') {
-            $retValue = CRM_Utils_Array::value($value, $fieldValueMap[$customField['option_group_id']]);
+            $retValue = $fieldValueMap[$customField['option_group_id']][$value] ?? NULL;
           }
           else {
             $retValue = $value;
@@ -5595,7 +5595,7 @@ AND {$this->_aliases['civicrm_line_item']}.entity_table = 'civicrm_participant')
    * @throws \CRM_Core_Exception
    */
   protected function joinPledgePaymentFromPledge(): void {
-    $until = CRM_Utils_Array::value('effective_date_value', $this->_params);
+    $until = $this->_params['effective_date_value'] ?? NULL;
     $pledgePaymentStatuses = civicrm_api3('PledgePayment', 'getoptions', ['field' => 'status_id']);
     $toPayIDs = [
       array_search('Pending', $pledgePaymentStatuses['values']),
@@ -6520,7 +6520,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    */
   protected function alterPaymentProcessor(?int $value): string {
     $paymentProcessors = CRM_Contribute_PseudoConstant::paymentProcessor(TRUE);
-    return CRM_Utils_Array::value($value, $paymentProcessors) ?? '';
+    return $paymentProcessors[$value] ?? NULL ?? '';
   }
 
   /**
@@ -6562,7 +6562,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    */
   protected function alterActivityType($value) {
     $activityTypes = CRM_Core_PseudoConstant::activityType(TRUE, TRUE, FALSE, 'label', TRUE);
-    return CRM_Utils_Array::value($value, $activityTypes);
+    return $activityTypes[$value] ?? NULL;
   }
 
   /**
@@ -6783,10 +6783,10 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    * @throws \CRM_Core_Exception
    */
   protected function addFilterFieldsToReport(array $field, string $fieldName, string $table, int $count, string $prefix): void {
-    $operations = CRM_Utils_Array::value('operations', $field);
+    $operations = $field['operations'] ?? NULL;
     if (empty($operations)) {
       $operations = $this->getOperationPair(
-        CRM_Utils_Array::value('operatorType', $field));
+        $field['operatorType'] ?? NULL);
     }
 
     if ($fieldName === 'membership_owner_membership_id') {
@@ -6797,7 +6797,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
       ];
     }
 
-    switch (CRM_Utils_Array::value('operatorType', $field)) {
+    switch ($field['operatorType'] ?? NULL) {
       case CRM_Report_Form::OP_MONTH:
         if (!array_key_exists('options', $field) ||
           !is_array($field['options']) || empty($field['options'])
@@ -6912,8 +6912,8 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
     $clause = '';
     if ($type & CRM_Utils_Type::T_DATE) {
       if ($field['operatorType'] === CRM_Report_Form::OP_MONTH) {
-        $op = CRM_Utils_Array::value("$prefix{$fieldName}_op", $this->_params);
-        $value = CRM_Utils_Array::value("$prefix{$fieldName}_value", $this->_params);
+        $op = $this->_params["$prefix{$fieldName}_op"] ?? NULL;
+        $value = $this->_params["$prefix{$fieldName}_value"] ?? NULL;
         if (is_array($value) && !empty($value)) {
           $clause = "(month({$field['dbAlias']}) $op (" . implode(', ', $value) . '))';
         }
@@ -6935,13 +6935,13 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
       return $this->dateClause($field['dbAlias'], $relative, $from, $to, $field['type']);
     }
 
-    $op = CRM_Utils_Array::value("$prefix{$fieldName}_op", $this->_params);
+    $op = $this->_params["$prefix{$fieldName}_op"] ?? NULL;
     if ($op) {
       return $this->whereClause($field,
         $op,
-        CRM_Utils_Array::value("$prefix{$fieldName}_value", $this->_params),
-        CRM_Utils_Array::value("$prefix{$fieldName}_min", $this->_params),
-        CRM_Utils_Array::value("$prefix{$fieldName}_max", $this->_params)
+        $this->_params["$prefix{$fieldName}_value"] ?? NULL,
+        $this->_params["$prefix{$fieldName}_min"] ?? NULL,
+        $this->_params["$prefix{$fieldName}_max"] ?? NULL
       );
     }
     return '';
@@ -7298,7 +7298,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
     }
 
     if (!empty($this->contactIDField)) {
-      if (CRM_Utils_Array::value('contact_id', $this->_params)) {
+      if (!empty($this->_params['contact_id'])) {
         return $this->_params['contact_id'];
       }
       return CRM_Utils_Request::retrieveValue('cid', 'Int', CRM_Utils_Request::retrieveValue('contact_id', 'Int'));
@@ -7314,7 +7314,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    */
   protected function getMetadataForFields(array $table): array {
     // higher preference to bao object
-    $daoOrBaoName = CRM_Utils_Array::value('bao', $table, CRM_Utils_Array::value('dao', $table));
+    $daoOrBaoName = $table['bao'] ?? $table['dao'] ?? NULL;
     if (!$daoOrBaoName) {
       return [];
     }
@@ -7389,7 +7389,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
       $clause = $this->generateFilterClause($field, $filterName);
       if (!empty($clause)) {
         $this->whereClauses[$filterName] = $clause;
-        if (CRM_Utils_Array::value('having', $field)) {
+        if (!empty($field['having'])) {
           $this->_havingClauses[$filterName] = $clause;
         }
         else {
@@ -7743,8 +7743,8 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
   protected function addCustomDataForEntities(array $extends): void {
     $fields = $this->getCustomDataDAOs($extends);
     foreach ($fields as $field) {
-      $prefixLabel = trim(CRM_Utils_Array::value('prefix_label', $field));
-      $prefix = trim(CRM_Utils_Array::value('prefix', $field));
+      $prefixLabel = trim($field['prefix_label'] ?? '');
+      $prefix = trim($field['prefix'] ?? '');
       if ($prefixLabel) {
         $prefixLabel .= ' ';
       }
@@ -8005,9 +8005,9 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
    * @throws \CRM_Core_Exception
    */
   protected function getQillForField($field, $fieldName, string $prefix = ''): array {
-    if ((CRM_Utils_Array::value('type', $field) & CRM_Utils_Type::T_DATE ||
-        CRM_Utils_Array::value('type', $field) & CRM_Utils_Type::T_TIME) &&
-      CRM_Utils_Array::value('operatorType', $field) !=
+    if ((($field['type'] ?? NULL) & CRM_Utils_Type::T_DATE ||
+        ($field['type'] ?? NULL) & CRM_Utils_Type::T_TIME) &&
+      ($field['operatorType'] ?? NULL) !=
       CRM_Report_Form::OP_MONTH
     ) {
 
@@ -8034,7 +8034,7 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
         ];
       }
 
-      if (in_array($rel = CRM_Utils_Array::value("$prefix{$fieldName}_relative", $this->_params),
+      if (in_array($rel = $this->_params["$prefix{$fieldName}_relative"] ?? NULL,
         array_keys($this->getOperationPair(CRM_Report_Form::OP_DATE))
       )) {
         $pair = $this->getOperationPair(CRM_Report_Form::OP_DATE);
@@ -8045,20 +8045,20 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
       }
     }
     else {
-      $op = CRM_Utils_Array::value("$prefix{$fieldName}_op", $this->_params);
+      $op = $this->_params["$prefix{$fieldName}_op"] ?? NULL;
       $value = NULL;
       if ($op) {
         $pair = $this->getOperationPair(
-          CRM_Utils_Array::value('operatorType', $field),
+          $field['operatorType'] ?? NULL,
           $fieldName
         );
-        $min = CRM_Utils_Array::value("$prefix{$fieldName}_min", $this->_params);
-        $max = CRM_Utils_Array::value("$prefix{$fieldName}_max", $this->_params);
-        $val = CRM_Utils_Array::value("$prefix{$fieldName}_value", $this->_params);
+        $min = $this->_params["$prefix{$fieldName}_min"] ?? NULL;
+        $max = $this->_params["$prefix{$fieldName}_max"] ?? NULL;
+        $val = $this->_params["$prefix{$fieldName}_value"] ?? NULL;
         if (in_array($op, ['bw', 'nbw']) && ($min || $max)) {
           $value = "$pair[$op] $min " . ts('and') . " $max";
         }
-        elseif ($val && CRM_Utils_Array::value('operatorType', $field) & self::OP_ENTITYREF) {
+        elseif ($val && ($field['operatorType'] ?? NULL) & self::OP_ENTITYREF) {
           $this->setEntityRefDefaults($field, $field['table_name']);
           $result = civicrm_api3($field['attributes']['entity'], 'getlist',
             ['id' => $val] +
@@ -8080,7 +8080,7 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
             }
           }
           $pair[$op] = (count($val) === 1) ? (($op === 'notin' || $op ===
-            'mnot') ? ts('Is Not') : ts('Is')) : CRM_Utils_Array::value($op, $pair);
+            'mnot') ? ts('Is Not') : ts('Is')) : ($pair[$op] ?? NULL);
           $val = implode(', ', $val);
           $value = "$pair[$op] " . $val;
         }
@@ -8088,16 +8088,15 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
           isset($field['options']) &&
           is_array($field['options']) && !empty($field['options'])
         ) {
-          $value = CRM_Utils_Array::value($op, $pair) . " " .
-            CRM_Utils_Array::value($val, $field['options'], $val);
+          $value = ($pair[$op] ?? '') . " " . ($field['options'][$val] ?? $val);
         }
         elseif ($val) {
-          $value = CRM_Utils_Array::value($op, $pair) . " " . $val;
+          $value = ($pair[$op] ?? '') . " " . $val;
         }
       }
       if ($value && empty($field['no_display'])) {
         return [
-          'title' => CRM_Utils_Array::value('title', $field),
+          'title' => $field['title'] ?? NULL,
           'value' => $value,
         ];
       }
@@ -8160,16 +8159,16 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
    * Merge 'extended_order_bys' into fields
    */
   protected function mergeExtendedOrderByConfiguration(): void {
-    $orderBys = CRM_Utils_Array::value('order_bys', $this->_formValues);
-    $extendedOrderBys = CRM_Utils_Array::value('extended_order_bys', $this->_formValues);
+    $orderBys = $this->_formValues['order_bys'] ?? NULL;
+    $extendedOrderBys = $this->_formValues['extended_order_bys'] ?? NULL;
     $metadata = $this->getMetadataByType('order_bys');
     $count = 1;
     if (!empty($extendedOrderBys)) {
       foreach ($extendedOrderBys as $extendedOrderBy) {
-        $extendedOrderBy['column'] = $extendedOrderBy['name'] = CRM_Utils_Array::value('name', $extendedOrderBy, CRM_Utils_Array::value('column', $extendedOrderBy));
-        $extendedOrderBy['title'] = CRM_Utils_Array::value('title', $extendedOrderBy, $metadata[$extendedOrderBy['name']]['title']);
+        $extendedOrderBy['column'] = $extendedOrderBy['name'] = $extendedOrderBy['name'] ?? $extendedOrderBy['column'] ?? NULL;
+        $extendedOrderBy['title'] = $extendedOrderBy['title'] ?? $metadata[$extendedOrderBy['name']]['title'];
         $orderBys[$count] = [
-          'column' => CRM_Utils_Array::value('name', $extendedOrderBy, $extendedOrderBy['column']),
+          'column' => $extendedOrderBy['name'] ?? $extendedOrderBy['column'],
         ];
         $count++;
         if ($this->isValidTitle($extendedOrderBy['title'])) {
@@ -8255,7 +8254,7 @@ WHERE cg.extends IN ('" . $extendsString . "') AND
     }
     $extendedOrderBys = $this->getExtendedOrderBysSelection($params);
     foreach ($extendedOrderBys as $index => $extendedOrderBy) {
-      $orderByName = CRM_Utils_Array::value('name', $extendedOrderBy, CRM_Utils_Array::value('column', $extendedOrderBy));
+      $orderByName = CRM_Utils_Array::value('name', $extendedOrderBy, $extendedOrderBy['column'] ?? NULL);
       // If order_bys have been passed in then we filter out anything not set in them
       if (!isset($orderBys[$orderByName]) && isset($params['order_bys'])) {
         unset($extendedOrderBys[$index]);

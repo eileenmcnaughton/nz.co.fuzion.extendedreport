@@ -177,7 +177,7 @@ class CRM_Extendedreport_Form_Report_RelationshipExtended extends CRM_Extendedre
     elseif ($isActive !== NULL) {
       $relStatus = 'Is equal to Inactive';
     }
-    if (CRM_Utils_Array::value('filters', $statistics)) {
+    if (!empty($statistics['filters'])) {
       foreach ($statistics['filters'] as $id => $value) {
         //for displaying relationship type filter
         if ($value['title'] === 'Relationship') {

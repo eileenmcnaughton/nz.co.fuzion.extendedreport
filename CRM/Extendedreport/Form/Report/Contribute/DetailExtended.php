@@ -225,7 +225,7 @@ class CRM_Extendedreport_Form_Report_Contribute_DetailExtended extends CRM_Exten
 
       // convert donor sort name to link
       if (array_key_exists('civicrm_contact_civicrm_contact_sort_name', $row) &&
-        CRM_Utils_Array::value('civicrm_contact_civicrm_contact_sort_name', $rows[$rowNum]) &&
+        !empty($rows[$rowNum]['civicrm_contact_civicrm_contact_sort_name']) &&
         array_key_exists('civicrm_contact_civicrm_contact_contact_id', $row)
       ) {
         $url = CRM_Utils_System::url("civicrm/contact/view",
@@ -237,13 +237,13 @@ class CRM_Extendedreport_Form_Report_Contribute_DetailExtended extends CRM_Exten
         $entryFound = TRUE;
       }
 
-      if ($value = CRM_Utils_Array::value('civicrm_contribution_contribution_contribution_page_id', $row)) {
+      if ($value = $row['civicrm_contribution_contribution_contribution_page_id'] ?? NULL) {
         $rows[$rowNum]['civicrm_contribution_contribution_contribution_page_id'] = $contributionPages[$value];
         $entryFound = TRUE;
       }
 
       // Contribution amount links to viewing contribution
-      if (($value = CRM_Utils_Array::value('civicrm_contribution_contribution_total_amount_sum', $row)) &&
+      if (($value = $row['civicrm_contribution_contribution_total_amount_sum'] ?? NULL) &&
         array_key_exists('civicrm_contact_civicrm_contact_contact_id', $row) &&
         CRM_Core_Permission::check('access CiviContribute')
       ) {
@@ -344,11 +344,11 @@ class CRM_Extendedreport_Form_Report_Contribute_DetailExtended extends CRM_Exten
         // ts exception to avoid having ts("%1 %2: %3")
         $title = '%1 contributions / soft-credits: %2';
 
-        if (CRM_Utils_Array::value('contribution_or_soft_value', $this->_params) == 'contributions_only') {
+        if (($this->_params['contribution_or_soft_value'] ?? NULL) == 'contributions_only') {
           $title = '%1 contributions: %2';
         }
         else {
-          if (CRM_Utils_Array::value('contribution_or_soft_value', $this->_params) == 'soft_credits_only') {
+          if (($this->_params['contribution_or_soft_value'] ?? NULL) == 'soft_credits_only') {
             $title = '%1 soft-credits: %2';
           }
         }

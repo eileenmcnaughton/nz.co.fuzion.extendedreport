@@ -111,8 +111,8 @@ class CRM_Extendedreport_Form_Report_Pledge_PaidAndCommitted extends CRM_Extende
    */
   public function selectClause(&$tableName, $tableKey, &$fieldName, &$field): string {
     if ($fieldName === 'balance_amount') {
-      $this->_columnHeaders["{$tableName}_$fieldName"]['title'] = CRM_Utils_Array::value('title', $field);
-      $this->_columnHeaders["{$tableName}_$fieldName"]['type'] = CRM_Utils_Array::value('type', $field);
+      $this->_columnHeaders["{$tableName}_$fieldName"]['title'] = $field['title'] ?? NULL;
+      $this->_columnHeaders["{$tableName}_$fieldName"]['type'] = $field['type'] ?? NULL;
       $this->_statFields['Balance to Pay'] = "{$tableName}_$fieldName";
       return " COALESCE(sum(pledge.amount), 0) - COALESCE(sum({$this->_aliases['civicrm_pledge_payment']}.actual_amount), 0) as civicrm_pledge_balance_amount ";
     }

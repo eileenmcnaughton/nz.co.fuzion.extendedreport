@@ -94,7 +94,7 @@ class CRM_Extendedreport_Form_Report_Pledge_Sybunt extends CRM_Extendedreport_Fo
       if (array_key_exists('fields', $table)) {
         foreach ($table['fields'] as $fieldName => $field) {
 
-          if (CRM_Utils_Array::value('required', $field) || CRM_Utils_Array::value($fieldName, $this->_params['fields'])) {
+          if (!empty($field['required']) || !empty($this->_params['fields'][$fieldName])) {
             if ($fieldName === 'amount') {
               $select[] = "SUM({$field['dbAlias']}) as {$tableName}_$fieldName";
 
@@ -118,10 +118,10 @@ class CRM_Extendedreport_Form_Report_Pledge_Sybunt extends CRM_Extendedreport_Fo
             }
             else {
               $select[] = "{$field['dbAlias']} as {$tableName}_$fieldName";
-              $this->_columnHeaders["{$tableName}_$fieldName"]['type'] = CRM_Utils_Array::value('type', $field);
+              $this->_columnHeaders["{$tableName}_$fieldName"]['type'] = $field['type'] ?? NULL;
               $this->_columnHeaders["{$tableName}_$fieldName"]['title'] = $field['title'];
             }
-            if (CRM_Utils_Array::value('no_display', $field)) {
+            if (!empty($field['no_display'])) {
               $this->_columnHeaders["{$tableName}_$fieldName"]['no_display'] = TRUE;
             }
           }
@@ -218,7 +218,7 @@ class CRM_Extendedreport_Form_Report_Pledge_Sybunt extends CRM_Extendedreport_Fo
     $this->groupBy();
 
     $rows = $contactIds = [];
-    if (!CRM_Utils_Array::value('charts', $this->_params)) {
+    if (empty($this->_params['charts'])) {
       $this->limit();
       $getContacts = "SELECT {$this->_aliases['civicrm_contact']}.id as cid {$this->_from} {$this->_where} GROUP BY {$this->_aliases['civicrm_contact']}.id {$this->_limit}";
 
@@ -230,8 +230,8 @@ class CRM_Extendedreport_Form_Report_Pledge_Sybunt extends CRM_Extendedreport_Fo
       $this->setPager();
     }
 
-    if (!empty($contactIds) || CRM_Utils_Array::value('charts', $this->_params)) {
-      if (CRM_Utils_Array::value('charts', $this->_params)) {
+    if (!empty($contactIds) || !empty($this->_params['charts'])) {
+      if (!empty($this->_params['charts'])) {
         $sql = "{$this->_select} {$this->_from} {$this->_where} {$this->_groupBy}";
       }
       else {

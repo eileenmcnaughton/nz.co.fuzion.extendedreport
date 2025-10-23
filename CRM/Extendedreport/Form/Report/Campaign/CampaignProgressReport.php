@@ -144,7 +144,7 @@ class CRM_Extendedreport_Form_Report_Campaign_CampaignProgressReport extends CRM
    * @throws \CRM_Core_Exception
    */
   protected function joinProgressTable(): void {
-    $until = CRM_Utils_Array::value('effective_date_value', $this->_params);
+    $until = $this->_params['effective_date_value'] ?? NULL;
     $untilClause = '';
     if ($until) {
       $untilClause = ' AND c.receive_date <="' . CRM_Utils_Type::validate(CRM_Utils_Date::processDate($until, 235959), 'Integer') . '"';
@@ -208,9 +208,9 @@ LEFT JOIN
   public function selectClause(&$tableName, $tableKey, &$fieldName, &$field): string {
     if ($fieldName === 'progress_still_to_raise') {
       $alias = "{$tableName}_$fieldName";
-      $this->_columnHeaders[$alias]['title'] = CRM_Utils_Array::value('title', $field);
-      $this->_columnHeaders[$alias]['type'] = CRM_Utils_Array::value('type', $field);
-      $this->_columnHeaders[$alias]['dbAlias'] = CRM_Utils_Array::value('dbAlias', $field);
+      $this->_columnHeaders[$alias]['title'] = $field['title'] ?? NULL;
+      $this->_columnHeaders[$alias]['type'] = $field['type'] ?? NULL;
+      $this->_columnHeaders[$alias]['dbAlias'] = $field['dbAlias'] ?? NULL;
       $this->_selectAliases[$alias] = $alias;
       return " COALESCE({$this->_aliases['civicrm_campaign']}.goal_revenue, 0) - SUM(COALESCE(progress.total_amount, 0)) as $alias ";
     }
