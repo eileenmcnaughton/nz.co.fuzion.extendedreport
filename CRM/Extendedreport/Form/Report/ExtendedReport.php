@@ -6877,7 +6877,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
       case self::OP_SINGLEDATE:
         // build single datetime field
         $this->addElement('select', "$prefix{$fieldName}_op", ts('Operator:'), $operations);
-        $this->add('datepicker', "$prefix{$fieldName}_value", ts(''), FALSE, FALSE, ['time' => FALSE]);
+        $this->add('datepicker', "$prefix{$fieldName}_value", '', FALSE, FALSE, ['time' => FALSE]);
         break;
       case CRM_Report_Form::OP_INT:
       case CRM_Report_Form::OP_FLOAT:
