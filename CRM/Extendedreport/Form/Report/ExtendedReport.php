@@ -386,7 +386,7 @@ class CRM_Extendedreport_Form_Report_ExtendedReport extends CRM_Report_Form {
           'type' => CRM_Utils_Type::T_INT,
           'operatorType' => CRM_Report_Form::OP_MULTISELECT,
           'group' => TRUE,
-          'options' => CRM_Core_PseudoConstant::nestedGroup(),
+          'options' => CRM_Core_PseudoConstant::nestedGroup(TRUE, NULL, TRUE, "plain"),
           'alias' => 'civicrm_group_gid',
           'is_filters' => TRUE,
           'is_fields' => FALSE,
