@@ -14,11 +14,11 @@
     <author>Eileen McNaughton</author>
     <email>eileen@fuzion.co.nz</email>
   </maintainer>
-  <releaseDate>2025-06-12</releaseDate>
-  <version>6.0.4</version>
+  <releaseDate>2026-06-15</releaseDate>
+  <version>6.0.5</version>
   <develStage>stable</develStage>
   <compatibility>
-    <ver>6.6</ver>
+    <ver>6.10</ver>
   </compatibility>
   <smarty_compatibility>
     <ver>5</ver>
