@@ -41,7 +41,8 @@ class GetmetadataTest extends BaseTestClass {
       'custom_group_id' => $ids['custom_group_id'],
       'data_type' => 'String',
       'default_value' => '',
-      'html_type' => 'Multi-Select',
+      'html_type' => 'Select',
+      'serialize' => 1,
       'name' => 'multi_select_field',
       'label' => 'multi_select_field',
     ]);
