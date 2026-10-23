@@ -22,7 +22,7 @@ return [
     'entity' => 'OptionValue',
     'params' => [
       'version' => 4,
-      'match' => ['name'],
+      'match' => ['name', 'option_group_id'],
       'values' => [
         'label' => 'Extended Report - Grant Detail',
         'description' => 'Extended Report - Grant Detail',

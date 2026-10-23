@@ -10,7 +10,7 @@ if (CRM_Core_Component::isEnabled('CiviCampaign')) {
       'entity' => 'OptionValue',
       'params' => [
         'version' => 4,
-        'match' => ['name'],
+        'match' => ['name', 'option_group_id'],
         'values' => [
           'label' => 'Extended Report - Campaign progress',
           'option_group_id:name' => 'report_template',
