@@ -39,7 +39,7 @@ class ContributionBasedTest extends BaseTestClass {
     $this->callAPISuccess('Order', 'create', [
       'contact_id' => $this->contacts[0],
       'total_amount' => 5,
-      'financial_type_id' => 2,
+      'financial_type_id' => 'Member Dues',
       'contribution_status_id' => 'Pending',
       'api.Payment.create' => ['total_amount' => 5],
     ]);

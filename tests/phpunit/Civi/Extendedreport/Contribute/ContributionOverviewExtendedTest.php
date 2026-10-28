@@ -52,7 +52,7 @@ class ContributionOverviewExtendedTest extends BaseTestClass {
    * Test the ContributionOverviewExtended report with group by.
    */
   public function testContributionExtendedReport(): void {
-    $this->callAPISuccess('Order', 'create', ['contact_id' => $this->ids['Contact'][0], 'total_amount' => 5, 'financial_type_id' => 2, 'contribution_status_id' => 'Pending', 'api.Payment.create' => ['total_amount' => 5]]);
+    $this->callAPISuccess('Order', 'create', ['contact_id' => $this->ids['Contact'][0], 'total_amount' => 5, 'financial_type_id' => 'Member Dues', 'contribution_status_id' => 'Pending', 'api.Payment.create' => ['total_amount' => 5]]);
     $params = [
       'report_id' => 'contribution/overview',
       'fields' => [
